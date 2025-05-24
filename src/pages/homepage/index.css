@@ -1,0 +1,40 @@
+.contain {
+  display: flex;
+  flex-direction: column;
+  background-color: #FFFFFF;
+  width: 100%;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+.scroll-view {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  background-size: cover;
+  background-position: center;
+  padding-top: 50px;
+  padding-bottom: 127px;
+  margin-bottom: 140px;
+}
+
+.hero-section {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding-top: 20px;
+  overflow: hidden;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .hero-section {
+    padding-top: 10px;
+  }
+}
