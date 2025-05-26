@@ -18,7 +18,7 @@ const HomePage = () => {
         <div 
           className="hero-section"
           style={{
-            backgroundImage: 'url(https://storage.googleapis.com/tagjs-prod.appspot.com/v1/VY3PPTks6o/jxg9dfob_expires_30_days.png)',
+            backgroundColor: '#03246B',
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             position: 'relative',

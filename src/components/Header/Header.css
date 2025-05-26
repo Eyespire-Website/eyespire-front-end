@@ -1,6 +1,7 @@
 .row-view {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   align-self: stretch;
   margin-bottom: 30px;
   padding: 20px 50px;
@@ -15,10 +16,8 @@
 
 .row-view2 {
   display: flex;
-  flex-shrink: 0;
   align-items: center;
-  padding-right: 4px;
-  margin-right: 50px;
+  width: 200px;
 }
 
 .image {
@@ -36,18 +35,15 @@
 
 .column2 {
   display: flex;
-  flex: 1;
   flex-direction: column;
-  align-items: flex-start;
-  margin-right: 12px;
+  align-items: center;
+  flex: 1;
 }
 
 .row-view3 {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  align-self: stretch;
-  margin-bottom: 3px;
+  align-items: center;
+  margin: 0;
 }
 
 .row-view4 {
@@ -61,7 +57,7 @@
   color: #FFFFFF;
   font-size: 15px;
   font-weight: bold;
-  margin-right: 14px;
+  margin-right: 0;
   cursor: pointer;
   transition: color 0.3s;
 }
@@ -82,6 +78,7 @@
   font-weight: bold;
   cursor: pointer;
   transition: color 0.3s;
+  margin: 0;
 }
 
 .text4:hover {
@@ -92,7 +89,7 @@
   color: #FFFFFF;
   font-size: 15px;
   font-weight: bold;
-  margin-right: 12px;
+  margin-right: 0;
   cursor: pointer;
   transition: color 0.3s;
 }
@@ -111,6 +108,15 @@
 .row-view5 {
   display: flex;
   align-items: center;
+  gap: 15px;
+  width: 200px;
+  justify-content: flex-end;
+}
+
+.column2 .row-view5 {
+  width: auto;
+  justify-content: center;
+  gap: 60px;
 }
 
 .text6 {
@@ -125,4 +131,37 @@
   height: 40px;
   object-fit: fill;
   cursor: pointer;
+}
+
+.login-button {
+  background-color: #FFFFFF;
+  color: rgba(26, 60, 139, 0.9);
+  font-size: 15px;
+  font-weight: bold;
+  padding: 8px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-right: 15px;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+.login-button:hover {
+  background-color: #9BBAFC;
+  color: #FFFFFF;
+  transform: translateY(-2px);
+}
+
+.cart-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  font-size: 20px;
+  color: #FFFFFF;
+  margin-right: 10px;
+}
+
+.cart-icon:hover {
+  transform: scale(1.1);
 }
