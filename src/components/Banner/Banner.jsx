@@ -1,12 +1,14 @@
 import React, { useState } from "react";
 import "./Banner.css";
 import homepage_header_1 from "../../assets/homepage_header_1.jpg";
+import homepage_header_2 from "../../assets/homepage_header_2.jpg";
 
 const Banner = () => {
   const [searchInput, setSearchInput] = useState('');
 
   return (
     <div className="row-view6">
+      {/* Phần bên trái */}
       <div className="column3">
         <span className="text7">
           {"The Best Eye Doctors & Technology"}
@@ -22,7 +24,30 @@ const Banner = () => {
             <span className="text8">{""}</span>
           </button>
         </div>
+        
+        {/* Phần thống kê */}
+        <div className="stats-container">
+          <div className="stat-item">
+            <span className="stat-number">8+</span>
+            <span className="stat-text">High Qualified Doctors</span>
+          </div>
+          <div className="stat-item">
+            <span className="stat-number">99%</span>
+            <span className="stat-text">Positive Feedback</span>
+          </div>
+        </div>
+        
+        {/* Phần khuyến mãi */}
+        <div className="promo-box">
+          <h3 className="promo-title">100% Modern Eye Equipment</h3>
+          <p className="promo-desc">Explore advanced eye exam tools like Auto Refractors, OCT machines, and Phacoemulsification systems from Germany, USA, Japan, and Switzerland for top-quality care at our clinic.</p>
+          <img
+            src={homepage_header_2}
+          />
+        </div>
       </div>
+      
+      {/* Phần hình ảnh bên phải */}
       <div className="column5">
         <div className="view">
           <img
@@ -31,23 +56,16 @@ const Banner = () => {
             alt="Eye doctor"
           />
         </div>
-        <img
-          src={"https://storage.googleapis.com/tagjs-prod.appspot.com/v1/VY3PPTks6o/h1lgx2ut_expires_30_days.png"}
-          className="image5"
-          alt="Decoration"
-        />
-      </div>
-      <div className="absolute-column"
-        style={{
-          backgroundImage: 'url(https://storage.googleapis.com/tagjs-prod.appspot.com/v1/VY3PPTks6o/bdkb2f6i_expires_30_days.png)',
-        }}
-      >
-        <span className="text9">
-          {"550+"}
-        </span>
-        <span className="text10">
-          {"Successfully\nEye Surgery"}
-        </span>
+        
+        {/* Phần thống kê 550+ */}
+        <div className="success-stats">
+          <span className="text9">
+            {"550+"}
+          </span>
+          <span className="text10">
+            {"Successfully\nEye Surgery"}
+          </span>
+        </div>
       </div>
     </div>
   );

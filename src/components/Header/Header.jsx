@@ -1,9 +1,12 @@
 import React from "react";
 import "./Header.css";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faShoppingCart } from '@fortawesome/free-solid-svg-icons';
 
 const Header = () => {
   return (
     <div className="row-view">
+      {/* Logo bên trái */}
       <div className="row-view2">
         <img
           src={"https://storage.googleapis.com/tagjs-prod.appspot.com/v1/VY3PPTks6o/e8ggwzic_expires_30_days.png"}
@@ -11,37 +14,36 @@ const Header = () => {
         />
         <span className="text">{"Eyespire"}</span>
       </div>
+      
+      {/* Menu điều hướng ở giữa */}
       <div className="column2">
-        <div className="row-view3">
-          <div className="row-view4">
+        <div className="row-view5">
+          <div className="row-view3">
             <span className="text2">{"Home"}</span>
             <span className="text3">{""}</span>
           </div>
-          <span className="text4">{"About"}</span>
-          <div className="row-view4">
-            <span className="text5">{"Services"}</span>
+          <span className="text4">{"Services"}</span>
+          <div className="row-view3">
+            <span className="text5">{"Doctors"}</span>
             <span className="text3">{""}</span>
           </div>
-          <div className="row-view4">
+          <div className="row-view3">
             <span className="text5">{"Shop"}</span>
             <span className="text3">{""}</span>
           </div>
-          <div className="row-view4">
-            <span className="text2">{"Blog"}</span>
+          <div className="row-view3">
+            <span className="text5">{"About"}</span>
             <span className="text3">{""}</span>
           </div>
         </div>
-        <img
-          src={"https://storage.googleapis.com/tagjs-prod.appspot.com/v1/VY3PPTks6o/w8okmquz_expires_30_days.png"}
-          className="image2"
-        />
       </div>
+      
+      {/* Giỏ hàng và nút login bên phải */}
       <div className="row-view5">
-        <span className="text6">{"+123 45 67 890"}</span>
-        <img
-          src={"https://storage.googleapis.com/tagjs-prod.appspot.com/v1/VY3PPTks6o/u7cc0lma_expires_30_days.png"}
-          className="image3"
-        />
+        <div className="cart-icon">
+          <FontAwesomeIcon icon={faShoppingCart} />
+        </div>
+        <button className="login-button">{"Login"}</button>
       </div>
     </div>
   );
