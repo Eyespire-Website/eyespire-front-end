@@ -98,7 +98,7 @@ export default function LoginPage() {
                             />
                             <span className="logo-text">Eyespire</span>
                         </div>
-                        <button className="signup-btn" onClick={() => navigate("/register")}>Sign Up</button>
+                        <button className="signup-btn" onClick={() => navigate("/signup")}>Sign Up</button>
                     </div>
 
                     {/* Welcome Section */}
@@ -150,7 +150,7 @@ export default function LoginPage() {
                                        onChange={(e) => setRememberMe(e.target.checked)}/>
                                 Remember me
                             </label>
-                            <a href="#" className="forgot-password">
+                            <a href="/forgot" className="forgot-password">
                                 Forgot your password?
                             </a>
                         </div>
