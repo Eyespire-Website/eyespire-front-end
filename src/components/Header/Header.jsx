@@ -2,8 +2,15 @@ import React from "react";
 import "./Header.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faShoppingCart } from '@fortawesome/free-solid-svg-icons';
+import { useNavigate } from 'react-router-dom';
 
 const Header = () => {
+  const navigate = useNavigate();
+
+  const handleLoginClick = () => {
+    navigate('/login');
+  };
+
   return (
     <div className="row-view">
       {/* Logo bên trái */}
@@ -43,7 +50,7 @@ const Header = () => {
         <div className="cart-icon">
           <FontAwesomeIcon icon={faShoppingCart} />
         </div>
-        <button className="login-button">{"Login"}</button>
+        <button className="login-button" onClick={handleLoginClick}>{"Login"}</button>
       </div>
     </div>
   );

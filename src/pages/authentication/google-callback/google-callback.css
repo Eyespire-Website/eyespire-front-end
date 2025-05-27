@@ -1,0 +1,64 @@
+.google-callback-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f8faff;
+}
+
+.callback-content {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+    text-align: center;
+    max-width: 400px;
+    width: 100%;
+}
+
+.loading-spinner {
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+    border-top: 4px solid #1a3c8b;
+    width: 50px;
+    height: 50px;
+    margin: 0 auto 1.5rem;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.error-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: #d32f2f;
+}
+
+h2 {
+    color: #1a3c8b;
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+}
+
+p {
+    color: #4a5568;
+    margin-bottom: 1.5rem;
+}
+
+.back-to-login {
+    background-color: #1a3c8b;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.back-to-login:hover {
+    background-color: #142f6e;
+}
