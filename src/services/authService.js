@@ -20,6 +20,36 @@ const login = async (email, password) => {
   }
 };
 
+const signup = async (name, email, password) => {
+  try {
+    const response = await axios.post(API_URL + 'signup', {
+      name,
+      email,
+      password,
+    });
+
+    return response.data;
+  } catch (error) {
+    // Log rõ lỗi
+    console.error("Lỗi từ server:", error.response?.data);
+    console.error("Status code:", error.response?.status);
+    console.error("Headers:", error.response?.headers);
+
+    // Ném ra lỗi với message backend trả về
+    throw new Error(error.response?.data || "Đã xảy ra lỗi");
+  }
+};
+
+
+const verifyOtp = async (email, otp) => {
+  try {
+    const response = await axios.post(API_URL + 'signup/verify-otp', { email, otp });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
 // Thêm hàm đăng nhập bằng Google
 const loginWithGoogle = async () => {
   try {
@@ -67,11 +97,13 @@ const isLoggedIn = () => {
 
 const authService = {
   login,
+  signup,
   loginWithGoogle,
   handleGoogleCallback,
   logout,
   getCurrentUser,
-  isLoggedIn
+  isLoggedIn,
+  verifyOtp
 };
 
 export default authService;

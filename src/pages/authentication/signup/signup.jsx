@@ -1,9 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import {useState} from "react"
 import "../login/login.css"
-import { useNavigate } from "react-router-dom"
-import { FcGoogle } from 'react-icons/fc'
+import {useNavigate} from "react-router-dom"
+import {FcGoogle} from 'react-icons/fc'
 import signup_image from "../../../assets/login-image.jpg"
 import authService from "../../../services/authService"
 
@@ -28,9 +28,11 @@ export default function SignupPage() {
         }
 
         try {
-            const response = await authService.register(name, email, password)
+            const response = await authService.signup(name, email, password)
             console.log("Signup successful:", response)
-            navigate("/login")
+
+            // ✅ Điều hướng đến trang xác minh OTP, truyền email qua state
+            navigate("/signup/verify-otp", {state: {email}})
         } catch (error) {
             const resMessage =
                 (error.response &&
@@ -43,6 +45,7 @@ export default function SignupPage() {
             setLoading(false)
         }
     }
+
 
     const handleGoogleSignup = async () => {
         setMessage("")
@@ -71,7 +74,7 @@ export default function SignupPage() {
                 <div className="login-content">
                     {/* Header */}
                     <div className="header">
-                        <div className="logo">
+                        <div className="logo" onClick={() => navigate("/")}>
                             <img
                                 src="https://storage.googleapis.com/tagjs-prod.appspot.com/v1/VY3PPTks6o/e8ggwzic_expires_30_days.png"
                                 className="logo-image"
@@ -156,7 +159,7 @@ export default function SignupPage() {
                                 onClick={handleGoogleSignup}
                                 disabled={loading}
                             >
-                                <FcGoogle className="google-icon" />
+                                <FcGoogle className="google-icon"/>
                                 <span>Sign up with Google</span>
                             </button>
                         </div>
