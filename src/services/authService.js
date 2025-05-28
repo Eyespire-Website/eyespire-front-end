@@ -6,7 +6,7 @@ const API_URL = 'http://localhost:8080/api/auth/'; // Thay đổi URL này theo 
 const login = async (email, password) => {
   try {
     const response = await axios.post(API_URL + 'login', {
-      username: email, // Gửi email như username để phù hợp với backend
+      username: email,
       password
     });
 
@@ -16,24 +16,26 @@ const login = async (email, password) => {
 
     return { success: true, data: response.data };
   } catch (error) {
-    // Xử lý thông báo lỗi từ server
     let errorMessage = 'Đã xảy ra lỗi khi đăng nhập';
-    
+
     if (error.response) {
-      // Server trả về response với mã lỗi
-      if (error.response.status === 401) {
-        errorMessage = error.response.data || 'Tên đăng nhập hoặc mật khẩu không đúng';
+      const data = error.response.data;
+
+      if (typeof data === 'string') {
+        errorMessage = data;
+      } else if (typeof data === 'object' && data.message) {
+        errorMessage = data.message;
       } else {
-        errorMessage = error.response.data || `Lỗi ${error.response.status}: ${error.response.statusText}`;
+        errorMessage = `Lỗi ${error.response.status}: ${error.response.statusText}`;
       }
     } else if (error.request) {
-      // Request đã được gửi nhưng không nhận được response
       errorMessage = 'Không thể kết nối đến server';
     }
-    
+
     return { success: false, message: errorMessage };
   }
 };
+
 
 const signup = async (name, email, password) => {
   try {
@@ -58,7 +60,10 @@ const signup = async (name, email, password) => {
 
 const verifyOtp = async (email, otp) => {
   try {
-    const response = await axios.post(API_URL + 'signup/verify-otp', { email, otp });
+    const response = await axios.post(API_URL + 'signup/verify-otp', { email, otp },
+    {
+      withCredentials: true,
+    });
     return response.data;
   } catch (error) {
     throw error;
