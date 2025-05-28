@@ -1,9 +1,9 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Homepage from './pages/homepage';
-import Login from './pages/authentication/login/login';
-import GoogleCallback from './pages/authentication/google-callback/google-callback';
-
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Homepage from "./pages/homepage";
+import Login from "./pages/authentication/login/login";
+import GoogleCallback from "./pages/authentication/google-callback/google-callback";
+import Shoppage from "./pages/shoppage"; // Trang Shop
 function App() {
   return (
     <Router>
@@ -12,6 +12,7 @@ function App() {
           <Route path="/" element={<Homepage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/auth/google/callback" element={<GoogleCallback />} />
+          <Route path="/shop" element={<Shoppage />} /> {/* Trang Shop */}
         </Routes>
       </div>
     </Router>

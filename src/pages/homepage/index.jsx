@@ -15,7 +15,7 @@ const HomePage = () => {
   return (
     <div className="contain">
       <div className="scroll-view">
-        <div 
+        <div
           className="hero-section"
           style={{
             backgroundColor: '#03246B',
@@ -25,13 +25,13 @@ const HomePage = () => {
             minHeight: '100vh',
           }}
         >
-          <div className="overlay" style={{ 
-            position: 'absolute', 
-            top: 0, 
-            left: 0, 
-            right: 0, 
-            bottom: 0, 
-            backgroundColor: 'rgba(0,0,0,0.3)' 
+          <div className="overlay" style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.3)'
           }}></div>
           <Header />
           <Banner />
