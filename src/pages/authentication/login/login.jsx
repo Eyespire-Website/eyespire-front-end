@@ -24,28 +24,30 @@ export default function LoginPage() {
         setLoading(true)
 
         try {
-            const response = await authService.login(email, password)
-            console.log("Login successful:", response)
+            const result = await authService.login(email, password)
             
-            // Lưu thông tin "Remember me" nếu được chọn
-            if (rememberMe) {
-                localStorage.setItem("rememberedEmail", email)
+            if (result.success) {
+                console.log("Login successful:", result.data)
+                
+                // Lưu thông tin "Remember me" nếu được chọn
+                if (rememberMe) {
+                    localStorage.setItem("rememberedEmail", email)
+                } else {
+                    localStorage.removeItem("rememberedEmail")
+                }
+                
+                // Chuyển hướng đến trang chủ sau khi đăng nhập thành công
+                navigate("/")
             } else {
-                localStorage.removeItem("rememberedEmail")
+                // Hiển thị thông báo lỗi từ server
+                setMessage(result.message)
+                setLoading(false)
             }
-            
-            // Chuyển hướng đến trang chủ sau khi đăng nhập thành công
-            navigate("/")
         } catch (error) {
-            const resMessage = 
-                (error.response && 
-                 error.response.data && 
-                 error.response.data.message) ||
-                error.message ||
-                error.toString()
-            
-            setMessage(resMessage)
+            // Xử lý lỗi không mong muốn (ví dụ: lỗi mạng)
+            setMessage("Đã xảy ra lỗi khi kết nối đến server")
             setLoading(false)
+            console.error("Login error:", error)
         }
     }
 
