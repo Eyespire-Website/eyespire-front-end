@@ -31,7 +31,6 @@ export default function SignupPage() {
             const response = await authService.signup(name, email, password)
             console.log("Signup successful:", response)
 
-            // ✅ Điều hướng đến trang xác minh OTP, truyền email qua state
             navigate("/signup/verify-otp", {state: {email}})
         } catch (error) {
             const resMessage =
