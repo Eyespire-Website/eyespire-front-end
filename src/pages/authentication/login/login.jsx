@@ -92,7 +92,7 @@ export default function LoginPage() {
                 <div className="login-content">
                     {/* Header */}
                     <div className="header">
-                        <div className="logo">
+                        <div className="logo" onClick={() => navigate("/")}>
                             <img
                                 src={"https://storage.googleapis.com/tagjs-prod.appspot.com/v1/VY3PPTks6o/e8ggwzic_expires_30_days.png"}
                                 className="logo-image"
