@@ -14,9 +14,24 @@ const login = async (email, password) => {
       localStorage.setItem('user', JSON.stringify(response.data));
     }
 
-    return response.data;
+    return { success: true, data: response.data };
   } catch (error) {
-    throw error;
+    // Xử lý thông báo lỗi từ server
+    let errorMessage = 'Đã xảy ra lỗi khi đăng nhập';
+    
+    if (error.response) {
+      // Server trả về response với mã lỗi
+      if (error.response.status === 401) {
+        errorMessage = error.response.data || 'Tên đăng nhập hoặc mật khẩu không đúng';
+      } else {
+        errorMessage = error.response.data || `Lỗi ${error.response.status}: ${error.response.statusText}`;
+      }
+    } else if (error.request) {
+      // Request đã được gửi nhưng không nhận được response
+      errorMessage = 'Không thể kết nối đến server';
+    }
+    
+    return { success: false, message: errorMessage };
   }
 };
 
