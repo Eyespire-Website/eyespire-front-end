@@ -1,37 +1,42 @@
-"use client"
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import authService from "../../../services/authService";
+import "../login/login.css";
+import "./forgot-password.css";
+import login_image from "../../../assets/login-image.jpg";
 
-import { useState } from "react"
-import "../login/login.css"
-import { useNavigate } from "react-router-dom"
-import forgot_image from "../../../assets/login-image.jpg"
-import authService from "../../../services/authService"
+export default function ForgotPasswordPage() {
+    const [email, setEmail] = useState("");
+    const [message, setMessage] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [success, setSuccess] = useState(false);
+    const navigate = useNavigate();
 
-export default function ForgotPassword() {
-    const [email, setEmail] = useState("")
-    const [message, setMessage] = useState("")
-    const [loading, setLoading] = useState(false)
-    const navigate = useNavigate()
-
-    const handleForgotPassword = async (e) => {
-        e.preventDefault()
-        setMessage("")
-        setLoading(true)
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setMessage("");
+        setLoading(true);
 
         try {
-            const response = await authService.forgotPassword(email)
-            setMessage("Password reset link has been sent to your email.")
+            const result = await authService.forgotPassword(email);
+            
+            if (result.success) {
+                setSuccess(true);
+                setMessage("Đã gửi mã OTP đến email của bạn. Vui lòng kiểm tra hộp thư để lấy mã xác thực.");
+                // Chuyển hướng đến trang reset-password với email đã nhập
+                setTimeout(() => {
+                    navigate(`/reset-password?email=${encodeURIComponent(email)}`);
+                }, 2000);
+            } else {
+                setMessage(result.message);
+            }
         } catch (error) {
-            const resMessage =
-                (error.response &&
-                    error.response.data &&
-                    error.response.data.message) ||
-                error.message ||
-                error.toString()
-            setMessage(resMessage)
+            setMessage("Đã xảy ra lỗi khi gửi yêu cầu đặt lại mật khẩu");
+            console.error("Forgot password error:", error);
         } finally {
-            setLoading(false)
+            setLoading(false);
         }
-    }
+    };
 
     return (
         <div className="login-container">
@@ -48,36 +53,53 @@ export default function ForgotPassword() {
                             />
                             <span className="logo-text">Eyespire</span>
                         </div>
-                        <button className="signup-btn" onClick={() => navigate("/login")}>Log In</button>
+                        <button className="signup-btn" onClick={() => navigate("/login")}>Đăng nhập</button>
                     </div>
 
-                    {/* Forgot Password Section */}
+                    {/* Welcome Section */}
                     <div className="welcome-section">
-                        <h1>Forgot your password?</h1>
-                        <p>No worries. Enter your email to reset it.</p>
+                        <h1>Quên mật khẩu</h1>
+                        <p>Nhập email của bạn để nhận mã OTP đặt lại mật khẩu</p>
                     </div>
 
-                    <form onSubmit={handleForgotPassword} className="login-form">
-                        <div className="form-group">
-                            <label htmlFor="email">Email Address</label>
-                            <input
-                                type="email"
-                                id="email"
-                                placeholder="Enter your email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                required
-                            />
+                    {/* Forgot Password Form */}
+                    {!success ? (
+                        <form onSubmit={handleSubmit} className="login-form">
+                            <div className="form-group">
+                                <label htmlFor="email">Email</label>
+                                <input
+                                    type="email"
+                                    id="email"
+                                    placeholder="Nhập email của bạn"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    required
+                                />
+                            </div>
+
+                            {message && (
+                                <div className={`message ${success ? "success-message" : "error-message"}`}>
+                                    {message}
+                                </div>
+                            )}
+
+                            <button type="submit" className="login-btn" disabled={loading}>
+                                {loading ? "Đang xử lý..." : "Gửi mã OTP"}
+                            </button>
+
+                            <div className="auth-links">
+                                <p>
+                                    <a href="/login">Quay lại đăng nhập</a>
+                                </p>
+                            </div>
+                        </form>
+                    ) : (
+                        <div className="success-container">
+                            <div className="success-icon">✓</div>
+                            <div className="success-message">{message}</div>
+                            <p className="redirect-message">Đang chuyển hướng đến trang đặt lại mật khẩu...</p>
                         </div>
-
-                        {message && (
-                            <div className="error-message">{message}</div>
-                        )}
-
-                        <button type="submit" className="login-btn" disabled={loading}>
-                            {loading ? "Sending..." : "Send Reset Link"}
-                        </button>
-                    </form>
+                    )}
                 </div>
 
                 <div className="footer">
@@ -88,16 +110,16 @@ export default function ForgotPassword() {
             {/* Right Panel - Image */}
             <div className="image-panel">
                 <img
-                    src={forgot_image}
-                    alt="Forgot password illustration"
+                    src={login_image}
+                    alt="Eye care professional"
                     className="hero-image"
                 />
                 <div className="overlay-content">
-                    <div className="greeting">Reset your password</div>
-                    <div className="time">with Eyespire</div>
-                    <div className="quote">"We help you see — and access — again."</div>
+                    <div className="greeting">Chào mừng đến với</div>
+                    <div className="time">Eyespire</div>
+                    <div className="quote">"Chăm sóc thị lực của bạn với các chuyên gia hàng đầu."</div>
                 </div>
             </div>
         </div>
-    )
+    );
 }

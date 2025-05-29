@@ -8,6 +8,7 @@ import signup_image from "../../../assets/login-image.jpg"
 import authService from "../../../services/authService"
 
 export default function SignupPage() {
+    const [username, setUsername] = useState("")
     const [name, setName] = useState("")
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
@@ -28,7 +29,7 @@ export default function SignupPage() {
         }
 
         try {
-            const response = await authService.signup(name, email, password)
+            const response = await authService.signup(username, name, email, password)
             console.log("Signup successful:", response)
 
             navigate("/signup/verify-otp", {state: {email}})
@@ -92,6 +93,18 @@ export default function SignupPage() {
 
                     {/* Signup Form */}
                     <form onSubmit={handleSignup} className="login-form">
+                        <div className="form-group">
+                            <label htmlFor="username">Username</label>
+                            <input
+                                type="text"
+                                id="username"
+                                placeholder="Enter your username"
+                                value={username}
+                                onChange={(e) => setUsername(e.target.value)}
+                                required
+                            />
+                        </div>
+
                         <div className="form-group">
                             <label htmlFor="name">Full Name</label>
                             <input

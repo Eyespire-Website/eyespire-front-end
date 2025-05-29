@@ -37,9 +37,10 @@ const login = async (email, password) => {
 };
 
 
-const signup = async (name, email, password) => {
+const signup = async (username, name, email, password) => {
   try {
     const response = await axios.post(API_URL + 'signup', {
+      username,
       name,
       email,
       password,
@@ -115,6 +116,54 @@ const isLoggedIn = () => {
   return getCurrentUser() !== null;
 };
 
+const forgotPassword = async (email) => {
+  try {
+    const response = await axios.post(API_URL + 'forgot-password', { email });
+    return { success: true, message: response.data };
+  } catch (error) {
+    let errorMessage = 'Đã xảy ra lỗi khi gửi yêu cầu đặt lại mật khẩu';
+
+    if (error.response) {
+      const data = error.response.data;
+      if (typeof data === 'string') {
+        errorMessage = data;
+      } else if (typeof data === 'object' && data.message) {
+        errorMessage = data.message;
+      } else {
+        errorMessage = `Lỗi ${error.response.status}: ${error.response.statusText}`;
+      }
+    } else if (error.request) {
+      errorMessage = 'Không thể kết nối đến server';
+    }
+
+    return { success: false, message: errorMessage };
+  }
+};
+
+const resetPassword = async (email, otp, newPassword) => {
+  try {
+    const response = await axios.post(API_URL + 'reset-password', { email, otp, newPassword });
+    return { success: true, message: response.data };
+  } catch (error) {
+    let errorMessage = 'Đã xảy ra lỗi khi đặt lại mật khẩu';
+
+    if (error.response) {
+      const data = error.response.data;
+      if (typeof data === 'string') {
+        errorMessage = data;
+      } else if (typeof data === 'object' && data.message) {
+        errorMessage = data.message;
+      } else {
+        errorMessage = `Lỗi ${error.response.status}: ${error.response.statusText}`;
+      }
+    } else if (error.request) {
+      errorMessage = 'Không thể kết nối đến server';
+    }
+
+    return { success: false, message: errorMessage };
+  }
+};
+
 const authService = {
   login,
   signup,
@@ -123,7 +172,9 @@ const authService = {
   logout,
   getCurrentUser,
   isLoggedIn,
-  verifyOtp
+  verifyOtp,
+  forgotPassword,
+  resetPassword
 };
 
 export default authService;
