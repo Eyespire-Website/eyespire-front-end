@@ -3,6 +3,27 @@ import authService from './authService';
 
 const API_URL = 'http://localhost:8080/api';
 
+// Tạo instance axios với cấu hình mặc định
+const axiosInstance = axios.create({
+  baseURL: API_URL,
+  withCredentials: true
+});
+
+// Thêm interceptor để tự động thêm token vào header
+axiosInstance.interceptors.request.use(
+  (config) => {
+    const user = authService.getCurrentUser();
+    if (user) {
+      // Thêm userId vào header để backend có thể xác thực
+      config.headers['User-Id'] = user.id;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
 const userService = {
   // Lấy thông tin người dùng hiện tại
   getCurrentUserInfo: async () => {
@@ -12,22 +33,19 @@ const userService = {
         throw new Error('Không tìm thấy thông tin người dùng');
       }
 
-      const response = await axios.get(
-        `${API_URL}/users/${currentUser.id}`,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            // Thêm authorization header nếu cần
-          }
-        }
-      );
+      const response = await axiosInstance.get(`/users/${currentUser.id}`);
 
       // Cập nhật thông tin người dùng trong localStorage
       if (response.data) {
         const updatedUser = {
           ...currentUser,
-          ...response.data
+          ...response.data,
+          // Đảm bảo giữ nguyên trạng thái isGoogleAccount từ localStorage
+          isGoogleAccount: response.data.isGoogleAccount !== undefined 
+            ? response.data.isGoogleAccount 
+            : currentUser.isGoogleAccount
         };
+        console.log("Cập nhật user trong localStorage:", updatedUser);
         localStorage.setItem('user', JSON.stringify(updatedUser));
       }
 
@@ -46,16 +64,7 @@ const userService = {
         throw new Error('Không tìm thấy thông tin người dùng');
       }
 
-      const response = await axios.put(
-        `${API_URL}/users/${currentUser.id}`,
-        userData,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            // Thêm authorization header nếu cần
-          }
-        }
-      );
+      const response = await axiosInstance.put(`/users/${currentUser.id}`, userData);
 
       // Cập nhật thông tin người dùng trong localStorage
       if (response.data) {
@@ -81,15 +90,9 @@ const userService = {
         throw new Error('Không tìm thấy thông tin người dùng');
       }
 
-      const response = await axios.put(
-        `${API_URL}/users/${currentUser.id}/change-password`,
-        passwordData,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            // Thêm authorization header nếu cần
-          }
-        }
+      const response = await axiosInstance.put(
+        `/users/${currentUser.id}/change-password`,
+        passwordData
       );
 
       return response.data;
@@ -107,13 +110,12 @@ const userService = {
         throw new Error('Không tìm thấy thông tin người dùng');
       }
 
-      const response = await axios.put(
-        `${API_URL}/users/${currentUser.id}/avatar`,
+      const response = await axiosInstance.put(
+        `/users/${currentUser.id}/avatar`,
         formData,
         {
           headers: {
             'Content-Type': 'multipart/form-data',
-            // Thêm authorization header nếu cần
           }
         }
       );

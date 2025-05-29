@@ -42,7 +42,10 @@ export default function ProfilePage() {
     // Kiểm tra xem người dùng đăng nhập bằng Google hay không
     const isGoogleAccount = () => {
         const currentUser = authService.getCurrentUser();
-        return currentUser && currentUser.isGoogleAccount;
+        return currentUser && (
+            currentUser.isGoogleAccount === true || 
+            currentUser.isGoogleAccount === "true"
+        );
     };
 
     // Hàm xử lý URL avatar

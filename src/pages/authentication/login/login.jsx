@@ -112,9 +112,9 @@ export default function LoginPage() {
                     {/* Login Form */}
                     <form onSubmit={handleLogin} className="login-form">
                         <div className="form-group">
-                            <label htmlFor="email">Email</label>
+                            <label htmlFor="email">Email or Username</label>
                             <input
-                                type="email"
+                                type="text"
                                 id="email"
                                 placeholder="Enter Email or Username"
                                 value={email}
@@ -152,7 +152,7 @@ export default function LoginPage() {
                                        onChange={(e) => setRememberMe(e.target.checked)}/>
                                 Remember me
                             </label>
-                            <a href="/forgot" className="forgot-password">
+                            <a href="/forgot-password" className="forgot-password">
                                 Forgot your password?
                             </a>
                         </div>
