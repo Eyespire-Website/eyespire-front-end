@@ -5,6 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faShoppingCart, faUser, faSignOutAlt, faChevronDown } from '@fortawesome/free-solid-svg-icons';
 import { useNavigate } from 'react-router-dom';
 import authService from "../../services/authService";
+import { Link } from 'react-router-dom';
 
 const Header = () => {
   const navigate = useNavigate();
@@ -137,7 +138,11 @@ const Header = () => {
             <span className="text2">{"Home"}</span>
             <span className="text3">{""}</span>
           </div>
-          <span className="text4">{"Services"}</span>
+
+          <Link to="/services" className="service-link">
+            <span className="text4">{"Services"}</span>
+          </Link>
+
           <div className="row-view3">
             <span className="text5">{"Doctors"}</span>
             <span className="text3">{""}</span>
