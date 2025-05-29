@@ -115,9 +115,9 @@ export default function ForgotPasswordPage() {
                     className="hero-image"
                 />
                 <div className="overlay-content">
-                    <div className="greeting">Chào mừng đến với</div>
+                    <div className="greeting">Welcome to</div>
                     <div className="time">Eyespire</div>
-                    <div className="quote">"Chăm sóc thị lực của bạn với các chuyên gia hàng đầu."</div>
+                    <div className="quote">"The best eye doctors & technology for your vision care."</div>
                 </div>
             </div>
         </div>
