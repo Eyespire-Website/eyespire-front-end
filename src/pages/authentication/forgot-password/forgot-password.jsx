@@ -19,7 +19,7 @@ export default function ForgotPasswordPage() {
 
         try {
             const result = await authService.forgotPassword(email);
-
+            
             if (result.success) {
                 setSuccess(true);
                 setMessage("Đã gửi mã OTP đến email của bạn. Vui lòng kiểm tra hộp thư để lấy mã xác thực.");

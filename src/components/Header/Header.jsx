@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faShoppingCart, faUser, faSignOutAlt, faChevronDown } from '@fortawesome/free-solid-svg-icons';
 import { useNavigate } from 'react-router-dom';
 import authService from "../../services/authService";
-import { Link } from "react-router-dom";
+
 const Header = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
@@ -17,17 +17,17 @@ const Header = () => {
   // Hàm xử lý URL avatar
   const getAvatarUrl = (url) => {
     if (!url) return null;
-
+    
     // Nếu là URL đầy đủ (bắt đầu bằng http hoặc https)
     if (url.startsWith('http://') || url.startsWith('https://')) {
       return url;
     }
-
+    
     // Nếu là đường dẫn tương đối, thêm base URL
     if (url.startsWith('/')) {
       return `http://localhost:8080${url}`;
     }
-
+    
     // Trường hợp khác
     return url;
   };
@@ -43,8 +43,8 @@ const Header = () => {
   useEffect(() => {
     // Xử lý click bên ngoài dropdown để đóng dropdown
     const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target) &&
-        avatarRef.current && !avatarRef.current.contains(event.target)) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target) && 
+          avatarRef.current && !avatarRef.current.contains(event.target)) {
         setDropdownOpen(false);
       }
     };
@@ -87,9 +87,9 @@ const Header = () => {
   // Render dropdown portal
   const renderDropdownPortal = () => {
     if (!dropdownOpen) return null;
-
+    
     return ReactDOM.createPortal(
-      <div
+      <div 
         className="dropdown-menu-absolute"
         ref={dropdownRef}
         style={{
@@ -129,7 +129,7 @@ const Header = () => {
         />
         <span className="text">{"Eyespire"}</span>
       </div>
-
+      
       {/* Menu điều hướng ở giữa */}
       <div className="column2">
         <div className="row-view5">
@@ -142,23 +142,23 @@ const Header = () => {
             <span className="text5">{"Doctors"}</span>
             <span className="text3">{""}</span>
           </div>
-          <Link to="/shop" className="row-view3">
+          <div className="row-view3">
             <span className="text5">{"Shop"}</span>
             <span className="text3">{""}</span>
-          </Link>
+          </div>
           <div className="row-view3">
             <span className="text5">{"About"}</span>
             <span className="text3">{""}</span>
           </div>
         </div>
       </div>
-
+      
       {/* Giỏ hàng và nút login/avatar bên phải */}
       <div className="row-view5">
         <div className="cart-icon">
           <FontAwesomeIcon icon={faShoppingCart} />
         </div>
-
+        
         {user ? (
           <div className="user-profile">
             <div className="avatar-container" onClick={toggleDropdown} ref={avatarRef}>
