@@ -11,6 +11,7 @@ import ResetPassword from './pages/authentication/reset-password/reset-password'
 import GoogleCallback from './pages/authentication/google-callback/google-callback';
 import ProfilePage from './pages/dashboard/patient-dashboard/profile';
 import EyeServices from './pages/servicepage/EyeServices';
+import AboutPage from './pages/aboutPage/about';  // Kết hợp cả hai import nếu cần
 
 function App() {
   return (
@@ -36,7 +37,9 @@ function App() {
           <Route path="/signup/verify-otp" element={<VerifyOtpPage />} />
           <Route path="/auth/google/callback" element={<GoogleCallback />} />
           <Route path="/dashboard/profile" element={<ProfilePage />} />
-          <Route path="/services" element={<EyeServices />} />
+            <Route path="/services" element={<EyeServices />} />
+            <Route path="/about" element={<AboutPage />} />
+
         </Routes>
       </div>
     </Router>

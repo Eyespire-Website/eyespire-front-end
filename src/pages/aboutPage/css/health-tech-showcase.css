@@ -1,0 +1,124 @@
+.medical-tech-container {
+    background-color: white;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+}
+
+.medical-tech-wrapper {
+    max-width: 1152px;
+    margin: 0 auto;
+    padding: 48px 32px;
+}
+
+.medical-tech-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 80px;
+    align-items: center;
+}
+
+@media (min-width: 1024px) {
+    .medical-tech-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.medical-tech-content {
+    display: flex;
+    flex-direction: column;
+    gap: 48px;
+}
+
+.medical-tech-header {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.medical-tech-title {
+    font-size: 3rem;
+    font-weight: bold;
+    color: #0853f4;
+    line-height: 1.1;
+    margin: 0;
+}
+
+@media (min-width: 1024px) {
+    .medical-tech-title {
+        font-size: 3.75rem;
+    }
+}
+
+.medical-tech-description {
+    color: #6b7280;
+    font-size: 1.125rem;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.medical-tech-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+.medical-tech-stat-item {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.medical-tech-stat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.medical-tech-stat-label {
+    color: #1f2937;
+    font-weight: 500;
+    font-size: 1.125rem;
+}
+
+.medical-tech-stat-value {
+    color: #1f2937;
+    font-weight: bold;
+    font-size: 1.125rem;
+}
+
+.medical-tech-progress-bar {
+    width: 100%;
+    background-color: #e5e7eb;
+    border-radius: 9999px;
+    height: 16px;
+}
+
+.medical-tech-progress-fill {
+    background-color: #0853f4;
+    height: 16px;
+    border-radius: 9999px;
+    transition: width 0.5s ease-in-out;
+}
+
+.medical-tech-visual {
+    display: flex;
+    justify-content: center;
+}
+
+@media (min-width: 1024px) {
+    .medical-tech-visual {
+        justify-content: flex-end;
+    }
+}
+
+.medical-tech-circle {
+    width: 384px;
+    height: 384px;
+    border-radius: 50%;
+    position: relative;
+    overflow: hidden;
+    background-image: url('https://i.pinimg.com/736x/64/93/a3/6493a3a4fb8f03e6e1fa09bae7f4954e.jpg'); /* Gắn ảnh ở đây */
+    background-size: cover; /* Đảm bảo ảnh phủ đầy vòng tròn */
+    background-position: center center; /* Căn giữa ảnh */
+}

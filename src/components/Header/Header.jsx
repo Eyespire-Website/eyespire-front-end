@@ -85,6 +85,12 @@ const Header = () => {
     setDropdownOpen(!dropdownOpen);
   };
 
+  const handleAboutClick = () => {
+    navigate('/about'); // Điều hướng tới trang About khi người dùng click vào About
+  };
+
+
+
   // Render dropdown portal
   const renderDropdownPortal = () => {
     if (!dropdownOpen) return null;
@@ -151,10 +157,16 @@ const Header = () => {
             <span className="text5">{"Shop"}</span>
             <span className="text3">{""}</span>
           </div>
+
+          {/* Nút About, sử dụng button với onClick */}
+          {/* Nút About với lớp btn-about */}
           <div className="row-view3">
-            <span className="text5">{"About"}</span>
+            <button className="btn-about" onClick={handleAboutClick}>
+              {"About"}
+            </button>
             <span className="text3">{""}</span>
           </div>
+
         </div>
       </div>
       

@@ -1,0 +1,192 @@
+.clinic-container {
+    background-color: #ffffff; /* Màu nền sáng cho toàn bộ container */
+    min-height: 100vh;
+    padding: 4rem 2rem; /* Padding đều cho container */
+}
+
+.clinic-wrapper {
+    max-width: 80rem; /* Đảm bảo chiều rộng tối đa của wrapper */
+    margin: 0 auto;
+}
+
+.clinic-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Đặt các cột chia đều */
+    gap: 2rem; /* Giảm khoảng cách giữa ảnh và nội dung */
+}
+
+@media (min-width: 1024px) {
+    .clinic-grid {
+        grid-template-columns: 1fr 1fr; /* Màn hình rộng hiển thị 2 cột */
+    }
+}
+
+/* Decorative Section */
+.decorative-section {
+    margin-right: -20px; /* Giảm khoảng cách bên phải của ảnh */
+}
+
+.decorative-image {
+    width: 100%;
+    height: 670px; /* Chiều cao có thể thay đổi tùy nhu cầu */
+    background-size: 120%; /* Phóng to ảnh lên 120% */
+    background-position: center; /* Đảm bảo ảnh căn giữa */
+    background-repeat: no-repeat; /* Không lặp lại ảnh */
+    transition: background-size 0.3s ease; /* Hiệu ứng chuyển động khi phóng to */
+}
+
+/* Đảm bảo hình ảnh không bị tràn */
+.decorative-image img {
+    width: 100%;
+    height: 100%; /* Đảm bảo hình ảnh không bị méo */
+    object-fit: cover; /* Giữ tỷ lệ hình ảnh */
+}
+
+.pattern-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.pattern-stripe {
+    position: absolute;
+    height: 100%;
+    width: 2rem;
+    opacity: 0.6;
+    background: repeating-linear-gradient(45deg, transparent, transparent 8px, #ff9999 8px, #ff9999 16px); /* Mẫu nền với sọc chéo */
+    transform: skew(-15deg);
+}
+
+/* Content Section */
+.content-section {
+    margin-left: -10px; /* Giảm khoảng cách bên trái của nội dung */
+}
+
+.content-header {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    align-items: flex-start; /* Căn trái phần tiêu đề */
+}
+
+.main-heading {
+    font-size: 3rem; /* Tăng kích thước chữ */
+    font-weight: bold;
+    color: #021b50;
+    margin-bottom: 0.5rem;
+    line-height: 1.2;
+}
+
+@media (min-width: 1024px) {
+    .main-heading {
+        font-size: 3rem; /* Tăng kích thước chữ cho màn hình lớn */
+    }
+}
+
+.brand-name {
+    color: #0853f4;
+}
+
+.description-text {
+    font-size: 1.125rem;
+    line-height: 1.75;
+    color: #303a4c;
+    text-align: left; /* Đảm bảo phần mô tả cũng căn trái */
+}
+
+/* Features Section */
+.features-section {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem; /* Giãn cách giữa các mục */
+    align-items: flex-start; /* Căn trái các mục */
+}
+
+.feature-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.feature-icon {
+    width: 3.5rem; /* Tăng kích thước biểu tượng */
+    height: 3.5rem; /* Tăng kích thước biểu tượng */
+    background-color: #0853f4;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon {
+    width: 1.75rem;
+    height: 1.75rem;
+    color: white;
+}
+
+.feature-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.feature-title {
+    font-weight: 600;
+    color: #021b50;
+    font-size: 1.25rem; /* Tăng kích thước chữ */
+    margin: 0;
+    line-height: 1.2;
+}
+
+/* Statistics Section */
+.stats-container {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.stats-circle {
+    width: 12rem; /* Giữ nguyên kích thước vòng tròn */
+    height: 12rem;
+    background-color: #0853f4;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    margin-top: -7rem; /* Dịch vòng tròn lên cao một chút */
+}
+
+.stats-number {
+    font-size: 3rem;
+    font-weight: bold;
+}
+
+.stats-text {
+    font-size: 0.875rem;
+    text-align: center;
+    margin-top: 0.5rem;
+    line-height: 1.25;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1023px) {
+    .stats-container {
+        justify-content: center;
+        margin-top: 2rem;
+    }
+
+    .clinic-container {
+        padding: 2rem 1rem;
+    }
+
+    .main-heading {
+        text-align: center;
+    }
+
+    .description-text {
+        text-align: center;
+    }
+}

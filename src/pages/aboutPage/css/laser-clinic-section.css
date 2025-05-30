@@ -1,0 +1,152 @@
+/* Container chính */
+.laser-clinic-container {
+    display: flex;
+    min-height: 50vh;
+}
+
+/* Phần trang trí bên trái */
+.decorative-section-custom {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background-color: #dbe6ee;
+    background-image: url('https://i.pinimg.com/736x/23/68/87/236887aff66a2ec343f39eadd281dd96.jpg'); /* Gắn ảnh ở đây */
+    background-size: cover; /* Đảm bảo ảnh phủ toàn bộ khu vực */
+    background-position: center center; /* Căn giữa ảnh */
+    background-repeat: no-repeat; /* Không lặp lại ảnh */
+}
+
+.pattern-overlay-custom {
+    position: absolute;
+    inset: 0;
+}
+
+.pattern-svg-custom {
+    width: 100%;
+    height: 100%;
+}
+
+/* Phần nội dung bên phải */
+.content-section-custom {
+    flex: 1;
+    background-color: white;
+    display: flex;
+    align-items: center;
+}
+
+.content-wrapper-custom {
+    max-width: 32rem;
+    margin: 0 auto;
+    padding: 3rem 2rem;
+}
+
+/* Tiêu đề chính */
+.main-title-custom {
+    font-size: 2.25rem;
+    font-weight: bold;
+    margin-bottom: 1.5rem;
+    line-height: 1.2;
+}
+
+.title-dark-custom {
+    color: #021b50;
+}
+
+.title-blue-custom {
+    color: #0853f4;
+}
+
+/* Mô tả */
+.description-custom {
+    color: #303a4c;
+    margin-bottom: 2rem;
+    line-height: 1.6;
+}
+
+/* Container giờ làm việc */
+.hours-container-custom {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.clock-icon-custom {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    background-color: #0853f4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.clock-svg-custom {
+    width: 1.5rem;
+    height: 1.5rem;
+    color: white;
+}
+
+.hours-text-custom {
+    display: flex;
+    flex-direction: column;
+}
+
+.hours-line-custom {
+    font-weight: 600;
+    color: #021b50;
+    margin-bottom: 0.25rem;
+}
+
+.hours-line-custom:last-child {
+    margin-bottom: 0;
+}
+
+/* Nút đặt lịch */
+.appointment-button-custom {
+    background: none;
+    border: none;
+    padding: 0;
+    font-weight: 600;
+    font-size: 1rem;
+    color: #0853f4;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    transition: all 0.2s ease;
+}
+
+.appointment-button-custom:hover {
+    color: #0642d0;
+}
+
+.arrow-icon-custom {
+    width: 1rem;
+    height: 1rem;
+    margin-left: 0.5rem;
+    transition: transform 0.2s ease;
+}
+
+.appointment-button-custom:hover .arrow-icon-custom {
+    transform: translateX(0.25rem);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .laser-clinic-container {
+        flex-direction: column;
+    }
+
+    .decorative-section-custom {
+        min-height: 200px;
+    }
+
+    .main-title-custom {
+        font-size: 1.875rem;
+    }
+
+    .content-wrapper-custom {
+        padding: 2rem 1rem;
+    }
+}

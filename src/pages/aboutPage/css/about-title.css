@@ -1,0 +1,70 @@
+/* CSS cho phần About Header */
+.about-header {
+    background-color: #03246b;
+    min-height: 300px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px 30px;
+    padding-bottom: 40px;
+    z-index: 1; /* Đảm bảo phần title không chồng lên header */
+    margin-top: 0; /* Đảm bảo không có margin thừa */
+    position: relative; /* Đảm bảo z-index hoạt động */
+
+}
+
+.breadcrumb-nav {
+    margin-bottom: 2rem;
+}
+
+.breadcrumb-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #ffffff;
+}
+
+.breadcrumb-link {
+    font-size: 0.875rem;
+    color: #ffffff;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.breadcrumb-link:hover {
+    color: #9bbafc;
+}
+
+.breadcrumb-icon {
+    width: 1rem;
+    height: 1rem;
+    color: #9bbafc;
+}
+
+.breadcrumb-current {
+    font-size: 0.875rem;
+    color: #9bbafc;
+}
+
+.main-headingg {
+    color: #ffffff;
+    font-size: 2.5rem;
+    font-weight: bold;
+    text-align: center;
+    max-width: 56rem;
+    line-height: 1.2;
+}
+
+/* Responsive Design */
+@media (min-width: 768px) {
+    .main-heading {
+        font-size: 3rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    .main-heading {
+        font-size: 3.75rem;
+    }
+}

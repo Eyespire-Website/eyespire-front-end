@@ -1,0 +1,105 @@
+.medical-banner1 {
+    background-color: #03246b;
+    color: white;
+    padding: 4rem 1.5rem;
+}
+
+.banner-container1 {
+    max-width: 80rem;
+    margin: 0 auto;
+}
+
+.banner-grid1 {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 3rem;
+    align-items: center;
+}
+
+@media (min-width: 768px) {
+    .banner-grid1 {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.left-section1 {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.main-heading-custom1 {
+    font-size: 2rem;
+    font-weight: bold;
+    line-height: 1.2;
+    margin: 0;
+    color: #f5f5f5; /* Màu chữ sáng */
+}
+
+@media (min-width: 768px) {
+    .main-heading-custom1 {
+        font-size: 2.5rem;
+    }
+}
+
+.appointment-button1 {
+    background-color: #0853f4;
+    color: white;
+    padding: 0.75rem 2rem;
+    border-radius: 9999px;
+    font-size: 1.125rem;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    align-self: flex-start;
+}
+
+.appointment-button1:hover {
+    background-color: rgba(8, 83, 244, 0.9);
+}
+
+.right-section1 {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.secondary-heading-custom1 {
+    font-size: 1.5rem;
+    font-weight: bold;
+    line-height: 1.2;
+    margin: 0;
+    color: #f5f5f5; /* Màu chữ sáng */
+}
+
+@media (min-width: 768px) {
+    .secondary-heading-custom1 {
+        font-size: 1.875rem;
+    }
+}
+
+.phone-container1 {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.phone-icon-custom1 {
+    width: 2rem;
+    height: 2rem;
+    color: #9bbafc;
+}
+
+.phone-number-custom1 {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin: 0;
+    color: #f5f5f5; /* Màu chữ sáng */
+}
+
+@media (min-width: 768px) {
+    .phone-number-custom1 {
+        font-size: 1.875rem;
+    }
+}
