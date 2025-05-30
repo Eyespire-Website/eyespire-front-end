@@ -1,0 +1,204 @@
+.medical-landing {
+    background-color: white;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 48px 16px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 32px;
+}
+
+@media (min-width: 1024px) {
+    .grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.content-section {
+    display: flex;
+    flex-direction: column;
+}
+
+.main-title {
+    font-size: 3rem;
+    font-weight: bold;
+    margin-bottom: 16px;
+    line-height: 1.1;
+}
+
+@media (min-width: 1024px) {
+    .main-title {
+        font-size: 3.5rem;
+    }
+}
+
+.title-dark {
+    color: #021b50;
+}
+
+.title-blue {
+    color: #0853f4;
+}
+
+.description {
+    color: #979797;
+    margin-bottom: 40px;
+    max-width: 512px;
+    line-height: 1.6;
+    font-size: 1.1rem;
+}
+
+.features {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    margin-bottom: 40px;
+}
+
+.feature-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.feature-icon {
+    width: 48px;
+    height: 48px;
+    background-color: #0853f4;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon {
+    width: 24px;
+    height: 24px;
+    color: white;
+}
+
+.feature-text {
+    color: #021b50;
+    font-weight: 500;
+    font-size: 1.1rem;
+}
+
+.image-placeholder {
+    position: relative;
+    overflow: hidden;
+    background-color: #f0f0f0;
+}
+
+.left-image {
+    width: 100%;
+    height: 320px;
+    margin-bottom: 40px;
+}
+
+.main-image {
+    width: 100%;
+    height: 384px;
+    margin-bottom: 40px;
+}
+
+.diagonal-pattern {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: repeating-linear-gradient(45deg, #f0f0f0 0px, #f0f0f0 10px, #ff9999 10px, #ff9999 20px);
+}
+
+.right-section {
+    display: flex;
+    flex-direction: column;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    margin-bottom: 40px;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-number {
+    font-size: 3rem;
+    font-weight: bold;
+    color: #021b50;
+    margin-bottom: 8px;
+    line-height: 1;
+}
+
+@media (min-width: 1024px) {
+    .stat-number {
+        font-size: 3.5rem;
+    }
+}
+
+.stat-description {
+    color: #979797;
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+.cta-container {
+    position: relative;
+    width: fit-content;
+}
+
+.cta-button {
+    background-color: #0853f4;
+    color: white;
+    padding: 24px 32px;
+    font-size: 1.125rem;
+    border-radius: 9999px;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.3s ease;
+}
+
+.cta-button:hover {
+    background-color: #021b50;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .main-title {
+        font-size: 2.5rem;
+    }
+
+    .stat-number {
+        font-size: 2.5rem;
+    }
+
+    .features {
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+}
+/* CSS cho hình ảnh */
+.image {
+    width: 100%;          /* Đảm bảo hình ảnh chiếm 100% chiều rộng của phần tử chứa */
+    height: 100%;         /* Đảm bảo hình ảnh chiếm 100% chiều cao của phần tử chứa */
+    object-fit: cover;    /* Giữ tỷ lệ của hình ảnh, cắt bớt phần dư nếu cần thiết */
+    object-position: center; /* Căn giữa hình ảnh trong phần tử */
+}

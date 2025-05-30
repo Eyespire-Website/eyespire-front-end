@@ -1,0 +1,330 @@
+.clinic-container {
+    min-height: 100vh;
+    position: relative;
+    overflow: hidden;
+    background-color: #FFFFFF;
+}
+
+.pixelated-background {
+    position: absolute;
+    inset: 0;
+}
+
+.pixel-grid {
+    display: grid;
+    grid-template-columns: repeat(20, minmax(0, 1fr));
+    gap: 0;
+    height: 100%;
+    width: 100%;
+    opacity: 0.6;
+}
+
+.pixel {
+    aspect-ratio: 1;
+}
+
+.pixel-red-300 {
+    background-color: #fca5a5;
+}
+
+.pixel-red-200 {
+    background-color: #fecaca;
+}
+
+.pixel-pink-200 {
+    background-color: #fbcfe8;
+}
+
+.pixel-pink-100 {
+    background-color: #fce7f3;
+}
+
+.main-content {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 4rem 1rem;
+}
+
+.heading-section {
+    text-align: center;
+    margin-bottom: 4rem;
+    max-width: 64rem;
+}
+
+.main-heading {
+    font-size: 2.25rem;
+    font-weight: bold;
+    color: #021b50;
+    line-height: 1.1;
+}
+
+.heading-highlight {
+    color: #0853f4;
+}
+
+.large-container {
+    width: 100%;
+    max-width: 80rem;
+    background-color: white;
+    border-radius: 1.5rem;
+    padding: 2rem;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.container-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+/* Tăng kích thước khung video */
+.video-frame {
+    background-color: #f9fafb;
+    border-radius: 1rem;
+    padding: 2rem;
+    border: 1px solid #f3f4f6;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    width: 100%; /* Đảm bảo video chiếm toàn bộ chiều rộng khung */
+    max-width: 100%; /* Đảm bảo video chiếm toàn bộ chiều rộng khung */
+    margin-bottom: 3rem; /* Thêm khoảng cách dưới video */
+}
+
+
+/* Video content */
+.video-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-height: 400px; /* Tăng chiều cao tối thiểu cho khung video */
+}
+/* Video container */
+.video-container iframe {
+    width: 100%;
+    height: 480px; /* Điều chỉnh chiều cao của video để video ngang hơn */
+    border-radius: 1rem;
+    background-color: black;
+}
+
+.play-button-container {
+    margin-bottom: 1.5rem;
+}
+
+.play-button {
+    width: 5rem;
+    height: 5rem;
+    background-color: #0853f4;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    border: none;
+}
+
+.play-button:hover {
+    background-color: #0742d4;
+    transform: scale(1.1);
+}
+
+.play-icon {
+    width: 2rem;
+    height: 2rem;
+    color: white;
+    margin-left: 0.25rem;
+}
+
+.video-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #021b50;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.video-description {
+    color: #6b7280;
+    text-align: center;
+}
+
+.review-frame {
+    background-color: #f9fafb;
+    border-radius: 1rem;
+    padding: 2rem;
+    border: 1px solid #f3f4f6;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.review-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.statistics-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+    justify-items: center;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.stat-circle {
+    position: relative;
+    width: 6rem;
+    height: 6rem;
+    margin-bottom: 0.75rem;
+}
+
+.stat-svg {
+    width: 6rem;
+    height: 6rem;
+    transform: rotate(-90deg);
+}
+
+.stat-background-path {
+    fill: none;
+    stroke: #e5e7eb;
+    stroke-width: 2;
+}
+
+.stat-progress-path {
+    fill: none;
+    stroke: #0853f4;
+    stroke-width: 2;
+}
+
+.stat-percentage {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.125rem;
+    font-weight: bold;
+    color: #0853f4;
+}
+
+.stat-text {
+    text-align: center;
+}
+
+.stat-label {
+    font-weight: 600;
+    color: #021b50;
+    font-size: 0.875rem;
+}
+
+.testimonials-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+
+/* Cập nhật phần CSS để mỗi avatar sử dụng ảnh cụ thể */
+.testimonial-card .avatar {
+    background-image: url("https://i.pinimg.com/736x/eb/76/a4/eb76a46ab920d056b02d203ca95e9a22.jpg"); /* Avatar 1 */
+}
+
+/* Avatar 2 */
+.testimonial-card .avatar + .avatar {
+    background-image: url("https://i.pinimg.com/736x/c4/5d/52/c45d528f75138d04b06aefb50f59d34d.jpg"); /* Avatar 2 */
+}
+
+.stars-container {
+    display: flex;
+    gap: 0.25rem;
+    margin-bottom: 1rem;
+}
+
+.star-icon {
+    width: 1rem;
+    height: 1rem;
+    color: #e7cc33;
+    fill: #e7cc33;
+}
+
+.testimonial-quote {
+    font-size: 0.875rem;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+
+}
+
+.testimonial-attribution {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+
+}
+
+/* Avatar image styling */
+.avatar {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background-color: #d8d8d8; /* Gỡ bỏ màu nền */
+    color: transparent; /* Ẩn chữ */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background-size: cover; /* Đảm bảo ảnh được căn vừa khung */
+    background-position: center; /* Căn giữa ảnh */
+}
+
+
+.attribution-name {
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+.attribution-source {
+    font-size: 0.75rem;
+    color: #d1d5db;
+}
+
+/* Responsive Design */
+@media (min-width: 768px) {
+    .main-heading {
+        font-size: 3rem;
+    }
+
+    .statistics-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    .testimonials-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1024px) {
+    .main-heading {
+        font-size: 3.75rem;
+    }
+}
+
+.testimonial-card {
+    background-color: #85b3e0;
+    border-radius: 10px;
+    padding: 30px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}

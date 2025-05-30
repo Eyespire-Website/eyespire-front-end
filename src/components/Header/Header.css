@@ -281,3 +281,30 @@
   color: #4a5568;
   font-size: 14px;
 }
+
+/* CSS cho nút About  */
+.btn-about {
+  background-color: transparent; /* Đảm bảo nút không có nền trắng */
+  color: #FFFFFF;                /* Màu chữ */
+  font-size: 15px;
+  font-weight: bold;
+  padding: 8px 20px;
+  border: none;                  /* Không có viền */
+  border-radius: 5px;            /* Bo góc */
+  cursor: pointer;
+  margin-right: 15px;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+/* Hiệu ứng khi hover */
+.btn-about:hover {
+  background-color: transparent; /* Màu nền khi hover */
+  color: #FFFFFF;                /* Màu chữ khi hover */
+  transform: translateY(-2px);   /* Hiệu ứng nâng lên khi hover */
+}
+
+/* Loại bỏ viền khi focus */
+.btn-about:focus {
+  outline: none; /* Loại bỏ outline */
+  box-shadow: none; /* Loại bỏ shadow nếu có */
+}
