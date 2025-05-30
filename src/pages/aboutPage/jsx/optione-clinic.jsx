@@ -3,8 +3,9 @@ import { FaStar } from "react-icons/fa";
 import '../css/optione-clinic.css';
 import { useState } from "react"; // Thêm hook useState để điều khiển trạng thái hiển thị video
 
-export default function OptiOneClinicLanding() {
+export default function OptioneClinic() {
     const [isVideoPlaying, setIsVideoPlaying] = useState(false); // Trạng thái video có đang phát hay không
+    const videoID = "MQ68Ft3S2d0"; // Video ID của YouTube
 
     const handleVideoClick = () => {
         setIsVideoPlaying(true); // Khi nhấn vào Play, video sẽ được phát
@@ -24,15 +25,11 @@ export default function OptiOneClinicLanding() {
                 <svg className="stat-svg" viewBox="0 0 36 36">
                     <path
                         className="stat-background-path"
-                        d="M18 2.0845
-              a 15.9155 15.9155 0 0 1 0 31.831
-              a 15.9155 15.9155 0 0 1 0 -31.831"
+                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                     />
                     <path
                         className="stat-progress-path"
-                        d="M18 2.0845
-              a 15.9155 15.9155 0 0 1 0 31.831
-              a 15.9155 15.9155 0 0 1 0 -31.831"
+                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                         strokeDasharray={`${percentage}, 100`}
                     />
                 </svg>
@@ -97,17 +94,27 @@ export default function OptiOneClinicLanding() {
                             <div className="video-content">
                                 {/* Play Button */}
                                 {!isVideoPlaying ? (
-                                    <div className="play-button-container">
-                                        <button onClick={handleVideoClick} className="play-button">
-                                            <FiPlay className="play-icon" />
-                                        </button>
+                                    <div className="video-container">
+                                        {/* Thumbnail */}
+                                        <img
+                                            src={`https://img.youtube.com/vi/${videoID}/0.jpg`}
+                                            alt="Video Thumbnail"
+                                            className="video-thumbnail"
+                                            onClick={handleVideoClick} // Chuyển sang video khi nhấn vào thumbnail
+                                        />
+                                        {/* Play Button */}
+                                        <div className="play-button-container">
+                                            <button onClick={handleVideoClick} className="play-button">
+                                                <FiPlay className="play-icon" />
+                                            </button>
+                                        </div>
                                     </div>
                                 ) : (
                                     <div className="video-container">
                                         <iframe
                                             width="100%"
                                             height="315"
-                                            src="https://www.youtube.com/embed/MQ68Ft3S2d0?autoplay=1"
+                                            src={`https://www.youtube.com/embed/${videoID}?autoplay=1`}
                                             frameBorder="0"
                                             allow="autoplay; encrypted-media"
                                             allowFullScreen>

@@ -1,7 +1,11 @@
 import AboutHeader from '../../pages/aboutPage/jsx/about-title'
 import MedicalLanding from "../../pages/aboutPage/jsx/MedicalLanding"
-import OptiOneClinicLanding from "../../pages/aboutPage/jsx/optione-clinic-landing"
+import OptioneClinic from "./jsx/optione-clinic"
+import EyeClinicSection from "./jsx/eye-clinic-section"
 import Footer from "../../components/Footer/Footer"
+import MedicalClinicBanner from "./jsx/medical-clinic-banner";
+import LaserClinicSection from "./jsx/laser-clinic-section";
+import HealthTechShowcase from "./jsx/health-tech-showcase";
 
 export default function AboutPage() {
     return (
@@ -9,8 +13,13 @@ export default function AboutPage() {
 
             <AboutHeader />
             <MedicalLanding />
-            <OptiOneClinicLanding />
+            <OptioneClinic />
+            <EyeClinicSection />
+            <MedicalClinicBanner />
+            <LaserClinicSection />
+            <HealthTechShowcase />
             <Footer />
+
         </main>
     )
 }
