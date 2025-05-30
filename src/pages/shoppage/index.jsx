@@ -2,6 +2,8 @@
 import { Link } from "react-router-dom";
 
 import React, { useState } from "react"
+
+import HeroBanner from "../../components/ProductShop/HeroBanner"
 import Header from "../../components/shop/Header"
 import Footer from "../../components/Footer/Footer"
 import ProductCard from "../../components/shop/ProductCard"
@@ -166,19 +168,10 @@ export default function Shop() {
         <div className="shop-page">
             <Header />
 
-            {/* Breadcrumb */}
-            <div className="breadcrumb-section">
-                <div className="container">
-                    <div className="breadcrumb-content">
-                        <div className="breadcrumb-nav">
-                            <Link to="/" className="breadcrumb-link">Home</Link>
-                            <span className="separator">›</span>
-                            <Link to="/shop" className="breadcrumb-link active">Shop</Link>
-                        </div>
-                        <h1>Shop</h1>
-                    </div>
-                </div>
-            </div>
+            <HeroBanner
+                title="Shop"
+                breadcrumb={["Home", "Shop"]}
+            />
 
             {/* Main Content */}
             <div className="main-content">

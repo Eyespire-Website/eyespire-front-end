@@ -11,6 +11,7 @@ import ResetPassword from "./pages/authentication/reset-password/reset-password"
 import GoogleCallback from "./pages/authentication/google-callback/google-callback";
 import ProfilePage from "./pages/dashboard/patient-dashboard/profile";
 import ShopPage from "./pages/shoppage"; // Add this import
+import ProductDetail from "./pages/ProductPage";
 function App() {
   return (
     <Router>
@@ -36,6 +37,7 @@ function App() {
           <Route path="/auth/google/callback" element={<GoogleCallback />} />
           <Route path="/shop" element={<ShopPage />} /> {/* Trang Shop */}
           <Route path="/dashboard/profile" element={<ProfilePage />} />
+          <Route path="/product/:id" element={<ProductDetail />} />
         </Routes>
       </div>
     </Router>

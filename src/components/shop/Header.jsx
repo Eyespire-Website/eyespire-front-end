@@ -153,17 +153,17 @@ const Header = () => {
         <div className={`column2 ${isMenuOpen ? 'menu-open' : ''}`}>
           <div className="row-view5">
             <div className="row-view3">
-              <Link to="/" className="text2">Home</Link>
+              <Link to="/" className="text4">Home</Link>
             </div>
             <Link to="/services" className="text4">Services</Link>
             <div className="row-view3">
-              <Link to="/doctors" className="text5">Doctors</Link>
+              <Link to="/doctors" className="text4">Doctors</Link>
             </div>
             <div className="row-view3">
-              <Link to="/shop" className="text5">Shop</Link>
+              <Link to="/shop" className="text4">Shop</Link>
             </div>
             <div className="row-view3">
-              <Link to="/about" className="text5">About</Link>
+              <Link to="/about" className="text4">About</Link>
             </div>
           </div>
         </div>

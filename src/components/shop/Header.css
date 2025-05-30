@@ -79,6 +79,7 @@
   margin-right: 0;
   cursor: pointer;
   transition: color 0.3s;
+  text-decoration: none;
 }
 
 .text2:hover {
@@ -89,15 +90,17 @@
   color: #9BBAFC;
   font-size: 12px;
   font-weight: bold;
+  text-decoration: none;
 }
 
 .text4 {
   color: #FFFFFF;
-  font-size: 15px;
+  font-size: 20px;
   font-weight: bold;
   cursor: pointer;
   transition: color 0.3s;
   margin: 0;
+  text-decoration: none;
 }
 
 .text4:hover {

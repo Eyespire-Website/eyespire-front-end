@@ -1,5 +1,5 @@
 "use client"
-
+import { Link } from "react-router-dom";
 import "./ProductCard.css"
 
 export default function ProductCard({ product, onAddToCart }) {
@@ -17,21 +17,23 @@ export default function ProductCard({ product, onAddToCart }) {
 
   return (
     <div className="product-card">
-      <div className="product-image">
-        <img src={product.image || "/placeholder.svg"} alt={product.name} />
-      </div>
+      <Link to={`/product/${product.id}`} className="product-link">
 
-      <div className="product-info">
-        <h3 className="product-name">{product.name}</h3>
-        <p className="product-price">${product.price}</p>
-
-        <div className="color-options">
-          {product.colors.map((color, index) => (
-            <div key={index} className={`color-swatch ${getColorClass(color)}`} />
-          ))}
+        <div className="product-image">
+          <img src={product.image || "/placeholder.svg"} alt={product.name} />
         </div>
-      </div>
 
+        <div className="product-info">
+          <h3 className="product-name">{product.name}</h3>
+          <p className="product-price">${product.price}</p>
+
+          <div className="color-options">
+            {product.colors.map((color, index) => (
+              <div key={index} className={`color-swatch ${getColorClass(color)}`} />
+            ))}
+          </div>
+        </div>
+      </Link>
       <button className="add-to-cart-btn" onClick={() => onAddToCart(product)}>
         Add to Cart
       </button>
