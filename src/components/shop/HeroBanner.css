@@ -1,0 +1,77 @@
+.breadcrumb-section {
+    background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+    color: white;
+    padding: 4rem 0;
+    position: relative;
+    z-index: 1;
+    padding-top: 120px;
+    margin-top: -120px;
+}
+
+.breadcrumb-section::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.1);
+
+}
+
+.breadcrumb-content {
+    text-align: center;
+    position: relative;
+    z-index: 1;
+}
+
+.breadcrumb-nav {
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+    opacity: 0.9;
+}
+
+.separator {
+    margin: 0 0.5rem;
+    opacity: 0.7;
+}
+
+.breadcrumb-content h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: -0.025em;
+}
+
+.breadcrumb-link {
+    color: #eceef0;
+    text-decoration: none;
+    transition: color 0.2s ease;
+    font-size: 1rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.5rem;
+}
+
+.breadcrumb-link:hover {
+    color: #2563eb;
+}
+
+.breadcrumb-link.active {
+    color: #fcfcfc;
+    font-weight: 600;
+}
+
+@media (max-width: 480px) {
+    .breadcrumb-section {
+        padding: 2rem 0;
+        padding-top: 90px;
+        margin-top: -70px;
+    }
+
+    .breadcrumb-content h1 {
+        font-size: 1.75rem;
+    }
+}

@@ -3,11 +3,12 @@ import ReactDOM from 'react-dom';
 import "./Header.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faShoppingCart, faUser, faSignOutAlt, faChevronDown } from '@fortawesome/free-solid-svg-icons';
-import { useNavigate } from 'react-router-dom';
 import authService from "../../services/authService";
-import { Link } from 'react-router-dom';
+
+import { useNavigate, Link } from 'react-router-dom';
 
 const Header = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -85,12 +86,6 @@ const Header = () => {
     setDropdownOpen(!dropdownOpen);
   };
 
-  const handleAboutClick = () => {
-    navigate('/about'); // Điều hướng tới trang About khi người dùng click vào About
-  };
-
-
-
   // Render dropdown portal
   const renderDropdownPortal = () => {
     if (!dropdownOpen) return null;
@@ -121,80 +116,86 @@ const Header = () => {
             <span>Đăng xuất</span>
           </div>
         </div>
+
       </div>,
       document.body
     );
   };
 
   return (
-    <div className="row-view">
-      {/* Logo bên trái */}
-      <div className="row-view2">
-        <img
-          src={"https://storage.googleapis.com/tagjs-prod.appspot.com/v1/VY3PPTks6o/e8ggwzic_expires_30_days.png"}
-          className="image"
-        />
-        <span className="text">{"Eyespire"}</span>
-      </div>
 
-      {/* Menu điều hướng ở giữa */}
-      <div className="column2">
-        <div className="row-view5">
-          <div className="row-view3">
-            <span className="text2">{"Home"}</span>
-            <span className="text3">{""}</span>
-          </div>
 
-          <Link to="/services" className="service-link">
-            <span className="text4">{"Services"}</span>
-          </Link>
 
-          <div className="row-view3">
-            <span className="text5">{"Doctors"}</span>
-            <span className="text3">{""}</span>
-          </div>
-          <div className="row-view3">
-            <Link to="/shop" className="text4">Shop</Link>
-          </div>
-
-          {/* Nút About, sử dụng button với onClick */}
-          {/* Nút About với lớp btn-about */}
-          <div className="row-view3">
-            <button className="btn-about" onClick={handleAboutClick}>
-              {"About"}
-            </button>
-            <span className="text3">{""}</span>
-          </div>
-
-        </div>
-      </div>
-
-      {/* Giỏ hàng và nút login/avatar bên phải */}
-      <div className="row-view5">
-        <div className="cart-icon">
-          <FontAwesomeIcon icon={faShoppingCart} />
+    <div className="header-wrapper">
+      <div className="row-view">
+        {/* Logo bên trái */}
+        <div className="row-view2">
+          <img
+            src={"https://storage.googleapis.com/tagjs-prod.appspot.com/v1/VY3PPTks6o/e8ggwzic_expires_30_days.png"}
+            className="image"
+            alt="Logo"
+          />
+          <span className="text">Eyespire</span>
         </div>
 
-        {user ? (
-          <div className="user-profile">
-            <div className="avatar-container" onClick={toggleDropdown} ref={avatarRef}>
-              {user.avatarUrl ? (
-                <img src={getAvatarUrl(user.avatarUrl)} alt="User Avatar" className="user-avatar" />
-              ) : (
-                <div className="default-avatar">
-                  <FontAwesomeIcon icon={faUser} />
-                </div>
-              )}
-              <FontAwesomeIcon icon={faChevronDown} className="dropdown-icon" />
+        {/* Menu toggle button */}
+        <button
+          className="menu-toggle"
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+          aria-label="Toggle menu"
+        >
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+
+        {/* Menu điều hướng ở giữa */}
+        <div className={`column2 ${isMenuOpen ? 'menu-open' : ''}`}>
+          <div className="row-view5">
+            <div className="row-view3">
+              <Link to="/" className="text4">Home</Link>
             </div>
-            {renderDropdownPortal()}
+            <Link to="/services" className="text4">Services</Link>
+            <div className="row-view3">
+              <Link to="/doctors" className="text4">Doctors</Link>
+            </div>
+            <div className="row-view3">
+              <Link to="/shop" className="text4">Shop</Link>
+            </div>
+            <div className="row-view3">
+              <Link to="/about" className="text4">About</Link>
+            </div>
           </div>
-        ) : (
-          <button className="login-button" onClick={handleLoginClick}>{"Login"}</button>
-        )}
+        </div>
+
+        {/* Giỏ hàng và nút login bên phải */}
+        <div className="row-view5">
+          <div className="cart-icon">
+            <FontAwesomeIcon icon={faShoppingCart} />
+          </div>
+          {user ? (
+            <div className="user-profile">
+              <div className="avatar-container" onClick={toggleDropdown} ref={avatarRef}>
+                {user.avatarUrl ? (
+                  <img src={getAvatarUrl(user.avatarUrl)} alt="User Avatar" className="user-avatar" />
+                ) : (
+                  <div className="default-avatar">
+                    <FontAwesomeIcon icon={faUser} />
+                  </div>
+                )}
+                <FontAwesomeIcon icon={faChevronDown} className="dropdown-icon" />
+              </div>
+              {renderDropdownPortal()}
+            </div>
+          ) : (
+            <button className="login-button" onClick={handleLoginClick}>{"Login"}</button>
+          )}
+        </div>
       </div>
     </div>
+
   );
+
 };
 
 export default Header;
