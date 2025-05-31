@@ -145,6 +145,8 @@ export default function ProductDetail() {
             reviews={productData.reviews}
           />
         </div>
+
+
       </div>
 
       {/* Related Products */}

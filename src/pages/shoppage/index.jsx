@@ -1,7 +1,5 @@
 "use client"
-import { Link } from "react-router-dom";
-
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 
 import HeroBanner from "../../components/ProductShop/HeroBanner"
 import Header from "../../components/shop/Header"
@@ -9,6 +7,12 @@ import Footer from "../../components/Footer/Footer"
 import ProductCard from "../../components/shop/ProductCard"
 import FilterSidebar from "../../components/shop/FilterSidebar"
 import "./index.css"
+const categories = [
+    { id: 'all', label: 'Shop All' },
+    { id: 'aspheric', label: 'Aspheric' },
+    { id: 'high-index-plastic', label: 'High Index Plastic' },
+    { id: 'photochromic', label: 'Photochromic' },
+]
 
 const products = [
     {
@@ -95,19 +99,14 @@ const products = [
 ]
 
 export default function Shop() {
-    const itemsPerPage = 9;
-    const [showFilter, setShowFilter] = useState(true);
-    const [activeCategory, setActiveCategory] = useState('all');
-
-    const categories = [
-        { id: 'all', label: 'Shop All' },
-        { id: 'aspheric', label: 'Aspheric' },
-        { id: 'high-index-plastic', label: 'High Index Plastic' },
-        { id: 'photochromic', label: 'Photochromic' },
-    ];
-    const [sortBy, setSortBy] = useState("default");
-    const [currentPage, setCurrentPage] = useState(1);
-
+    // State management
+    const [isLoading, setIsLoading] = useState(true)
+    const [error, setError] = useState(null)
+    const itemsPerPage = 9
+    const [showFilter, setShowFilter] = useState(true)
+    const [activeCategory, setActiveCategory] = useState('all')
+    const [sortBy, setSortBy] = useState("default")
+    const [currentPage, setCurrentPage] = useState(1)
     const [filters, setFilters] = useState({
         categories: [],
         colors: [],
@@ -115,9 +114,37 @@ export default function Shop() {
         frameShapes: [],
         frameWidths: [],
         priceRange: [105, 390],
-
     })
 
+    // Handle initial loading
+    useEffect(() => {
+        try {
+            setIsLoading(true)
+            // Simulate loading time
+            setTimeout(() => {
+                setIsLoading(false)
+            }, 500)
+        } catch (err) {
+            setError(err.message)
+            setIsLoading(false)
+        }
+    }, [])
+
+    // Error handling component
+    if (error) {
+        return <div className="error-message">Error: {error}</div>
+    }
+
+    // Loading state component
+    if (isLoading) {
+        return (
+            <div className="loading-skeleton">
+                {[...Array(6)].map((_, index) => (
+                    <div key={index} className="product-skeleton" />
+                ))}
+            </div>
+        )
+    }
 
     // Filter products
     const filteredProducts = products.filter((product) => {
@@ -177,19 +204,22 @@ export default function Shop() {
             <div className="main-content">
 
                 <div className="container">
-                    <div className="filter-bar">
-                        {categories.map((category) => (
-                            <button
-                                key={category.id}
-                                className={`filter-item ${activeCategory === category.id ? 'active' : ''}`}
-                                onClick={() => {
-                                    setActiveCategory(category.id);
-                                    setCurrentPage(1);
-                                }}
-                            >
-                                {category.label}
-                            </button>
-                        ))}
+                    {/* Filter bar with overflow handling */}
+                    <div className="filter-bar-wrapper">
+                        <div className="filter-bar">
+                            {categories.map((category) => (
+                                <button
+                                    key={category.id}
+                                    className={`filter-item ${activeCategory === category.id ? 'active' : ''}`}
+                                    onClick={() => {
+                                        setActiveCategory(category.id)
+                                        setCurrentPage(1)
+                                    }}
+                                >
+                                    {category.label}
+                                </button>
+                            ))}
+                        </div>
                     </div>
                     {/* Nút tắt/bật filter */}
                     <button
