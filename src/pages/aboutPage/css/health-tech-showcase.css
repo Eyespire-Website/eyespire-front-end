@@ -1,17 +1,17 @@
-.medical-tech-container {
+.medical-tech-container33 {
     background-color: white;
     min-height: 100vh;
     display: flex;
     align-items: center;
 }
 
-.medical-tech-wrapper {
+.medical-tech-wrapper33 {
     max-width: 1152px;
     margin: 0 auto;
     padding: 48px 32px;
 }
 
-.medical-tech-grid {
+.medical-tech-grid33 {
     display: grid;
     grid-template-columns: 1fr;
     gap: 80px;
@@ -19,24 +19,24 @@
 }
 
 @media (min-width: 1024px) {
-    .medical-tech-grid {
+    .medical-tech-grid33 {
         grid-template-columns: 1fr 1fr;
     }
 }
 
-.medical-tech-content {
+.medical-tech-content33 {
     display: flex;
     flex-direction: column;
     gap: 48px;
 }
 
-.medical-tech-header {
+.medical-tech-header33 {
     display: flex;
     flex-direction: column;
     gap: 24px;
 }
 
-.medical-tech-title {
+.medical-tech-title33 {
     font-size: 3rem;
     font-weight: bold;
     color: #0853f4;
@@ -45,74 +45,74 @@
 }
 
 @media (min-width: 1024px) {
-    .medical-tech-title {
+    .medical-tech-title33 {
         font-size: 3.75rem;
     }
 }
 
-.medical-tech-description {
+.medical-tech-description33 {
     color: #6b7280;
     font-size: 1.125rem;
     line-height: 1.6;
     margin: 0;
 }
 
-.medical-tech-stats {
+.medical-tech-stats33 {
     display: flex;
     flex-direction: column;
     gap: 32px;
 }
 
-.medical-tech-stat-item {
+.medical-tech-stat-item33 {
     display: flex;
     flex-direction: column;
     gap: 12px;
 }
 
-.medical-tech-stat-header {
+.medical-tech-stat-header33 {
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-.medical-tech-stat-label {
+.medical-tech-stat-label33 {
     color: #1f2937;
     font-weight: 500;
     font-size: 1.125rem;
 }
 
-.medical-tech-stat-value {
+.medical-tech-stat-value33 {
     color: #1f2937;
     font-weight: bold;
     font-size: 1.125rem;
 }
 
-.medical-tech-progress-bar {
+.medical-tech-progress-bar33 {
     width: 100%;
     background-color: #e5e7eb;
     border-radius: 9999px;
     height: 16px;
 }
 
-.medical-tech-progress-fill {
+.medical-tech-progress-fill33 {
     background-color: #0853f4;
     height: 16px;
     border-radius: 9999px;
     transition: width 0.5s ease-in-out;
 }
 
-.medical-tech-visual {
+.medical-tech-visual33 {
     display: flex;
     justify-content: center;
 }
 
 @media (min-width: 1024px) {
-    .medical-tech-visual {
+    .medical-tech-visual33 {
         justify-content: flex-end;
     }
 }
 
-.medical-tech-circle {
+.medical-tech-circle33 {
     width: 384px;
     height: 384px;
     border-radius: 50%;

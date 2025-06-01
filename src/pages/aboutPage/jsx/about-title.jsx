@@ -8,22 +8,22 @@ export default function AboutHeader() {
     return (
         <>
 
-            <div className="about-header">
+            <div className="about-header11">
                 <Header/> {/* Giữ header chung */}
                 {/* Breadcrumb Navigation */}
-                <nav className="breadcrumb-nav">
-                    <div className="breadcrumb-container">
+                <nav className="breadcrumb-nav11">
+                    <div className="breadcrumb-container11">
                         <Link to="/"
-                              className="breadcrumb-link"> {/* Thay Link từ next/link bằng Link từ react-router-dom */}
+                              className="breadcrumb-link11"> {/* Thay Link từ next/link bằng Link từ react-router-dom */}
                             Home
                         </Link>
-                        <FaChevronRight className="breadcrumb-icon"/> {/* Giữ lại FaChevronRight */}
-                        <span className="breadcrumb-current">About</span>
+                        <FaChevronRight className="breadcrumb-icon11"/> {/* Giữ lại FaChevronRight */}
+                        <span className="breadcrumb-current11">About</span>
                     </div>
                 </nav>
 
                 {/* Main Heading */}
-                <h1 className="main-headingg">About EyeSpire </h1>
+                <h1 className="main-heading11">About EyeSpire </h1>
             </div>
         </>
     );

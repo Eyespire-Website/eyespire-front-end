@@ -1,11 +1,11 @@
 /* Container chính */
-.laser-clinic-container {
+.laser-clinic-container44 {
     display: flex;
     min-height: 50vh;
 }
 
 /* Phần trang trí bên trái */
-.decorative-section-custom {
+.decorative-section-custom44 {
     flex: 1;
     position: relative;
     overflow: hidden;
@@ -16,62 +16,62 @@
     background-repeat: no-repeat; /* Không lặp lại ảnh */
 }
 
-.pattern-overlay-custom {
+.pattern-overlay-custom44 {
     position: absolute;
     inset: 0;
 }
 
-.pattern-svg-custom {
+.pattern-svg-custom44 {
     width: 100%;
     height: 100%;
 }
 
 /* Phần nội dung bên phải */
-.content-section-custom {
+.content-section-custom44 {
     flex: 1;
     background-color: white;
     display: flex;
     align-items: center;
 }
 
-.content-wrapper-custom {
+.content-wrapper-custom44 {
     max-width: 32rem;
     margin: 0 auto;
     padding: 3rem 2rem;
 }
 
 /* Tiêu đề chính */
-.main-title-custom {
+.main-title-custom44 {
     font-size: 2.25rem;
     font-weight: bold;
     margin-bottom: 1.5rem;
     line-height: 1.2;
 }
 
-.title-dark-custom {
+.title-dark-custom44 {
     color: #021b50;
 }
 
-.title-blue-custom {
+.title-blue-custom44 {
     color: #0853f4;
 }
 
 /* Mô tả */
-.description-custom {
+.description-custom44 {
     color: #303a4c;
     margin-bottom: 2rem;
     line-height: 1.6;
 }
 
 /* Container giờ làm việc */
-.hours-container-custom {
+.hours-container-custom44 {
     display: flex;
     align-items: flex-start;
     gap: 1rem;
     margin-bottom: 2rem;
 }
 
-.clock-icon-custom {
+.clock-icon-custom44 {
     width: 3rem;
     height: 3rem;
     border-radius: 50%;
@@ -82,29 +82,29 @@
     flex-shrink: 0;
 }
 
-.clock-svg-custom {
+.clock-svg-custom44 {
     width: 1.5rem;
     height: 1.5rem;
     color: white;
 }
 
-.hours-text-custom {
+.hours-text-custom44 {
     display: flex;
     flex-direction: column;
 }
 
-.hours-line-custom {
+.hours-line-custom44 {
     font-weight: 600;
     color: #021b50;
     margin-bottom: 0.25rem;
 }
 
-.hours-line-custom:last-child {
+.hours-line-custom44:last-child {
     margin-bottom: 0;
 }
 
 /* Nút đặt lịch */
-.appointment-button-custom {
+.appointment-button-custom44 {
     background: none;
     border: none;
     padding: 0;
@@ -117,36 +117,36 @@
     transition: all 0.2s ease;
 }
 
-.appointment-button-custom:hover {
+.appointment-button-custom44:hover {
     color: #0642d0;
 }
 
-.arrow-icon-custom {
+.arrow-icon-custom44 {
     width: 1rem;
     height: 1rem;
     margin-left: 0.5rem;
     transition: transform 0.2s ease;
 }
 
-.appointment-button-custom:hover .arrow-icon-custom {
+.appointment-button-custom44:hover .arrow-icon-custom {
     transform: translateX(0.25rem);
 }
 
 /* Responsive */
 @media (max-width: 768px) {
-    .laser-clinic-container {
+    .laser-clinic-container44 {
         flex-direction: column;
     }
 
-    .decorative-section-custom {
+    .decorative-section-custom44 {
         min-height: 200px;
     }
 
-    .main-title-custom {
+    .main-title-custom44 {
         font-size: 1.875rem;
     }
 
-    .content-wrapper-custom {
+    .content-wrapper-custom44 {
         padding: 2rem 1rem;
     }
 }

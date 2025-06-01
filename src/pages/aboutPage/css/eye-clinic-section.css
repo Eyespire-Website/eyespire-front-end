@@ -1,32 +1,32 @@
-.clinic-container {
+.clinic-container22 {
     background-color: #ffffff; /* Màu nền sáng cho toàn bộ container */
     min-height: 100vh;
     padding: 4rem 2rem; /* Padding đều cho container */
 }
 
-.clinic-wrapper {
+.clinic-wrapper22 {
     max-width: 80rem; /* Đảm bảo chiều rộng tối đa của wrapper */
     margin: 0 auto;
 }
 
-.clinic-grid {
+.clinic-grid22 {
     display: grid;
     grid-template-columns: 1fr 1fr; /* Đặt các cột chia đều */
     gap: 2rem; /* Giảm khoảng cách giữa ảnh và nội dung */
 }
 
 @media (min-width: 1024px) {
-    .clinic-grid {
+    .clinic-grid22 {
         grid-template-columns: 1fr 1fr; /* Màn hình rộng hiển thị 2 cột */
     }
 }
 
 /* Decorative Section */
-.decorative-section {
+.decorative-section22 {
     margin-right: -20px; /* Giảm khoảng cách bên phải của ảnh */
 }
 
-.decorative-image {
+.decorative-image22 {
     width: 100%;
     height: 670px; /* Chiều cao có thể thay đổi tùy nhu cầu */
     background-size: 120%; /* Phóng to ảnh lên 120% */
@@ -36,13 +36,13 @@
 }
 
 /* Đảm bảo hình ảnh không bị tràn */
-.decorative-image img {
+.decorative-image22 img {
     width: 100%;
     height: 100%; /* Đảm bảo hình ảnh không bị méo */
     object-fit: cover; /* Giữ tỷ lệ hình ảnh */
 }
 
-.pattern-container {
+.pattern-container22 {
     position: absolute;
     top: 0;
     left: 0;
@@ -50,7 +50,7 @@
     bottom: 0;
 }
 
-.pattern-stripe {
+.pattern-stripe22 {
     position: absolute;
     height: 100%;
     width: 2rem;
@@ -60,11 +60,11 @@
 }
 
 /* Content Section */
-.content-section {
+.content-section22 {
     margin-left: -10px; /* Giảm khoảng cách bên trái của nội dung */
 }
 
-.content-header {
+.content-header22 {
     display: flex;
     flex-direction: column;
     gap: 1rem;
@@ -72,7 +72,7 @@
     align-items: flex-start; /* Căn trái phần tiêu đề */
 }
 
-.main-heading {
+.main-heading22 {
     font-size: 3rem; /* Tăng kích thước chữ */
     font-weight: bold;
     color: #021b50;
@@ -81,16 +81,16 @@
 }
 
 @media (min-width: 1024px) {
-    .main-heading {
+    .main-heading22 {
         font-size: 3rem; /* Tăng kích thước chữ cho màn hình lớn */
     }
 }
 
-.brand-name {
+.brand-name22 {
     color: #0853f4;
 }
 
-.description-text {
+.description-text22 {
     font-size: 1.125rem;
     line-height: 1.75;
     color: #303a4c;
@@ -98,20 +98,20 @@
 }
 
 /* Features Section */
-.features-section {
+.features-section22 {
     display: flex;
     flex-direction: column;
     gap: 2rem; /* Giãn cách giữa các mục */
     align-items: flex-start; /* Căn trái các mục */
 }
 
-.feature-item {
+.feature-item22 {
     display: flex;
     align-items: center;
     gap: 1rem;
 }
 
-.feature-icon {
+.feature-icon22 {
     width: 3.5rem; /* Tăng kích thước biểu tượng */
     height: 3.5rem; /* Tăng kích thước biểu tượng */
     background-color: #0853f4;
@@ -121,18 +121,18 @@
     justify-content: center;
 }
 
-.icon {
+.icon22 {
     width: 1.75rem;
     height: 1.75rem;
     color: white;
 }
 
-.feature-text {
+.feature-text22 {
     display: flex;
     flex-direction: column;
 }
 
-.feature-title {
+.feature-title22 {
     font-weight: 600;
     color: #021b50;
     font-size: 1.25rem; /* Tăng kích thước chữ */
@@ -141,12 +141,12 @@
 }
 
 /* Statistics Section */
-.stats-container {
+.stats-container22 {
     display: flex;
     justify-content: flex-end;
 }
 
-.stats-circle {
+.stats-circle22 {
     width: 12rem; /* Giữ nguyên kích thước vòng tròn */
     height: 12rem;
     background-color: #0853f4;
@@ -159,12 +159,12 @@
     margin-top: -7rem; /* Dịch vòng tròn lên cao một chút */
 }
 
-.stats-number {
+.stats-number22 {
     font-size: 3rem;
     font-weight: bold;
 }
 
-.stats-text {
+.stats-text22 {
     font-size: 0.875rem;
     text-align: center;
     margin-top: 0.5rem;
@@ -173,20 +173,20 @@
 
 /* Responsive adjustments */
 @media (max-width: 1023px) {
-    .stats-container {
+    .stats-container22 {
         justify-content: center;
         margin-top: 2rem;
     }
 
-    .clinic-container {
+    .clinic-container22 {
         padding: 2rem 1rem;
     }
 
-    .main-heading {
+    .main-heading22 {
         text-align: center;
     }
 
-    .description-text {
+    .description-text22 {
         text-align: center;
     }
 }
