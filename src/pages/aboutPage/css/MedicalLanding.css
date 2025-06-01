@@ -1,32 +1,32 @@
-.medical-landing {
+.medical-landing66 {
     background-color: white;
     min-height: 100vh;
 }
 
-.container {
+.container66 {
     max-width: 1200px;
     margin: 0 auto;
     padding: 48px 16px;
 }
 
-.grid {
+.grid66 {
     display: grid;
     grid-template-columns: 1fr;
     gap: 32px;
 }
 
 @media (min-width: 1024px) {
-    .grid {
+    .grid66 {
         grid-template-columns: 1fr 1fr;
     }
 }
 
-.content-section {
+.content-section66 {
     display: flex;
     flex-direction: column;
 }
 
-.main-title {
+.main-title66 {
     font-size: 3rem;
     font-weight: bold;
     margin-bottom: 16px;
@@ -34,20 +34,20 @@
 }
 
 @media (min-width: 1024px) {
-    .main-title {
+    .main-title66 {
         font-size: 3.5rem;
     }
 }
 
-.title-dark {
+.title-dark66 {
     color: #021b50;
 }
 
-.title-blue {
+.title-blue66 {
     color: #0853f4;
 }
 
-.description {
+.description66 {
     color: #979797;
     margin-bottom: 40px;
     max-width: 512px;
@@ -55,20 +55,20 @@
     font-size: 1.1rem;
 }
 
-.features {
+.features66 {
     display: flex;
     flex-wrap: wrap;
     gap: 24px;
     margin-bottom: 40px;
 }
 
-.feature-item {
+.feature-item66 {
     display: flex;
     align-items: center;
     gap: 12px;
 }
 
-.feature-icon {
+.feature-icon66 {
     width: 48px;
     height: 48px;
     background-color: #0853f4;
@@ -78,37 +78,37 @@
     justify-content: center;
 }
 
-.icon {
+.icon66 {
     width: 24px;
     height: 24px;
     color: white;
 }
 
-.feature-text {
+.feature-text66 {
     color: #021b50;
     font-weight: 500;
     font-size: 1.1rem;
 }
 
-.image-placeholder {
+.image-placeholder66 {
     position: relative;
     overflow: hidden;
     background-color: #f0f0f0;
 }
 
-.left-image {
+.left-image66 {
     width: 100%;
     height: 320px;
     margin-bottom: 40px;
 }
 
-.main-image {
+.main-image66 {
     width: 100%;
     height: 384px;
     margin-bottom: 40px;
 }
 
-.diagonal-pattern {
+.diagonal-pattern66 {
     position: absolute;
     top: 0;
     left: 0;
@@ -117,24 +117,24 @@
     background-image: repeating-linear-gradient(45deg, #f0f0f0 0px, #f0f0f0 10px, #ff9999 10px, #ff9999 20px);
 }
 
-.right-section {
+.right-section66 {
     display: flex;
     flex-direction: column;
 }
 
-.stats-grid {
+.stats-grid66 {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 32px;
     margin-bottom: 40px;
 }
 
-.stat-item {
+.stat-item66 {
     display: flex;
     flex-direction: column;
 }
 
-.stat-number {
+.stat-number66 {
     font-size: 3rem;
     font-weight: bold;
     color: #021b50;
@@ -143,23 +143,23 @@
 }
 
 @media (min-width: 1024px) {
-    .stat-number {
+    .stat-number66 {
         font-size: 3.5rem;
     }
 }
 
-.stat-description {
+.stat-description66 {
     color: #979797;
     font-size: 0.875rem;
     line-height: 1.5;
 }
 
-.cta-container {
+.cta-container66 {
     position: relative;
     width: fit-content;
 }
 
-.cta-button {
+.cta-button66 {
     background-color: #0853f4;
     color: white;
     padding: 24px 32px;
@@ -171,32 +171,32 @@
     transition: background-color 0.3s ease;
 }
 
-.cta-button:hover {
+.cta-button66:hover {
     background-color: #021b50;
 }
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-    .main-title {
+    .main-title66 {
         font-size: 2.5rem;
     }
 
-    .stat-number {
+    .stat-number66 {
         font-size: 2.5rem;
     }
 
-    .features {
+    .features66 {
         flex-direction: column;
         gap: 16px;
     }
 
-    .stats-grid {
+    .stats-grid66 {
         grid-template-columns: 1fr;
         gap: 24px;
     }
 }
 /* CSS cho hình ảnh */
-.image {
+.image66 {
     width: 100%;          /* Đảm bảo hình ảnh chiếm 100% chiều rộng của phần tử chứa */
     height: 100%;         /* Đảm bảo hình ảnh chiếm 100% chiều cao của phần tử chứa */
     object-fit: cover;    /* Giữ tỷ lệ của hình ảnh, cắt bớt phần dư nếu cần thiết */

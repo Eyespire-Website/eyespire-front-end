@@ -1,5 +1,5 @@
 /* CSS cho phần About Header */
-.about-header {
+.about-header11 {
     background-color: #03246b;
     min-height: 300px;
     display: flex;
@@ -14,40 +14,40 @@
 
 }
 
-.breadcrumb-nav {
+.breadcrumb-nav11 {
     margin-bottom: 2rem;
 }
 
-.breadcrumb-container {
+.breadcrumb-container11 {
     display: flex;
     align-items: center;
     gap: 0.5rem;
     color: #ffffff;
 }
 
-.breadcrumb-link {
+.breadcrumb-link11 {
     font-size: 0.875rem;
     color: #ffffff;
     text-decoration: none;
     transition: color 0.3s ease;
 }
 
-.breadcrumb-link:hover {
+.breadcrumb-link11:hover {
     color: #9bbafc;
 }
 
-.breadcrumb-icon {
+.breadcrumb-icon11 {
     width: 1rem;
     height: 1rem;
     color: #9bbafc;
 }
 
-.breadcrumb-current {
+.breadcrumb-current11 {
     font-size: 0.875rem;
     color: #9bbafc;
 }
 
-.main-headingg {
+.main-heading11 {
     color: #ffffff;
     font-size: 2.5rem;
     font-weight: bold;
@@ -58,13 +58,13 @@
 
 /* Responsive Design */
 @media (min-width: 768px) {
-    .main-heading {
+    .main-heading11 {
         font-size: 3rem;
     }
 }
 
 @media (min-width: 1024px) {
-    .main-heading {
+    .main-heading11 {
         font-size: 3.75rem;
     }
 }

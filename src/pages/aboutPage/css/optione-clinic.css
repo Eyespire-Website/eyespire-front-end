@@ -1,16 +1,16 @@
-.clinic-container {
+.clinic-container77 {
     min-height: 100vh;
     position: relative;
     overflow: hidden;
     background-color: #FFFFFF;
 }
 
-.pixelated-background {
+.pixelated-background77 {
     position: absolute;
     inset: 0;
 }
 
-.pixel-grid {
+.pixel-grid77 {
     display: grid;
     grid-template-columns: repeat(20, minmax(0, 1fr));
     gap: 0;
@@ -19,19 +19,19 @@
     opacity: 0.6;
 }
 
-.pixel {
+.pixel77 {
     aspect-ratio: 1;
 }
 
-.pixel-red-300,
-.pixel-red-200,
-.pixel-pink-200,
-.pixel-pink-100 {
+.pixel77-red-300,
+.pixel77-red-200,
+.pixel77-pink-200,
+.pixel77-pink-100 {
     background-color: #FFFFFF;  /* Đặt màu nền là trắng */
 }
 
 
-.main-content {
+.main-content77 {
     position: relative;
     z-index: 10;
     display: flex;
@@ -42,24 +42,24 @@
     padding: 4rem 1rem;
 }
 
-.heading-section {
+.heading-section77 {
     text-align: center;
     margin-bottom: 4rem;
     max-width: 64rem;
 }
 
-.main-heading {
+.main-heading77 {
     font-size: 2.25rem;
     font-weight: bold;
     color: #021b50;
     line-height: 1.1;
 }
 
-.heading-highlight {
+.heading-highlight77 {
     color: #0853f4;
 }
 
-.large-container {
+.large-container77 {
     width: 100%; /* Đảm bảo chiếm toàn bộ chiều rộng */
     max-width: 1500px; /* Tăng chiều rộng tối đa của khung */
     margin: 0 auto; /* Căn giữa khung */
@@ -71,14 +71,14 @@
 }
 
 
-.container-content {
+.container-content77 {
     display: flex;
     flex-direction: column;
     gap: 2rem;
 }
 
 /* Tăng kích thước khung video */
-.video-frame {
+.video-frame77 {
     background-color: #f9fafb;
     border-radius: 1rem;
     padding: 2rem;
@@ -93,7 +93,7 @@
 
 
 /* Video content */
-.video-container iframe {
+.video-container77 iframe {
     width: 100%;  /* Đảm bảo iframe chiếm 100% chiều rộng của khung */
     height: 480px;  /* Điều chỉnh chiều cao của video để video ngang hơn */
     border-radius: 1rem;
@@ -101,7 +101,7 @@
 }
 
 /* Video container */
-.video-container iframe {
+.video-container77 iframe {
     width: 100%;
     height: 480px; /* Điều chỉnh chiều cao của video để video ngang hơn */
     border-radius: 1rem;
@@ -110,7 +110,7 @@
 
 /* Thêm kiểu dáng cho thumbnail video */
 /* Điều chỉnh kích thước của thumbnail */
-.video-thumbnail {
+.video-thumbnail77 {
     width: 100%;
     height: 100%;
     object-fit: cover; /* Đảm bảo thumbnail không bị méo */
@@ -122,22 +122,21 @@
 }
 
 /* Thêm hiệu ứng khi hover vào thumbnail */
-.video-thumbnail:hover {
+.video-thumbnail77:hover {
     transform: scale(1.05); /* Phóng to thumbnail một chút khi hover */
 }
 
-/* Đảm bảo play button nằm trên thumbnail */
-.play-button-container {
-    position: absolute; /* Đặt nút play lên trên thumbnail */
-    top: 50%; /* Đặt vào giữa hình ảnh */
-    left: 50%; /* Đặt vào giữa hình ảnh */
-    transform: translate(-50%, -50%); /* Đảm bảo nút play luôn ở chính giữa */
-    z-index: 10; /* Đảm bảo nút play nằm trên cùng */
+.play-button-container77 {
+    position: absolute;
+    top: 140%; /* 👈 chỉnh từ 50% → 140% để đẩy xuống dưới */
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
 }
 
 
 /* Điều chỉnh lại kích thước nút Play */
-.play-button {
+.play-button77 {
     width: 4rem;  /* Giảm chiều rộng của nút play */
     height: 4rem; /* Giảm chiều cao của nút play */
     background-color: #0853f4;
@@ -157,19 +156,19 @@
 
 
 /* Thêm hiệu ứng khi hover vào nút play */
-.play-button:hover {
+.play-button77:hover {
     background-color: #0742d4;
     transform: scale(1.1) translate(-50%, -50%);  /* Giữ nút Play luôn ở giữa */
 }
 
 /* Điều chỉnh kích thước biểu tượng Play */
-.play-icon {
+.play-icon77 {
     width: 1.5rem;  /* Giảm kích thước icon play */
     height: 1.5rem; /* Giảm kích thước icon play */
     color: white;
 }
 
-.video-title {
+.video-title77 {
     font-size: 1.5rem;
     font-weight: bold;
     color: #021b50;
@@ -177,12 +176,12 @@
     margin-bottom: 1rem;
 }
 
-.video-description {
+.video-description77 {
     color: #6b7280;
     text-align: center;
 }
 
-.review-frame {
+.review-frame77 {
     background-color: #f9fafb;
     border-radius: 1rem;
     padding: 2rem;
@@ -190,51 +189,51 @@
     box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
 }
 
-.review-content {
+.review-content77 {
     display: flex;
     flex-direction: column;
     gap: 2rem;
 }
 
-.statistics-grid {
+.statistics-grid77 {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 2rem;
     justify-items: center;
 }
 
-.stat-item {
+.stat-item77 {
     display: flex;
     flex-direction: column;
     align-items: center;
 }
 
-.stat-circle {
+.stat-circle77 {
     position: relative;
     width: 6rem;
     height: 6rem;
     margin-bottom: 0.75rem;
 }
 
-.stat-svg {
+.stat-svg77 {
     width: 6rem;
     height: 6rem;
     transform: rotate(-90deg);
 }
 
-.stat-background-path {
+.stat-background-path77 {
     fill: none;
     stroke: #e5e7eb;
     stroke-width: 2;
 }
 
-.stat-progress-path {
+.stat-progress-path77 {
     fill: none;
     stroke: #0853f4;
     stroke-width: 2;
 }
 
-.stat-percentage {
+.stat-percentage77 {
     position: absolute;
     inset: 0;
     display: flex;
@@ -245,53 +244,53 @@
     color: #0853f4;
 }
 
-.stat-text {
+.stat-text77 {
     text-align: center;
 }
 
-.stat-label {
+.stat-label77 {
     font-weight: 600;
     color: #021b50;
     font-size: 0.875rem;
 }
 
-.testimonials-grid {
+.testimonials-grid77 {
     display: grid;
     grid-template-columns: 1fr;
     gap: 1.5rem;
 }
 
 /* Cập nhật phần CSS để mỗi avatar sử dụng ảnh cụ thể */
-.testimonial-card .avatar {
+.testimonial-card77 .avatar77 {
     background-image: url("https://i.pinimg.com/736x/eb/76/a4/eb76a46ab920d056b02d203ca95e9a22.jpg"); /* Avatar 1 */
 }
 
 /* Avatar 2 */
-.testimonial-card .avatar + .avatar {
+.testimonial-card77 .avatar77 + .avatar77 {
     background-image: url("https://i.pinimg.com/736x/c4/5d/52/c45d528f75138d04b06aefb50f59d34d.jpg"); /* Avatar 2 */
 }
 
-.stars-container {
+.stars-container77 {
     display: flex;
     gap: 0.25rem;
     margin-bottom: 1rem;
 }
 
-.star-icon {
+.star-icon77 {
     width: 1rem;
     height: 1rem;
     color: #e7cc33;
     fill: #e7cc33;
 }
 
-.testimonial-quote {
+.testimonial-quote77 {
     font-size: 0.875rem;
     line-height: 1.6;
     margin-bottom: 1rem;
 
 }
 
-.testimonial-attribution {
+.testimonial-attribution77 {
     display: flex;
     align-items: center;
     gap: 0.75rem;
@@ -299,7 +298,7 @@
 }
 
 /* Avatar image styling */
-.avatar {
+.avatar77 {
     width: 2rem;
     height: 2rem;
     border-radius: 50%;
@@ -315,38 +314,38 @@
 }
 
 
-.attribution-name {
+.attribution-name77 {
     font-weight: 600;
     font-size: 0.875rem;
 }
 
-.attribution-source {
+.attribution-source77 {
     font-size: 0.75rem;
     color: #d1d5db;
 }
 
 /* Responsive Design */
 @media (min-width: 768px) {
-    .main-heading {
+    .main-heading77 {
         font-size: 3rem;
     }
 
-    .statistics-grid {
+    .statistics-grid77 {
         grid-template-columns: repeat(4, 1fr);
     }
 
-    .testimonials-grid {
+    .testimonials-grid77 {
         grid-template-columns: repeat(2, 1fr);
     }
 }
 
 @media (min-width: 1024px) {
-    .main-heading {
+    .main-heading77 {
         font-size: 3.75rem;
     }
 }
 
-.testimonial-card {
+.testimonial-card77 {
     background-color: #85b3e0;
     border-radius: 10px;
     padding: 30px;
