@@ -18,17 +18,17 @@ const Header = () => {
   // Hàm xử lý URL avatar
   const getAvatarUrl = (url) => {
     if (!url) return null;
-
+    
     // Nếu là URL đầy đủ (bắt đầu bằng http hoặc https)
     if (url.startsWith('http://') || url.startsWith('https://')) {
       return url;
     }
-
+    
     // Nếu là đường dẫn tương đối, thêm base URL
     if (url.startsWith('/')) {
       return `http://localhost:8080${url}`;
     }
-
+    
     // Trường hợp khác
     return url;
   };
@@ -44,8 +44,8 @@ const Header = () => {
   useEffect(() => {
     // Xử lý click bên ngoài dropdown để đóng dropdown
     const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target) &&
-        avatarRef.current && !avatarRef.current.contains(event.target)) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target) && 
+          avatarRef.current && !avatarRef.current.contains(event.target)) {
         setDropdownOpen(false);
       }
     };
@@ -94,9 +94,9 @@ const Header = () => {
   // Render dropdown portal
   const renderDropdownPortal = () => {
     if (!dropdownOpen) return null;
-
+    
     return ReactDOM.createPortal(
-      <div
+      <div 
         className="dropdown-menu-absolute"
         ref={dropdownRef}
         style={{
@@ -136,7 +136,7 @@ const Header = () => {
         />
         <span className="text">{"Eyespire"}</span>
       </div>
-
+      
       {/* Menu điều hướng ở giữa */}
       <div className="column2">
         <div className="row-view5">
@@ -154,7 +154,8 @@ const Header = () => {
             <span className="text3">{""}</span>
           </div>
           <div className="row-view3">
-            <Link to="/shop" className="text4">Shop</Link>
+            <span className="text5">{"Shop"}</span>
+            <span className="text3">{""}</span>
           </div>
 
           {/* Nút About, sử dụng button với onClick */}
@@ -168,13 +169,13 @@ const Header = () => {
 
         </div>
       </div>
-
+      
       {/* Giỏ hàng và nút login/avatar bên phải */}
       <div className="row-view5">
         <div className="cart-icon">
           <FontAwesomeIcon icon={faShoppingCart} />
         </div>
-
+        
         {user ? (
           <div className="user-profile">
             <div className="avatar-container" onClick={toggleDropdown} ref={avatarRef}>
