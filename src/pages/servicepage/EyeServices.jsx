@@ -76,38 +76,51 @@ const EyeServices = () => {
     const accordionItems = ["About Eye Care Center", "Our Eyecare Mission", "Technologies in Opto"]
 
     return (
-        <div className="eyeservice-page-container">
-            <div className="eyeservice-container">
+        <div className="es-page-container">
+            <div className="es-container">
                 {/* Hero Section */}
-                <div className="hero-section">
+                <div className="es-hero-section">
                     <Header />
-                    <div className="service-page-title">
+                    <div className="es-service-page-title">
                         <h1>Our Eye Care Services</h1>
                         <p>Professional eye care services for your vision health</p>
                     </div>
                 </div>
 
                 {/* Services Section */}
-                <div className="main-content">
+                <div className="es-main-content">
                     <Services />
                 </div>
 
                 {/* Quality Eye Care Section */}
-                <section className="quality-care-section">
-                    <div className="quality-care-container">
-                        <div className="quality-care-image">
-                            <img src="/placeholder.svg?height=300&width=300" alt="Eye care" className="circular-image" />
+                <section className="es-quality-care-section">
+                    <div className="es-quality-care-container">
+                        <div className="es-quality-care-image">
+                            <img src="/placeholder.svg?height=300&width=300" alt="Eye care" className="es-circular-image" />
                         </div>
-                        <div className="quality-care-content">
-                            <h2 className="quality-care-title">
+                        <div className="es-quality-care-content">
+                            <h2 className="es-quality-care-title">
                                 Providing You With <br />
-                                <span className="highlight">Quality Eye Care</span>
+                                <span className="es-highlight">Quality Eye Care</span>
                             </h2>
-                            <div className="accordion-items">
+                            <div className="es-accordion-items">
                                 {accordionItems.map((item, index) => (
-                                    <div key={index} className="accordion-item">
-                                        <span>{item}</span>
-                                        <div className="accordion-icon">+</div>
+                                    <div key={index} className="es-accordion-item">
+                                        <span className="es-accordion-item-text">{item}</span>
+                                        <svg
+                                            className="es-accordion-item-icon"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth="2"
+                                                d="M9 5l7 7m0 0l-7 7m7-7H3"
+                                            ></path>
+                                        </svg>
                                     </div>
                                 ))}
                             </div>
@@ -116,174 +129,249 @@ const EyeServices = () => {
                 </section>
 
                 {/* PRK Section */}
-                <section className="prk-section">
-                    <div className="prk-container">
-                        <div className="prk-content">
-                            <h2 className="prk-title">
+                <section className="es-prk-section">
+                    <div className="es-prk-container">
+                        <div className="es-prk-content">
+                            <h2 className="es-prk-title">
                                 Photorefractive <br />
-                                Keratectomy (PRK)
+                                <span className="es-highlight">Keratectomy (PRK)</span>
                             </h2>
-                            <p className="prk-description">
-                                Neque gravida in fermentum et sollicitudin. Sit amet nulla facilisi morbi. Ipsum a arcu cursus vitae
-                                congue mauris rhoncus. Tempor commodo ullamcorper
+                            <p className="es-prk-description">
+                                PRK is a type of refractive surgery to correct myopia (nearsightedness), hyperopia (farsightedness) and
+                                astigmatism. The first laser procedure for vision correction, PRK reshapes the cornea to allow light entering
+                                the eye to be properly focused onto the retina.
                             </p>
-                            <ul className="prk-features">
-                                <li>Neque gravida et sollicitudin</li>
-                                <li>Sit amet nulla facilisi morbi</li>
-                                <li>Tempor commodo ullamcorper</li>
-                                <li>Feugiat scelerisque varius enim</li>
+                            <ul className="es-prk-features">
+                                <li className="es-prk-feature">
+                                    <svg
+                                        className="es-prk-feature-icon"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2"
+                                            d="M5 13l4 4L19 7"
+                                        ></path>
+                                    </svg>
+                                    <span className="es-prk-feature-text">No surgical flap creation</span>
+                                </li>
+                                <li className="es-prk-feature">
+                                    <svg
+                                        className="es-prk-feature-icon"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2"
+                                            d="M5 13l4 4L19 7"
+                                        ></path>
+                                    </svg>
+                                    <span className="es-prk-feature-text">Ideal for thin corneas</span>
+                                </li>
+                                <li className="es-prk-feature">
+                                    <svg
+                                        className="es-prk-feature-icon"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2"
+                                            d="M5 13l4 4L19 7"
+                                        ></path>
+                                    </svg>
+                                    <span className="es-prk-feature-text">Eliminates flap complications</span>
+                                </li>
                             </ul>
-                        </div>
-                        <div className="prk-image">
-                            <img src="/placeholder.svg?height=400&width=600" alt="PRK procedure" className="procedure-image" />
-                        </div>
-                    </div>
-                </section>
-
-                {/* CTA Section */}
-                <section className="cta-section">
-                    <div className="cta-container">
-                        <div className="cta-left">
-                            <h2 className="cta-title">Ready to improve your vision? Schedule your appointment today!</h2>
-                            <button className="appointment-button">Make an Appointment</button>
-                        </div>
-                        <div className="cta-right">
-                            <p className="cta-subtitle">Call us now for immediate assistance</p>
-                            <div className="phone-cta">
-                                <span className="phone-icon-large">📞</span>
-                                <span className="phone-number-large">(555) 123-4567</span>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                {/* Vision Correction Surgery Section */}
-                <section className="vision-correction-section">
-                    <div className="vision-correction-container">
-                        <div className="vision-correction-image">
-                            <img src="/placeholder.svg?height=400&width=600" alt="Vision correction" className="correction-image" />
-                        </div>
-                        <div className="vision-correction-content">
-                            <div className="countdown-container">
-                                <div className="countdown-item">
-                                    <div className="countdown-value">{countdown.days}</div>
-                                    <div className="countdown-label">Days</div>
-                                </div>
-                                <div className="countdown-item">
-                                    <div className="countdown-value">{countdown.hours}</div>
-                                    <div className="countdown-label">Hours</div>
-                                </div>
-                                <div className="countdown-item">
-                                    <div className="countdown-value">{countdown.minutes}</div>
-                                    <div className="countdown-label">Min</div>
-                                </div>
-                                <div className="countdown-item">
-                                    <div className="countdown-value">{countdown.seconds}</div>
-                                    <div className="countdown-label">Sec</div>
-                                </div>
-                            </div>
-                            <h2 className="vision-correction-title">Vision Correction Surgery</h2>
-                            <p className="vision-correction-description">
-                                Neque gravida in fermentum et sollicitudin. Sit amet nulla facilisi morbi. Ipsum a arcu cursus vitae
-                                congue mauris rhoncus. Tempor commodo ullamcorper
-                            </p>
-                            <button className="appointment-button-blue">
-                                <span>Make an Appointment</span>
-                                <span className="arrow-icon">→</span>
+                            <button className="es-prk-button">
+                                Learn More
+                                <svg
+                                    className="es-prk-button-icon"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth="2"
+                                        d="M14 5l7 7m0 0l-7 7m7-7H3"
+                                    ></path>
+                                </svg>
                             </button>
+                        </div>
+                        <div className="es-vision-correction-image">
+                            <img src="/placeholder.svg?height=400&width=600" alt="PRK procedure" className="es-vision-correction-img" />
                         </div>
                     </div>
                 </section>
 
                 {/* Eye Disorders Section */}
-                <section className="eye-disorders-section">
-                    <h2 className="eye-disorders-title">
-                        Common <span className="highlight">Eye Disorders</span> and Diseases
-                    </h2>
-
-                    <div className="eye-disorders-container">
-                        <div className="disorders-sidebar">
-                            <ul className="disorders-list">
-                                {eyeDisorders.map((disorder, index) => (
-                                    <li
-                                        key={index}
-                                        className={index === activeDisorder ? "active" : ""}
-                                        onClick={() => setActiveDisorder(index)}
-                                    >
-                                        {disorder}
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-
-                        <div className="disorder-content">
-                            <div className="disorder-header">
-                                <div className="disorder-image">
-                                    <img src="/placeholder.svg?height=200&width=200" alt="Myopia" className="circular-image" />
-                                </div>
-                                <div className="disorder-info">
-                                    <h3 className="disorder-title">Myopia</h3>
-                                    <p className="disorder-description">
-                                        Varius vel pharetra vel turpis nunc eget lorem. Vivamus at augue eget arcu dictum. Tincidunt
-                                        praesent semper feugiat nisl sed. Odio morbi quis commodo odio aenean sed. Nibh nisl condimentum id
-                                        venenatis a. Ut placerat orci nulla pellentesque dignissim enim sit.
+                <section className="es-eye-disorders-section">
+                    <h2 className="es-eye-disorders-title">Common Eye Disorders</h2>
+                    <div className="es-eye-disorders-container">
+                        <ul className="es-disorders-list">
+                            {eyeDisorders.map((disorder, index) => (
+                                <li
+                                    key={index}
+                                    className={activeDisorder === index ? "active" : ""}
+                                    onClick={() => setActiveDisorder(index)}
+                                >
+                                    {disorder}
+                                </li>
+                            ))}
+                        </ul>
+                        <div className="es-disorder-content">
+                            <div className="es-disorder-header">
+                                <div>
+                                    <h3 className="es-disorder-title">Myopia (Nearsightedness)</h3>
+                                    <p className="es-disorder-description">
+                                        Myopia is a common vision condition in which you can see objects near to you clearly, but objects
+                                        farther away are blurry. It occurs when the shape of your eye causes light rays to bend (refract)
+                                        incorrectly, focusing images in front of your retina instead of on your retina.
                                     </p>
                                 </div>
+                                <div className="es-disorder-image">
+                                    <img src="/placeholder.svg?height=200&width=300" alt="Myopia" />
+                                </div>
                             </div>
-
-                            <div className="symptoms-grid">
+                            <h4 className="es-symptoms-title">Common Symptoms</h4>
+                            <div className="es-symptoms-list">
                                 {myopiaSymptoms.map((symptom, index) => (
-                                    <div key={index} className="symptom-item">
-                                        <div className="symptom-icon"></div>
-                                        <span>{symptom}</span>
+                                    <div key={index} className="es-symptom-item">
+                                        <svg
+                                            className="es-symptom-icon"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth="2"
+                                                d="M5 13l4 4L19 7"
+                                            ></path>
+                                        </svg>
+                                        <span className="es-symptom-text">{symptom}</span>
                                     </div>
                                 ))}
                             </div>
+                        </div>
+                    </div>
+                </section>
+
+                {/* Vision Correction Section */}
+                <section className="es-vision-correction-section">
+                    <div className="es-vision-correction-container">
+                        <div className="es-vision-correction-image">
+                            <img src="/placeholder.svg?height=400&width=600" alt="Vision correction" className="es-vision-correction-img" />
+                        </div>
+                        <div>
+                            <div className="es-countdown-container">
+                                <div className="es-countdown-item">
+                                    <div className="es-countdown-value">{countdown.days}</div>
+                                    <div className="es-countdown-label">Days</div>
+                                </div>
+                                <div className="es-countdown-item">
+                                    <div className="es-countdown-value">{countdown.hours}</div>
+                                    <div className="es-countdown-label">Hours</div>
+                                </div>
+                                <div className="es-countdown-item">
+                                    <div className="es-countdown-value">{countdown.minutes}</div>
+                                    <div className="es-countdown-label">Minutes</div>
+                                </div>
+                                <div className="es-countdown-item">
+                                    <div className="es-countdown-value">{countdown.seconds}</div>
+                                    <div className="es-countdown-label">Seconds</div>
+                                </div>
+                            </div>
+                            <h2 className="es-vision-correction-title">
+                                Special Offer on <br />
+                                <span className="es-highlight">Vision Correction</span>
+                            </h2>
+                            <p className="es-vision-correction-description">
+                                For a limited time, get a special discount on our vision correction procedures. Schedule your free
+                                consultation today and take the first step towards better vision.
+                            </p>
+                            <button className="es-prk-button">
+                                Book Consultation
+                                <svg
+                                    className="es-prk-button-icon"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth="2"
+                                        d="M14 5l7 7m0 0l-7 7m7-7H3"
+                                    ></path>
+                                </svg>
+                            </button>
                         </div>
                     </div>
                 </section>
 
                 {/* Testimonials Section */}
-                <section className="testimonials-section">
-                    <h2 className="testimonials-title">Our Patients are Saying</h2>
-
-                    <div className="testimonials-container">
-                        {testimonials.map((testimonial, index) => (
-                            <div key={index} className={`testimonial-card ${index === activeTestimonial ? "active" : ""}`}>
-                                <h3 className="testimonial-title">{testimonial.title}</h3>
-                                <p className="testimonial-content">"{testimonial.content}"</p>
-                                <div className="testimonial-author">
-                                    <div className="author-image">
-                                        <img src="/placeholder.svg?height=50&width=50" alt={testimonial.author} />
-                                    </div>
-                                    <div className="author-info">
-                                        <div className="author-name">{testimonial.author}</div>
-                                        <div className="author-source">{testimonial.source}</div>
+                <section className="es-testimonials-section">
+                    <h2 className="es-testimonials-title">What Our Patients Say</h2>
+                    <div className="es-testimonials-container">
+                        <div className="es-testimonials-grid">
+                            {testimonials.map((testimonial, index) => (
+                                <div
+                                    key={index}
+                                    className={`es-testimonial-card ${index === activeTestimonial ? "active" : ""}`}
+                                >
+                                    <h3 className="es-testimonial-title">{testimonial.title}</h3>
+                                    <p className="es-testimonial-content">{testimonial.content}</p>
+                                    <div className="es-testimonial-author">
+                                        <div className="es-author-image">
+                                            <img src="/placeholder.svg?height=50&width=50" alt={testimonial.author} />
+                                        </div>
+                                        <div className="es-author-info">
+                                            <div className="es-author-name">{testimonial.author}</div>
+                                            <div className="es-author-source">{testimonial.source}</div>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
 
-                    <div className="testimonial-dots">
-                        {testimonials.map((_, index) => (
-                            <button
-                                key={index}
-                                className={`dot ${index === activeTestimonial ? "active" : ""}`}
-                                onClick={() => setActiveTestimonial(index)}
-                                aria-label={`Testimonial ${index + 1}`}
-                            ></button>
-                        ))}
+                        <div className="es-testimonial-dots">
+                            {testimonials.map((_, index) => (
+                                <button
+                                    key={index}
+                                    className={`es-dot ${index === activeTestimonial ? "active" : ""}`}
+                                    onClick={() => setActiveTestimonial(index)}
+                                    aria-label={`Testimonial ${index + 1}`}
+                                ></button>
+                            ))}
+                        </div>
                     </div>
                 </section>
 
                 {/* Appointment Booking Section */}
-                <section className="service-appointment-booking-section appointment-booking-section">
-                    <div className="appointment-booking-container">
-                        <div className="calendar-widget">
-                            <h3 className="calendar-title">August</h3>
-                            <div className="calendar-grid">
-                                <div className="calendar-header">
+                <section className="es-appointment-booking-section">
+                    <div className="es-appointment-booking-container">
+                        <div className="es-calendar-widget">
+                            <h3 className="es-calendar-title">August</h3>
+                            <div className="es-calendar-grid">
+                                <div className="es-calendar-header">
                                     <span>S</span>
                                     <span>M</span>
                                     <span>T</span>
@@ -292,13 +380,13 @@ const EyeServices = () => {
                                     <span>F</span>
                                     <span>S</span>
                                 </div>
-                                <div className="calendar-body">
+                                <div className="es-calendar-body">
                                     {[...Array(31)].map((_, index) => {
                                         const day = index + 1
                                         return (
                                             <button
                                                 key={day}
-                                                className={`calendar-day ${day === selectedDate ? "selected" : ""}`}
+                                                className={`es-calendar-day ${day === selectedDate ? "selected" : ""}`}
                                                 onClick={() => setSelectedDate(day)}
                                             >
                                                 {day}
@@ -308,16 +396,16 @@ const EyeServices = () => {
                                 </div>
                             </div>
                         </div>
-                        <div className="appointment-content">
-                            <h2 className="appointment-title">
+                        <div className="es-appointment-content">
+                            <h2 className="es-appointment-title">
                                 Book an Eye Care <br />
-                                <span className="highlight">Appointment</span>
+                                <span className="es-highlight">Appointment</span>
                             </h2>
-                            <p className="appointment-description">
+                            <p className="es-appointment-description">
                                 Neque gravida in fermentum et sollicitudin. Sit amet nulla facilisi morbi. Ipsum a arcu cursus vitae
                                 congue mauris rhoncus. Tempor commodo ullamcorper
                             </p>
-                            <button className="appointment-button">Make an Appointment</button>
+                            <button className="es-prk-button">Make an Appointment</button>
                         </div>
                     </div>
                 </section>
