@@ -11,6 +11,11 @@ import ResetPassword from './pages/authentication/reset-password/reset-password'
 import GoogleCallback from './pages/authentication/google-callback/google-callback';
 import ProfilePage from './pages/dashboard/patient-dashboard/profile';
 import DoctorDashboard from './pages/dashboard/doctor-dashboard/doctor';
+import DoctorSchedule from './pages/dashboard/doctor-dashboard/doctor-schedule';
+import DoctorRecords from './pages/dashboard/doctor-dashboard/doctor-records';
+import DoctorFeedback from './pages/dashboard/doctor-dashboard/doctor-feedback';
+import DoctorAppointments from './pages/dashboard/doctor-dashboard/doctor-appointments';
+import DoctorCustomers from './pages/dashboard/doctor-dashboard/doctor-customer';
 import EyeServices from './pages/servicepage/EyeServices';
 import AboutPage from './pages/aboutPage/about';  // Kết hợp cả hai import nếu cần
 
@@ -38,7 +43,12 @@ function App() {
           <Route path="/signup/verify-otp" element={<VerifyOtpPage />} />
           <Route path="/auth/google/callback" element={<GoogleCallback />} />
           <Route path="/dashboard/profile" element={<ProfilePage />} />
-          <Route path="/dashboard/doctor" element={<DoctorDashboard />} />
+          <Route path="/dashboard/doctor/profile" element={<DoctorDashboard />} />
+          <Route path="/dashboard/doctor/schedule" element={<DoctorSchedule />} />
+          <Route path="/dashboard/doctor/records" element={<DoctorRecords />} />
+          <Route path="/dashboard/doctor/feedback" element={<DoctorFeedback />} />
+          <Route path="/dashboard/doctor/appointments" element={<DoctorAppointments />} />
+          <Route path="/dashboard/doctor/customers" element={<DoctorCustomers />} />
             <Route path="/services" element={<EyeServices />} />
             <Route path="/about" element={<AboutPage />} />
 
