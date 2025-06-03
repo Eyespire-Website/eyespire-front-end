@@ -13,6 +13,8 @@ import ProfilePage from './pages/dashboard/patient-dashboard/profile';
 import DoctorDashboard from './pages/dashboard/doctor-dashboard/doctor';
 import EyeServices from './pages/servicepage/EyeServices';
 import AboutPage from './pages/aboutPage/about';  // Kết hợp cả hai import nếu cần
+import ReceptionistDashboard from './pages/dashboard/receptionist-dashboard/ReceptionistDashboard';
+
 
 function App() {
   return (
@@ -39,7 +41,8 @@ function App() {
           <Route path="/auth/google/callback" element={<GoogleCallback />} />
           <Route path="/dashboard/profile" element={<ProfilePage />} />
           <Route path="/dashboard/doctor" element={<DoctorDashboard />} />
-            <Route path="/services" element={<EyeServices />} />
+          <Route path="/dashboard/receptionist" element={<ReceptionistDashboard />} />
+          <Route path="/services" element={<EyeServices />} />
             <Route path="/about" element={<AboutPage />} />
 
         </Routes>
