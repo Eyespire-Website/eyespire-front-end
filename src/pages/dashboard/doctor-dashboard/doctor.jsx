@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import React, {useState, useEffect} from "react"
 import "./doctor.css"
 import {useNavigate} from "react-router-dom";
 
@@ -40,9 +40,13 @@ export default function DoctorDashboard() {
         navigate('/');
     };
 
+    const handleMenuClick = (itemId) => {
+        setActiveTab(itemId)
+        navigate(`/dashboard/doctor/${itemId}`)
+    }
 
     const handleInputChange = (e) => {
-        const { name, value } = e.target
+        const {name, value} = e.target
         setDoctorData((prev) => ({
             ...prev,
             [name]: value,
@@ -177,7 +181,7 @@ export default function DoctorDashboard() {
 
     // Handle password change
     const handlePasswordChange = (e) => {
-        const { name, value } = e.target
+        const {name, value} = e.target
         setPasswordData((prev) => ({
             ...prev,
             [name]: value,
@@ -218,12 +222,12 @@ export default function DoctorDashboard() {
     }
 
     const menuItems = [
-        { id: "schedule", label: "Lịch làm việc", icon: "📅" },
-        { id: "appointments", label: "Xem cuộc hẹn", icon: "🕐" },
-        { id: "customers", label: "Hồ sơ khách hàng", icon: "👥" },
-        { id: "records", label: "Tạo hồ sơ bệnh án", icon: "📋" },
-        { id: "feedback", label: "Phản hồi khách hàng", icon: "💬" },
-        { id: "profile", label: "Hồ sơ cá nhân", icon: "👤" },
+        {id: "schedule", label: "Lịch làm việc", icon: "📅"},
+        {id: "appointments", label: "Xem cuộc hẹn", icon: "🕐"},
+        {id: "customers", label: "Hồ sơ bệnh nhân", icon: "👥"},
+        {id: "records", label: "Tạo hồ sơ bệnh án", icon: "📋"},
+        {id: "feedback", label: "Phản hồi khách hàng", icon: "💬"},
+        {id: "profile", label: "Hồ sơ cá nhân", icon: "👤"},
     ]
 
     return (
@@ -245,7 +249,7 @@ export default function DoctorDashboard() {
                     <ul>
                         {menuItems.map((item) => (
                             <li key={item.id} className={`menu-item ${activeTab === item.id ? "active" : ""}`}>
-                                <button onClick={() => setActiveTab(item.id)} className="menu-button">
+                                <button onClick={() => handleMenuClick(item.id)} className="menu-button">
                                     <span className="menu-icon">{item.icon}</span>
                                     <span className="menu-text">{item.label}</span>
                                 </button>
@@ -259,7 +263,7 @@ export default function DoctorDashboard() {
                         <span className="logout-icon">←</span>
                         <span>Đăng xuất</span>
                     </button>
-                    <div className="copyright">© 2024 EyeSpire</div>
+                    <div className="copyright">© 2025 EyeSpire</div>
                 </div>
             </div>
 
@@ -275,7 +279,7 @@ export default function DoctorDashboard() {
                         <div className="profile-avatar-container">
                             <div className="profile-avatar-large">
                                 {previewUrl ? (
-                                    <img src={previewUrl || "/placeholder.svg"} alt="Avatar" className="avatar-image" />
+                                    <img src={previewUrl || "/placeholder.svg"} alt="Avatar" className="avatar-image"/>
                                 ) : (
                                     doctorData.fullname.charAt(0) || "P"
                                 )}
@@ -287,7 +291,7 @@ export default function DoctorDashboard() {
                                     id="avatar-upload"
                                     onChange={handleFileChange}
                                     accept="image/*"
-                                    style={{ display: "none" }}
+                                    style={{display: "none"}}
                                 />
                             </div>
                             {selectedFile && (
@@ -380,7 +384,8 @@ export default function DoctorDashboard() {
                                 <label>
                                     Giới tính <span className="required">*</span>
                                 </label>
-                                <select name="gender" value={doctorData.gender} onChange={handleInputChange} className="form-control">
+                                <select name="gender" value={doctorData.gender} onChange={handleInputChange}
+                                        className="form-control">
                                     <option value="male">Nam</option>
                                     <option value="female">Nữ</option>
                                     <option value="other">Khác</option>
