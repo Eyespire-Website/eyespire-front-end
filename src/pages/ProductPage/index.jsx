@@ -147,14 +147,14 @@ export default function ProductDetail() {
             specifications={productData.specifications}
             reviews={productData.reviews}
           />
+
+          {/* Related Products */}
+          <RelatedProducts products={relatedProducts} />
+
+          {/* Call to Action Sections */}
+          <CallToAction />
         </div>
       </div>
-
-      {/* Related Products */}
-      <RelatedProducts products={relatedProducts} />
-
-      {/* Call to Action Sections */}
-      <CallToAction />
 
       <Footer />
     </div>
