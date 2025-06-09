@@ -1,0 +1,49 @@
+.pr-product-detail-page {
+  min-height: 100vh;
+  background-color: #f9fafb;
+}
+
+.pr-main-content {
+  padding: 3rem 0;
+  background-color: white;
+}
+
+.pr-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.related-products-wrapper {
+  background-color: #f9fafb;
+  padding: 4rem 0;
+}
+
+.pr-related-products-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.pr-product-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  margin-bottom: 4rem;
+}
+
+@media (max-width: 768px) {
+  .pr-product-layout {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .pr-container,
+  .pr-related-products-container {
+    padding: 0 1rem;
+  }
+
+  .pr-main-content {
+    padding: 2rem 0;
+  }
+}
