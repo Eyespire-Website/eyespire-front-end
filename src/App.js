@@ -22,6 +22,7 @@ import EyeServices from "./pages/servicepage/EyeServices";
 import AboutPage from "./pages/aboutPage/about"; // Kết hợp cả hai import nếu cần
 import ShopPage from "./pages/shoppage"; // Add this import
 import ProductDetail from "./pages/ProductPage";
+import AdminDashboard from './pages/dashboard/admin-dashboard/AdminDashboard';
 
 function App() {
   return (
@@ -62,20 +63,12 @@ function App() {
             element={<DoctorSchedule />}
           />
           <Route path="/dashboard/doctor/records" element={<DoctorRecords />} />
-          <Route
-            path="/dashboard/doctor/feedback"
-            element={<DoctorFeedback />}
-          />
-          <Route
-            path="/dashboard/doctor/appointments"
-            element={<DoctorAppointments />}
-          />
-          <Route
-            path="/dashboard/doctor/customers"
-            element={<DoctorCustomers />}
-          />
-          <Route path="/services" element={<EyeServices />} />
-          <Route path="/about" element={<AboutPage />} />
+          <Route path="/dashboard/doctor/feedback" element={<DoctorFeedback />} />
+          <Route path="/dashboard/doctor/appointments" element={<DoctorAppointments />} />
+          <Route path="/dashboard/doctor/customers" element={<DoctorCustomers />} />
+          <Route path="/dashboard/admin" element={<AdminDashboard />} />
+            <Route path="/services" element={<EyeServices />} />
+            <Route path="/about" element={<AboutPage />} />
         </Routes>
       </div>
     </Router>
