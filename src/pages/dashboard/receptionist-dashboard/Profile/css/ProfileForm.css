@@ -1,0 +1,97 @@
+.form-modern-unique {
+    max-width: 600px;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.form-row-unique {
+    display: flex;
+    gap: 1.5rem;
+    width: 100%;
+}
+
+.form-group-unique {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.half-width-unique {
+    flex: 1;
+}
+
+.form-group-unique label {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #1e3a8a;
+}
+
+.form-group-unique label span {
+    color: red;
+    margin-left: 4px;
+}
+
+.form-group-unique input,
+.form-group-unique select {
+    padding: 0.5rem 0.75rem;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 1rem;
+    background-color: #f9fafb;
+    color: #1e293b;
+    transition: border-color 0.3s ease;
+}
+
+.form-group-unique input:focus,
+.form-group-unique select:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3);
+    background-color: white;
+}
+
+.form-submit-unique {
+    padding: 0.75rem 1rem;
+    font-size: 1.2rem;
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.25s ease;
+    align-self: flex-end;
+    width: 150px;
+}
+
+.form-submit-unique:hover {
+    background-color: #1e40af;
+}
+
+.input-icon-wrapper-unique {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-icon-wrapper-unique input,
+.input-icon-wrapper-unique select {
+    padding-left: 2.5rem; /* icon không chồng lên chữ */
+    flex: 1;
+}
+
+.input-icon-unique {
+    position: absolute;
+    left: 10px;
+    color: #2563eb;
+    pointer-events: none;
+    font-size: 1.2rem;
+}
+
+/* Disabled input mờ hơn */
+input[disabled], input[readonly] {
+    background-color: #e5e7eb;
+    color: #6b7280;
+    cursor: not-allowed;
+}
