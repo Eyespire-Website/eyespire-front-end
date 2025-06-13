@@ -1,0 +1,523 @@
+/* Users Grid - Admin Dashboard */
+/* Grid hiển thị danh sách người dùng */
+.admin-users-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+/* Card hiển thị thông tin người dùng */
+.admin-user-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px;
+    background: white;
+    transition: all 0.2s;
+}
+
+.admin-user-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+/* Header của card người dùng */
+.admin-user-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+}
+
+/* Container cho avatar người dùng */
+.admin-user-avatar-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Avatar người dùng */
+.admin-user-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #e2e8f0;
+}
+
+.user-role-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.user-role-badge.customer {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.user-role-badge.doctor {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.user-role-badge.receptionist {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.user-role-badge.pharmacist {
+    background: #fce7f3;
+    color: #be185d;
+}
+
+.user-role-badge.vip {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.user-role-badge.staff {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.user-role-badge.admin {
+    background: #fce7f3;
+    color: #be185d;
+}
+
+/* Trạng thái người dùng */
+.admin-user-status {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+/* Trạng thái hoạt động */
+.admin-user-status-active {
+    background: #dcfce7;
+    color: #166534;
+}
+
+/* Trạng thái không hoạt động */
+.admin-user-status-inactive {
+    background: #f1f5f9;
+    color: #64748b;
+}
+
+/* Trạng thái bị khóa */
+.admin-user-status-blocked {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.user-info {
+    margin-bottom: 16px;
+}
+
+.user-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0 0 4px 0;
+}
+
+.user-email {
+    font-size: 14px;
+    color: #64748b;
+    margin: 0 0 2px 0;
+}
+
+.user-phone {
+    font-size: 14px;
+    color: #64748b;
+    margin: 0;
+}
+
+.user-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.user-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.stat-label {
+    font-size: 12px;
+    color: #94a3b8;
+    font-weight: 500;
+}
+
+.stat-value {
+    font-size: 14px;
+    color: #1e293b;
+    font-weight: 500;
+}
+
+.user-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* Stats Grid - Admin Dashboard */
+.admin-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.admin-stat-card {
+  background: white;
+  padding: 24px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.admin-stat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.admin-stat-title {
+  font-size: 14px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.admin-stat-icon {
+  width: 24px;
+  height: 24px;
+  color: #3b82f6;
+}
+
+.admin-stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.admin-stat-change {
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.admin-stat-positive {
+  color: #059669;
+}
+
+.admin-stat-negative {
+  color: #dc2626;
+}
+
+/* Card quản lý người dùng */
+.admin-users-card {
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+.admin-users-card-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.admin-users-card-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.admin-users-card-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.admin-users-card-content {
+  padding: 24px;
+}
+
+/* Tìm kiếm và lọc */
+.admin-users-search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.admin-users-search-input {
+  padding: 8px 12px 8px 36px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  width: 250px;
+  transition: border-color 0.2s;
+}
+
+.admin-users-search-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.admin-users-search-input::placeholder {
+  color: #9ca3af;
+}
+
+.admin-users-search-icon {
+  position: absolute;
+  left: 12px;
+  color: #6b7280;
+  font-size: 14px;
+  pointer-events: none;
+}
+
+.admin-users-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.admin-users-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-users-filter-group label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  white-space: nowrap;
+}
+
+/* Buttons */
+.admin-users-btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: none;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-users-btn-primary {
+  background: #3b82f6;
+  color: white;
+}
+
+.admin-users-btn-primary:hover {
+  background: #2563eb;
+}
+
+/* Modal người dùng - Admin Dashboard */
+/* Overlay của modal */
+.admin-users-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* Container chính của modal */
+.admin-users-modal {
+  background: white;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 600px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+/* Header của modal */
+.admin-users-modal-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Tiêu đề của modal */
+.admin-users-modal-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+/* Nút đóng modal */
+.admin-users-modal-close {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.admin-users-modal-close:hover {
+  background: #f1f5f9;
+  color: #1e293b;
+}
+
+/* Phần nội dung của modal */
+.admin-users-modal-body {
+  padding: 24px;
+}
+
+/* Form trong modal người dùng */
+.admin-users-form {
+  display: grid;
+  gap: 16px;
+}
+
+/* Hàng trong form */
+.admin-users-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* Nhóm input trong form */
+.admin-users-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Label cho các trường input */
+.admin-users-form-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+}
+
+/* Input text trong form */
+.admin-users-form-input {
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  width: 100%;
+  transition: border-color 0.2s;
+}
+
+.admin-users-form-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Textarea trong form */
+.admin-users-form-textarea {
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  width: 100%;
+  min-height: 100px;
+  resize: vertical;
+  transition: border-color 0.2s;
+}
+
+.admin-users-form-textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Select dropdown trong form */
+.admin-users-form-select {
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  width: 100%;
+  background: white;
+}
+
+/* Footer của modal */
+.admin-users-modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+/* Nút hủy trong modal */
+.admin-users-modal-cancel {
+  padding: 8px 16px;
+  background-color: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  color: #64748b;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.admin-users-modal-cancel:hover {
+  background-color: #e2e8f0;
+}
+
+/* Nút lưu trong modal */
+.admin-users-modal-save {
+  padding: 8px 16px;
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.admin-users-modal-save:hover {
+  background-color: #2563eb;
+}
+
+/* Responsive styles */
+@media (max-width: 640px) {
+  .admin-users-form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-users-modal {
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+}

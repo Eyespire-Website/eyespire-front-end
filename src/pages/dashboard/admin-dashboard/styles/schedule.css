@@ -1,0 +1,674 @@
+/* Schedule Styles */
+.schedule-container {
+    display: grid;
+    grid-template-columns: 3fr 1fr;
+    gap: 24px;
+}
+
+.schedule-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.view-controls {
+    display: flex;
+    gap: 8px;
+}
+
+.date-navigation {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.date-picker-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.date-picker {
+    padding: 8px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 14px;
+    background: white;
+    cursor: pointer;
+}
+
+.current-period {
+    font-weight: 600;
+    color: #1e293b;
+    min-width: 200px;
+    text-align: center;
+}
+
+/* Week View */
+.week-view {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.week-header {
+    display: grid;
+    grid-template-columns: 80px repeat(7, 1fr);
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.time-column-header {
+    padding: 16px 8px;
+    font-weight: 600;
+    color: #64748b;
+    border-right: 1px solid #e2e8f0;
+    text-align: center;
+}
+
+.day-header {
+    padding: 16px 8px;
+    text-align: center;
+    border-right: 1px solid #e2e8f0;
+}
+
+.day-header.today {
+    background: #eff6ff;
+    color: #3b82f6;
+}
+
+.day-name {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.day-date {
+    font-size: 12px;
+    color: #64748b;
+    margin-top: 4px;
+}
+
+.week-body {
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.time-row {
+    display: grid;
+    grid-template-columns: 80px repeat(7, 1fr);
+    border-bottom: 1px solid #f1f5f9;
+    min-height: 60px;
+}
+
+.time-label {
+    padding: 8px;
+    font-size: 12px;
+    color: #64748b;
+    border-right: 1px solid #e2e8f0;
+    background: #fafbfc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.time-cell {
+    border-right: 1px solid #f1f5f9;
+    padding: 4px;
+    position: relative;
+    min-height: 60px;
+    overflow: hidden; /* Ngăn tràn nội dung */
+    max-width: 100%; /* Giới hạn chiều rộng tối đa */
+    box-sizing: border-box; /* Bao gồm padding trong chiều rộng */
+}
+
+.appointment-group {
+    display: flex;
+    flex-direction: row;
+    gap: 4px;
+    height: 100%;
+    max-width: 100%; /* Giới hạn chiều rộng tối đa */
+    box-sizing: border-box;
+}
+
+.appointment-block {
+    border-radius: 4px;
+    padding: 4px 6px;
+    font-size: 11px;
+    line-height: 1.2;
+    cursor: pointer;
+    transition: all 0.2s;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 80px;
+    max-width: calc(100% - 44px); /* Đảm bảo đủ chỗ cho .more */
+    box-sizing: border-box;
+}
+
+.appointment-block:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.appointment-block.more {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    color: #1e293b;
+    background-color: #e2e8f0;
+    border-left: 4px solid #64748b;
+    min-width: 40px;
+    max-width: 40px;
+    flex: 0 0 40px;
+    box-sizing: border-box;
+}
+
+.apt-time {
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.apt-patient {
+    font-weight: 500;
+    color: #374151;
+    margin-top: 2px;
+}
+
+.apt-service {
+    color: #64748b;
+    font-size: 10px;
+}
+
+.apt-doctor {
+    color: #64748b;
+    font-size: 10px;
+    margin-top: 2px;
+}
+
+/* Day View */
+.day-view {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.day-header-single {
+    background: #f8fafc;
+    padding: 20px;
+    border-bottom: 1px solid #e2e8f0;
+    text-align: center;
+}
+
+.day-header-single h3 {
+    margin: 0;
+    color: #1e293b;
+    font-size: 18px;
+}
+
+.day-schedule {
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.day-time-slot {
+    display: flex;
+    border-bottom: 1px solid #f1f5f9;
+    min-height: 80px;
+}
+
+.day-time-label {
+    width: 80px;
+    padding: 16px 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #64748b;
+    border-right: 1px solid #e2e8f0;
+    background: #fafbfc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.day-time-content {
+    flex: 1;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.day-appointment {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 12px;
+    transition: all 0.2s;
+}
+
+.day-appointment:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+}
+
+.day-apt-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.day-apt-time {
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 14px;
+}
+
+.day-apt-status {
+    font-size: 12px;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.day-apt-status.confirmed {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.day-apt-status.pending {
+    background: #fef3c7;
+    color: #92400b;
+}
+
+.day-apt-status.completed {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.day-apt-patient {
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 16px;
+    margin-bottom: 4px;
+}
+
+.day-apt-service {
+    color: #64748b;
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+.day-apt-doctor {
+    font-weight: 500;
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+.day-apt-phone {
+    color: #64748b;
+    font-size: 12px;
+}
+
+.empty-slot {
+    color: #94a3b8;
+    font-style: italic;
+    text-align: center;
+    padding: 20px;
+}
+
+/* Doctor Legend */
+.doctor-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.search-box {
+    position: relative;
+}
+
+.search-input {
+    width: 100%;
+    padding: 8px 12px 8px 36px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border-color 0.2s;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #f1f5f9;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.legend-item:hover {
+    background-color: #f1f5f9;
+}
+
+.legend-item.active {
+    background-color: #eff6ff;
+    border-left: 3px solid #3b82f6;
+}
+
+.legend-color {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.legend-info {
+    flex: 1;
+}
+
+.legend-name {
+    font-weight: 500;
+    color: #1e293b;
+    font-size: 14px;
+}
+
+.legend-specialty {
+    color: #64748b;
+    font-size: 12px;
+    margin-top: 2px;
+}
+
+/* Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 8px;
+    width: 100%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    color: #64748b;
+    transition: color 0.2s;
+}
+
+.modal-close:hover {
+    color: #1e293b;
+}
+
+.modal-body {
+    padding: 24px;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 16px 24px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #1e293b;
+}
+
+.form-input,
+.form-select {
+    padding: 8px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border-color 0.2s;
+}
+
+.form-input:focus,
+.form-select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.btn {
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-primary {
+    background-color: #3b82f6;
+    color: white;
+    border: none;
+}
+
+.btn-primary:hover {
+    background-color: #2563eb;
+}
+
+.btn-secondary {
+    background-color: #f1f5f9;
+    color: #1e293b;
+    border: 1px solid #d1d5db;
+}
+
+.btn-secondary:hover {
+    background-color: #e2e8f0;
+}
+
+.btn-danger {
+    background-color: #ef4444;
+    color: white;
+    border: none;
+}
+
+.btn-danger:hover {
+    background-color: #dc2626;
+}
+
+/* Appointment List for More Modal */
+.appointment-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.appointment-item {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.appointment-item:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+}
+
+.apt-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.apt-status {
+    font-size: 12px;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.apt-status.confirmed {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.apt-status.pending {
+    background: #fef3c7;
+    color: #92400b;
+}
+
+.apt-status.completed {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+/* Detail Section Styles */
+.admin-detail-section {
+    margin-bottom: 24px;
+}
+
+.admin-detail-section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 16px;
+}
+
+.admin-detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.admin-detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.admin-detail-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #64748b;
+}
+
+.admin-detail-value {
+    font-size: 14px;
+    color: #1e293b;
+}
+
+.status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.status.confirmed {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.status.pending {
+    background: #fef3c7;
+    color: #92400b;
+}
+
+.status.completed {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.loading {
+    text-align: center;
+    padding: 20px;
+    color: #64748b;
+}
+
+.error-message {
+    text-align: center;
+    padding: 20px;
+    color: #ef4444;
+}
+
+/* Form Error Styles */
+.form-input--error,
+.form-select--error {
+    border-color: #ef4444;
+}
+
+.form-error-message {
+    color: #ef4444;
+    font-size: 12px;
+    margin-top: 4px;
+}
