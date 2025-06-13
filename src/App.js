@@ -63,30 +63,12 @@ function App() {
             element={<DoctorSchedule />}
           />
           <Route path="/dashboard/doctor/records" element={<DoctorRecords />} />
-<<<<<<< HEAD
           <Route path="/dashboard/doctor/feedback" element={<DoctorFeedback />} />
           <Route path="/dashboard/doctor/appointments" element={<DoctorAppointments />} />
           <Route path="/dashboard/doctor/customers" element={<DoctorCustomers />} />
           <Route path="/dashboard/admin" element={<AdminDashboard />} />
             <Route path="/services" element={<EyeServices />} />
             <Route path="/about" element={<AboutPage />} />
-
-=======
-          <Route
-            path="/dashboard/doctor/feedback"
-            element={<DoctorFeedback />}
-          />
-          <Route
-            path="/dashboard/doctor/appointments"
-            element={<DoctorAppointments />}
-          />
-          <Route
-            path="/dashboard/doctor/customers"
-            element={<DoctorCustomers />}
-          />
-          <Route path="/services" element={<EyeServices />} />
-          <Route path="/about" element={<AboutPage />} />
->>>>>>> main
         </Routes>
       </div>
     </Router>
