@@ -1,3 +1,23 @@
+
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import Homepage from './pages/homepage';
+import Login from './pages/authentication/login/login';
+import Signup from './pages/authentication/signup/signup';
+import VerifyOtpPage from "./pages/authentication/signup/VerifyOtpPage"
+import ForgotPassword from './pages/authentication/forgot-password/forgot-password';
+import ResetPassword from './pages/authentication/reset-password/reset-password';
+import GoogleCallback from './pages/authentication/google-callback/google-callback';
+import ReceptionistRoutes from './pages/dashboard/receptionist-dashboard/ReceptionistRoutes';
+import DoctorDashboard from './pages/dashboard/doctor-dashboard/doctor';
+import EyeServices from './pages/servicepage/EyeServices';
+import AboutPage from './pages/aboutPage/about';  // Kết hợp cả hai import nếu cần
+
+
+
+
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
@@ -20,6 +40,7 @@ import EyeServices from "./pages/servicepage/EyeServices";
 import AboutPage from "./pages/aboutPage/about"; // Kết hợp cả hai import nếu cần
 import ShopPage from "./pages/shoppage"; // Add this import
 import ProductDetail from "./pages/ProductPage";
+
 function App() {
   return (
     <Router>
@@ -44,6 +65,10 @@ function App() {
           <Route path="/signup/verify-otp" element={<VerifyOtpPage />} />
           <Route path="/shop" element={<ShopPage />} /> {/* Trang Shop */}
           <Route path="/auth/google/callback" element={<GoogleCallback />} />
+          <Route path="/dashboard/doctor" element={<DoctorDashboard />} />
+          <Route path="/services" element={<EyeServices />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/dashboard/receptionist/*" element={<ReceptionistRoutes />} />
           <Route path="/dashboard/profile" element={<ProfilePage />} />
           <Route path="/product/:id" element={<ProductDetail />} />
           <Route
