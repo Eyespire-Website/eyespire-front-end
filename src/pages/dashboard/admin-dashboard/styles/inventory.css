@@ -1,0 +1,229 @@
+/* Inventory Modal Styles */
+.inventory-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.inventory-modal {
+  background: white;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 700px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.inventory-modal-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.inventory-modal-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.inventory-modal-close {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.inventory-modal-close:hover {
+  background: #f1f5f9;
+  color: #1e293b;
+}
+
+.inventory-modal-body {
+  padding: 24px;
+}
+
+.inventory-form {
+  display: grid;
+  gap: 16px;
+}
+
+.inventory-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.inventory-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.inventory-form-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.inventory-form-input {
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  width: 100%;
+  transition: border-color 0.2s;
+}
+
+.inventory-form-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.inventory-form-textarea {
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  width: 100%;
+  min-height: 100px;
+  resize: vertical;
+  transition: border-color 0.2s;
+}
+
+.inventory-form-textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.inventory-form-select {
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  width: 100%;
+  background: white;
+}
+
+.inventory-modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.inventory-modal-cancel {
+  padding: 8px 16px;
+  background-color: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  color: #64748b;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.inventory-modal-cancel:hover {
+  background-color: #e2e8f0;
+}
+
+.inventory-modal-save {
+  padding: 8px 16px;
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.inventory-modal-save:hover {
+  background-color: #2563eb;
+}
+
+.image-upload {
+  border: 2px dashed #d1d5db;
+  border-radius: 6px;
+  padding: 16px;
+  text-align: center;
+  background-color: #f9fafb;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.image-upload:hover {
+  border-color: #3b82f6;
+  background-color: #f0f9ff;
+}
+
+.image-upload-icon {
+  color: #6b7280;
+  margin-bottom: 8px;
+}
+
+.image-upload-text {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.image-preview {
+  width: 100%;
+  max-height: 150px;
+  object-fit: contain;
+  margin-top: 8px;
+  border-radius: 4px;
+}
+
+.image-preview-container {
+  position: relative;
+  display: inline-block;
+}
+
+.remove-image {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.8);
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #ef4444;
+}
+
+@media (max-width: 640px) {
+  .inventory-form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .inventory-modal {
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+}

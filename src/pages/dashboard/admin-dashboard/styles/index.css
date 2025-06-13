@@ -1,0 +1,35 @@
+/* Import all CSS modules */
+@import 'common.css';
+@import 'dashboard.css';
+@import 'profile.css';
+@import 'schedule.css';
+@import 'appointments.css';
+@import 'users.css';
+@import 'modal.css';
+@import 'activity.css';
+
+@media (max-width: 768px) {
+  .dashboard-container {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    overflow-y: auto;
+    position: fixed;
+    z-index: 100;
+    height: 100vh;
+    width: 250px;
+    background-color: #1E3A8A; /* Thêm màu nền */
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out;
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .main-content {
+    margin-left: 0;
+    width: 100%;
+  }
+}

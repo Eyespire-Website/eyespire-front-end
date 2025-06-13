@@ -1,0 +1,263 @@
+/* Appointments Grid */
+.appointments-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+.appointment-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px;
+    background: white;
+    transition: all 0.2s;
+}
+
+.appointment-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.appointment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+}
+
+.patient-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.patient-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #e2e8f0;
+}
+
+.patient-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0 0 4px 0;
+}
+
+.patient-contact {
+    font-size: 14px;
+    color: #64748b;
+    margin: 0;
+}
+
+.appointment-status {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.appointment-status.confirmed {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.appointment-status.pending {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.appointment-status.completed {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.appointment-status.cancelled {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.appointment-details {
+    margin-bottom: 16px;
+}
+
+.detail-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.detail-icon {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+.detail-text {
+    font-size: 14px;
+    color: #374151;
+}
+
+.payment-status {
+    font-weight: 500;
+}
+
+.payment-status.paid {
+    color: #166534;
+}
+
+.payment-status.pending {
+    color: #92400e;
+}
+
+.payment-status.unpaid {
+    color: #991b1b;
+}
+
+.appointment-notes {
+    background: #f8fafc;
+    padding: 12px;
+    border-radius: 6px;
+    margin-bottom: 16px;
+}
+
+.appointment-notes p {
+    margin: 0;
+    font-size: 14px;
+    color: #64748b;
+}
+
+.appointment-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* Appointment Details Modal */
+.appointment-modal {
+    max-width: 800px;
+    width: 95%;
+}
+
+.appointment-detail-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.detail-section {
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 20px;
+    border: 1px solid #e2e8f0;
+}
+
+.detail-section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0 0 16px 0;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 16px;
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.detail-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.detail-value {
+    font-size: 14px;
+    font-weight: 500;
+    color: #1e293b;
+}
+
+.notes-content {
+    background: white;
+    padding: 16px;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+}
+
+.notes-content p {
+    margin: 0;
+    font-size: 14px;
+    color: #374151;
+    line-height: 1.5;
+}
+
+.action-history {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.history-item {
+    background: white;
+    padding: 12px 16px;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+    border-left: 4px solid #3b82f6;
+}
+
+.history-time {
+    font-size: 12px;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.history-action {
+    font-size: 14px;
+    color: #1e293b;
+    font-weight: 500;
+    margin: 2px 0;
+}
+
+.history-user {
+    font-size: 12px;
+    color: #64748b;
+}
+
+/* Responsive adjustments for appointment modal */
+@media (max-width: 768px) {
+    .appointment-modal {
+        width: 98%;
+        margin: 10px;
+    }
+
+    .detail-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .modal-footer {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .modal-footer .btn {
+        flex: 1;
+        min-width: 120px;
+    }
+}

@@ -1,0 +1,177 @@
+.sidebar {
+  width: 260px;
+  background-color: #233e9c;
+  color: #d1e0ff;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding: 0.5rem 0; /* Giảm padding tổng */
+  transition: width 0.3s ease-in-out;
+  position: relative;
+  overflow: hidden;
+}
+
+.sidebar.collapsed {
+  width: 80px;
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  padding: 10px 15px;
+  margin-bottom: 5px; /* Giảm khoảng cách dưới header */
+  position: relative;
+}
+
+.sidebar-logo {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+}
+
+.sidebar.collapsed .sidebar-logo {
+  transform: scale(0.8);
+}
+
+.sidebar-title {
+  font-size: 16px;
+  color: #d1e0ff;
+  font-family: 'Roboto', sans-serif;
+  margin-left: 10px;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+.sidebar.collapsed .sidebar-title {
+  opacity: 0;
+  width: 0;
+}
+
+.sidebar-toggle {
+  position: absolute;
+  right: 15px;
+  top: 15px; /* Đặt vị trí cố định ở trên cùng */
+  background: #2b4d9e;
+  border: none;
+  color: #d1e0ff;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease;
+}
+
+.sidebar-toggle:hover {
+  background: #3b5dce;
+  transform: translateY(-50%) scale(1.1);
+}
+
+.sidebar-menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar-menu-item {
+  margin-bottom: 5px;
+  padding: 2px 0;
+}
+
+.sidebar-menu-button {
+  width: 100%;
+  padding: 12px 15px;
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  color: #d1e0ff;
+  transition: all 0.3s ease;
+  border-radius: 0;
+  position: relative;
+}
+
+.sidebar.collapsed .sidebar-menu-button span {
+  opacity: 0;
+  width: 0;
+}
+
+.sidebar-menu-button:hover {
+  background: #2b4d9e;
+}
+
+.sidebar-menu-button.active {
+  background: #fff;
+  color: #1e3a8a;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin: 0 8px;
+  padding: 12px 15px;
+}
+
+.sidebar-menu-button svg {
+  margin-right: 10px;
+  color: #d1e0ff;
+  min-width: 20px;
+}
+
+.sidebar.collapsed .sidebar-menu-button svg {
+  margin-right: 0;
+}
+
+.sidebar-menu-button.active svg {
+  color: #1e3a8a;
+}
+
+.sidebar-group {
+  margin-bottom: 15px; /* Giảm khoảng cách giữa các nhóm */
+}
+
+.sidebar-group-label {
+  padding: 8px 15px; /* Giảm padding */
+  color: #9ca3af;
+  font-size: 12px;
+  text-transform: uppercase;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+.sidebar.collapsed .sidebar-group-label {
+  opacity: 0;
+  width: 0;
+}
+
+.sidebar-footer {
+  padding: 10px 15px;
+  color: #9ca3af;
+  font-size: 12px;
+  text-align: center;
+  margin-top: auto;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+.sidebar.collapsed .sidebar-footer {
+  opacity: 0;
+}
+
+.sidebar-copyright {
+  display: block;
+}
+
+/* Reset link colors */
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #333;
+  text-decoration: none;
+}

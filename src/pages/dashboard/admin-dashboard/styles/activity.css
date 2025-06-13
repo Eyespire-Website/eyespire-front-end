@@ -1,0 +1,92 @@
+/* Activity Timeline */
+.activity-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.timeline-item {
+    display: flex;
+    gap: 16px;
+    padding: 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.timeline-item:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+}
+
+.timeline-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.timeline-icon.login {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.timeline-icon.edit {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.timeline-icon.appointment {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.timeline-content h4 {
+    margin: 0 0 4px 0;
+    color: #1e293b;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.timeline-content p {
+    margin: 0 0 8px 0;
+    color: #64748b;
+    font-size: 14px;
+}
+
+.timeline-time {
+    color: #94a3b8;
+    font-size: 12px;
+}
+
+.activity-footer {
+    text-align: center;
+    margin-top: 24px;
+}
+
+/* Responsive adjustments for activity layout */
+@media (max-width: 1024px) {
+    .activity-stats {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    .activity-stat-item {
+        flex: 1;
+        min-width: 120px;
+    }
+}
+
+@media (max-width: 768px) {
+    .activity-stats {
+        flex-direction: column;
+    }
+
+    .activity-stat-item {
+        flex: none;
+    }
+}
