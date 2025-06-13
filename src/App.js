@@ -1,23 +1,3 @@
-
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import Homepage from './pages/homepage';
-import Login from './pages/authentication/login/login';
-import Signup from './pages/authentication/signup/signup';
-import VerifyOtpPage from "./pages/authentication/signup/VerifyOtpPage"
-import ForgotPassword from './pages/authentication/forgot-password/forgot-password';
-import ResetPassword from './pages/authentication/reset-password/reset-password';
-import GoogleCallback from './pages/authentication/google-callback/google-callback';
-import ReceptionistRoutes from './pages/dashboard/receptionist-dashboard/ReceptionistRoutes';
-import DoctorDashboard from './pages/dashboard/doctor-dashboard/doctor';
-import EyeServices from './pages/servicepage/EyeServices';
-import AboutPage from './pages/aboutPage/about';  // Kết hợp cả hai import nếu cần
-
-
-
-
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
@@ -36,6 +16,7 @@ import DoctorRecords from "./pages/dashboard/doctor-dashboard/doctor-records";
 import DoctorFeedback from "./pages/dashboard/doctor-dashboard/doctor-feedback";
 import DoctorAppointments from "./pages/dashboard/doctor-dashboard/doctor-appointments";
 import DoctorCustomers from "./pages/dashboard/doctor-dashboard/doctor-customer";
+import ReceptionistRoutes from './pages/dashboard/receptionist-dashboard/ReceptionistRoutes';
 import EyeServices from "./pages/servicepage/EyeServices";
 import AboutPage from "./pages/aboutPage/about"; // Kết hợp cả hai import nếu cần
 import ShopPage from "./pages/shoppage"; // Add this import
