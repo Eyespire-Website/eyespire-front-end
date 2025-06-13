@@ -1,11 +1,10 @@
 import React, { useState } from "react"
-import Sidebar from "../receptionist-dashboard/jsx/Sidebar"
-import ProfileAvatar from "../receptionist-dashboard/jsx/ProfileAvatar"
-import ProfileForm from "../receptionist-dashboard/jsx/ProfileForm"
-import PasswordModal from "../receptionist-dashboard/jsx/PasswordModal"
-import "../receptionist-dashboard/Dashboard.css"
+import ProfileAvatar from "../Profile/jsx/ProfileAvatar"
+import ProfileForm from "../Profile/jsx/ProfileForm"
+import PasswordModal from "../Profile/jsx/PasswordModal"
+import "../Profile/ProfilePage.css"
 
-export default function ReceptionistDashboard() {
+export default function ProfilePage() {
     const [activeTab, setActiveTab] = useState("profile");
     const [receptionistData, setReceptionistData] = useState({
         email: "staff.giapcd@gmail.com",
@@ -79,7 +78,6 @@ export default function ReceptionistDashboard() {
 
     return (
         <div className="dashboard">
-            <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} menuItems={menuItems} />
             <div className="dashboard-content">
                 <h1 className="profile-title">Hồ sơ cá nhân</h1>
                 <div className="dashboard-card">

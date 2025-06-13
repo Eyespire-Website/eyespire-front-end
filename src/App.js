@@ -9,11 +9,11 @@ import VerifyOtpPage from "./pages/authentication/signup/VerifyOtpPage"
 import ForgotPassword from './pages/authentication/forgot-password/forgot-password';
 import ResetPassword from './pages/authentication/reset-password/reset-password';
 import GoogleCallback from './pages/authentication/google-callback/google-callback';
-import ProfilePage from './pages/dashboard/patient-dashboard/profile';
+import ReceptionistRoutes from './pages/dashboard/receptionist-dashboard/ReceptionistRoutes';
 import DoctorDashboard from './pages/dashboard/doctor-dashboard/doctor';
 import EyeServices from './pages/servicepage/EyeServices';
 import AboutPage from './pages/aboutPage/about';  // Kết hợp cả hai import nếu cần
-import ReceptionistDashboard from './pages/dashboard/receptionist-dashboard/ReceptionistDashboard';
+
 
 
 function App() {
@@ -39,12 +39,12 @@ function App() {
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/signup/verify-otp" element={<VerifyOtpPage />} />
           <Route path="/auth/google/callback" element={<GoogleCallback />} />
-          <Route path="/dashboard/profile" element={<ProfilePage />} />
           <Route path="/dashboard/doctor" element={<DoctorDashboard />} />
-          <Route path="/dashboard/receptionist" element={<ReceptionistDashboard />} />
-          <Route path="/services" element={<EyeServices />} />
-            <Route path="/about" element={<AboutPage />} />
 
+          <Route path="/services" element={<EyeServices />} />
+          <Route path="/about" element={<AboutPage />} />
+
+          <Route path="/dashboard/receptionist/*" element={<ReceptionistRoutes />} />
         </Routes>
       </div>
     </Router>
