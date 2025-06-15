@@ -6,7 +6,6 @@ import "./doctor-customer.css"
 import { Search, Eye, Edit, Save, User, Phone, Mail, Calendar, Plus } from "lucide-react"
 
 export default function CustomerProfile() {
-    const [activeTab, setActiveTab] = useState("customers")
     const [activeSection, setActiveSection] = useState("info")
     const navigate = useNavigate()
     const { id } = useParams()
@@ -156,11 +155,6 @@ export default function CustomerProfile() {
         navigate("/")
     }
 
-    const handleMenuClick = (itemId) => {
-        setActiveTab(itemId)
-        navigate(`/dashboard/doctor/${itemId}`)
-    }
-
     const selectCustomer = (customer) => {
         setSelectedCustomer(customer)
         setEditedCustomer({ ...customer })
@@ -191,15 +185,6 @@ export default function CustomerProfile() {
             customer.email.toLowerCase().includes(searchTerm.toLowerCase()),
     )
 
-    const menuItems = [
-        { id: "schedule", label: "Lịch làm việc", icon: "📅" },
-        { id: "appointments", label: "Xem cuộc hẹn", icon: "🕐" },
-        { id: "customers", label: "Hồ sơ bệnh nhân", icon: "👥" },
-        { id: "records", label: "Tạo hồ sơ bệnh án", icon: "📋" },
-        { id: "feedback", label: "Phản hồi khách hàng", icon: "💬" },
-        { id: "profile", label: "Hồ sơ cá nhân", icon: "👤" },
-    ]
-
     // Get status badge
     const getStatusBadge = (status) => {
         switch (status) {
@@ -215,45 +200,10 @@ export default function CustomerProfile() {
     }
 
     return (
-        <div className="dashboard-container">
-            {/* Sidebar */}
-            <div className="sidebar">
-                <div className="sidebar-header">
-                    <div className="logo" onClick={handleBackHome}>
-                        <img
-                            src="https://storage.googleapis.com/tagjs-prod.appspot.com/v1/VY3PPTks6o/e8ggwzic_expires_30_days.png"
-                            className="logo-image"
-                            alt="EyeSpire Logo"
-                        />
-                        <span className="logo-text">EyeSpire</span>
-                    </div>
-                </div>
-
-                <div className="sidebar-menu">
-                    <ul>
-                        {menuItems.map((item) => (
-                            <li key={item.id} className={`menu-item ${activeTab === item.id ? "active" : ""}`}>
-                                <button onClick={() => handleMenuClick(item.id)} className="menu-button">
-                                    <span className="menu-icon">{item.icon}</span>
-                                    <span className="menu-text">{item.label}</span>
-                                </button>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-
-                <div className="sidebar-footer">
-                    <button className="logout-button">
-                        <span className="logout-icon">←</span>
-                        <span>Đăng xuất</span>
-                    </button>
-                    <div className="copyright">© 2025 EyeSpire</div>
-                </div>
-            </div>
-
+        <div className="customer-container">
             {/* Main Content */}
-            <div className="main-content">
-                <header className="content-header">
+            <div className="customer-content">
+                <header className="customer-header">
                     <h1>Hồ sơ bệnh nhân</h1>
                     <div className="search-container">
                         <div className="search-input-wrapper">
@@ -294,14 +244,14 @@ export default function CustomerProfile() {
                                         <div className="customer-list-info">
                                             <h3>{customer.name}</h3>
                                             <div className="customer-list-details">
-                        <span>
-                          <Phone size={14} />
-                            {customer.phone}
-                        </span>
                                                 <span>
-                          <Mail size={14} />
+                                                    <Phone size={14} />
+                                                    {customer.phone}
+                                                </span>
+                                                <span>
+                                                    <Mail size={14} />
                                                     {customer.email}
-                        </span>
+                                                </span>
                                             </div>
                                         </div>
                                     </div>
