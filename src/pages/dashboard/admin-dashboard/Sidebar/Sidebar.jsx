@@ -1,16 +1,16 @@
 "use client"
 import { useState } from 'react';
-import { 
-    Home, 
-    Users, 
-    Calendar, 
-    Package, 
-    UserCircle, 
+import {
+    Home,
+    Users,
+    Calendar,
+    Package,
+    UserCircle,
     LogOut,
     Clock,
     Stethoscope,
-    ChevronLeft
 } from "lucide-react";
+import { HiOutlineBars3 } from "react-icons/hi2";
 import "./sidebar.css";
 
 export default function Sidebar({ activeTab, setActiveTab }) {
@@ -47,11 +47,12 @@ export default function Sidebar({ activeTab, setActiveTab }) {
                         />
                         <span className="logo-text-v2">Eyespire</span>
                     </div>
-                    <button onClick={toggleSidebar} className="toggle-btn">
-                        <ChevronLeft
-                            className={`toggle-icon ${isCollapsed ? "toggle-icon--collapsed" : ""}`}
-                        />
-                    </button>
+
+                    <div className="toggle-container-below">
+                        <button onClick={toggleSidebar} className="toggle-btn">
+                            <HiOutlineBars3 className="toggle-icon" />
+                        </button>
+                    </div>
                 </div>
 
                 <ul className="menu-list-v2">

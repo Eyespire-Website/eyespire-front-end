@@ -13,20 +13,11 @@ import ProfilePage from "./pages/dashboard/patient-dashboard/pages/profile";
 import ReceptionistRoutes from './pages/dashboard/receptionist-dashboard/ReceptionistRoutes';
 import DoctorRoutes from './pages/dashboard/doctor-dashboard/DoctorRoutes';
 import AdminRoutes from './pages/dashboard/admin-dashboard/AdminRoutes';
+import PatientRoutes from './pages/dashboard/patient-dashboard/PatientRoutes';
 import EyeServices from "./pages/servicepage/EyeServices";
 import AboutPage from "./pages/aboutPage/about";
 import ShopPage from "./pages/shoppage";
 import ProductDetail from "./pages/ProductPage";
-
-
-
-import PaymentHistoryPage from "./pages/dashboard/patient-dashboard/pages/PaymentHistoryPage"
-import AppointmentPage from "./pages/dashboard/patient-dashboard/pages/AppointmentsPage"
-import MedicalRecordsPage from "./pages/dashboard/patient-dashboard/pages/MedicalRecordsPage";
-import MedicalRecordDetailPage from "./pages/dashboard/patient-dashboard/pages/MedicalRecordDetailPage";
-import OrderPage from "./pages/dashboard/patient-dashboard/pages/OrdersPage";
-import OrderDetailPage from "./pages/dashboard/patient-dashboard/pages/OrderDetailPage";
-
 
 
 function App() {
@@ -62,17 +53,7 @@ function App() {
           <Route path="/dashboard/receptionist/*" element={<ReceptionistRoutes />} />
           <Route path="/dashboard/doctor/*" element={<DoctorRoutes />} />
           <Route path="/dashboard/admin/*" element={<AdminRoutes />} />
-
-
-
-          <Route path="/patient/payment-history" element={<PaymentHistoryPage />} />
-          <Route path="/patient/appointment" element={<AppointmentPage />} />
-
-          <Route path="/patient/medical-records" element={<MedicalRecordsPage />} />
-          <Route path="/patient/medical-records/:id" element={<MedicalRecordDetailPage />} />
-
-          <Route path="/patient/orders" element={<OrderPage />} />
-          <Route path="/patient/orders/:orderId" element={<OrderDetailPage />} />
+          <Route path="/dashboard/patient/*" element={<PatientRoutes />} />
 
         </Routes>
       </div>

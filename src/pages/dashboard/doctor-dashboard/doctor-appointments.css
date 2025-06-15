@@ -17,6 +17,8 @@
     position: relative;
     flex: 1;
     max-width: 400px;
+    float: right;
+    margin-right: 20px;
 }
 
 .search-icon {

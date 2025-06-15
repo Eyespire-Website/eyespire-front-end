@@ -267,7 +267,7 @@ export default function DoctorAppointments() {
         <div className="appointments-container">
             <div className="appointments-content">
                 <div className="appointments-header">
-                    <h1>Cuộc hẹn</h1>
+                    <h1>Cuộc hẹn</h1><br />
                     <div className="filter-container">
                         <div className="search-input-wrapper">
                             <Search size={20} className="search-icon" />

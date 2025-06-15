@@ -400,7 +400,6 @@ export default function OrderDetailPage() {
         <div className="dashboard-container">
             <ToastContainer position="top-right" autoClose={3000} />
 
-            <PatientSidebar activeItem="orders" />
 
             {/* Main Content */}
             <div className="main-content">

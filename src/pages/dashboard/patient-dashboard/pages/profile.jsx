@@ -400,9 +400,6 @@ export default function ProfilePage() {
     return (
         <div className="dashboard-container">
             <ToastContainer position="top-right" autoClose={3000} />
-
-            <PatientSidebar activeItem="profile" />
-
             {/* Main Content */}
             <div className="main-content">
                 {/* Header */}
