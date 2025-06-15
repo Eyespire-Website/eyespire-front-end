@@ -10,6 +10,8 @@ import ServicesContent from "./pages/ServicesContent";
 import ScheduleContent from "./pages/ScheduleContent";
 import AppointmentsContent from "./pages/AppointmentsContent";
 import UsersContent from "./pages/UsersContent";
+import AdminDashboard from "./AdminDashboard";
+
 
 export default function AdminRoutes() {
     return (
@@ -17,6 +19,7 @@ export default function AdminRoutes() {
             <Route path="/" element={<SidebarLayout />}>
                 <Route index element={<Navigate to="dashboard" replace />} />
                 <Route path="dashboard" element={<DashboardContent />} />
+                <Route path="admin-overview" element={<AdminDashboard />} />
                 <Route path="appointments" element={<AppointmentsContent />} />
                 <Route path="schedule" element={<ScheduleContent />} />
                 <Route path="users" element={<UsersContent />} />
