@@ -9,7 +9,8 @@ import {
     HiOutlineChat,
     HiOutlineChevronLeft
 } from "react-icons/hi";
-import "../Sidebar/sidebar.css"
+import {HiOutlineBars3} from "react-icons/hi2";
+import "../../admin-dashboard/Sidebar/sidebar.css";
 
 export default function Sidebar({ activeTab, setActiveTab }) {
     const [isCollapsed, setIsCollapsed] = useState(false);
@@ -38,14 +39,15 @@ export default function Sidebar({ activeTab, setActiveTab }) {
                         />
                         <span className="logo-text-v2">Eyespire</span>
                     </div>
-                    <button onClick={toggleSidebar} className="toggle-btn">
-                        <HiOutlineChevronLeft
-                            className={`toggle-icon ${isCollapsed ? "toggle-icon--collapsed" : ""}`}
-                        />
-                    </button>
+                    <div className="toggle-container-below">
+                        <button onClick={toggleSidebar} className="toggle-btn">
+                            <HiOutlineBars3 className="toggle-icon" />
+                        </button>
+                    </div>
                 </div>
 
                 <ul className="menu-list-v2">
+                    <li className="menu-category"></li>
                     {menuItems.map((item) => (
                         <li
                             key={item.id}

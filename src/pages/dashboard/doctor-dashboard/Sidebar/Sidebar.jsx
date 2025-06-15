@@ -1,5 +1,5 @@
 "use client"
-import { useState } from 'react';
+import { useState } from "react"
 import {
     HiOutlineCalendar,
     HiOutlineLogout,
@@ -7,12 +7,12 @@ import {
     HiOutlineClipboardCheck,
     HiOutlineChat,
     HiOutlineUserGroup,
-    HiOutlineChevronLeft
-} from "react-icons/hi";
-import "./sidebar.css";
+} from "react-icons/hi"
+import { HiOutlineBars3 } from "react-icons/hi2"
+import "../../admin-dashboard/Sidebar/sidebar.css";
 
 export default function Sidebar({ activeTab, setActiveTab }) {
-    const [isCollapsed, setIsCollapsed] = useState(false);
+    const [isCollapsed, setIsCollapsed] = useState(false)
 
     const menuItems = [
         { id: "profile", label: "Hồ sơ cá nhân", icon: <HiOutlineUser size={18} /> },
@@ -21,11 +21,11 @@ export default function Sidebar({ activeTab, setActiveTab }) {
         { id: "records", label: "Hồ sơ bệnh án", icon: <HiOutlineClipboardCheck size={18} /> },
         { id: "feedback", label: "Phản hồi", icon: <HiOutlineChat size={18} /> },
         { id: "customers", label: "Khách hàng", icon: <HiOutlineUserGroup size={18} /> },
-    ];
+    ]
 
     const toggleSidebar = () => {
-        setIsCollapsed(!isCollapsed);
-    };
+        setIsCollapsed(!isCollapsed)
+    }
 
     return (
         <div className={`sidebar-wrapper ${isCollapsed ? "collapsed" : ""}`}>
@@ -39,14 +39,16 @@ export default function Sidebar({ activeTab, setActiveTab }) {
                         />
                         <span className="logo-text-v2">Eyespire</span>
                     </div>
-                    <button onClick={toggleSidebar} className="toggle-btn">
-                        <HiOutlineChevronLeft
-                            className={`toggle-icon ${isCollapsed ? "toggle-icon--collapsed" : ""}`}
-                        />
-                    </button>
+
+                    <div className="toggle-container-below">
+                        <button onClick={toggleSidebar} className="toggle-btn">
+                            <HiOutlineBars3 className="toggle-icon" />
+                        </button>
+                    </div>
                 </div>
 
                 <ul className="menu-list-v2">
+                    <li className="menu-category"></li>
                     {menuItems.map((item) => (
                         <li
                             key={item.id}
@@ -68,5 +70,5 @@ export default function Sidebar({ activeTab, setActiveTab }) {
                 </div>
             </div>
         </div>
-    );
+    )
 }

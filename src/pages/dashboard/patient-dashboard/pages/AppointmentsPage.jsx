@@ -183,8 +183,7 @@ export default function AppointmentsPage() {
         <div className="dashboard-container">
             <ToastContainer position="top-right" autoClose={3000} />
 
-            {/* Sidebar */}
-            <PatientSidebar activeItem="appointments" />
+
 
             {/* Main Content */}
             <div className="main-content">

@@ -130,11 +130,10 @@
 /* Main Content Styles */
 .main-content {
     flex: 1;
-    padding: 1.5rem;
+    padding: 0.75rem; /* Giảm từ 1.5rem xuống 0.75rem */
     background-color: #f9fafb;
     overflow-y: auto;
 }
-
 .content-header {
     display: flex;
     justify-content: space-between;
@@ -147,18 +146,19 @@
     font-weight: 700;
     color: #111827;
 }
-
 /* Calendar Styles */
 .calendar-container {
     background-color: white;
     border-radius: 12px;
     padding: 0;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    height: calc(100vh - 150px);
+    height: calc(103vh - 100px); /* Tăng chiều cao từ 150px xuống 100px */
+    width: calc(138% - 10px); /* Tăng chiều rộng từ 20px xuống 10px */
     display: flex;
     flex-direction: column;
     overflow: hidden;
     border: 1px solid #f1f5f9;
+    transition: all 0.3s ease;
 }
 
 .calendar-header {

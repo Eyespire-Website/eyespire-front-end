@@ -208,7 +208,6 @@ const MedicalRecordDetailPage = () => {
         <div className="dashboard-container">
             <ToastContainer position="top-right" autoClose={3000} />
 
-            <PatientSidebar activeItem="medical" />
 
             {/* Main Content */}
             <div className="main-content">
