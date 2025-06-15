@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from 'react-router-dom';
-import authService from "../../../services/authService";
-import userService from "../../../services/userService";
+import authService from "../../../../services/authService";
+import userService from "../../../../services/userService";
 import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import './profile.css';
+import '../styles/profile.css';
+import PatientSidebar from '../PatientSidebar';
 
 export default function ProfilePage() {
     const navigate = useNavigate();
@@ -43,7 +44,7 @@ export default function ProfilePage() {
     const isGoogleAccount = () => {
         const currentUser = authService.getCurrentUser();
         return currentUser && (
-            currentUser.isGoogleAccount === true || 
+            currentUser.isGoogleAccount === true ||
             currentUser.isGoogleAccount === "true"
         );
     };
@@ -51,17 +52,17 @@ export default function ProfilePage() {
     // Hàm xử lý URL avatar
     const getAvatarUrl = (url) => {
         if (!url) return null;
-        
+
         // Nếu là URL đầy đủ (bắt đầu bằng http hoặc https)
         if (url.startsWith('http://') || url.startsWith('https://')) {
             return url;
         }
-        
+
         // Nếu là đường dẫn tương đối, thêm base URL
         if (url.startsWith('/')) {
             return `http://localhost:8080${url}`;
         }
-        
+
         // Trường hợp khác
         return url;
     };
@@ -76,11 +77,11 @@ export default function ProfilePage() {
                 navigate('/login');
                 return;
             }
-            
+
             setLoading(true);
             // Lấy thông tin người dùng hiện tại từ API
             const userData = await userService.getCurrentUserInfo();
-            
+
             // Cập nhật state với dữ liệu mới
             setUser({
                 name: userData.name || "",
@@ -96,26 +97,26 @@ export default function ProfilePage() {
                 districtCode: userData.district || "",
                 wardCode: userData.ward || "",
             });
-            
+
             // Cập nhật avatar nếu có
             if (userData.avatarUrl) {
                 setPreviewUrl(userData.avatarUrl);
             }
-            
+
             // Nếu có provinceCode, load districts
             if (userData.province) {
                 fetchDistricts(userData.province);
             }
-            
+
             // Nếu có districtCode, load wards
             if (userData.district) {
                 fetchWards(userData.district);
             }
-            
+
             setLoading(false);
         } catch (error) {
             console.error("Lỗi khi lấy thông tin người dùng:", error);
-            
+
             // Nếu API lỗi, sử dụng dữ liệu từ localStorage
             const currentUser = authService.getCurrentUser();
             if (currentUser) {
@@ -133,16 +134,16 @@ export default function ProfilePage() {
                     districtCode: currentUser.districtCode || "",
                     wardCode: currentUser.wardCode || "",
                 });
-                
+
                 if (currentUser.avatarUrl) {
                     setPreviewUrl(currentUser.avatarUrl);
                 }
-                
+
                 // Nếu có provinceCode, load districts
                 if (currentUser.provinceCode) {
                     fetchDistricts(currentUser.provinceCode);
                 }
-                
+
                 // Nếu có districtCode, load wards
                 if (currentUser.districtCode) {
                     fetchWards(currentUser.districtCode);
@@ -151,7 +152,7 @@ export default function ProfilePage() {
                 // Nếu không có thông tin người dùng, chuyển hướng về trang đăng nhập
                 navigate('/login');
             }
-            
+
             setLoading(false);
         }
     };
@@ -216,7 +217,7 @@ export default function ProfilePage() {
     const handleSave = async () => {
         try {
             setSaving(true);
-            
+
             // Chuẩn bị dữ liệu để gửi đi
             const userData = {
                 name: user.fullname,
@@ -229,19 +230,19 @@ export default function ProfilePage() {
                 wardCode: user.wardCode,
                 address: user.address
             };
-            
+
             // Gọi API cập nhật thông tin
             const response = await userService.updateProfile(userData);
-            
+
             // Cập nhật state với dữ liệu mới
             setUser(prev => ({
                 ...prev,
                 ...response
             }));
-            
+
             // Hiển thị thông báo thành công
             toast.success('Cập nhật thông tin thành công!');
-            
+
         } catch (error) {
             console.error('Lỗi khi cập nhật thông tin:', error);
             toast.error('Có lỗi xảy ra khi cập nhật thông tin!');
@@ -270,7 +271,7 @@ export default function ProfilePage() {
         }));
         setDistricts([]);
         setWards([]);
-        
+
         if (provinceCode) {
             fetchDistricts(provinceCode);
         }
@@ -286,7 +287,7 @@ export default function ProfilePage() {
             wardCode: ""
         }));
         setWards([]);
-        
+
         if (districtCode) {
             fetchWards(districtCode);
         }
@@ -325,7 +326,7 @@ export default function ProfilePage() {
                 currentPassword: passwordData.currentPassword,
                 newPassword: passwordData.newPassword
             });
-            
+
             // Reset form và đóng modal khi thành công
             setPasswordData({
                 currentPassword: "",
@@ -333,7 +334,7 @@ export default function ProfilePage() {
                 confirmPassword: ""
             });
             setShowPasswordModal(false);
-            
+
             // Hiển thị thông báo thành công
             toast.success('Đổi mật khẩu thành công!');
         } catch (error) {
@@ -345,13 +346,13 @@ export default function ProfilePage() {
             }
         }
     };
-    
+
     // Xử lý chọn file ảnh đại diện
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (file) {
             setSelectedFile(file);
-            
+
             // Tạo URL preview cho ảnh đã chọn
             const fileReader = new FileReader();
             fileReader.onload = () => {
@@ -360,30 +361,30 @@ export default function ProfilePage() {
             fileReader.readAsDataURL(file);
         }
     };
-    
+
     // Xử lý upload ảnh đại diện
     const handleAvatarUpload = async () => {
         if (!selectedFile) {
             toast.warning('Vui lòng chọn ảnh trước khi tải lên');
             return;
         }
-        
+
         try {
             setSaving(true);
-            
+
             // Tạo FormData để gửi file
             const formData = new FormData();
             formData.append('avatar', selectedFile);
-            
+
             // Gọi API upload ảnh
             await userService.updateAvatar(formData);
-            
+
             // Tải lại thông tin người dùng
             await fetchUserData();
-            
+
             // Hiển thị thông báo thành công
             toast.success('Cập nhật ảnh đại diện thành công!');
-            
+
             // Reset selectedFile và previewUrl sau khi upload thành công
             setSelectedFile(null);
             setPreviewUrl(null);
@@ -398,61 +399,16 @@ export default function ProfilePage() {
     return (
         <div className="dashboard-container">
             <ToastContainer position="top-right" autoClose={3000} />
-            
-            {/* Sidebar */}
-            <div className="sidebar">
-                <div className="sidebar-header">
-                    <div className="logo" onClick={handleBackHome}>
-                        <img
-                            src="https://storage.googleapis.com/tagjs-prod.appspot.com/v1/VY3PPTks6o/e8ggwzic_expires_30_days.png"
-                            className="logo-image"
-                            alt="EyeSpire Logo"
-                        />
-                        <span className="logo-text">EyeSpire</span>
-                    </div>
-                </div>
-                
-                <div className="sidebar-menu">
-                    <ul>
-                        <li className="menu-item">
-                            <span className="menu-icon">📅</span>
-                            <span className="menu-text">Danh sách cuộc hẹn</span>
-                        </li>
-                        <li className="menu-item">
-                            <span className="menu-icon">📦</span>
-                            <span className="menu-text">Theo dõi đơn hàng</span>
-                        </li>
-                        <li className="menu-item">
-                            <span className="menu-icon">📋</span>
-                            <span className="menu-text">Hồ sơ điều trị</span>
-                        </li>
-                        <li className="menu-item">
-                            <span className="menu-icon">💰</span>
-                            <span className="menu-text">Lịch sử thanh toán</span>
-                        </li>
-                        <li className="menu-item active">
-                            <span className="menu-icon">👤</span>
-                            <span className="menu-text">Hồ sơ cá nhân</span>
-                        </li>
-                    </ul>
-                </div>
-                
-                <div className="sidebar-footer">
-                    <button className="logout-button" onClick={handleLogout}>
-                        <span className="logout-icon">←</span>
-                        <span>Đăng xuất</span>
-                    </button>
-                    <div className="copyright"> 2025 EyeSpire</div>
-                </div>
-            </div>
-            
+
+            <PatientSidebar activeItem="profile" />
+
             {/* Main Content */}
             <div className="main-content">
                 {/* Header */}
                 <header className="content-header">
                     <h1>Hồ sơ cá nhân</h1>
                 </header>
-                
+
                 {/* Profile Content */}
                 <div className="profile-content">
                     <div className="profile-left">
@@ -467,16 +423,16 @@ export default function ProfilePage() {
                             <label htmlFor="avatar-upload" className="change-avatar-btn">
                                 <span className="camera-icon">📷</span>
                             </label>
-                            <input 
-                                type="file" 
-                                id="avatar-upload" 
-                                onChange={handleFileChange} 
+                            <input
+                                type="file"
+                                id="avatar-upload"
+                                onChange={handleFileChange}
                                 accept="image/*"
                                 style={{ display: 'none' }}
                             />
                             {selectedFile && (
-                                <button 
-                                    className="upload-avatar-btn" 
+                                <button
+                                    className="upload-avatar-btn"
                                     onClick={handleAvatarUpload}
                                     disabled={saving}
                                 >
@@ -484,7 +440,7 @@ export default function ProfilePage() {
                                 </button>
                             )}
                         </div>
-                        
+
                         <div className="profile-info">
                             <h3>{user.name}</h3>
                             <p className="user-email">{user.email}</p>
@@ -498,42 +454,42 @@ export default function ProfilePage() {
                             )}
                         </div>
                     </div>
-                    
+
                     <div className="profile-right">
                         <div className="profile-form">
                             <div className="form-grid">
                                 <div className="form-group">
                                     <label>Email <span className="required">*</span></label>
-                                    <input 
-                                        type="email" 
-                                        name="email" 
-                                        value={user.email} 
-                                        onChange={handleChange} 
-                                        className="form-control" 
-                                        readOnly 
+                                    <input
+                                        type="email"
+                                        name="email"
+                                        value={user.email}
+                                        onChange={handleChange}
+                                        className="form-control"
+                                        readOnly
                                     />
                                 </div>
-                                
+
                                 <div className="form-group">
                                     <label>Số điện thoại <span className="required">*</span></label>
                                     <div className="phone-input">
                                         <div className="phone-prefix">+84</div>
-                                        <input 
-                                            type="text" 
-                                            name="phone" 
-                                            value={user.phone} 
-                                            onChange={handleChange} 
-                                            className="form-control" 
+                                        <input
+                                            type="text"
+                                            name="phone"
+                                            value={user.phone}
+                                            onChange={handleChange}
+                                            className="form-control"
                                         />
                                     </div>
                                 </div>
-                                
+
                                 <div className="form-group">
                                     <label>Giới tính <span className="required">*</span></label>
-                                    <select 
-                                        name="gender" 
-                                        value={user.gender} 
-                                        onChange={handleChange} 
+                                    <select
+                                        name="gender"
+                                        value={user.gender}
+                                        onChange={handleChange}
                                         className="form-control"
                                     >
                                         <option value="male">Nam</option>
@@ -541,46 +497,46 @@ export default function ProfilePage() {
                                         <option value="other">Khác</option>
                                     </select>
                                 </div>
-                                
+
                                 <div className="form-group">
                                     <label>Tên tài khoản <span className="required">*</span></label>
-                                    <input 
-                                        type="text" 
-                                        name="username" 
-                                        value={user.username} 
-                                        onChange={handleChange} 
-                                        className="form-control" 
+                                    <input
+                                        type="text"
+                                        name="username"
+                                        value={user.username}
+                                        onChange={handleChange}
+                                        className="form-control"
                                     />
                                 </div>
-                                
+
                                 <div className="form-group">
                                     <label>Ngày sinh <span className="required">*</span></label>
-                                    <input 
-                                        type="date" 
-                                        name="birthdate" 
-                                        value={user.birthdate} 
-                                        onChange={handleChange} 
-                                        className="form-control" 
+                                    <input
+                                        type="date"
+                                        name="birthdate"
+                                        value={user.birthdate}
+                                        onChange={handleChange}
+                                        className="form-control"
                                     />
                                 </div>
-                                
+
                                 <div className="form-group">
                                     <label>Họ và tên <span className="required">*</span></label>
-                                    <input 
-                                        type="text" 
-                                        name="fullname" 
-                                        value={user.fullname} 
-                                        onChange={handleChange} 
-                                        className="form-control" 
+                                    <input
+                                        type="text"
+                                        name="fullname"
+                                        value={user.fullname}
+                                        onChange={handleChange}
+                                        className="form-control"
                                     />
                                 </div>
-                                
+
                                 <div className="form-group">
                                     <label>Tỉnh/Thành phố</label>
-                                    <select 
-                                        name="provinceCode" 
-                                        value={user.provinceCode} 
-                                        onChange={handleProvinceChange} 
+                                    <select
+                                        name="provinceCode"
+                                        value={user.provinceCode}
+                                        onChange={handleProvinceChange}
                                         className="form-control"
                                         disabled={loading}
                                     >
@@ -592,13 +548,13 @@ export default function ProfilePage() {
                                         ))}
                                     </select>
                                 </div>
-                                
+
                                 <div className="form-group">
                                     <label>Quận/Huyện</label>
-                                    <select 
-                                        name="districtCode" 
-                                        value={user.districtCode} 
-                                        onChange={handleDistrictChange} 
+                                    <select
+                                        name="districtCode"
+                                        value={user.districtCode}
+                                        onChange={handleDistrictChange}
                                         className="form-control"
                                         disabled={!user.provinceCode || loading}
                                     >
@@ -610,13 +566,13 @@ export default function ProfilePage() {
                                         ))}
                                     </select>
                                 </div>
-                                
+
                                 <div className="form-group">
                                     <label>Phường/Xã</label>
-                                    <select 
-                                        name="wardCode" 
-                                        value={user.wardCode} 
-                                        onChange={handleChange} 
+                                    <select
+                                        name="wardCode"
+                                        value={user.wardCode}
+                                        onChange={handleChange}
                                         className="form-control"
                                         disabled={!user.districtCode || loading}
                                     >
@@ -628,22 +584,22 @@ export default function ProfilePage() {
                                         ))}
                                     </select>
                                 </div>
-                                
+
                                 <div className="form-group full-width">
                                     <label>Địa chỉ</label>
-                                    <input 
-                                        type="text" 
-                                        name="address" 
-                                        value={user.address} 
-                                        onChange={handleChange} 
-                                        className="form-control" 
+                                    <input
+                                        type="text"
+                                        name="address"
+                                        value={user.address}
+                                        onChange={handleChange}
+                                        className="form-control"
                                     />
                                 </div>
                             </div>
-                            
+
                             <div className="form-actions">
-                                <button 
-                                    className="save-button" 
+                                <button
+                                    className="save-button"
                                     onClick={handleSave}
                                     disabled={saving}
                                 >
@@ -654,7 +610,7 @@ export default function ProfilePage() {
                     </div>
                 </div>
             </div>
-            
+
             {/* Password Change Modal */}
             {showPasswordModal && (
                 <div className="modal-overlay">
@@ -669,32 +625,32 @@ export default function ProfilePage() {
                             )}
                             <div className="form-group">
                                 <label>Mật khẩu hiện tại</label>
-                                <input 
-                                    type="password" 
-                                    name="currentPassword" 
-                                    value={passwordData.currentPassword} 
-                                    onChange={handlePasswordChange} 
-                                    className="form-control" 
+                                <input
+                                    type="password"
+                                    name="currentPassword"
+                                    value={passwordData.currentPassword}
+                                    onChange={handlePasswordChange}
+                                    className="form-control"
                                 />
                             </div>
                             <div className="form-group">
                                 <label>Mật khẩu mới</label>
-                                <input 
-                                    type="password" 
-                                    name="newPassword" 
-                                    value={passwordData.newPassword} 
-                                    onChange={handlePasswordChange} 
-                                    className="form-control" 
+                                <input
+                                    type="password"
+                                    name="newPassword"
+                                    value={passwordData.newPassword}
+                                    onChange={handlePasswordChange}
+                                    className="form-control"
                                 />
                             </div>
                             <div className="form-group">
                                 <label>Xác nhận mật khẩu mới</label>
-                                <input 
-                                    type="password" 
-                                    name="confirmPassword" 
-                                    value={passwordData.confirmPassword} 
-                                    onChange={handlePasswordChange} 
-                                    className="form-control" 
+                                <input
+                                    type="password"
+                                    name="confirmPassword"
+                                    value={passwordData.confirmPassword}
+                                    onChange={handlePasswordChange}
+                                    className="form-control"
                                 />
                             </div>
                         </div>

@@ -10,7 +10,7 @@ import VerifyOtpPage from "./pages/authentication/signup/VerifyOtpPage";
 import ForgotPassword from "./pages/authentication/forgot-password/forgot-password";
 import ResetPassword from "./pages/authentication/reset-password/reset-password";
 import GoogleCallback from "./pages/authentication/google-callback/google-callback";
-import ProfilePage from "./pages/dashboard/patient-dashboard/profile";
+import ProfilePage from "./pages/dashboard/patient-dashboard/pages/profile";
 import DoctorDashboard from "./pages/dashboard/doctor-dashboard/doctor";
 import DoctorSchedule from "./pages/dashboard/doctor-dashboard/doctor-schedule";
 import DoctorRecords from "./pages/dashboard/doctor-dashboard/doctor-records";
@@ -23,6 +23,14 @@ import AboutPage from "./pages/aboutPage/about"; // Kết hợp cả hai import 
 import ShopPage from "./pages/shoppage"; // Add this import
 import ProductDetail from "./pages/ProductPage";
 import AdminDashboard from './pages/dashboard/admin-dashboard/AdminDashboard';
+
+
+import PaymentHistoryPage from "./pages/dashboard/patient-dashboard/pages/PaymentHistoryPage";
+import AppointmentPage from "./pages/dashboard/patient-dashboard/pages/AppointmentsPage";
+import MedicalRecordsPage from "./pages/dashboard/patient-dashboard/pages/MedicalRecordsPage";
+import MedicalRecordDetailPage from "./pages/dashboard/patient-dashboard/pages/MedicalRecordDetailPage";
+import OrderPage from "./pages/dashboard/patient-dashboard/pages/OrdersPage";
+import OrderDetailPage from "./pages/dashboard/patient-dashboard/pages/OrderDetailPage";
 
 function App() {
   return (
@@ -69,6 +77,18 @@ function App() {
           <Route path="/dashboard/admin" element={<AdminDashboard />} />
             <Route path="/services" element={<EyeServices />} />
             <Route path="/about" element={<AboutPage />} />
+
+
+          /* Patient Dashboard */
+          <Route path="/patient/payment-history" element={<PaymentHistoryPage />} />
+          <Route path="/patient/appointment" element={<AppointmentPage />} />
+
+          <Route path="/patient/medical-records" element={<MedicalRecordsPage />} />
+          <Route path="/patient/medical-records/:id" element={<MedicalRecordDetailPage />} />
+
+          <Route path="/patient/orders" element={<OrderPage />} />
+          <Route path="/patient/orders/:orderId" element={<OrderDetailPage />} />
+
         </Routes>
       </div>
     </Router>

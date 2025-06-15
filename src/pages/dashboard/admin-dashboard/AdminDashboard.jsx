@@ -104,8 +104,7 @@ const AdminDashboard = () => {
                   />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">Eyespire - </span>
-                  <span className="truncate">Admin Dashboard</span>
+                  <span className="dashboard-name">Eyespire</span>
                 </div>
               </SidebarMenuButton>
             </SidebarMenuItem>
