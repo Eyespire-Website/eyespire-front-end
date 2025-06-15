@@ -1,0 +1,253 @@
+/* Medical Record Detail Page Styles */
+
+/* Back button */
+.back-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 8px;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-right: 12px;
+}
+
+.back-button:hover {
+    background-color: #f9fafb;
+    border-color: #d1d5db;
+    color: #374151;
+}
+
+/* Breadcrumb link */
+.breadcrumb-link {
+    cursor: pointer;
+    color: #3b82f6;
+    transition: color 0.2s ease;
+}
+
+.breadcrumb-link:hover {
+    color: #1d4ed8;
+    text-decoration: underline;
+}
+
+/* Loading container */
+.loading-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+}
+
+.loading-text {
+    color: #6b7280;
+    font-size: 16px;
+}
+
+/* Detail grid */
+.detail-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+@media (min-width: 1024px) {
+    .detail-grid {
+        grid-template-columns: 1fr 1fr 1fr;
+    }
+}
+
+/* Detail cards */
+.detail-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.card-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* Info rows */
+.info-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.info-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #6b7280;
+}
+
+.info-value {
+    font-size: 16px;
+    color: #111827;
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* Images grid */
+.images-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.image-item {
+    position: relative;
+    cursor: pointer;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+    transition: all 0.2s ease;
+}
+
+.image-item:hover {
+    border-color: #3b82f6;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.medical-image {
+    width: 100%;
+    height: 80px;
+    object-fit: cover;
+    display: block;
+}
+
+.image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    color: white;
+}
+
+.image-item:hover .image-overlay {
+    opacity: 1;
+}
+
+/* Prescription list */
+.prescription-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.prescription-item {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 16px;
+    background-color: #f9fafb;
+}
+
+.prescription-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.prescription-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+}
+
+.prescription-duration {
+    background-color: #e5e7eb;
+    color: #374151;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.prescription-details {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.prescription-detail {
+    font-size: 14px;
+    color: #6b7280;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.detail-label {
+    font-weight: 600;
+    color: #374151;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1023px) {
+    .detail-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .prescription-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .images-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .medical-image {
+        height: 120px;
+    }
+}
+
+@media (max-width: 768px) {
+    .detail-card {
+        padding: 16px;
+    }
+
+    .card-title {
+        font-size: 16px;
+        margin-bottom: 12px;
+    }
+
+    .info-value {
+        font-size: 14px;
+    }
+
+    .prescription-item {
+        padding: 12px;
+    }
+
+    .prescription-name {
+        font-size: 14px;
+    }
+}
