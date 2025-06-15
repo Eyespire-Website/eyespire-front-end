@@ -5,7 +5,6 @@ import "./doctor.css"
 import {useNavigate} from "react-router-dom";
 
 export default function DoctorDashboard() {
-    const [activeTab, setActiveTab] = useState("profile")
     const [doctorData, setDoctorData] = useState({
         email: "doctor.vupa@gmail.com",
         fullname: "Phan Anh Vũ",
@@ -35,15 +34,6 @@ export default function DoctorDashboard() {
     const [passwordError, setPasswordError] = useState("")
     const [selectedFile, setSelectedFile] = useState(null)
     const [previewUrl, setPreviewUrl] = useState("")
-
-    const handleBackHome = () => {
-        navigate('/');
-    };
-
-    const handleMenuClick = (itemId) => {
-        setActiveTab(itemId)
-        navigate(`/dashboard/doctor/${itemId}`)
-    }
 
     const handleInputChange = (e) => {
         const {name, value} = e.target
@@ -221,282 +211,235 @@ export default function DoctorDashboard() {
         }
     }
 
-    const menuItems = [
-        {id: "schedule", label: "Lịch làm việc", icon: "📅"},
-        {id: "appointments", label: "Xem cuộc hẹn", icon: "🕐"},
-        {id: "customers", label: "Hồ sơ bệnh nhân", icon: "👥"},
-        {id: "records", label: "Tạo hồ sơ bệnh án", icon: "📋"},
-        {id: "feedback", label: "Phản hồi khách hàng", icon: "💬"},
-        {id: "profile", label: "Hồ sơ cá nhân", icon: "👤"},
-    ]
-
     return (
-        <div className="dashboard-container">
-            {/* Sidebar */}
-            <div className="sidebar">
-                <div className="sidebar-header">
-                    <div className="logo" onClick={handleBackHome}>
-                        <img
-                            src="https://storage.googleapis.com/tagjs-prod.appspot.com/v1/VY3PPTks6o/e8ggwzic_expires_30_days.png"
-                            className="logo-image"
-                            alt="EyeSpire Logo"
-                        />
-                        <span className="logo-text">EyeSpire</span>
-                    </div>
-                </div>
+        <div className="profile-content-wrapper">
+            <header className="profile-header">
+                <h1>Hồ sơ cá nhân</h1>
+            </header>
 
-                <div className="sidebar-menu">
-                    <ul>
-                        {menuItems.map((item) => (
-                            <li key={item.id} className={`menu-item ${activeTab === item.id ? "active" : ""}`}>
-                                <button onClick={() => handleMenuClick(item.id)} className="menu-button">
-                                    <span className="menu-icon">{item.icon}</span>
-                                    <span className="menu-text">{item.label}</span>
-                                </button>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-
-                <div className="sidebar-footer">
-                    <button className="logout-button">
-                        <span className="logout-icon">←</span>
-                        <span>Đăng xuất</span>
-                    </button>
-                    <div className="copyright">© 2025 EyeSpire</div>
-                </div>
-            </div>
-
-            {/* Main Content */}
-            <div className="main-content">
-                <header className="content-header">
-                    <h1>Hồ sơ cá nhân</h1>
-                </header>
-
-                <div className="profile-content">
-                    {/* Left Section - Avatar */}
-                    <div className="profile-left">
-                        <div className="profile-avatar-container">
-                            <div className="profile-avatar-large">
-                                {previewUrl ? (
-                                    <img src={previewUrl || "/placeholder.svg"} alt="Avatar" className="avatar-image"/>
-                                ) : (
-                                    doctorData.fullname.charAt(0) || "P"
-                                )}
-                                <label htmlFor="avatar-upload" className="change-avatar-btn">
-                                    <span className="camera-icon">📷</span>
-                                </label>
-                                <input
-                                    type="file"
-                                    id="avatar-upload"
-                                    onChange={handleFileChange}
-                                    accept="image/*"
-                                    style={{display: "none"}}
-                                />
-                            </div>
-                            {selectedFile && (
-                                <button className="upload-avatar-btn" onClick={handleAvatarUpload} disabled={saving}>
-                                    {saving ? "Đang tải lên..." : "Lưu ảnh"}
-                                </button>
+            <div className="profile-content">
+                {/* Left Section - Avatar */}
+                <div className="profile-left">
+                    <div className="profile-avatar-container">
+                        <div className="profile-avatar-large">
+                            {previewUrl ? (
+                                <img src={previewUrl || "/placeholder.svg"} alt="Avatar" className="avatar-image"/>
+                            ) : (
+                                doctorData.fullname.charAt(0) || "P"
                             )}
-                        </div>
-
-                        <div className="profile-info">
-                            <h3>{doctorData.fullname}</h3>
-                            <p className="user-email">{doctorData.email}</p>
-                            <div className="user-badge">DOCTOR</div>
-                        </div>
-
-                        <button className="edit-profile-btn" onClick={() => setShowPasswordModal(true)}>
-                            <span className="password-icon">🔒</span> Thay đổi mật khẩu ở đây!
-                        </button>
-                    </div>
-
-                    {/* Center Section - Form Fields */}
-                    <div className="profile-center">
-                        <div className="form-grid">
-                            <div className="form-group">
-                                <label>
-                                    Email <span className="required">*</span>
-                                </label>
-                                <input
-                                    type="email"
-                                    name="email"
-                                    value={doctorData.email}
-                                    onChange={handleInputChange}
-                                    className="form-control readonly"
-                                    readOnly
-                                />
-                            </div>
-
-                            <div className="form-group">
-                                <label>Chứng chỉ</label>
-                                <input
-                                    type="text"
-                                    name="specialization"
-                                    value={doctorData.specialization}
-                                    onChange={handleInputChange}
-                                    className="form-control"
-                                />
-                            </div>
-
-                            <div className="form-group">
-                                <label>
-                                    Họ và tên <span className="required">*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    name="fullname"
-                                    value={doctorData.fullname}
-                                    onChange={handleInputChange}
-                                    className="form-control"
-                                />
-                            </div>
-
-                            <div className="form-group">
-                                <label>Mã số chứng chỉ</label>
-                                <input
-                                    type="text"
-                                    name="licenseNumber"
-                                    value={doctorData.licenseNumber}
-                                    onChange={handleInputChange}
-                                    className="form-control"
-                                />
-                            </div>
-
-                            <div className="form-group">
-                                <label>
-                                    Số điện thoại <span className="required">*</span>
-                                </label>
-                                <div className="phone-input">
-                                    <div className="phone-prefix">+84</div>
-                                    <input
-                                        type="text"
-                                        name="phone"
-                                        value={doctorData.phone}
-                                        onChange={handleInputChange}
-                                        className="form-control"
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="form-group">
-                                <label>
-                                    Giới tính <span className="required">*</span>
-                                </label>
-                                <select name="gender" value={doctorData.gender} onChange={handleInputChange}
-                                        className="form-control">
-                                    <option value="male">Nam</option>
-                                    <option value="female">Nữ</option>
-                                    <option value="other">Khác</option>
-                                </select>
-                            </div>
-
-                            <div className="form-group">
-                                <label>Năm kinh nghiệm</label>
-                                <select
-                                    name="experience"
-                                    value={doctorData.experience}
-                                    onChange={handleInputChange}
-                                    className="form-control"
-                                >
-                                    <option value="1">1</option>
-                                    <option value="2">2</option>
-                                    <option value="3">3</option>
-                                    <option value="5">5</option>
-                                    <option value="10">10+</option>
-                                </select>
-                            </div>
-
-                            <div className="form-group">
-                                <label>Tỉnh/Thành phố</label>
-                                <select
-                                    name="provinceCode"
-                                    value={doctorData.provinceCode}
-                                    onChange={handleProvinceChange}
-                                    className="form-control"
-                                    disabled={locationLoading}
-                                >
-                                    <option value="">-- Chọn Tỉnh/Thành phố --</option>
-                                    {provinces.map((province) => (
-                                        <option key={province.code} value={province.code}>
-                                            {province.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            <div className="form-group">
-                                <label>Quận/Huyện</label>
-                                <select
-                                    name="districtCode"
-                                    value={doctorData.districtCode}
-                                    onChange={handleDistrictChange}
-                                    className="form-control"
-                                    disabled={!doctorData.provinceCode || locationLoading}
-                                >
-                                    <option value="">-- Chọn Quận/Huyện --</option>
-                                    {districts.map((district) => (
-                                        <option key={district.code} value={district.code}>
-                                            {district.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            <div className="form-group">
-                                <label>Phường/Xã</label>
-                                <select
-                                    name="wardCode"
-                                    value={doctorData.wardCode}
-                                    onChange={handleInputChange}
-                                    className="form-control"
-                                    disabled={!doctorData.districtCode || locationLoading}
-                                >
-                                    <option value="">-- Chọn Phường/Xã --</option>
-                                    {wards.map((ward) => (
-                                        <option key={ward.code} value={ward.code}>
-                                            {ward.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            <div className="form-group full-width">
-                                <label>Địa chỉ</label>
-                                <input
-                                    type="text"
-                                    name="address"
-                                    value={doctorData.address}
-                                    onChange={handleInputChange}
-                                    className="form-control"
-                                />
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Right Section - Bio */}
-                    <div className="profile-right">
-                        <div className="bio-section">
-                            <label>
-                                Giới thiệu <span className="optional">(Tùy chọn)</span>
+                            <label htmlFor="avatar-upload" className="change-avatar-btn">
+                                <span className="camera-icon">📷</span>
                             </label>
-                            <textarea
-                                name="bio"
-                                value={doctorData.bio}
+                            <input
+                                type="file"
+                                id="avatar-upload"
+                                onChange={handleFileChange}
+                                accept="image/*"
+                                style={{display: "none"}}
+                            />
+                        </div>
+                        {selectedFile && (
+                            <button className="upload-avatar-btn" onClick={handleAvatarUpload} disabled={saving}>
+                                {saving ? "Đang tải lên..." : "Lưu ảnh"}
+                            </button>
+                        )}
+                    </div>
+
+                    <div className="profile-info">
+                        <h3>{doctorData.fullname}</h3>
+                        <p className="user-email">{doctorData.email}</p>
+                        <div className="user-badge">DOCTOR</div>
+                    </div>
+
+                    <button className="edit-profile-btn" onClick={() => setShowPasswordModal(true)}>
+                        <span className="password-icon">🔒</span> Thay đổi mật khẩu ở đây!
+                    </button>
+                </div>
+
+                {/* Center Section - Form Fields */}
+                <div className="profile-center">
+                    <div className="form-grid">
+                        <div className="form-group">
+                            <label>
+                                Email <span className="required">*</span>
+                            </label>
+                            <input
+                                type="email"
+                                name="email"
+                                value={doctorData.email}
                                 onChange={handleInputChange}
-                                className="bio-textarea"
-                                placeholder="Mô tả về kinh nghiệm, chuyên môn và phương pháp điều trị của bạn..."
+                                className="form-control readonly"
+                                readOnly
+                            />
+                        </div>
+
+                        <div className="form-group">
+                            <label>Chứng chỉ</label>
+                            <input
+                                type="text"
+                                name="specialization"
+                                value={doctorData.specialization}
+                                onChange={handleInputChange}
+                                className="form-control"
+                            />
+                        </div>
+
+                        <div className="form-group">
+                            <label>
+                                Họ và tên <span className="required">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                name="fullname"
+                                value={doctorData.fullname}
+                                onChange={handleInputChange}
+                                className="form-control"
+                            />
+                        </div>
+
+                        <div className="form-group">
+                            <label>Mã số chứng chỉ</label>
+                            <input
+                                type="text"
+                                name="licenseNumber"
+                                value={doctorData.licenseNumber}
+                                onChange={handleInputChange}
+                                className="form-control"
+                            />
+                        </div>
+
+                        <div className="form-group">
+                            <label>
+                                Số điện thoại <span className="required">*</span>
+                            </label>
+                            <div className="phone-input">
+                                <div className="phone-prefix">+84</div>
+                                <input
+                                    type="text"
+                                    name="phone"
+                                    value={doctorData.phone}
+                                    onChange={handleInputChange}
+                                    className="form-control"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="form-group">
+                            <label>
+                                Giới tính <span className="required">*</span>
+                            </label>
+                            <select name="gender" value={doctorData.gender} onChange={handleInputChange}
+                                    className="form-control">
+                                <option value="male">Nam</option>
+                                <option value="female">Nữ</option>
+                                <option value="other">Khác</option>
+                            </select>
+                        </div>
+
+                        <div className="form-group">
+                            <label>Năm kinh nghiệm</label>
+                            <select
+                                name="experience"
+                                value={doctorData.experience}
+                                onChange={handleInputChange}
+                                className="form-control"
+                            >
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="5">5</option>
+                                <option value="10">10+</option>
+                            </select>
+                        </div>
+
+                        <div className="form-group">
+                            <label>Tỉnh/Thành phố</label>
+                            <select
+                                name="provinceCode"
+                                value={doctorData.provinceCode}
+                                onChange={handleProvinceChange}
+                                className="form-control"
+                                disabled={locationLoading}
+                            >
+                                <option value="">-- Chọn Tỉnh/Thành phố --</option>
+                                {provinces.map((province) => (
+                                    <option key={province.code} value={province.code}>
+                                        {province.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="form-group">
+                            <label>Quận/Huyện</label>
+                            <select
+                                name="districtCode"
+                                value={doctorData.districtCode}
+                                onChange={handleDistrictChange}
+                                className="form-control"
+                                disabled={!doctorData.provinceCode || locationLoading}
+                            >
+                                <option value="">-- Chọn Quận/Huyện --</option>
+                                {districts.map((district) => (
+                                    <option key={district.code} value={district.code}>
+                                        {district.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="form-group">
+                            <label>Phường/Xã</label>
+                            <select
+                                name="wardCode"
+                                value={doctorData.wardCode}
+                                onChange={handleInputChange}
+                                className="form-control"
+                                disabled={!doctorData.districtCode || locationLoading}
+                            >
+                                <option value="">-- Chọn Phường/Xã --</option>
+                                {wards.map((ward) => (
+                                    <option key={ward.code} value={ward.code}>
+                                        {ward.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="form-group full-width">
+                            <label>Địa chỉ</label>
+                            <input
+                                type="text"
+                                name="address"
+                                value={doctorData.address}
+                                onChange={handleInputChange}
+                                className="form-control"
                             />
                         </div>
                     </div>
                 </div>
 
-                <div className="form-actions">
-                    <button className="save-button" onClick={handleSave} disabled={saving}>
-                        {saving ? "Đang lưu..." : "Cập nhật"}
-                    </button>
+                {/* Right Section - Bio */}
+                <div className="profile-right">
+                    <div className="bio-section">
+                        <label>
+                            Giới thiệu <span className="optional">(Tùy chọn)</span>
+                        </label>
+                        <textarea
+                            name="bio"
+                            value={doctorData.bio}
+                            onChange={handleInputChange}
+                            className="bio-textarea"
+                            placeholder="Mô tả về kinh nghiệm, chuyên môn và phương pháp điều trị của bạn..."
+                        />
+                    </div>
                 </div>
+            </div>
+
+            <div className="form-actions">
+                <button className="save-button" onClick={handleSave} disabled={saving}>
+                    {saving ? "Đang lưu..." : "Cập nhật"}
+                </button>
             </div>
 
             {/* Password Change Modal */}

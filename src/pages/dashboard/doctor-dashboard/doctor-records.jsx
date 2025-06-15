@@ -6,7 +6,6 @@ import "./doctor-records.css"
 import { Upload, Trash2, User, FileText, Stethoscope, Pill, StickyNote, Minus, Plus, ChevronDown } from "lucide-react"
 
 export default function CreateMedicalRecord() {
-    const [activeTab, setActiveTab] = useState("records")
     const navigate = useNavigate()
     const [loading, setLoading] = useState(false)
     const [patients, setPatients] = useState([])
@@ -180,66 +179,16 @@ export default function CreateMedicalRecord() {
         }
     }
 
-    const menuItems = [
-        { id: "schedule", label: "Lịch làm việc", icon: "📅" },
-        { id: "appointments", label: "Xem cuộc hẹn", icon: "🕐" },
-        { id: "customers", label: "Hồ sơ bệnh nhân", icon: "👥" },
-        { id: "records", label: "Tạo hồ sơ bệnh án", icon: "📋" },
-        { id: "feedback", label: "Phản hồi khách hàng", icon: "💬" },
-        { id: "profile", label: "Hồ sơ cá nhân", icon: "👤" },
-    ]
-
-    const handleMenuClick = (itemId) => {
-        setActiveTab(itemId)
-        navigate(`/dashboard/doctor/${itemId}`)
-    }
-
     const selectedPatient = patients.find((p) => p.id === Number.parseInt(recordData.patientId))
 
     return (
-        <div className="dashboard-container">
-            {/* Sidebar */}
-            <div className="sidebar">
-                <div className="sidebar-header">
-                    <div className="logo" onClick={handleBackHome}>
-                        <img
-                            src="https://storage.googleapis.com/tagjs-prod.appspot.com/v1/VY3PPTks6o/e8ggwzic_expires_30_days.png"
-                            className="logo-image"
-                            alt="EyeSpire Logo"
-                        />
-                        <span className="logo-text">EyeSpire</span>
-                    </div>
-                </div>
-
-                <div className="sidebar-menu">
-                    <ul>
-                        {menuItems.map((item) => (
-                            <li key={item.id} className={`menu-item ${activeTab === item.id ? "active" : ""}`}>
-                                <button onClick={() => handleMenuClick(item.id)} className="menu-button">
-                                    <span className="menu-icon">{item.icon}</span>
-                                    <span className="menu-text">{item.label}</span>
-                                </button>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-
-                <div className="sidebar-footer">
-                    <button className="logout-button">
-                        <span className="logout-icon">←</span>
-                        <span>Đăng xuất</span>
-                    </button>
-                    <div className="copyright">© 2025 EyeSpire</div>
-                </div>
-            </div>
-
-            {/* Main Content */}
-            <div className="main-content">
-                <header className="content-header">
+        <div className="records-container">
+            <div className="records-content">
+                <div className="records-header">
                     <h1>Tạo hồ sơ bệnh án</h1>
-                </header>
+                </div>
 
-                <div className="medical-record-container">
+                <div className="create-record-form-container">
                     <form onSubmit={handleSubmit} className="record-form">
                         <div className="form-grid-medical">
                             {/* Patient Selection */}

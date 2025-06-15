@@ -1,4 +1,32 @@
 /* Customer Profile Styles */
+.customer-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    font-family: Arial, sans-serif;
+    background-color: #f9fafb;
+}
+
+.customer-content {
+    flex: 1;
+    padding: 1.5rem;
+    background-color: #f9fafb;
+    overflow-y: auto;
+}
+
+.customer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.customer-header h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111827;
+}
+
 .customer-profile-container {
     display: flex;
     gap: 24px;

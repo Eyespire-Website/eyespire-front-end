@@ -5,6 +5,28 @@
     font-family: Arial, sans-serif;
 }
 
+/* Profile Content Wrapper */
+.profile-content-wrapper {
+    flex: 1;
+    padding: 1.5rem;
+    background-color: #f9fafb;
+    overflow-y: auto;
+}
+
+/* Profile Header */
+.profile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.profile-header h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111827;
+}
+
 /* Sidebar Styles */
 .sidebar {
     width: 260px;
@@ -168,6 +190,8 @@
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     display: flex;
     gap: 2rem;
+    overflow: visible; /* Prevent nested scrollbar */
+    height: auto; /* Allow content to determine height */
 }
 
 .profile-left {

@@ -21,8 +21,6 @@ import {
 } from "lucide-react"
 
 export default function DoctorAppointments() {
-    const [activeTab, setActiveTab] = useState("appointments")
-    const navigate = useNavigate()
     const [loading, setLoading] = useState(false)
     const [appointments, setAppointments] = useState([])
     const [currentPage, setCurrentPage] = useState(1)
@@ -37,6 +35,7 @@ export default function DoctorAppointments() {
     const [showDetailModal, setShowDetailModal] = useState(false)
     const [showConfirmModal, setShowConfirmModal] = useState(false)
     const [confirmingAppointment, setConfirmingAppointment] = useState(null)
+    const navigate = useNavigate()
 
     // Fetch appointments on component mount
     useEffect(() => {
@@ -139,13 +138,9 @@ export default function DoctorAppointments() {
         fetchAppointments()
     }, [])
 
+    // Handle back home
     const handleBackHome = () => {
-        navigate("/")
-    }
-
-    const handleMenuClick = (itemId) => {
-        setActiveTab(itemId)
-        navigate(`/dashboard/doctor/${itemId}`)
+        navigate('/')
     }
 
     // Search and filter function
@@ -243,15 +238,6 @@ export default function DoctorAppointments() {
         )
     }
 
-    const menuItems = [
-        { id: "schedule", label: "Lịch làm việc", icon: "📅" },
-        { id: "appointments", label: "Xem cuộc hẹn", icon: "🕐" },
-        { id: "customers", label: "Hồ sơ bệnh nhân", icon: "👥" },
-        { id: "records", label: "Tạo hồ sơ bệnh án", icon: "📋" },
-        { id: "feedback", label: "Phản hồi khách hàng", icon: "💬" },
-        { id: "profile", label: "Hồ sơ cá nhân", icon: "👤" },
-    ]
-
     // Get status badge
     const getStatusBadge = (status) => {
         switch (status) {
@@ -278,47 +264,11 @@ export default function DoctorAppointments() {
     }
 
     return (
-        <div className="dashboard-container">
-            {/* Sidebar */}
-            <div className="sidebar">
-                <div className="sidebar-header">
-                    <div className="logo" onClick={handleBackHome}>
-                        <img
-                            src="https://storage.googleapis.com/tagjs-prod.appspot.com/v1/VY3PPTks6o/e8ggwzic_expires_30_days.png"
-                            className="logo-image"
-                            alt="EyeSpire Logo"
-                        />
-                        <span className="logo-text">EyeSpire</span>
-                    </div>
-                </div>
-
-                <div className="sidebar-menu">
-                    <ul>
-                        {menuItems.map((item) => (
-                            <li key={item.id} className={`menu-item ${activeTab === item.id ? "active" : ""}`}>
-                                <button onClick={() => handleMenuClick(item.id)} className="menu-button">
-                                    <span className="menu-icon">{item.icon}</span>
-                                    <span className="menu-text">{item.label}</span>
-                                </button>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-
-                <div className="sidebar-footer">
-                    <button className="logout-button">
-                        <span className="logout-icon">←</span>
-                        <span>Đăng xuất</span>
-                    </button>
-                    <div className="copyright">© 2025 EyeSpire</div>
-                </div>
-            </div>
-
-            {/* Main Content */}
-            <div className="main-content">
-                <header className="content-header">
-                    <h1>Danh sách cuộc hẹn</h1>
-                    <div className="search-container">
+        <div className="appointments-container">
+            <div className="appointments-content">
+                <div className="appointments-header">
+                    <h1>Cuộc hẹn</h1>
+                    <div className="filter-container">
                         <div className="search-input-wrapper">
                             <Search size={20} className="search-icon" />
                             <input
@@ -330,146 +280,144 @@ export default function DoctorAppointments() {
                             />
                         </div>
                     </div>
-                </header>
+                </div>
 
-                <div className="appointments-container">
-                    {/* Filters */}
-                    <div className="appointments-filters">
-                        <div className="filter-group">
-                            <label>Trạng thái:</label>
-                            <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="filter-select">
-                                <option value="">Tất cả</option>
-                                <option value="confirmed">Đã xác nhận</option>
-                                <option value="pending">Chờ xác nhận</option>
-                                <option value="completed">Hoàn thành</option>
-                            </select>
-                        </div>
+                <div className="appointments-filters">
+                    <div className="filter-group">
+                        <label>Trạng thái:</label>
+                        <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="filter-select">
+                            <option value="">Tất cả</option>
+                            <option value="confirmed">Đã xác nhận</option>
+                            <option value="pending">Chờ xác nhận</option>
+                            <option value="completed">Hoàn thành</option>
+                        </select>
                     </div>
-                    <div className="appointments-table-container">
-                        <table className="appointments-table">
-                            <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Tên khách hàng</th>
-                                <th>Số điện thoại</th>
-                                <th>Tên dịch vụ</th>
-                                <th
-                                    className={`sortable ${sortConfig.key === "date" ? "sorted" : ""}`}
-                                    onClick={() => requestSort("date")}
-                                >
-                                    Ngày hẹn
-                                    {sortConfig.key === "date" && (
-                                        <span className="sort-icon">
+                </div>
+
+                <div className="appointments-table-container">
+                    <table className="appointments-table">
+                        <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Tên khách hàng</th>
+                            <th>Số điện thoại</th>
+                            <th>Tên dịch vụ</th>
+                            <th
+                                className={`sortable ${sortConfig.key === "date" ? "sorted" : ""}`}
+                                onClick={() => requestSort("date")}
+                            >
+                                Ngày hẹn
+                                {sortConfig.key === "date" && (
+                                    <span className="sort-icon">
                         {sortConfig.direction === "asc" ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                       </span>
-                                    )}
-                                </th>
-                                <th>Giờ khám</th>
-                                <th>Trạng thái</th>
-                                <th>Xem chi tiết</th>
-                                <th>Xác nhận</th>
+                                )}
+                            </th>
+                            <th>Giờ khám</th>
+                            <th>Trạng thái</th>
+                            <th>Xem chi tiết</th>
+                            <th>Xác nhận</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {loading ? (
+                            <tr>
+                                <td colSpan={10} className="loading-cell">
+                                    Đang tải dữ liệu...
+                                </td>
                             </tr>
-                            </thead>
-                            <tbody>
-                            {loading ? (
-                                <tr>
-                                    <td colSpan={10} className="loading-cell">
-                                        Đang tải dữ liệu...
+                        ) : currentAppointments.length === 0 ? (
+                            <tr>
+                                <td colSpan={10} className="empty-cell">
+                                    Không có cuộc hẹn nào
+                                </td>
+                            </tr>
+                        ) : (
+                            currentAppointments.map((appointment, index) => (
+                                <tr key={appointment.id}>
+                                    <td>{indexOfFirstItem + index + 1}</td>
+                                    <td>{appointment.customerName}</td>
+                                    <td>{appointment.phone}</td>
+                                    <td>{appointment.serviceName}</td>
+                                    <td>{appointment.date}</td>
+                                    <td>{appointment.time}</td>
+                                    <td>{getStatusBadge(appointment.status)}</td>
+                                    <td>
+                                        <button className="detail-btn" onClick={() => handleViewDetails(appointment)}>
+                                            <Eye size={16} />
+                                            Xem chi tiết
+                                        </button>
+                                    </td>
+                                    <td>
+                                        <label className="toggle-switch">
+                                            <input
+                                                type="checkbox"
+                                                checked={appointment.isCompleted}
+                                                onChange={() => handleConfirmCompletion(appointment)}
+                                                disabled={appointment.status !== "confirmed"}
+                                            />
+                                            <span className="toggle-slider"></span>
+                                        </label>
                                     </td>
                                 </tr>
-                            ) : currentAppointments.length === 0 ? (
-                                <tr>
-                                    <td colSpan={10} className="empty-cell">
-                                        Không có cuộc hẹn nào
-                                    </td>
-                                </tr>
-                            ) : (
-                                currentAppointments.map((appointment, index) => (
-                                    <tr key={appointment.id}>
-                                        <td>{indexOfFirstItem + index + 1}</td>
-                                        <td>{appointment.customerName}</td>
-                                        <td>{appointment.phone}</td>
-                                        <td>{appointment.serviceName}</td>
-                                        <td>{appointment.date}</td>
-                                        <td>{appointment.time}</td>
-                                        <td>{getStatusBadge(appointment.status)}</td>
-                                        <td>
-                                            <button className="detail-btn" onClick={() => handleViewDetails(appointment)}>
-                                                <Eye size={16} />
-                                                Xem chi tiết
-                                            </button>
-                                        </td>
-                                        <td>
-                                            <label className="toggle-switch">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={appointment.isCompleted}
-                                                    onChange={() => handleConfirmCompletion(appointment)}
-                                                    disabled={appointment.status !== "confirmed"}
-                                                />
-                                                <span className="toggle-slider"></span>
-                                            </label>
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                            </tbody>
-                        </table>
+                            ))
+                        )}
+                        </tbody>
+                    </table>
+                </div>
+
+                {/* Pagination */}
+                <div className="appointments-pagination">
+                    <button className="pagination-btn" onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1}>
+                        <ChevronLeft size={16} />
+                    </button>
+
+                    <div className="pagination-pages">
+                        <button className={`pagination-number ${currentPage === 1 ? "active" : ""}`} onClick={() => paginate(1)}>
+                            1
+                        </button>
+
+                        {currentPage > 3 && <span className="pagination-ellipsis">...</span>}
+
+                        {Array.from({ length: 3 }, (_, i) => {
+                            const pageNum = currentPage - 1 + i
+                            if (pageNum > 1 && pageNum < totalPages) {
+                                return (
+                                    <button
+                                        key={pageNum}
+                                        className={`pagination-number ${pageNum === currentPage ? "active" : ""}`}
+                                        onClick={() => paginate(pageNum)}
+                                    >
+                                        {pageNum}
+                                    </button>
+                                )
+                            }
+                            return null
+                        })}
+
+                        {currentPage < totalPages - 2 && <span className="pagination-ellipsis">...</span>}
+
+                        {totalPages > 1 && (
+                            <button
+                                className={`pagination-number ${currentPage === totalPages ? "active" : ""}`}
+                                onClick={() => paginate(totalPages)}
+                            >
+                                {totalPages}
+                            </button>
+                        )}
                     </div>
 
-                    {/* Pagination */}
-                    <div className="appointments-pagination">
-                        <button className="pagination-btn" onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1}>
-                            <ChevronLeft size={16} />
-                        </button>
+                    <button
+                        className="pagination-btn"
+                        onClick={() => paginate(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                    >
+                        <ChevronRight size={16} />
+                    </button>
 
-                        <div className="pagination-pages">
-                            <button className={`pagination-number ${currentPage === 1 ? "active" : ""}`} onClick={() => paginate(1)}>
-                                1
-                            </button>
-
-                            {currentPage > 3 && <span className="pagination-ellipsis">...</span>}
-
-                            {Array.from({ length: 3 }, (_, i) => {
-                                const pageNum = currentPage - 1 + i
-                                if (pageNum > 1 && pageNum < totalPages) {
-                                    return (
-                                        <button
-                                            key={pageNum}
-                                            className={`pagination-number ${pageNum === currentPage ? "active" : ""}`}
-                                            onClick={() => paginate(pageNum)}
-                                        >
-                                            {pageNum}
-                                        </button>
-                                    )
-                                }
-                                return null
-                            })}
-
-                            {currentPage < totalPages - 2 && <span className="pagination-ellipsis">...</span>}
-
-                            {totalPages > 1 && (
-                                <button
-                                    className={`pagination-number ${currentPage === totalPages ? "active" : ""}`}
-                                    onClick={() => paginate(totalPages)}
-                                >
-                                    {totalPages}
-                                </button>
-                            )}
-                        </div>
-
-                        <button
-                            className="pagination-btn"
-                            onClick={() => paginate(currentPage + 1)}
-                            disabled={currentPage === totalPages}
-                        >
-                            <ChevronRight size={16} />
-                        </button>
-
-                        <div className="items-per-page">
-                            <span>{itemsPerPage} / page</span>
-                            <ChevronDown size={14} />
-                        </div>
+                    <div className="items-per-page">
+                        <span>{itemsPerPage} / page</span>
+                        <ChevronDown size={14} />
                     </div>
                 </div>
             </div>
