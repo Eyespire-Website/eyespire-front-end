@@ -1,3 +1,4 @@
+/* Định nghĩa sidebar-v2 với position fixed */
 .sidebar-v2 {
     width: 320px;
     background: linear-gradient(180deg, #4f46e5 0%, #1e40af 50%, #1e3a8a 100%);
@@ -8,13 +9,19 @@
     padding: 1.5rem 0;
     transition: width 0.3s ease;
     flex-shrink: 0;
-    overflow-y: hidden;
+    overflow-y: auto; /* Sidebar vẫn có thể cuộn nếu cần */
+    position: fixed; /* Cố định sidebar */
+    top: 0;
+    left: 0;
+    z-index: 1000; /* Đảm bảo sidebar nằm trên nội dung */
 }
 
+/* Điều chỉnh khi sidebar thu gọn */
 .sidebar-wrapper.collapsed .sidebar-v2 {
     width: 90px;
 }
 
+/* Điều chỉnh các phần tử khi sidebar thu gọn */
 .sidebar-wrapper.collapsed .logo-text-v2,
 .sidebar-wrapper.collapsed .label-v2,
 .sidebar-wrapper.collapsed .logout-text-v2 {
@@ -37,6 +44,7 @@
     display: none;
 }
 
+/* Container logo */
 .sidebar-logo-container {
     display: flex;
     flex-direction: column;
@@ -79,6 +87,7 @@
     white-space: nowrap;
 }
 
+/* Toggle button container */
 .toggle-container-below {
     display: flex;
     justify-content: center;
@@ -126,6 +135,7 @@
     flex-shrink: 0;
 }
 
+/* Menu list */
 .menu-list-v2 {
     flex: 1;
     list-style: none;
@@ -190,6 +200,7 @@
     font-size: 1rem;
 }
 
+/* Footer */
 .sidebar-footer-v2 {
     padding: 1.5rem;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
@@ -246,13 +257,48 @@
     max-width: 200px;
 }
 
+/* Điều chỉnh dashboard-content để nội dung không cuộn dọc */
+.dashboard-content {
+    margin-left: 320px; /* Dịch sang phải khi sidebar mở */
+    width: calc(100% - 320px); /* Chiếm phần còn lại khi sidebar mở */
+    height: 100vh; /* Chiều cao bằng viewport */
+    overflow-y: hidden; /* Khóa scroll dọc */
+    transition: margin-left 0.3s ease, width 0.3s ease;
+    padding: 20px; /* Giảm padding nếu muốn nội dung rộng hơn */
+    box-sizing: border-box; /* Đảm bảo padding không làm tăng kích thước */
+}
+
+/* Khi sidebar thu gọn, nội dung mở rộng gần toàn màn hình */
+.sidebar-wrapper.collapsed + .dashboard-content {
+    margin-left: 90px; /* Giảm margin khi sidebar thu gọn */
+    width: calc(100% - 90px); /* Tăng chiều rộng nội dung */
+    height: 100vh; /* Chiều cao bằng viewport */
+    overflow-y: hidden; /* Khóa scroll dọc */
+}
+
+/* Responsive cho màn hình nhỏ */
 @media (max-width: 768px) {
     .sidebar-v2 {
         width: 100%;
         height: auto;
+        position: relative; /* Không cố định trên mobile */
     }
 
     .sidebar-wrapper.collapsed .sidebar-v2 {
         width: 70px;
+    }
+
+    .dashboard-content {
+        margin-left: 0; /* Loại bỏ margin trên mobile */
+        width: 100%; /* Nội dung chiếm toàn bộ chiều rộng */
+        height: 100vh; /* Chiều cao bằng viewport */
+        overflow-y: hidden; /* Khóa scroll dọc */
+    }
+
+    .sidebar-wrapper.collapsed + .dashboard-content {
+        margin-left: 0;
+        width: 100%;
+        height: 100vh; /* Chiều cao bằng viewport */
+        overflow-y: hidden; /* Khóa scroll dọc */
     }
 }

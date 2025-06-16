@@ -197,7 +197,7 @@ export default function PaymentHistoryPage() {
             <ToastContainer position="top-right" autoClose={3000} />
 
             {/* Main Content */}
-            <div className="main-content">
+            <div className="main-content" style={{ width: '100%', marginLeft: 0 }}>
                 {/* Header */}
                 <header className="content-header">
                     <h1>Lịch sử thanh toán</h1>

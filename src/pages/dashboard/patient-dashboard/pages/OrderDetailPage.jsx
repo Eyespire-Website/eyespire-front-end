@@ -402,7 +402,7 @@ export default function OrderDetailPage() {
 
 
             {/* Main Content */}
-            <div className="main-content">
+            <div className="main-content" style={{ width: '100%', marginLeft: 0 }}>
                 {/* Header */}
                 <header className="content-header">
                     <div className="header-left">
