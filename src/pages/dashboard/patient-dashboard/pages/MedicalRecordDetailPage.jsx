@@ -6,8 +6,6 @@ import 'react-toastify/dist/ReactToastify.css';
 import '../styles/medical-records-detail.css';
 import { Calendar, Package, FileText, History, User, Camera, ArrowLeft } from 'lucide-react';
 
-import PatientSidebar from '../PatientSidebar';
-
 const MedicalRecordDetailPage = () => {
     const navigate = useNavigate();
     const { id: recordId } = useParams();
@@ -19,7 +17,6 @@ const MedicalRecordDetailPage = () => {
 
     const [loading, setLoading] = useState(false);
 
-    // Mock data với nhiều records để test
     const mockRecords = {
         "EYE2024001": {
             id: "EYE2024001",
@@ -131,7 +128,6 @@ const MedicalRecordDetailPage = () => {
 
     const [recordDetail, setRecordDetail] = useState(null);
 
-    // Lấy thông tin người dùng và record detail khi component mount
     useEffect(() => {
         const currentUser = authService.getCurrentUser();
         if (!currentUser) {
@@ -146,7 +142,6 @@ const MedicalRecordDetailPage = () => {
             avatar: currentUser.avatarUrl || null
         });
 
-        // FIX: Load record detail dựa trên recordId từ URL
         console.log('Loading record detail for ID:', recordId);
         const record = mockRecords[recordId];
         if (record) {
@@ -158,16 +153,13 @@ const MedicalRecordDetailPage = () => {
         }
     }, [navigate, recordId]);
 
-    // Hàm xử lý URL avatar
     const getAvatarUrl = (url) => {
         if (!url) return null;
 
-        // Nếu là URL đầy đủ (bắt đầu bằng http hoặc https)
         if (url.startsWith('http://') || url.startsWith('https://')) {
             return url;
         }
 
-        // Nếu là đường dẫn tương đối, thêm base URL
         if (url.startsWith('/')) {
             return `http://localhost:8080${url}`;
         }
@@ -185,16 +177,13 @@ const MedicalRecordDetailPage = () => {
     };
 
     const handleImageClick = (image, index) => {
-        // Handle image preview/modal
         console.log('Open image:', image, index);
     };
 
-    // Hiển thị loading hoặc error nếu chưa có data
     if (!recordDetail) {
         return (
             <div className="dashboard-container">
                 <ToastContainer position="top-right" autoClose={3000} />
-                <PatientSidebar activeItem="medical" />
                 <div className="main-content">
                     <div className="loading-container">
                         <div className="loading-text">Đang tải...</div>
@@ -207,11 +196,7 @@ const MedicalRecordDetailPage = () => {
     return (
         <div className="dashboard-container">
             <ToastContainer position="top-right" autoClose={3000} />
-
-
-            {/* Main Content */}
-            <div className="main-content">
-                {/* Header */}
+            <div className="main-content" style={{ width: '100%', marginLeft: 0 }}>
                 <header className="content-header">
                     <div className="header-left">
                         <button
@@ -236,7 +221,6 @@ const MedicalRecordDetailPage = () => {
                     </div>
                 </header>
 
-                {/* Breadcrumb */}
                 <div className="breadcrumb-container">
                     <nav className="breadcrumb">
                         <div className="breadcrumb-item">
@@ -256,7 +240,6 @@ const MedicalRecordDetailPage = () => {
                     </nav>
                 </div>
 
-                {/* Medical Record Detail Content */}
                 <div className="medical-record-detail-content">
                     {loading ? (
                         <div className="loading-container">
@@ -264,7 +247,6 @@ const MedicalRecordDetailPage = () => {
                         </div>
                     ) : (
                         <div className="detail-grid">
-                            {/* Thông tin chung */}
                             <div className="detail-card">
                                 <h2 className="card-title">Thông tin chung</h2>
                                 <div className="card-content">
@@ -314,7 +296,6 @@ const MedicalRecordDetailPage = () => {
                                 </div>
                             </div>
 
-                            {/* Chẩn đoán và điều trị */}
                             <div className="detail-card">
                                 <h2 className="card-title">Chẩn đoán và điều trị</h2>
                                 <div className="card-content">
@@ -329,7 +310,6 @@ const MedicalRecordDetailPage = () => {
                                 </div>
                             </div>
 
-                            {/* Đơn thuốc */}
                             {recordDetail.prescription && recordDetail.prescription.length > 0 && (
                                 <div className="detail-card">
                                     <h2 className="card-title">Đơn thuốc</h2>
@@ -364,7 +344,6 @@ const MedicalRecordDetailPage = () => {
                     )}
                 </div>
 
-                {/* Footer */}
                 <footer className="content-footer">
                     <div className="footer-content">
                         <div className="footer-left">

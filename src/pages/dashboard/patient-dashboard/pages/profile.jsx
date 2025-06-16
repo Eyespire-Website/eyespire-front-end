@@ -401,7 +401,7 @@ export default function ProfilePage() {
         <div className="dashboard-container">
             <ToastContainer position="top-right" autoClose={3000} />
             {/* Main Content */}
-            <div className="main-content">
+            <div className="main-content" style={{ width: '100%', marginLeft: 0 }}>
                 {/* Header */}
                 <header className="content-header">
                     <h1>Hồ sơ cá nhân</h1>

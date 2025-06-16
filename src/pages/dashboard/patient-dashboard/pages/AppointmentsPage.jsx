@@ -6,8 +6,6 @@ import 'react-toastify/dist/ReactToastify.css';
 import '../styles/appointmentsPatient.css';
 import { Calendar, Package, FileText, History, User, Search, Filter, ChevronDown, ChevronUp } from 'lucide-react';
 
-import PatientSidebar from '../PatientSidebar';
-
 export default function AppointmentsPage() {
     const navigate = useNavigate();
     const [user, setUser] = useState({
@@ -22,7 +20,6 @@ export default function AppointmentsPage() {
     const [expandedAppointments, setExpandedAppointments] = useState({});
     const [loading, setLoading] = useState(false);
 
-    // Dữ liệu mẫu cho cuộc hẹn
     const appointments = [
         {
             id: 1,
@@ -76,7 +73,6 @@ export default function AppointmentsPage() {
         },
     ];
 
-    // Lấy thông tin người dùng khi component mount
     useEffect(() => {
         const fetchUserData = async () => {
             try {
@@ -95,11 +91,9 @@ export default function AppointmentsPage() {
         fetchUserData();
     }, [navigate]);
 
-    // Lọc và sắp xếp cuộc hẹn
     const getFilteredAppointments = () => {
         let filteredAppointments = [...appointments];
 
-        // Lọc theo tab
         if (activeTab === "confirmed") {
             filteredAppointments = appointments.filter(apt => apt.status === "confirmed");
         } else if (activeTab === "completed") {
@@ -108,7 +102,6 @@ export default function AppointmentsPage() {
             filteredAppointments = appointments.filter(apt => apt.status === "cancelled");
         }
 
-        // Sắp xếp theo ngày
         filteredAppointments.sort((a, b) => {
             const dateA = a.date.split("/").reverse().join("");
             const dateB = b.date.split("/").reverse().join("");
@@ -117,7 +110,6 @@ export default function AppointmentsPage() {
                 : dateA.localeCompare(dateB);
         });
 
-        // Lọc theo search query
         if (searchQuery) {
             const query = searchQuery.toLowerCase();
             filteredAppointments = filteredAppointments.filter(
@@ -162,7 +154,6 @@ export default function AppointmentsPage() {
     const handleCancelAppointment = (appointmentId) => {
         if (window.confirm("Bạn có chắc chắn muốn hủy cuộc hẹn này?")) {
             toast.success("Cuộc hẹn đã được hủy thành công!");
-            // Logic hủy cuộc hẹn ở đây
         }
     };
 
@@ -182,12 +173,7 @@ export default function AppointmentsPage() {
     return (
         <div className="dashboard-container">
             <ToastContainer position="top-right" autoClose={3000} />
-
-
-
-            {/* Main Content */}
-            <div className="main-content">
-                {/* Header */}
+            <div className="main-content" style={{ width: '100%', marginLeft: 0 }}>
                 <header className="content-header">
                     <h1>Danh sách cuộc hẹn</h1>
                     <div className="header-actions">
@@ -211,9 +197,7 @@ export default function AppointmentsPage() {
                     </div>
                 </header>
 
-                {/* Appointments Content */}
                 <div className="appointments-content">
-                    {/* Tabs and Filters */}
                     <div className="content-controls">
                         <div className="tabs-container">
                             <div className="tabs">
@@ -260,7 +244,6 @@ export default function AppointmentsPage() {
                         </div>
                     </div>
 
-                    {/* Appointments List */}
                     <div className="appointments-container">
                         {loading ? (
                             <div className="loading-container">

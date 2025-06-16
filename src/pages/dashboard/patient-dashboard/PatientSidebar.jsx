@@ -1,4 +1,3 @@
-// src/components/PatientSidebar.jsx
 "use client";
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -11,7 +10,7 @@ import {
     LogOut,
 } from "lucide-react";
 import { HiOutlineBars3 } from "react-icons/hi2";
-import authService from '../../../services/authService'; // Đường dẫn tùy vào cấu trúc dự án của bạn
+import authService from '../../../services/authService';
 import './PatientSidebar.css';
 
 const patientMenuItems = [
@@ -52,14 +51,12 @@ export default function PatientSidebar({ activeTab, setActiveTab }) {
                         />
                         <span className="logo-text-v2">Eyespire</span>
                     </div>
-
                     <div className="toggle-container-below">
                         <button onClick={toggleSidebar} className="toggle-btn">
                             <HiOutlineBars3 className="toggle-icon" />
                         </button>
                     </div>
                 </div>
-
                 <ul className="menu-list-v2">
                     <li className="menu-category">Chính</li>
                     {patientMenuItems.map((item) => (
@@ -73,7 +70,6 @@ export default function PatientSidebar({ activeTab, setActiveTab }) {
                         </li>
                     ))}
                 </ul>
-
                 <div className="sidebar-footer-v2">
                     <button className="logout-btn-v2" onClick={handleLogout}>
                         <LogOut size={16} className="logout-icon-v2" />

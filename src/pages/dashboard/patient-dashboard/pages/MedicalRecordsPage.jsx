@@ -139,7 +139,7 @@ export default function MedicalRecordsPage() {
             <ToastContainer position="top-right" autoClose={3000} />
 
             {/* Main Content */}
-            <div className="main-content">
+            <div className="main-content" style={{ width: '100%', marginLeft: 0 }}>
                 {/* Header with Search */}
                 <header className="content-header">
                     <div className="header-left">
