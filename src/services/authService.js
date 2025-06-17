@@ -164,6 +164,23 @@ const resetPassword = async (email, otp, newPassword) => {
   }
 };
 
+// Hàm tiện ích để xác định đường dẫn chuyển hướng dựa trên vai trò người dùng
+const getRoleBasedRedirectPath = (role) => {
+  switch (role) {
+    case 'DOCTOR':
+      return '/dashboard/doctor';
+    case 'RECEPTIONIST':
+      return '/dashboard/receptionist';
+    case 'ADMIN':
+      return '/dashboard/admin';
+    case 'STORE_MANAGER':
+      return '/dashboard/admin'; // Tạm thởi chuyển hướng về admin dashboard
+    case 'PATIENT':
+    default:
+      return '/'; // Mặc định chuyển hướng về trang chủ cho bệnh nhân
+  }
+};
+
 const authService = {
   login,
   signup,
@@ -174,7 +191,8 @@ const authService = {
   isLoggedIn,
   verifyOtp,
   forgotPassword,
-  resetPassword
+  resetPassword,
+  getRoleBasedRedirectPath
 };
 
 export default authService;

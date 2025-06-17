@@ -193,174 +193,164 @@ export default function PaymentHistoryPage() {
     };
 
     return (
-        <div className="dashboard-container">
+        <div className="main-content" style={{ margin: 0, width: '100%', boxSizing: 'border-box' }}>
             <ToastContainer position="top-right" autoClose={3000} />
 
-            {/* Main Content */}
-            <div className="main-content" style={{ width: '100%', marginLeft: 0 }}>
-                {/* Header */}
-                <header className="content-header">
-                    <h1>Lịch sử thanh toán</h1>
-                    <div className="header-actions">
-                        <div className="search-container">
-                            <Search className="search-icon" size={18} />
-                            <input
-                                type="text"
-                                placeholder="Tìm hóa đơn (Dịch vụ, trạng thái)"
-                                className="search-input"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                            />
-                        </div>
-                        <div className="user-avatar">
-                            {user?.avatar ? (
-                                <img src={user.avatar} alt={user.name} />
-                            ) : (
-                                user?.name?.charAt(0) || "U"
-                            )}
-                        </div>
+            {/* Header */}
+            <header className="content-header">
+                <h1>Lịch sử thanh toán</h1>
+                <div className="header-actions">
+                    <div className="search-container">
+                        <Search className="search-icon" size={18} />
+                        <input
+                            type="text"
+                            placeholder="Tìm hóa đơn (Dịch vụ, trạng thái)"
+                            className="search-input"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
                     </div>
-                </header>
+                    <button className="filter-button" onClick={() => setSortOrder(sortOrder === "newest" ? "oldest" : "newest")}>
+                        <Filter size={16} />
+                        <span>{sortOrder === "newest" ? "Mới nhất" : "Cũ nhất"}</span>
+                    </button>
+                </div>
+            </header>
 
-                {/* Payment History Content */}
-                <div className="payment-history-content">
-                    {/* Tabs and Filters */}
-                    <div className="content-controls">
-                        <div className="tabs-container">
-                            <div className="tabs">
-                                <button
-                                    className={`tab ${activeTab === 'all' ? 'active' : ''}`}
-                                    onClick={() => setActiveTab('all')}
-                                >
-                                    Tất cả hóa đơn
-                                </button>
-                                <button
-                                    className={`tab ${activeTab === 'service' ? 'active' : ''}`}
-                                    onClick={() => setActiveTab('service')}
-                                >
-                                    Hóa đơn dịch vụ
-                                </button>
-                                <button
-                                    className={`tab ${activeTab === 'order' ? 'active' : ''}`}
-                                    onClick={() => setActiveTab('order')}
-                                >
-                                    Hóa đơn đơn hàng
-                                </button>
-                            </div>
-                        </div>
-
-                        <div className="filters-container">
-                            <button className="filter-button">
-                                <Filter size={16} />
-                                <span>Lọc</span>
-                            </button>
-                            <select
-                                className="sort-select"
-                                value={sortOrder}
-                                onChange={(e) => setSortOrder(e.target.value)}
+            {/* Payment History Content */}
+            <div className="payment-history-content">
+                {/* Tabs and Filters */}
+                <div className="content-controls">
+                    <div className="tabs-container">
+                        <div className="tabs">
+                            <button
+                                className={`tab ${activeTab === 'all' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('all')}
                             >
-                                <option value="newest">Mới nhất</option>
-                                <option value="oldest">Cũ nhất</option>
-                                <option value="highest">Giá cao nhất</option>
-                                <option value="lowest">Giá thấp nhất</option>
-                            </select>
+                                Tất cả hóa đơn
+                            </button>
+                            <button
+                                className={`tab ${activeTab === 'service' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('service')}
+                            >
+                                Hóa đơn dịch vụ
+                            </button>
+                            <button
+                                className={`tab ${activeTab === 'order' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('order')}
+                            >
+                                Hóa đơn đơn hàng
+                            </button>
                         </div>
                     </div>
 
-                    {/* Invoices List */}
-                    <div className="invoices-container">
-                        {loading ? (
-                            <div className="loading-container">
-                                <div className="loading-spinner"></div>
-                                <p>Đang tải dữ liệu...</p>
-                            </div>
-                        ) : (
-                            <div className="invoices-list">
-                                {getFilteredInvoices().map((invoice) => (
-                                    <div key={invoice.id} className="invoice-card">
-                                        <div className="invoice-header">
-                                            <div className="invoice-info">
-                                                <div className="invoice-icon-container">
-                                                    {getInvoiceIcon(invoice.type)}
-                                                </div>
-                                                <div className="invoice-details">
-                                                    <h3 className="invoice-title">
-                                                        {invoice.service}
-                                                        <span className="invoice-type">
-                                                            ({invoice.type === "service" ? "Dịch vụ" : "Đơn hàng"})
-                                                        </span>
-                                                    </h3>
-                                                    <div className="invoice-meta">
-                                                        <span className="invoice-id">Mã hóa đơn: {invoice.id}</span>
-                                                        <span className="invoice-date">Ngày tạo: {invoice.date}</span>
-                                                    </div>
-                                                    <div className="invoice-status-row">
-                                                        <span className="status-label">Trạng thái:</span>
-                                                        {getStatusBadge(invoice.status)}
-                                                    </div>
-                                                    <div className="invoice-amount">{invoice.amount}</div>
-                                                </div>
-                                            </div>
+                    <div className="filters-container">
+                        <select
+                            className="sort-select"
+                            value={sortOrder}
+                            onChange={(e) => setSortOrder(e.target.value)}
+                        >
+                            <option value="newest">Mới nhất</option>
+                            <option value="oldest">Cũ nhất</option>
+                            <option value="highest">Giá cao nhất</option>
+                            <option value="lowest">Giá thấp nhất</option>
+                        </select>
+                    </div>
+                </div>
 
-                                            <div className="invoice-actions">
-                                                <button
-                                                    className="expand-button"
-                                                    onClick={() => toggleInvoiceExpansion(invoice.id)}
-                                                >
-                                                    {expandedInvoices[invoice.id] ? (
-                                                        <>
-                                                            <ChevronUp size={16} />
-                                                            <span>Thu gọn</span>
-                                                        </>
-                                                    ) : (
-                                                        <>
-                                                            <ChevronDown size={16} />
-                                                            <span>Xem chi tiết</span>
-                                                        </>
-                                                    )}
-                                                </button>
-                                                <button className="download-button">
-                                                    Tải hóa đơn
-                                                </button>
+                {/* Invoices List */}
+                <div className="invoices-container">
+                    {loading ? (
+                        <div className="loading-container">
+                            <div className="loading-spinner"></div>
+                            <p>Đang tải dữ liệu...</p>
+                        </div>
+                    ) : (
+                        <div className="invoices-list">
+                            {getFilteredInvoices().map((invoice) => (
+                                <div key={invoice.id} className="invoice-card">
+                                    <div className="invoice-header">
+                                        <div className="invoice-info">
+                                            <div className="invoice-icon-container">
+                                                {getInvoiceIcon(invoice.type)}
+                                            </div>
+                                            <div className="invoice-details">
+                                                <h3 className="invoice-title">
+                                                    {invoice.service}
+                                                    <span className="invoice-type">
+                                                        ({invoice.type === "service" ? "Dịch vụ" : "Đơn hàng"})
+                                                    </span>
+                                                </h3>
+                                                <div className="invoice-meta">
+                                                    <span className="invoice-id">Mã hóa đơn: {invoice.id}</span>
+                                                    <span className="invoice-date">Ngày tạo: {invoice.date}</span>
+                                                </div>
+                                                <div className="invoice-status-row">
+                                                    <span className="status-label">Trạng thái:</span>
+                                                    {getStatusBadge(invoice.status)}
+                                                </div>
+                                                <div className="invoice-amount">{invoice.amount}</div>
                                             </div>
                                         </div>
 
-                                        {expandedInvoices[invoice.id] && (
-                                            <div className="invoice-expanded">
-                                                <h4>Chi tiết hóa đơn</h4>
-                                                <div className="invoice-details-grid">
-                                                    <div className="detail-row">
-                                                        <span className="detail-label">Phương thức thanh toán:</span>
-                                                        <span className="detail-value">Tiền mặt</span>
-                                                    </div>
-                                                    <div className="detail-row">
-                                                        <span className="detail-label">Người thanh toán:</span>
-                                                        <span className="detail-value">{user.name}</span>
-                                                    </div>
-                                                    <div className="detail-row">
-                                                        <span className="detail-label">Thời gian thanh toán:</span>
-                                                        <span className="detail-value">{invoice.date} 10:30</span>
-                                                    </div>
-                                                    <div className="detail-row">
-                                                        <span className="detail-label">Ghi chú:</span>
-                                                        <span className="detail-value">Không có</span>
-                                                    </div>
+                                        <div className="invoice-actions">
+                                            <button
+                                                className="expand-button"
+                                                onClick={() => toggleInvoiceExpansion(invoice.id)}
+                                            >
+                                                {expandedInvoices[invoice.id] ? (
+                                                    <>
+                                                        <ChevronUp size={16} />
+                                                        <span>Thu gọn</span>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <ChevronDown size={16} />
+                                                        <span>Xem chi tiết</span>
+                                                    </>
+                                                )}
+                                            </button>
+                                            <button className="download-button">
+                                                Tải hóa đơn
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {expandedInvoices[invoice.id] && (
+                                        <div className="invoice-expanded">
+                                            <h4>Chi tiết hóa đơn</h4>
+                                            <div className="invoice-details-grid">
+                                                <div className="detail-row">
+                                                    <span className="detail-label">Phương thức thanh toán:</span>
+                                                    <span className="detail-value">Tiền mặt</span>
+                                                </div>
+                                                <div className="detail-row">
+                                                    <span className="detail-label">Người thanh toán:</span>
+                                                    <span className="detail-value">{user.name}</span>
+                                                </div>
+                                                <div className="detail-row">
+                                                    <span className="detail-label">Thời gian thanh toán:</span>
+                                                    <span className="detail-value">{invoice.date} 10:30</span>
+                                                </div>
+                                                <div className="detail-row">
+                                                    <span className="detail-label">Ghi chú:</span>
+                                                    <span className="detail-value">Không có</span>
                                                 </div>
                                             </div>
-                                        )}
-                                    </div>
-                                ))}
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
 
-                                {getFilteredInvoices().length === 0 && (
-                                    <div className="empty-state">
-                                        <div className="empty-icon">📄</div>
-                                        <h3>Không có hóa đơn nào</h3>
-                                        <p>Chưa có hóa đơn nào phù hợp với bộ lọc của bạn.</p>
-                                    </div>
-                                )}
-                            </div>
-                        )}
-                    </div>
+                            {getFilteredInvoices().length === 0 && (
+                                <div className="empty-state">
+                                    <div className="empty-icon">📄</div>
+                                    <h3>Không có hóa đơn nào</h3>
+                                    <p>Chưa có hóa đơn nào phù hợp với bộ lọc của bạn.</p>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

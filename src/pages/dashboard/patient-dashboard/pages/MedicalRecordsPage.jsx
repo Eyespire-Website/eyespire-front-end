@@ -135,160 +135,157 @@ export default function MedicalRecordsPage() {
     };
 
     return (
-        <div className="dashboard-container">
+        <div className="main-content" style={{ margin: 0, width: '100%', boxSizing: 'border-box' }}>
             <ToastContainer position="top-right" autoClose={3000} />
 
-            {/* Main Content */}
-            <div className="main-content" style={{ width: '100%', marginLeft: 0 }}>
-                {/* Header with Search */}
-                <header className="content-header">
-                    <div className="header-left">
-                        <h1>Danh sách hồ sơ</h1>
-                    </div>
-
-                    <div className="header-right">
-                        <div className="search-container">
-                            <div className="search-input-wrapper">
-                                <Search className="search-icon" size={16} />
-                                <input
-                                    type="text"
-                                    placeholder="Tìm hồ sơ (Mã hồ sơ, dịch vụ, bác sĩ...)"
-                                    className="search-input"
-                                    value={searchTerm}
-                                    onChange={handleSearch}
-                                />
-                            </div>
-                        </div>
-
-                        <div className="user-avatar">
-                            {user.avatar ? (
-                                <img src={getAvatarUrl(user.avatar)} alt={user.name} className="avatar-image" />
-                            ) : (
-                                <div className="avatar-fallback">
-                                    {user.name?.charAt(0) || "U"}
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </header>
-
-                {/* Breadcrumb */}
-                <div className="breadcrumb-container">
-                    <nav className="breadcrumb">
-                        <div className="breadcrumb-item">
-                            <FileText size={16} />
-                            <span>Hồ sơ điều trị</span>
-                        </div>
-                        <span className="breadcrumb-separator">/</span>
-                        <div className="breadcrumb-item active">
-                            <span>Danh sách hồ sơ bệnh án</span>
-                        </div>
-                    </nav>
+            {/* Header with Search */}
+            <header className="content-header">
+                <div className="header-left">
+                    <h1>Danh sách hồ sơ</h1>
                 </div>
 
-                {/* Medical Records Table */}
-                <div className="medical-records-content">
-                    <div className="table-container">
-                        <table className="medical-records-table">
-                            <thead>
-                            <tr>
-                                <th className="text-center">#</th>
-                                <th>Mã lưu trữ</th>
-                                <th>Dịch vụ khám</th>
-                                <th>Bác sĩ khám</th>
-                                <th className="sortable">
-                                    <div className="sort-header">
-                                        <span>Ngày khám</span>
-                                        <ChevronDown size={16} />
-                                    </div>
-                                </th>
-                                <th>Chi tiết</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {loading ? (
-                                <tr>
-                                    <td colSpan="6" className="text-center loading">
-                                        Đang tải...
-                                    </td>
-                                </tr>
-                            ) : currentRecords.length === 0 ? (
-                                <tr>
-                                    <td colSpan="6" className="text-center no-data">
-                                        Không tìm thấy hồ sơ nào
-                                    </td>
-                                </tr>
-                            ) : (
-                                currentRecords.map((record) => (
-                                    <tr key={record.id} className="table-row">
-                                        <td className="text-center font-medium">{record.id}</td>
-                                        <td className="storage-id">{record.storageId}</td>
-                                        <td className="font-medium">{record.service}</td>
-                                        <td>{record.doctor}</td>
-                                        <td>{record.date}</td>
-                                        <td>
-                                            {/* FIX: Sử dụng storageId thay vì id */}
-                                            <button
-                                                className="view-details-btn"
-                                                onClick={() => handleViewDetails(record.storageId)}
-                                            >
-                                                Xem chi tiết
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                            </tbody>
-                        </table>
+                <div className="header-right">
+                    <div className="search-container">
+                        <div className="search-input-wrapper">
+                            <Search className="search-icon" size={16} />
+                            <input
+                                type="text"
+                                placeholder="Tìm hồ sơ (Mã hồ sơ, dịch vụ, bác sĩ...)"
+                                className="search-input"
+                                value={searchTerm}
+                                onChange={handleSearch}
+                            />
+                        </div>
                     </div>
 
-                    {/* Pagination */}
-                    <div className="pagination-container">
-                        <div className="pagination-left">
-                            <div className="page-numbers">
-                                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                                    <button
-                                        key={page}
-                                        className={`page-number ${currentPage === page ? 'active' : ''}`}
-                                        onClick={() => handlePageChange(page)}
-                                    >
-                                        {page}
-                                    </button>
-                                ))}
+                    <div className="user-avatar">
+                        {user.avatar ? (
+                            <img src={getAvatarUrl(user.avatar)} alt={user.name} className="avatar-image" />
+                        ) : (
+                            <div className="avatar-fallback">
+                                {user.name?.charAt(0) || "U"}
                             </div>
-                        </div>
-
-                        <div className="pagination-right">
-                            <div className="items-per-page">
-                                <select
-                                    value={itemsPerPage}
-                                    onChange={handleItemsPerPageChange}
-                                    className="items-select"
-                                >
-                                    <option value="10">10</option>
-                                    <option value="20">20</option>
-                                    <option value="50">50</option>
-                                </select>
-                                <span className="items-label">/ page</span>
-                            </div>
-                        </div>
+                        )}
                     </div>
                 </div>
+            </header>
 
-                {/* Footer */}
-                <footer className="content-footer">
-                    <div className="footer-content">
-                        <div className="footer-left">
-                            © 2025 EyeSpire. All rights reserved.
-                        </div>
-                        <div className="footer-right">
-                            <a href="#" className="footer-link">Privacy Policy</a>
-                            <a href="#" className="footer-link">Terms of Service</a>
-                            <a href="#" className="footer-link">Support</a>
-                        </div>
+            {/* Breadcrumb */}
+            <div className="breadcrumb-container">
+                <nav className="breadcrumb">
+                    <div className="breadcrumb-item">
+                        <FileText size={16} />
+                        <span>Hồ sơ điều trị</span>
                     </div>
-                </footer>
+                    <span className="breadcrumb-separator">/</span>
+                    <div className="breadcrumb-item active">
+                        <span>Danh sách hồ sơ bệnh án</span>
+                    </div>
+                </nav>
             </div>
+
+            {/* Medical Records Table */}
+            <div className="medical-records-content">
+                <div className="table-container">
+                    <table className="medical-records-table">
+                        <thead>
+                        <tr>
+                            <th className="text-center">#</th>
+                            <th>Mã lưu trữ</th>
+                            <th>Dịch vụ khám</th>
+                            <th>Bác sĩ khám</th>
+                            <th className="sortable">
+                                <div className="sort-header">
+                                    <span>Ngày khám</span>
+                                    <ChevronDown size={16} />
+                                </div>
+                            </th>
+                            <th>Chi tiết</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {loading ? (
+                            <tr>
+                                <td colSpan="6" className="text-center loading">
+                                    Đang tải...
+                                </td>
+                            </tr>
+                        ) : currentRecords.length === 0 ? (
+                            <tr>
+                                <td colSpan="6" className="text-center no-data">
+                                    Không tìm thấy hồ sơ nào
+                                </td>
+                            </tr>
+                        ) : (
+                            currentRecords.map((record) => (
+                                <tr key={record.id} className="table-row">
+                                    <td className="text-center font-medium">{record.id}</td>
+                                    <td className="storage-id">{record.storageId}</td>
+                                    <td className="font-medium">{record.service}</td>
+                                    <td>{record.doctor}</td>
+                                    <td>{record.date}</td>
+                                    <td>
+                                        {/* FIX: Sử dụng storageId thay vì id */}
+                                        <button
+                                            className="view-details-btn"
+                                            onClick={() => handleViewDetails(record.storageId)}
+                                        >
+                                            Xem chi tiết
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))
+                        )}
+                        </tbody>
+                    </table>
+                </div>
+
+                {/* Pagination */}
+                <div className="pagination-container">
+                    <div className="pagination-left">
+                        <div className="page-numbers">
+                            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                                <button
+                                    key={page}
+                                    className={`page-number ${currentPage === page ? 'active' : ''}`}
+                                    onClick={() => handlePageChange(page)}
+                                >
+                                    {page}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="pagination-right">
+                        <div className="items-per-page">
+                            <select
+                                value={itemsPerPage}
+                                onChange={handleItemsPerPageChange}
+                                className="items-select"
+                            >
+                                <option value="10">10</option>
+                                <option value="20">20</option>
+                                <option value="50">50</option>
+                            </select>
+                            <span className="items-label">/ page</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Footer */}
+            <footer className="content-footer">
+                <div className="footer-content">
+                    <div className="footer-left">
+                        2025 EyeSpire. All rights reserved.
+                    </div>
+                    <div className="footer-right">
+                        <a href="#" className="footer-link">Privacy Policy</a>
+                        <a href="#" className="footer-link">Terms of Service</a>
+                        <a href="#" className="footer-link">Support</a>
+                    </div>
+                </div>
+            </footer>
         </div>
     );
 }

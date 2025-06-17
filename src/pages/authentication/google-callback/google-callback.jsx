@@ -22,11 +22,18 @@ export default function GoogleCallback() {
                     return;
                 }
 
-                // Gửi code đến backend để xác thực
-                await authService.handleGoogleCallback(code);
+                // Gửi code đến backend để xác thực và lưu kết quả trả về
+                const result = await authService.handleGoogleCallback(code);
                 
-                // Chuyển hướng đến trang chủ sau khi đăng nhập thành công
-                navigate('/');
+                // Kiểm tra kết quả trả về trước khi chuyển hướng
+                if (result) {
+                    // Chuyển hướng đến trang chủ sau khi đăng nhập thành công
+                    navigate('/');
+                } else {
+                    // Nếu không có kết quả trả về, hiển thị lỗi
+                    setError('Đăng nhập bằng Google thất bại. Vui lòng thử lại.');
+                    setLoading(false);
+                }
             } catch (error) {
                 console.error('Google login error:', error);
                 setError('Đăng nhập bằng Google thất bại. Vui lòng thử lại.');

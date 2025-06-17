@@ -58,7 +58,7 @@ export default function PatientSidebar({ activeTab, setActiveTab }) {
                     </div>
                 </div>
                 <ul className="menu-list-v2">
-                    <li className="menu-category">Chính</li>
+                    <li className="menu-category"></li>
                     {patientMenuItems.map((item) => (
                         <li
                             key={item.id}

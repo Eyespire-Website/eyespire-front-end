@@ -5,6 +5,8 @@
     display: flex;
     min-height: 100vh;
     background-color: #f8fafc; /* Soft gray background */
+    padding: 0; /* Loại bỏ padding */
+    margin: 0; /* Loại bỏ margin */
 }
 
 /* Main content */
@@ -12,6 +14,8 @@
     flex: 1;
     padding: 0;
     overflow-y: auto;
+    width: 100% !important; /* Đảm bảo chiều rộng 100% */
+    margin: 0 !important; /* Đảm bảo không có margin */
 }
 
 /* Header */
@@ -19,7 +23,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1.25rem 1.5rem;
+    padding: 1.25rem 1rem; /* Giảm padding bên trái */
     background-color: #ffffff;
     border-bottom: 1px solid #e2e8f0;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
@@ -100,6 +104,7 @@
 /* Tabs */
 .tabs-container {
     margin-bottom: 1rem;
+    padding-left: 1rem; /* Thêm padding bên trái */
 }
 
 .tabs {
@@ -191,6 +196,15 @@
     border-radius: 1rem;
 }
 
+.status-badge.status-pending {
+    background-color: #fef3c7;
+    color: #92400e;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border-radius: 1rem;
+}
+
 /* Table */
 .table-container {
     background-color: #ffffff;
@@ -198,6 +212,7 @@
     border: 1px solid #e2e8f0;
     overflow: hidden;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    margin: 0 1rem; /* Thêm margin hai bên */
 }
 
 .table-header {
