@@ -89,16 +89,37 @@ const Header = () => {
   };
 
   const handleProfileClick = () => {
-    navigate("/dashboard/profile");
+    // Chuyển hướng dựa trên vai trò của người dùng
+    if (user && user.role) {
+      const role = user.role.toLowerCase();
+      switch (role) {
+        case 'admin':
+          navigate('/dashboard/admin');
+          break;
+        case 'doctor':
+          navigate('/dashboard/doctor');
+          break;
+        case 'receptionist':
+          navigate('/dashboard/receptionist');
+          break;
+        case 'patient':
+        default:
+          navigate('/dashboard/patient');
+          break;
+      }
+    } else {
+      // Nếu không có thông tin vai trò, mặc định chuyển đến trang profile
+      navigate('/dashboard/profile');
+    }
     setDropdownOpen(false);
-  };
-
-  const toggleDropdown = () => {
-    setDropdownOpen(!dropdownOpen);
   };
 
   const handleAboutClick = () => {
     navigate("/about"); // Điều hướng tới trang About khi người dùng click vào About
+  };
+
+  const toggleDropdown = () => {
+    setDropdownOpen(!dropdownOpen);
   };
 
   // Render dropdown portal

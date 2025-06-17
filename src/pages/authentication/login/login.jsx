@@ -36,8 +36,9 @@ export default function LoginPage() {
                     localStorage.removeItem("rememberedEmail")
                 }
                 
-                // Chuyển hướng đến trang chủ sau khi đăng nhập thành công
-                navigate("/")
+                // Chuyển hướng dựa trên vai trò người dùng
+                const redirectPath = authService.getRoleBasedRedirectPath(result.data.role)
+                navigate(redirectPath)
             } else {
                 // Hiển thị thông báo lỗi từ server
                 setMessage(result.message)

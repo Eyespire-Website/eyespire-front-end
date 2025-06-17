@@ -196,87 +196,84 @@ export default function OrdersPage() {
     };
 
     return (
-        <div className="dashboard-container">
+        <div className="main-content" style={{ margin: 0, width: '100%', boxSizing: 'border-box' }}>
             <ToastContainer position="top-right" autoClose={3000} />
 
-            {/* Main Content */}
-            <div className="main-content" style={{ width: '100%', marginLeft: 0 }}>
-                {/* Header */}
-                <header className="content-header">
-                    <div className="header-left">
-                        <h1>Theo dõi đơn hàng</h1>
-                        <div className="search-container">
-                            <Search className="search-icon" />
-                            <input
-                                type="text"
-                                placeholder="Tìm kiếm đơn hàng..."
-                                className="search-input"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                            />
-                        </div>
+            {/* Header */}
+            <header className="content-header">
+                <div className="header-left">
+                    <h1>Theo dõi đơn hàng</h1>
+                    <div className="search-container">
+                        <Search className="search-icon" />
+                        <input
+                            type="text"
+                            placeholder="Tìm kiếm đơn hàng..."
+                            className="search-input"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
                     </div>
+                </div>
 
-                    <div className="header-right">
-                        <div className="user-avatar">
-                            {user.avatar ? (
-                                <img src={getAvatarUrl(user.avatar)} alt={user.name} className="avatar-image" />
-                            ) : (
-                                user.name?.charAt(0) || "U"
-                            )}
-                        </div>
+                <div className="header-right">
+                    <div className="user-avatar">
+                        {user.avatar ? (
+                            <img src={getAvatarUrl(user.avatar)} alt={user.name} className="avatar-image" />
+                        ) : (
+                            user.name?.charAt(0) || "U"
+                        )}
                     </div>
-                </header>
+                </div>
+            </header>
 
-                {/* Orders Content */}
-                <div className="orders-content">
-                    {loading ? (
-                        <div className="loading-container">
-                            <div className="loading-spinner">Đang tải...</div>
-                        </div>
-                    ) : (
-                        <div className="orders-list">
-                            {filteredOrders.length === 0 ? (
-                                <div className="no-orders">
-                                    <Package className="no-orders-icon" />
-                                    <h3>Không có đơn hàng nào</h3>
-                                    <p>Bạn chưa có đơn hàng nào được tạo.</p>
-                                </div>
-                            ) : (
-                                filteredOrders.map((order) => (
-                                    <div
-                                        key={order.id}
-                                        className="order-card"
-                                        onClick={() => handleOrderClick(order.id)}
-                                    >
-                                        <div className="order-content">
-                                            <div className="order-main-info">
-                                                <h3 className="order-id">Đơn hàng #{order.id}</h3>
-                                                <p className="order-items">{order.items}</p>
-                                                <p className="order-date">Ngày đặt: {order.date}</p>
-                                                <p className="order-total">{order.total}</p>
-                                                {order.trackingNumber && (
-                                                    <p className="order-tracking">Mã vận đơn: {order.trackingNumber}</p>
-                                                )}
-                                                {order.estimatedDelivery && (
-                                                    <p className="order-delivery">Dự kiến giao: {order.estimatedDelivery}</p>
-                                                )}
-                                            </div>
-                                            <div className="order-actions">
-                                                <span className={`order-status ${getStatusColor(order.status)}`}>
-                                                    {getStatusText(order.status)}
-                                                </span>
-                                                <button className="order-detail-btn">
-                                                    Xem chi tiết
-                                                </button>
-                                            </div>
+            {/* Orders Content */}
+            <div className="orders-content">
+                {loading ? (
+                    <div className="loading-container">
+                        <div className="loading-spinner">Đang tải...</div>
+                    </div>
+                ) : (
+                    <div className="orders-list">
+                        {filteredOrders.length === 0 ? (
+                            <div className="no-orders">
+                                <Package className="no-orders-icon" />
+                                <h3>Không có đơn hàng nào</h3>
+                                <p>Bạn chưa có đơn hàng nào được tạo.</p>
+                            </div>
+                        ) : (
+                            filteredOrders.map((order) => (
+                                <div
+                                    key={order.id}
+                                    className="order-card"
+                                    onClick={() => handleOrderClick(order.id)}
+                                >
+                                    <div className="order-content">
+                                        <div className="order-main-info">
+                                            <h3 className="order-id">Đơn hàng #{order.id}</h3>
+                                            <p className="order-items">{order.items}</p>
+                                            <p className="order-date">Ngày đặt: {order.date}</p>
+                                            <p className="order-total">{order.total}</p>
+                                            {order.trackingNumber && (
+                                                <p className="order-tracking">Mã vận đơn: {order.trackingNumber}</p>
+                                            )}
+                                            {order.estimatedDelivery && (
+                                                <p className="order-delivery">Dự kiến giao: {order.estimatedDelivery}</p>
+                                            )}
+                                        </div>
+                                        <div className="order-actions">
+                                            <span className={`order-status ${getStatusColor(order.status)}`}>
+                                                {getStatusText(order.status)}
+                                            </span>
+                                            <button className="order-detail-btn">
+                                                Xem chi tiết
+                                            </button>
                                         </div>
                                     </div>
-                                ))
-                            )}
-                        </div>
-                    )}
-                </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                )}
             </div>
         </div>
     );
