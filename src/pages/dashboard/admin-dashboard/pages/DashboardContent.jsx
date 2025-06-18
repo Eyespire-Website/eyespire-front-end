@@ -7,6 +7,7 @@ import AppointmentStatusChart from "../charts/AppointmentStatusChart"
 import ServicesChart from "../charts/ServicesChart"
 import CustomerGrowthChart from "../charts/CustomerGrowthChart"
 
+
 const DashboardContent = () => {
   const [searchTerm, setSearchTerm] = useState("")
 

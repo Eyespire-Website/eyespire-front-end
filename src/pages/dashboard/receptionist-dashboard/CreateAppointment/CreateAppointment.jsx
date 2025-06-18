@@ -1,62 +1,76 @@
-import { useState, useEffect, useCallback } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { Info, Eye, Clock, MapPin, Phone, Mail, User, Calendar, CreditCard, ChevronDown, ArrowLeft } from "lucide-react";
-import "./CreateAppointment.css";
-import React from "react";
+"use client"
+
+import { useState, useEffect, useCallback, useRef } from "react"
+import { useLocation, useNavigate } from "react-router-dom"
+import { Info, Eye, Clock, MapPin, Phone, Mail, User, Calendar, CreditCard, ChevronDown, ArrowLeft } from 'lucide-react'
+import "./CreateAppointment.css"
+import {
+    createAppointment,
+    updateAppointment,
+    cancelAppointment,
+    unconfirmAppointment, // Add this new import
+    getAllServices,
+    getAllDoctors,
+    getAvailableTimeSlots,
+} from "../../../../services/appointmentsService"
+import React from "react"
 
 // Custom Components
-const Card = ({ children, className = "" }) => <div className={`apt-card ${className}`}>{children}</div>;
-const CardHeader = ({ children, className = "" }) => <div className={`apt-card-header ${className}`}>{children}</div>;
-const CardContent = ({ children, className = "" }) => <div className={`apt-card-content ${className}`}>{children}</div>;
-const CardTitle = ({ children, className = "" }) => <h3 className={`apt-card-title ${className}`}>{children}</h3>;
-const Label = ({ children, className = "" }) => <label className={`apt-label ${className}`}>{children}</label>;
-const Input = ({ className = "", ...props }) => <input className={`apt-input ${className}`} {...props} />;
-const Textarea = ({ className = "", ...props }) => <textarea className={`apt-textarea ${className}`} {...props} />;
+const Card = ({ children, className = "" }) => <div className={`apt-card ${className}`}>{children}</div>
+const CardHeader = ({ children, className = "" }) => <div className={`apt-card-header ${className}`}>{children}</div>
+const CardContent = ({ children, className = "" }) => <div className={`apt-card-content ${className}`}>{children}</div>
+const CardTitle = ({ children, className = "" }) => <h3 className={`apt-card-title ${className}`}>{children}</h3>
+const Label = ({ children, className = "" }) => <label className={`apt-label ${className}`}>{children}</label>
+const Input = ({ className = "", ...props }) => <input className={`apt-input ${className}`} {...props} />
+const Textarea = ({ className = "", ...props }) => <textarea className={`apt-textarea ${className}`} {...props} />
 const Button = ({ children, className = "", ...props }) => (
-    <button className={`apt-button ${className}`} {...props}>{children}</button>
-);
+    <button className={`apt-button ${className}`} {...props}>
+        {children}
+    </button>
+)
 const Badge = ({ children, variant = "default", className = "" }) => {
-    const variantClass = variant === "secondary" ? "apt-badge-success" : "apt-badge-error";
-    return <span className={`apt-badge ${variantClass} ${className}`}>{children}</span>;
-};
+    const variantClass = variant === "secondary" ? "apt-badge-success" : "apt-badge-error"
+    return <span className={`apt-badge ${variantClass} ${className}`}>{children}</span>
+}
 
-// Fixed Select Component
 const Select = ({ children, value, onValueChange, disabled = false, defaultValue, defaultLabel }) => {
-    const [isOpen, setIsOpen] = useState(false);
-    const [selectedValue, setSelectedValue] = useState(value || defaultValue || "");
-    const [selectedLabel, setSelectedLabel] = useState("");
+    const [isOpen, setIsOpen] = useState(false)
+    const [selectedValue, setSelectedValue] = useState(value || defaultValue || "")
+    const [selectedLabel, setSelectedLabel] = useState(defaultLabel || "Chọn...")
 
-    const options = React.Children.toArray(children).find((child) => child.type === SelectContent)?.props.children || [];
-    const optionsArray = React.Children.toArray(options);
+    const options = React.Children.toArray(children).find((child) => child.type === SelectContent)?.props.children || []
+    const optionsArray = React.Children.toArray(options)
 
     useEffect(() => {
-        if (selectedValue && !selectedLabel) {
-            const option = optionsArray.find((opt) => opt.props.value === selectedValue);
-            if (option) {
-                setSelectedLabel(option.props.children);
-            } else {
-                setSelectedLabel(defaultLabel || "Chọn..."); // Fallback to defaultLabel or "Chọn..."
-            }
-        } else if (!selectedValue && defaultLabel) {
-            setSelectedLabel(defaultLabel); // Set default label when no value is selected
+        if (value !== undefined && value !== null) {
+            const option = optionsArray.find((opt) => opt.props.value === value.toString())
+            setSelectedValue(value)
+            setSelectedLabel(option ? option.props.children : defaultLabel || "Chọn...")
+        } else if (defaultValue) {
+            const option = optionsArray.find((opt) => opt.props.value === defaultValue.toString())
+            setSelectedValue(defaultValue)
+            setSelectedLabel(option ? option.props.children : defaultLabel || "Chọn...")
+        } else {
+            setSelectedValue("")
+            setSelectedLabel(defaultLabel || "Chọn...")
         }
-    }, [selectedValue, optionsArray, defaultLabel]);
+    }, [value, defaultValue, optionsArray, defaultLabel])
 
     const handleSelect = (val, label) => {
-        setSelectedValue(val);
-        setSelectedLabel(label);
-        setIsOpen(false);
-        if (onValueChange) onValueChange(val);
-    };
+        setSelectedValue(val)
+        setSelectedLabel(label)
+        setIsOpen(false)
+        if (onValueChange) onValueChange(val)
+    }
 
     return (
-        <div className={`apt-select ${isOpen ? "open" : ""}`}>
+        <div className={`apt-select ${isOpen ? "open" : ""}`} key={value || defaultValue}>
             <div
                 className="apt-select-trigger"
                 onClick={() => !disabled && setIsOpen(!isOpen)}
                 style={{ opacity: disabled ? 0.5 : 1, cursor: disabled ? "not-allowed" : "pointer" }}
             >
-                <span>{selectedLabel || defaultLabel || "Chọn..."}</span>
+                <span>{selectedLabel}</span>
                 <ChevronDown size={16} className="apt-select-icon" />
             </div>
             {isOpen && (
@@ -73,297 +87,409 @@ const Select = ({ children, value, onValueChange, disabled = false, defaultValue
                 </div>
             )}
         </div>
-    );
-};
+    )
+}
 
-const SelectTrigger = ({ children }) => children;
-const SelectValue = ({ placeholder }) => null;
-const SelectContent = ({ children }) => children;
-const SelectItem = ({ value, children }) => null;
+const SelectTrigger = ({ children }) => children
+const SelectValue = ({ placeholder }) => null
+const SelectContent = ({ children }) => children
+const SelectItem = ({ value, children }) => null
+
+// Hàm tính tuổi
+const calculateAge = (birthDate) => {
+    if (!birthDate) return 0
+    const today = new Date()
+    const birth = new Date(birthDate)
+    if (isNaN(birth.getTime())) return 0
+    let age = today.getFullYear() - birth.getFullYear()
+    const monthDiff = today.getMonth() - birth.getMonth()
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+        age--
+    }
+    return age
+}
 
 export default function CreateAppointment() {
+    const location = useLocation()
+    const navigate = useNavigate()
+    const appointmentData = location.state?.appointmentData || null
+    const mode = location.state?.mode || "create"
 
-    const location = useLocation();
-    const navigate = useNavigate();
-    const appointmentData = location.state?.appointmentData || null;
-    const mode = location.state?.mode || "create";
+    const todayRef = useRef(new Date())
+    const today = todayRef.current
 
-    const [selectedDate, setSelectedDate] = useState(
-        appointmentData && mode === "edit" ? Number.parseInt(appointmentData.date.split("/")[0]) : null
-    );
-    const [selectedTime, setSelectedTime] = useState(appointmentData && mode === "edit" ? "9:00" : "");
-    const [phoneNumber, setPhoneNumber] = useState(appointmentData && mode === "edit" ? "0123456789" : "");
-    const [email, setEmail] = useState(appointmentData && mode === "edit" ? "patient@example.com" : "");
-    const [patientName, setPatientName] = useState(appointmentData && mode === "edit" ? "Nguyễn Văn A" : "");
-    const [reason, setReason] = useState(appointmentData && mode === "edit" ? appointmentData.reason : "");
-    const [selectedProvince, setSelectedProvince] = useState("");
-    const [selectedDistrict, setSelectedDistrict] = useState("");
-    const [selectedWard, setSelectedWard] = useState("");
-    const [village, setVillage] = useState("");
-    const [detailedAddress, setDetailedAddress] = useState("");
-    const [availableTimeSlots, setAvailableTimeSlots] = useState([]);
-    const [provinces, setProvinces] = useState([]);
-    const [districts, setDistricts] = useState([]);
-    const [wards, setWards] = useState([]);
-    const [isLoadingProvinces, setIsLoadingProvinces] = useState(true);
-    const [isLoadingDistricts, setIsLoadingDistricts] = useState(false);
-    const [isLoadingWards, setIsLoadingWards] = useState(false);
+    // Initialize states based on appointmentData
+    const initialDate = appointmentData ? new Date(appointmentData.appointmentDate) : null
+    const isValidDate = initialDate && !isNaN(initialDate.getTime())
 
-    const handleBackToList = () => {
-        console.log("Navigating back to all-appointments");
-        try {
-            navigate("/dashboard/receptionist/all-appointments");
-        } catch (error) {
-            console.error("Navigation error:", error);
+    const [phoneNumber, setPhoneNumber] = useState(appointmentData?.patient?.phone || appointmentData?.patientPhone || "")
+    const [email, setEmail] = useState(appointmentData?.patient?.email || appointmentData?.patientEmail || "")
+    const [patientName, setPatientName] = useState(appointmentData?.patient?.name || appointmentData?.patientName || "")
+    const [selectedProvince, setSelectedProvince] = useState(appointmentData?.patient?.province || "")
+    const [selectedDistrict, setSelectedDistrict] = useState(appointmentData?.patient?.district || "")
+    const [selectedWard, setSelectedWard] = useState(appointmentData?.patient?.ward || "")
+    const [detailedAddress, setDetailedAddress] = useState(appointmentData?.patient?.addressDetail || "")
+    const [village, setVillage] = useState(appointmentData?.patient?.village || "")
+    const [selectedService, setSelectedService] = useState(appointmentData?.serviceId?.toString() || "")
+    const [selectedDoctor, setSelectedDoctor] = useState(appointmentData?.doctorId?.toString() || "")
+    const [reason, setReason] = useState(appointmentData?.notes || "")
+    const [selectedDate, setSelectedDate] = useState(isValidDate ? initialDate.getDate() : null)
+    const [selectedTime, setSelectedTime] = useState(appointmentData?.timeSlot || "")
+    const [availableTimeSlots, setAvailableTimeSlots] = useState([])
+    const [availableDates, setAvailableDates] = useState([])
+    const [provinces, setProvinces] = useState([])
+    const [districts, setDistricts] = useState([])
+    const [wards, setWards] = useState([])
+    const [currentMonth, setCurrentMonth] = useState(isValidDate ? initialDate.getMonth() : today.getMonth())
+    const [currentYear, setCurrentYear] = useState(isValidDate ? initialDate.getFullYear() : today.getFullYear())
+    const currentDay = today.getDate()
+    const [age, setAge] = useState(
+        appointmentData?.patient?.dateOfBirth ? calculateAge(appointmentData.patient.dateOfBirth) : 0,
+    )
+    const [selectedGender, setSelectedGender] = useState(
+        appointmentData?.patient?.gender ? (appointmentData.patient.gender === "FEMALE" ? "nu" : "nam") : "",
+    )
+    const [services, setServices] = useState([])
+    const [doctors, setDoctors] = useState([])
+    const [loading, setLoading] = useState(false)
+    const [isEditingTime, setIsEditingTime] = useState(mode === "create")
+
+    const isReadOnly = mode === "edit" && appointmentData?.status !== "PENDING"
+
+    // Fetch services and doctors
+    useEffect(() => {
+        const fetchServicesAndDoctors = async () => {
+            try {
+                const [servicesResponse, doctorsResponse] = await Promise.all([getAllServices(), getAllDoctors()])
+                setServices(servicesResponse)
+                setDoctors(doctorsResponse)
+            } catch (error) {
+                console.error("Error fetching services and doctors:", error)
+            }
         }
-    };
+        fetchServicesAndDoctors()
+    }, [])
 
     // Fetch provinces
     useEffect(() => {
         const fetchProvinces = async () => {
             try {
-                setIsLoadingProvinces(true);
-                const response = await fetch("https://provinces.open-api.vn/api/p/");
-                if (!response.ok) throw new Error("Failed to fetch provinces");
-                const data = await response.json();
-                const formattedProvinces = data.map((province) => ({
-                    code: province.code.toString(),
-                    name: province.name,
-                }));
-                setProvinces(formattedProvinces);
+                const response = await fetch("https://provinces.open-api.vn/api/p/")
+                if (!response.ok) throw new Error("Failed to fetch provinces")
+                const data = await response.json()
+                setProvinces(data.map((p) => ({ code: p.code.toString(), name: p.name })))
             } catch (error) {
-                console.error("Error fetching provinces:", error);
+                console.error("Error fetching provinces:", error)
                 setProvinces([
-                    { code: "01", name: "Hà Nội" },
+                    { code: "1", name: "Hà Nội" },
                     { code: "79", name: "TP. Hồ Chí Minh" },
                     { code: "48", name: "Đà Nẵng" },
-                ]);
-            } finally {
-                setIsLoadingProvinces(false);
+                ])
             }
-        };
-        fetchProvinces();
-    }, []);
+        }
+        fetchProvinces()
+    }, [])
 
     // Fetch districts
     useEffect(() => {
+        if (!selectedProvince) {
+            setDistricts([])
+            setWards([])
+            return
+        }
         const fetchDistricts = async () => {
-            if (!selectedProvince) {
-                setDistricts([]);
-                setWards([]);
-                setSelectedDistrict("");
-                setSelectedWard("");
-                setVillage("");
-                setDetailedAddress("");
-                return;
-            }
             try {
-                setIsLoadingDistricts(true);
-                const response = await fetch(`https://provinces.open-api.vn/api/p/${selectedProvince}?depth=2`);
-                if (!response.ok) throw new Error("Failed to fetch districts");
-                const data = await response.json();
-                const formattedDistricts = data.districts.map((district) => ({
-                    code: district.code.toString(),
-                    name: district.name,
-                }));
-                setDistricts(formattedDistricts);
+                const response = await fetch(`https://provinces.open-api.vn/api/p/${selectedProvince}?depth=2`)
+                if (!response.ok) throw new Error("Failed to fetch districts")
+                const data = await response.json()
+                setDistricts(data.districts.map((d) => ({ code: d.code.toString(), name: d.name })))
             } catch (error) {
-                console.error("Error fetching districts:", error);
-                setDistricts([{ code: "001", name: "Lỗi tải dữ liệu" }]);
-            } finally {
-                setIsLoadingDistricts(false);
+                console.error("Error fetching districts:", error)
+                setDistricts([{ code: "4", name: "Hoàn Kiếm" }])
             }
-        };
-        fetchDistricts();
-    }, [selectedProvince]);
+        }
+        fetchDistricts()
+    }, [selectedProvince])
 
     // Fetch wards
     useEffect(() => {
+        if (!selectedDistrict) {
+            setWards([])
+            return
+        }
         const fetchWards = async () => {
-            if (!selectedDistrict) {
-                setWards([]);
-                setSelectedWard("");
-                setVillage("");
-                setDetailedAddress("");
-                return;
+            try {
+                const response = await fetch(`https://provinces.open-api.vn/api/d/${selectedDistrict}?depth=2`)
+                if (!response.ok) throw new Error("Failed to fetch wards")
+                const data = await response.json()
+                setWards(data.wards.map((w) => ({ code: w.code.toString(), name: w.name })))
+            } catch (error) {
+                console.error("Error fetching wards:", error)
+                setWards([{ code: "127", name: "Phường Hàng Bông" }])
+            }
+        }
+        fetchWards()
+    }, [selectedDistrict])
+
+    // Fetch available dates
+    const fetchAvailableDates = useCallback(
+        async (doctorId) => {
+            if (!doctorId || isNaN(currentMonth) || currentMonth < 0 || currentMonth > 11) {
+                setAvailableDates([])
+                return
             }
             try {
-                setIsLoadingWards(true);
-                const response = await fetch(`https://provinces.open-api.vn/api/d/${selectedDistrict}?depth=2`);
-                if (!response.ok) throw new Error("Failed to fetch wards");
-                const data = await response.json();
-                const formattedWards = data.wards.map((ward) => ({
-                    code: ward.code.toString(),
-                    name: ward.name,
-                }));
-                setWards(formattedWards);
+                setLoading(true)
+                const startDate = new Date(currentYear, currentMonth, 1).toISOString().split("T")[0]
+                const endDate = new Date(currentYear, currentMonth + 1, 0).toISOString().split("T")[0]
+                const availableSlots = []
+                const currentDate = new Date(startDate)
+                while (currentDate <= new Date(endDate)) {
+                    const dateStr = currentDate.toISOString().split("T")[0]
+                    try {
+                        const slots = await getAvailableTimeSlots(doctorId, dateStr)
+                        if (slots && Array.isArray(slots) && slots.some((slot) => slot?.status === "AVAILABLE")) {
+                            availableSlots.push(currentDate.getDate())
+                        }
+                    } catch (error) {
+                        console.error(`Error fetching slots for ${dateStr}:`, error)
+                    }
+                    currentDate.setDate(currentDate.getDate() + 1)
+                }
+                // Ensure the appointment date is included if in edit mode
+                if (appointmentData && selectedDate) {
+                    availableSlots.push(selectedDate)
+                }
+                setAvailableDates([...new Set(availableSlots)])
             } catch (error) {
-                console.error("Error fetching wards:", error);
-                setWards([{ code: "001", name: "Lỗi tải dữ liệu" }]);
+                console.error("Error fetching available dates:", error)
+                setAvailableDates([])
             } finally {
-                setIsLoadingWards(false);
+                setLoading(false)
             }
-        };
-        fetchWards();
-    }, [selectedDistrict]);
+        },
+        [currentMonth, currentYear, selectedDate, appointmentData],
+    )
 
-    const today = new Date();
-    const currentMonth = today.getMonth();
-    const currentYear = today.getFullYear();
-    const currentDay = today.getDate();
-    const currentHour = today.getHours();
+    // Fetch time slots
+    const fetchTimeSlots = useCallback(
+        async (doctorId, date) => {
+            if (!doctorId || !date || isNaN(currentMonth) || currentMonth < 0 || currentMonth > 11) {
+                setAvailableTimeSlots([])
+                return
+            }
+            try {
+                setLoading(true)
+                const dateStr = `${currentYear}-${(currentMonth + 1).toString().padStart(2, "0")}-${date.toString().padStart(2, "0")}`
+                const slots = await getAvailableTimeSlots(doctorId, dateStr)
+                const timeSlots = slots && Array.isArray(slots) ? slots : []
+                // Include the appointment's time slot in edit mode, even if unavailable
+                if (appointmentData && appointmentData.timeSlot) {
+                    const existingSlot = timeSlots.find((slot) => slot.time === appointmentData.timeSlot)
+                    if (!existingSlot) {
+                        timeSlots.push({ time: appointmentData.timeSlot, status: "UNAVAILABLE" })
+                    }
+                }
+                setAvailableTimeSlots(timeSlots)
+            } catch (error) {
+                console.error("Error fetching available time slots:", error)
+                setAvailableTimeSlots([])
+            } finally {
+                setLoading(false)
+            }
+        },
+        [currentMonth, currentYear, appointmentData],
+    )
+
+    // Fetch available dates and time slots when doctor or month changes
+    useEffect(() => {
+        if (selectedDoctor) {
+            fetchAvailableDates(selectedDoctor)
+            if (selectedDate) {
+                fetchTimeSlots(selectedDoctor, selectedDate)
+            }
+        } else {
+            setAvailableDates([])
+            setSelectedDate(null)
+            setSelectedTime("")
+        }
+    }, [selectedDoctor, currentMonth, currentYear, fetchAvailableDates, selectedDate, fetchTimeSlots])
 
     const monthNames = [
-        "Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6",
-        "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12",
-    ];
+        "Tháng 1",
+        "Tháng 2",
+        "Tháng 3",
+        "Tháng 4",
+        "Tháng 5",
+        "Tháng 6",
+        "Tháng 7",
+        "Tháng 8",
+        "Tháng 9",
+        "Tháng 10",
+        "Tháng 11",
+        "Tháng 12",
+    ]
 
-    const getDaysInMonth = (year, month) => new Date(year, month + 1, 0).getDate();
-    const getFirstDayOfMonth = (year, month) => new Date(year, month, 1).getDay();
+    const getDaysInMonth = (year, month) => new Date(year, month + 1, 0).getDate()
+    const getFirstDayOfMonth = (year, month) => new Date(year, month, 1).getDay()
 
     const generateCalendarDays = () => {
-        const daysInMonth = getDaysInMonth(currentYear, currentMonth);
-        const firstDay = getFirstDayOfMonth(currentYear, currentMonth);
-        const days = [];
-        for (let i = 0; i < firstDay; i++) {
-            days.push({ day: null, disabled: true });
-        }
+        const daysInMonth = getDaysInMonth(currentYear, currentMonth)
+        const firstDay = getFirstDayOfMonth(currentYear, currentMonth)
+        const days = []
+        for (let i = 0; i < firstDay; i++) days.push({ day: null, disabled: true })
         for (let day = 1; day <= daysInMonth; day++) {
-            const isPast = day < currentDay;
-            days.push({ day, disabled: isPast });
+            const isPast =
+                currentYear < today.getFullYear() ||
+                (currentYear === today.getFullYear() && currentMonth < today.getMonth()) ||
+                (currentYear === today.getFullYear() && currentMonth === today.getMonth() && day < currentDay)
+            const isAvailable = selectedDoctor ? availableDates.includes(day) : !isPast
+            days.push({ day, disabled: isPast || !isAvailable })
         }
-        return days;
-    };
+        return days
+    }
 
-    const generateTimeSlots = useCallback((selectedDay) => {
-        const baseSlots = ["8:00", "9:00", "10:00", "11:00", "13:00", "14:00", "15:00", "16:00", "17:00"];
-        if (!selectedDay) return baseSlots;
-        if (selectedDay === currentDay) {
-            return baseSlots.filter((slot) => {
-                const slotHour = Number.parseInt(slot.split(":")[0]);
-                return slotHour > currentHour;
-            });
-        }
-        return baseSlots;
-    }, [currentDay, currentHour]);
-
-    useEffect(() => {
-        setAvailableTimeSlots(generateTimeSlots(selectedDate));
-        if (selectedTime && !generateTimeSlots(selectedDate).includes(selectedTime)) {
-            setSelectedTime("");
-        }
-    }, [selectedDate, selectedTime, generateTimeSlots]);
-
-    const calendarDays = generateCalendarDays();
+    const calendarDays = generateCalendarDays()
 
     const getDateClassName = (date) => {
-        let className = "apt-date";
-        if (!date.day) {
-            className += " apt-date-hide";
-        } else if (date.disabled) {
-            className += " apt-date-off";
-        } else if (selectedDate === date.day) {
-            className += " apt-date-on";
-        } else if (date.day === currentDay) {
-            className += " apt-date-now";
-        } else {
-            className += " apt-date-hov";
-        }
-        return className;
-    };
+        let className = "apt-date"
+        if (!date.day) className += "apt-date-hide"
+        else if (date.disabled) className += "apt-date-off"
+        else if (selectedDate === date.day) className += "apt-date-on"
+        else if (date.day === currentDay && currentMonth === today.getMonth() && currentYear === today.getFullYear())
+            className += "apt-date-now"
+        else className += "apt-date-hov"
+        return className
+    }
 
     const getTimeSlotClassName = (time) => {
-        return selectedTime === time ? "apt-time apt-time-on" : "apt-time apt-time-hov";
-    };
+        const slot = availableTimeSlots.find((s) => s?.time === time)
+        let className = "apt-time"
+        if (selectedTime === time) className += "apt-time-on"
+        else if (slot && slot.status === "AVAILABLE") className += "apt-time-hov"
+        else className += "apt-time-off"
+        return className
+    }
+
+    const validateTimeSlotAvailability = () => {
+        if (mode === "edit" && selectedTime && availableTimeSlots.length > 0) {
+            const slot = availableTimeSlots.find((s) => s?.time === selectedTime)
+            return slot && (slot.status === "AVAILABLE" || slot.time === appointmentData?.timeSlot)
+        }
+        return true
+    }
 
     const handleConfirmAppointment = async () => {
-        if (!appointmentData?.id) {
-            console.error("No appointment ID provided");
-            return;
+        if (!appointmentData?.id) return
+        const isConfirmed = window.confirm(
+            "Bạn có chắc chắn muốn xác nhận cuộc hẹn này? Tất cả thông tin sẽ được cập nhật.",
+        )
+        if (!isConfirmed) return
+
+        const appointment = {
+            serviceId: Number.parseInt(selectedService),
+            doctorId: Number.parseInt(selectedDoctor),
+            appointmentDate: `${currentYear}-${(currentMonth + 1).toString().padStart(2, "0")}-${selectedDate.toString().padStart(2, "0")}`,
+            timeSlot: selectedTime,
+            status: "CONFIRMED", // Set status to CONFIRMED
+            notes: reason,
+            patientName: patientName,
+            patientEmail: email,
+            patientPhone: phoneNumber,
+            patient: {
+                id: appointmentData.patient?.id || null,
+                name: patientName,
+                email,
+                phone: phoneNumber,
+                province: selectedProvince,
+                district: selectedDistrict,
+                ward: selectedWard,
+                addressDetail: detailedAddress,
+                village: village || "",
+                dateOfBirth: appointmentData.patient?.dateOfBirth || "",
+                gender: selectedGender === "nu" ? "FEMALE" : "MALE",
+            },
         }
+
         try {
-            const appointment = {
-                id: appointmentData.id,
-                service: "Khám mắt tổng quát",
-                doctor: appointmentData.doctor || "bs-nguyen-thi-lan",
-                date: `${selectedDate}/${currentMonth + 1}/${currentYear}`,
-                time: selectedTime,
-                status: "confirmed",
-                reason,
-                patient: {
-                    phoneNumber,
-                    email,
-                    patientName,
-                    address: { province: selectedProvince, district: selectedDistrict, ward: selectedWard, village, detailedAddress },
-                },
-            };
-            const response = await fetch(`/api/appointments/${appointmentData.id}`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(appointment),
-            });
-            if (!response.ok) throw new Error("Failed to confirm appointment");
-            console.log("Appointment confirmed:", appointment);
-            navigate("/dashboard/receptionist/all-appointments");
+            await updateAppointment(appointmentData.id, appointment)
+            alert("Xác nhận cuộc hẹn thành công! Tất cả thông tin đã được cập nhật.")
+            navigate("/dashboard/receptionist/all-appointments")
         } catch (error) {
-            console.error("Error confirming appointment:", error);
+            console.error("Error confirming appointment:", error)
+            alert("Lỗi khi xác nhận cuộc hẹn: " + error.message)
         }
-    };
+    }
 
     const handleCancelAppointment = async () => {
-        if (!appointmentData?.id) {
-            console.error("No appointment ID provided");
-            return;
-        }
+        if (!appointmentData?.id) return
+        const isConfirmed = window.confirm("Bạn có chắc chắn muốn hủy cuộc hẹn này?")
+        if (!isConfirmed) return
+
         try {
-            const response = await fetch(`/api/appointments/${appointmentData.id}`, {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ status: "cancelled" }),
-            });
-            if (!response.ok) throw new Error("Failed to cancel appointment");
-            console.log("Appointment cancelled:", appointmentData.id);
-            navigate("/dashboard/receptionist/all-appointments");
+            await cancelAppointment(appointmentData.id)
+            navigate("/dashboard/receptionist/all-appointments")
         } catch (error) {
-            console.error("Error cancelling appointment:", error);
+            console.error("Error cancelling appointment:", error)
+            alert("Failed to cancel appointment: " + error.message)
         }
-    };
+    }
+
+    const handleUnconfirmAppointment = async () => {
+        if (!appointmentData?.id) return
+        const isConfirmed = window.confirm("Bạn có chắc chắn muốn hủy xác nhận cuộc hẹn này? Trạng thái sẽ chuyển về PENDING.")
+        if (!isConfirmed) return
+
+        try {
+            await unconfirmAppointment(appointmentData.id)
+            alert("Đã hủy xác nhận cuộc hẹn thành công!")
+            navigate("/dashboard/receptionist/all-appointments")
+        } catch (error) {
+            console.error("Error unconfirming appointment:", error)
+            alert("Lỗi khi hủy xác nhận cuộc hẹn: " + error.message)
+        }
+    }
 
     const handleCreateAppointment = async () => {
-        try {
-            const appointment = {
-                service: "Khám mắt tổng quát",
-                doctor: "bs-nguyen-thi-lan",
-                date: `${selectedDate}/${currentMonth + 1}/${currentYear}`,
-                time: selectedTime,
-                status: "pending",
-                reason,
-                patient: {
-                    phoneNumber,
-                    email,
-                    patientName,
-                    address: { province: selectedProvince, district: selectedDistrict, ward: selectedWard, village, detailedAddress },
-                },
-            };
-            const response = await fetch("/api/appointments", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(appointment),
-            });
-            if (!response.ok) throw new Error("Failed to create appointment");
-            console.log("Appointment created:", appointment);
-            navigate("/dashboard/receptionist/all-appointments");
-        } catch (error) {
-            console.error("Error creating appointment:", error);
+        const appointment = {
+            serviceId: Number.parseInt(selectedService),
+            doctorId: Number.parseInt(selectedDoctor),
+            appointmentDate: `${currentYear}-${(currentMonth + 1).toString().padStart(2, "0")}-${selectedDate.toString().padStart(2, "0")}`,
+            timeSlot: selectedTime,
+            status: "PENDING",
+            notes: reason,
+            patientName: patientName,
+            patientEmail: email,
+            patientPhone: phoneNumber,
+            patient: {
+                name: patientName,
+                email,
+                phone: phoneNumber,
+                province: selectedProvince,
+                district: selectedDistrict,
+                ward: selectedWard,
+                addressDetail: detailedAddress,
+                village: village || "",
+                dateOfBirth: "",
+                gender: selectedGender === "nu" ? "FEMALE" : "MALE",
+            },
         }
-    };
+        try {
+            await createAppointment(appointment)
+            navigate("/dashboard/receptionist/all-appointments")
+        } catch (error) {
+            console.error("Error creating appointment:", error)
+            alert("Failed to create appointment: " + error.message)
+        }
+    }
+
+    const handleBackToList = () => navigate("/dashboard/receptionist/all-appointments")
 
     return (
         <div className="apt-wrap">
             <div className="apt-back-btn">
                 <Button onClick={handleBackToList} className="flex items-center gap-2 bg-gray-600 hover:bg-gray-700">
-                    <ArrowLeft size={16} />
-                    Quay lại danh sách
+                    <ArrowLeft size={16} /> Quay lại danh sách
                 </Button>
             </div>
             <div className="apt-grid">
@@ -371,47 +497,54 @@ export default function CreateAppointment() {
                     <Card>
                         <CardHeader className="apt-hdr-svc">
                             <CardTitle>
-                                <Eye size={20} />
-                                Dịch vụ khám
+                                <Eye size={20} /> Dịch vụ khám
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
                             <div className="apt-form">
                                 <div>
-                                    <Label><span className="apt-req">*</span> Dịch vụ khám mắt</Label>
-                                    <Select defaultValue="kham-tong-quat">
-                                        <SelectTrigger><SelectValue /></SelectTrigger>
+                                    <Label>
+                                        <span className="apt-req">*</span> Dịch vụ khám mắt
+                                    </Label>
+                                    <Select
+                                        value={selectedService}
+                                        onValueChange={setSelectedService}
+                                        disabled={mode === "edit" && appointmentData?.status !== "PENDING"}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue />
+                                        </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="kham-tong-quat">Khám mắt tổng quát</SelectItem>
-                                            <SelectItem value="kham-can-thi">Khám cận thị</SelectItem>
-                                            <SelectItem value="kham-vien-thi">Khám viễn thị</SelectItem>
-                                            <SelectItem value="kham-loan-thi">Khám loạn thị</SelectItem>
-                                            <SelectItem value="kham-glaucoma">Khám glaucoma</SelectItem>
-                                            <SelectItem value="kham-cataract">Khám đục thủy tinh thể</SelectItem>
-                                            <SelectItem value="kham-vo-mang">Khám võng mạc</SelectItem>
+                                            {services.map((service) => (
+                                                <SelectItem key={service.id} value={service.id.toString()}>
+                                                    {service.name}
+                                                </SelectItem>
+                                            ))}
                                         </SelectContent>
                                     </Select>
                                 </div>
                                 <div>
-                                    <Label><span className="apt-req">*</span> Bác sĩ chuyên khoa</Label>
-                                    <Select defaultValue="bs-nguyen-thi-lan">
-                                        <SelectTrigger><SelectValue /></SelectTrigger>
+                                    <Label>
+                                        <span className="apt-req">*</span> Bác sĩ chuyên khoa
+                                    </Label>
+                                    <Select
+                                        value={selectedDoctor}
+                                        onValueChange={(value) => {
+                                            setSelectedDoctor(value)
+                                            setSelectedDate(null)
+                                            setSelectedTime("")
+                                        }}
+                                        disabled={mode === "edit" && appointmentData?.status !== "PENDING"}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue />
+                                        </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="bs-nguyen-thi-lan">BS. Nguyễn Thị Lan</SelectItem>
-                                            <SelectItem value="bs-tran-van-duc">BS. Trần Văn Đức</SelectItem>
-                                            <SelectItem value="bs-le-thi-mai">BS. Lê Thị Mai</SelectItem>
-                                            <SelectItem value="bs-pham-minh-tuan">BS. Phạm Minh Tuấn</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div>
-                                    <Label><span className="apt-req">*</span> Hình thức khám</Label>
-                                    <Select defaultValue="tai-phong-kham">
-                                        <SelectTrigger><SelectValue /></SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="tai-phong-kham">Tại phòng khám</SelectItem>
-                                            <SelectItem value="online">Tư vấn trực tuyến</SelectItem>
-                                            <SelectItem value="tai-nha">Khám tại nhà (VIP)</SelectItem>
+                                            {doctors.map((doctor) => (
+                                                <SelectItem key={doctor.id} value={doctor.id.toString()}>
+                                                    {doctor.name}
+                                                </SelectItem>
+                                            ))}
                                         </SelectContent>
                                     </Select>
                                 </div>
@@ -421,27 +554,18 @@ export default function CreateAppointment() {
                     <Card className="apt-pay-card">
                         <CardHeader className="apt-hdr-pay">
                             <CardTitle>
-                                <CreditCard size={20} />
-                                Chi phí khám
+                                <CreditCard size={20} /> Chi phí tạo cuộc hẹn
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="apt-y3">
                             <div className="apt-pay-row">
-                                <span className="apt-pay-lbl">Phí khám mắt:</span>
-                                <span className="apt-pay-val">200.000 đ</span>
-                            </div>
-                            <div className="apt-pay-row">
-                                <span className="apt-pay-lbl">Phí dịch vụ:</span>
-                                <span className="apt-pay-val">50.000 đ</span>
-                            </div>
-                            <div className="apt-pay-row">
-                                <span className="apt-pay-lbl">Phí di chuyển:</span>
-                                <span className="apt-pay-val">0 đ</span>
+                                <span className="apt-pay-lbl">Phí tạo:</span>
+                                <span className="apt-pay-val">10.000 đ</span>
                             </div>
                             <hr />
                             <div className="apt-pay-tot">
                                 <span>Tổng tiền:</span>
-                                <span>250.000 đ</span>
+                                <span>10.000 đ</span>
                             </div>
                             <div className="apt-pay-note">* Giá có thể thay đổi tùy theo dịch vụ</div>
                         </CardContent>
@@ -451,75 +575,139 @@ export default function CreateAppointment() {
                     <Card>
                         <CardHeader className="apt-hdr-cal">
                             <CardTitle className="apt-card-title-sm">
-                                <Calendar size={16} />
-                                Chọn thời gian khám
+                                <Calendar size={16} /> Chọn thời gian khám
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="apt-cal-wrap">
-                                <div className="apt-cal-sel apt-cal-yr">
-                                    <Select value={currentYear.toString()} disabled>
-                                        <SelectTrigger><SelectValue /></SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value={currentYear.toString()}>{currentYear}</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div className="apt-cal-sel apt-cal-mon">
-                                    <Select value={currentMonth.toString()} disabled>
-                                        <SelectTrigger><SelectValue /></SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value={currentMonth.toString()}>{monthNames[currentMonth]}</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                            </div>
-                            <div className="apt-cal-box">
-                                <div className="apt-cal-days">
-                                    {["CN", "T2", "T3", "T4", "T5", "T6", "T7"].map((day) => (
-                                        <div key={day} className="apt-cal-day">{day}</div>
-                                    ))}
-                                </div>
-                                <div className="apt-cal-dates">
-                                    {calendarDays.map((date, index) => (
-                                        <button
-                                            key={index}
-                                            onClick={() => date.day && !date.disabled && setSelectedDate(date.day)}
-                                            className={getDateClassName(date)}
-                                            disabled={date.disabled || !date.day}
-                                        >
-                                            {date.day}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                            <div>
-                                <Label className="apt-time-lbl">
-                                    <Clock size={12} />
-                                    Giờ khám {selectedDate && `(${selectedDate}/${currentMonth + 1})`}
-                                </Label>
-                                {selectedDate ? (
-                                    <div className="apt-time-grid">
-                                        {availableTimeSlots.map((time) => (
-                                            <button key={time} onClick={() => setSelectedTime(time)} className={getTimeSlotClassName(time)}>
-                                                {time}
-                                            </button>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <div className="apt-empty">
-                                        <Calendar className="apt-empty-ico" />
-                                        <p className="apt-empty-txt">Chọn ngày để xem giờ khám</p>
-                                    </div>
-                                )}
-                            </div>
-                            {selectedDate && selectedTime && (
+                            {mode === "edit" && selectedDate && selectedTime && !isEditingTime ? (
                                 <div className="apt-sum">
                                     <h3 className="apt-sum-ttl">Lịch hẹn:</h3>
                                     <div className="apt-sum-body">
                                         <div className="apt-sum-item">
                                             <Calendar size={12} />
-                                            <span>{selectedDate}/{currentMonth + 1}/{currentYear}</span>
+                                            <span>
+                        {selectedDate}/{Number.parseInt(currentMonth) + 1}/{currentYear}
+                      </span>
+                                        </div>
+                                        <div className="apt-sum-item">
+                                            <Clock size={12} />
+                                            <span>{selectedTime}</span>
+                                        </div>
+                                    </div>
+                                    {!isReadOnly && (
+                                        <Button
+                                            className="apt-button-primary mt-2"
+                                            style={{ background: "#245EA8" }}
+                                            onClick={() => setIsEditingTime(true)}
+                                        >
+                                            thay đổi
+                                        </Button>
+                                    )}
+                                </div>
+                            ) : (
+                                <>
+                                    <div className="apt-cal-wrap">
+                                        <div className="apt-cal-sel apt-cal-yr">
+                                            <Select
+                                                value={currentYear.toString()}
+                                                onValueChange={(value) => setCurrentYear(Number.parseInt(value))}
+                                                disabled={isReadOnly}
+                                            >
+                                                <SelectTrigger>
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {[2024, 2025, 2026].map((year) => (
+                                                        <SelectItem key={year} value={year.toString()}>
+                                                            {year}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <div className="apt-cal-sel apt-cal-mon">
+                                            <Select
+                                                value={currentMonth.toString()}
+                                                onValueChange={(value) => setCurrentMonth(Number.parseInt(value))}
+                                                disabled={isReadOnly}
+                                            >
+                                                <SelectTrigger>
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {monthNames.map((month, index) => (
+                                                        <SelectItem key={index} value={index.toString()}>
+                                                            {month}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    </div>
+                                    <div className="apt-cal-box">
+                                        <div className="apt-cal-days">
+                                            {["CN", "T2", "T3", "T4", "T5", "T6", "T7"].map((day) => (
+                                                <div key={day} className="apt-cal-day">
+                                                    {day}
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <div className="apt-cal-dates">
+                                            {calendarDays.map((date, index) => (
+                                                <button
+                                                    key={index}
+                                                    onClick={() => !date.disabled && !isReadOnly && setSelectedDate(date.day)}
+                                                    className={getDateClassName(date)}
+                                                    disabled={date.disabled || isReadOnly}
+                                                >
+                                                    {date.day}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <Label className="apt-time-lbl">
+                                            <Clock size={12} /> Giờ khám{" "}
+                                            {selectedDate && `(${selectedDate}/${Number.parseInt(currentMonth) + 1})`}
+                                        </Label>
+                                        {selectedDate && selectedDoctor ? (
+                                            loading ? (
+                                                <div className="apt-empty">
+                                                    <p className="apt-empty-txt">Đang tải khung giờ...</p>
+                                                </div>
+                                            ) : (
+                                                <div className="apt-time-grid">
+                                                    {availableTimeSlots.map((slot, index) => (
+                                                        <button
+                                                            key={slot?.time || `slot-${index}`}
+                                                            onClick={() => !isReadOnly && slot?.status === "AVAILABLE" && setSelectedTime(slot?.time)}
+                                                            className={getTimeSlotClassName(slot?.time)}
+                                                            disabled={!slot || slot.status !== "AVAILABLE" || isReadOnly}
+                                                        >
+                                                            {slot?.time || "N/A"}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            )
+                                        ) : (
+                                            <div className="apt-empty">
+                                                <Calendar className="apt-empty-ico" />
+                                                <p className="apt-empty-txt">Chọn bác sĩ và ngày để xem giờ khám</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </>
+                            )}
+
+                            {(mode !== "edit" || isEditingTime) && selectedDate && selectedTime && (
+                                <div className="apt-sum">
+                                    <h3 className="apt-sum-ttl">Lịch hẹn:</h3>
+                                    <div className="apt-sum-body">
+                                        <div className="apt-sum-item">
+                                            <Calendar size={12} />
+                                            <span>
+                        {selectedDate}/{Number.parseInt(currentMonth) + 1}/{currentYear}
+                      </span>
                                         </div>
                                         <div className="apt-sum-item">
                                             <Clock size={12} />
@@ -535,18 +723,21 @@ export default function CreateAppointment() {
                     <Card>
                         <CardHeader className="apt-hdr-pat">
                             <CardTitle>
-                                <User size={20} />
-                                {mode === "edit" ? "Thông tin bệnh nhân" : "Thông tin bệnh nhân"}
+                                <User size={20} /> Thông tin bệnh nhân
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="apt-y4">
                             <div className="apt-g2">
                                 <div>
-                                    <Label><Phone size={16} className="apt-mr-1" /><span className="apt-req">*</span> Số điện thoại</Label>
+                                    <Label>
+                                        <Phone size={16} className="apt-mr-1" />
+                                        <span className="apt-req">*</span> Số điện thoại
+                                    </Label>
                                     <div className="apt-flex">
                                         <Input
+                                            readOnly
                                             value={phoneNumber}
-                                            onChange={(e) => setPhoneNumber(e.target.value)}
+                                            onChange={(e) => !isReadOnly && setPhoneNumber(e.target.value)}
                                             className="apt-flex-1"
                                             placeholder="Nhập số điện thoại"
                                         />
@@ -558,11 +749,15 @@ export default function CreateAppointment() {
                                     </div>
                                 </div>
                                 <div>
-                                    <Label><Mail size={16} className="apt-mr-1" /><span className="apt-req">*</span> Email</Label>
+                                    <Label>
+                                        <Mail size={16} className="apt-mr-1" />
+                                        <span className="apt-req">*</span> Email
+                                    </Label>
                                     <div className="apt-flex">
                                         <Input
+                                            readOnly
                                             value={email}
-                                            onChange={(e) => setEmail(e.target.value)}
+                                            onChange={(e) => !isReadOnly && setEmail(e.target.value)}
                                             className="apt-flex-1"
                                             placeholder="Nhập địa chỉ email"
                                             type="email"
@@ -577,21 +772,28 @@ export default function CreateAppointment() {
                             </div>
                             <div className="apt-g3">
                                 <div>
-                                    <Label><span className="apt-req">*</span> Họ và tên</Label>
+                                    <Label>
+                                        <span className="apt-req">*</span> Họ và tên
+                                    </Label>
                                     <Input
+                                        readOnly
                                         value={patientName}
-                                        onChange={(e) => setPatientName(e.target.value)}
+                                        onChange={(e) => !isReadOnly && setPatientName(e.target.value)}
                                         placeholder="Nhập họ và tên đầy đủ"
                                     />
                                 </div>
                                 <div>
                                     <Label>Tuổi</Label>
-                                    <Input placeholder="Tuổi" type="number" min="1" max="120" />
+                                    <Input value={age} readOnly placeholder="Tuổi" type="number" min="1" max="120" />
                                 </div>
                                 <div>
-                                    <Label><span className="apt-req">*</span> Giới tính</Label>
-                                    <Select>
-                                        <SelectTrigger><SelectValue placeholder="Chọn giới tính" /></SelectTrigger>
+                                    <Label>
+                                        <span className="apt-req">*</span> Giới tính
+                                    </Label>
+                                    <Select value={selectedGender} onValueChange={setSelectedGender} disabled>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Chọn giới tính" />
+                                        </SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value="nam">Nam</SelectItem>
                                             <SelectItem value="nu">Nữ</SelectItem>
@@ -600,47 +802,51 @@ export default function CreateAppointment() {
                                 </div>
                             </div>
                             <div className="apt-y2">
-                                <Label><MapPin size={16} className="apt-mr-1" /><span className="apt-req">*</span> Địa chỉ</Label>
+                                <Label>
+                                    <MapPin size={16} className="apt-mr-1" />
+                                    <span className="apt-req">*</span> Địa chỉ
+                                </Label>
                                 <div className="apt-g2 apt-mt-2">
                                     <div className="apt-address-field">
-                                        <Label><span className="apt-req">*</span> Tỉnh/Thành phố</Label>
+                                        <Label>
+                                            <span className="apt-req">*</span> Tỉnh/Thành phố
+                                        </Label>
                                         <Select
                                             value={selectedProvince}
-                                            onValueChange={(value) => {
-                                                setSelectedProvince(value);
-                                                setSelectedDistrict("");
-                                                setSelectedWard("");
-                                                setVillage("");
-                                                setDetailedAddress("");
-                                            }}
-                                            disabled={isLoadingProvinces}
+                                            onValueChange={setSelectedProvince}
                                             defaultLabel="Tỉnh/Thành phố"
+                                            disabled
                                         >
-                                            <SelectTrigger><SelectValue /></SelectTrigger>
+                                            <SelectTrigger>
+                                                <SelectValue />
+                                            </SelectTrigger>
                                             <SelectContent>
-                                                {provinces.map((province) => (
-                                                    <SelectItem key={province.code} value={province.code}>{province.name}</SelectItem>
+                                                {provinces.map((p) => (
+                                                    <SelectItem key={p.code} value={p.code}>
+                                                        {p.name}
+                                                    </SelectItem>
                                                 ))}
                                             </SelectContent>
                                         </Select>
                                     </div>
                                     <div className="apt-address-field">
-                                        <Label><span className="apt-req">*</span> Quận/Huyện</Label>
+                                        <Label>
+                                            <span className="apt-req">*</span> Quận/Huyện
+                                        </Label>
                                         <Select
                                             value={selectedDistrict}
-                                            onValueChange={(value) => {
-                                                setSelectedDistrict(value);
-                                                setSelectedWard("");
-                                                setVillage("");
-                                                setDetailedAddress("");
-                                            }}
-                                            disabled={!selectedProvince || isLoadingDistricts}
+                                            onValueChange={setSelectedDistrict}
                                             defaultLabel="Quận/Huyện"
+                                            disabled
                                         >
-                                            <SelectTrigger><SelectValue /></SelectTrigger>
+                                            <SelectTrigger>
+                                                <SelectValue />
+                                            </SelectTrigger>
                                             <SelectContent>
-                                                {districts.map((district) => (
-                                                    <SelectItem key={district.code} value={district.code}>{district.name}</SelectItem>
+                                                {districts.map((d) => (
+                                                    <SelectItem key={d.code} value={d.code}>
+                                                        {d.name}
+                                                    </SelectItem>
                                                 ))}
                                             </SelectContent>
                                         </Select>
@@ -648,62 +854,69 @@ export default function CreateAppointment() {
                                 </div>
                                 <div className="apt-g2 apt-mt-2">
                                     <div className="apt-address-field">
-                                        <Label><span className="apt-req">*</span> Xã/Phường</Label>
-                                        <Select
-                                            value={selectedWard}
-                                            onValueChange={(value) => {
-                                                setSelectedWard(value);
-                                                setVillage("");
-                                                setDetailedAddress("");
-                                            }}
-                                            disabled={!selectedDistrict || isLoadingWards}
-                                            defaultLabel="Xã/Phường"
-                                        >
-                                            <SelectTrigger><SelectValue /></SelectTrigger>
+                                        <Label>
+                                            <span className="apt-req">*</span> Xã/Phường
+                                        </Label>
+                                        <Select value={selectedWard} onValueChange={setSelectedWard} defaultLabel="Xã/Phường" disabled>
+                                            <SelectTrigger>
+                                                <SelectValue />
+                                            </SelectTrigger>
                                             <SelectContent>
-                                                {wards.map((ward) => (
-                                                    <SelectItem key={ward.code} value={ward.code}>{ward.name}</SelectItem>
+                                                {wards.map((w) => (
+                                                    <SelectItem key={w.code} value={w.code}>
+                                                        {w.name}
+                                                    </SelectItem>
                                                 ))}
                                             </SelectContent>
                                         </Select>
-                                    </div>
-                                    <div className="apt-address-field">
-                                        <Label>Thôn/Xóm</Label>
-                                        <Input
-                                            value={village}
-                                            onChange={(e) => setVillage(e.target.value)}
-                                            placeholder="Thôn/Xóm"
-                                            className="apt-flex-1"
-                                        />
                                     </div>
                                 </div>
                                 <div className="apt-mt-2 apt-address-field">
                                     <Label>Số nhà, tên đường</Label>
                                     <Input
                                         value={detailedAddress}
-                                        onChange={(e) => setDetailedAddress(e.target.value)}
+                                        onChange={(e) => !isReadOnly && setDetailedAddress(e.target.value)}
                                         placeholder="Số nhà, tên đường..."
+                                        readOnly
                                     />
                                 </div>
                             </div>
                             <div>
-                                <Label><Info size={16} className="apt-mr-1" /><span className="apt-req">*</span> Triệu chứng</Label>
+                                <Label>
+                                    <Info size={16} className="apt-mr-1" />
+                                    <span className="apt-req">*</span> Triệu chứng
+                                </Label>
                                 <Textarea
                                     value={reason}
-                                    onChange={(e) => setReason(e.target.value)}
-                                    placeholder="Mô tả triệu chứng: mờ mắt, đau mắt, khô mắt..."
+                                    onChange={(e) => !isReadOnly && setReason(e.target.value)}
+                                    placeholder="Mô tả triệu chứng: mờ mắt, đau mắt, khô mắt"
+                                    readOnly={isReadOnly}
                                 />
                             </div>
                             <div className="apt-notes">
-                                <h4 className="apt-notes-ttl"><Info size={16} />Lưu ý quan trọng:</h4>
+                                <h4 className="apt-notes-ttl">
+                                    <Info size={16} /> Lưu ý quan trọng:
+                                </h4>
                                 <ul className="apt-notes-list">
-                                    <li className="apt-notes-item"><Clock size={12} /><span>Đến sớm 15 phút trước giờ hẹn</span></li>
-                                    <li className="apt-notes-item"><User size={12} /><span>Mang theo CMND/CCCD và thẻ BHYT</span></li>
-                                    <li className="apt-notes-item"><Eye size={12} /><span>Không nhỏ thuốc mắt trước khi khám</span></li>
-                                    <li className="apt-notes-item"><Info size={12} /><span>Thông báo nếu đang dùng thuốc gì</span></li>
+                                    <li className="apt-notes-item">
+                                        <Clock size={12} />
+                                        <span>Đến sớm 15 phút trước giờ hẹn</span>
+                                    </li>
+                                    <li className="apt-notes-item">
+                                        <User size={12} />
+                                        <span>Mang theo CMND/CCCD và thẻ BHYT</span>
+                                    </li>
+                                    <li className="apt-notes-item">
+                                        <Eye size={12} />
+                                        <span>Không nhỏ thuốc mắt trước khi khám</span>
+                                    </li>
+                                    <li className="apt-notes-item">
+                                        <Info size={12} />
+                                        <span>Thông báo nếu đang dùng thuốc gì</span>
+                                    </li>
                                 </ul>
                             </div>
-                            {mode === "edit" ? (
+                            {mode === "edit" && appointmentData?.status === "PENDING" ? (
                                 <div className="flex gap-3">
                                     <Button
                                         className="apt-button-primary"
@@ -711,55 +924,73 @@ export default function CreateAppointment() {
                                         disabled={
                                             !selectedDate ||
                                             !selectedTime ||
-                                            !phoneNumber ||
                                             !email ||
                                             !patientName ||
                                             !selectedProvince ||
                                             !selectedDistrict ||
-                                            !selectedWard
+                                            !selectedWard ||
+                                            !selectedService ||
+                                            !selectedDoctor ||
+                                            !validateTimeSlotAvailability()
                                         }
-                                        onClick={() => {
-                                            handleConfirmAppointment();
-                                            // Chuyển hướng sau khi xác nhận
-                                            window.location.href = "/dashboard/receptionist/appointments"; // Thay bằng đường dẫn thực tế
-                                        }}
+                                        onClick={handleConfirmAppointment}
                                     >
                                         Xác nhận cuộc hẹn
                                     </Button>
                                     <Button
                                         className="apt-button-primary"
-                                        style={{ background: "#577cf4" }}
-                                        onClick={() => {
-                                            handleCancelAppointment();
-                                            // Chuyển hướng sau khi hủy
-                                            window.location.href = "/dashboard/receptionist/appointments"; // Thay bằng đường dẫn thực tế
-                                        }}
+                                        style={{ background: "#dc3545" }}
+                                        onClick={handleCancelAppointment}
                                     >
                                         Hủy cuộc hẹn
                                     </Button>
                                 </div>
-                            ) : (
+                            ) : mode === "edit" && appointmentData?.status === "CONFIRMED" ? (
+                                <div className="flex gap-3">
+                                    <Button
+                                        className="apt-button-primary"
+                                        style={{ background: "#ffc107", color: "#000" }}
+                                        onClick={handleUnconfirmAppointment}
+                                    >
+                                        Hủy xác nhận
+                                    </Button>
+                                    <Button
+                                        className="apt-button-primary"
+                                        style={{ background: "#dc3545" }}
+                                        onClick={handleCancelAppointment}
+                                    >
+                                        Hủy lịch hẹn
+                                    </Button>
+                                </div>
+                            ) : mode === "create" ? (
                                 <Button
                                     className="apt-button-primary"
+                                    style={{ background: "#0654ef" }}
                                     disabled={
                                         !selectedDate ||
                                         !selectedTime ||
-                                        !phoneNumber ||
                                         !email ||
                                         !patientName ||
                                         !selectedProvince ||
                                         !selectedDistrict ||
-                                        !selectedWard
+                                        !selectedWard ||
+                                        !selectedService ||
+                                        !selectedDoctor ||
+                                        !validateTimeSlotAvailability()
                                     }
                                     onClick={handleCreateAppointment}
                                 >
-                                    Đặt lịch khám mắt
+                                    Tạo cuộc hẹn
                                 </Button>
+                            ) : (
+                                <div className="apt-readonly-message">
+                                    <p>Cuộc hẹn này chỉ có thể xem vì trạng thái là {appointmentData?.status}.</p>
+                                </div>
                             )}
                         </CardContent>
                     </Card>
                 </div>
             </div>
         </div>
-    );
+    )
 }

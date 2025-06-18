@@ -10,7 +10,7 @@ export default function SidebarLayout() {
     useEffect(() => {
         const path = location.pathname.split("/").pop();
         const map = {
-            "doctor-schedule": "schedule",
+            "schedule": "schedule",
             "appointments": "appointments",
             "all-appointments": "create",
             "messages": "messages",
@@ -22,7 +22,7 @@ export default function SidebarLayout() {
     const handleTabClick = (tabId) => {
         setActiveTab(tabId);
         const tabToPath = {
-            schedule: "doctor-schedule",
+            schedule: "schedule",
             appointments: "appointments",
             create: "all-appointments",
             messages: "messages",

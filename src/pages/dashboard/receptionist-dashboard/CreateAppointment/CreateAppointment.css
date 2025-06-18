@@ -653,3 +653,49 @@
 .apt-pay-note {
     margin-top: 0.25rem; /* Giảm khoảng cách phía trên note */
 }
+.apt-time-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 8px;
+    margin-top: 8px;
+}
+.apt-time {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    text-align: center;
+    cursor: pointer;
+    background-color: #fff;
+}
+.apt-time-on {
+    background-color: #007bff;
+    color: #fff;
+}
+.apt-time-hov {
+    background-color: #e9ecef;
+}
+.apt-time-off {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: #f8f9fa;
+}
+.apt-date-off {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: #f8f9fa;
+}
+.apt-date-on {
+    background-color: #007bff;
+    color: #fff;
+}
+.apt-date-hov {
+    background-color: #e9ecef;
+}
+.apt-empty {
+    text-align: center;
+    padding: 16px;
+    color: #040303;
+}
+.apt-empty-ico {
+    margin-bottom: 8px;
+}
