@@ -308,3 +308,49 @@
   outline: none; /* Loại bỏ outline */
   box-shadow: none; /* Loại bỏ shadow nếu có */
 }
+
+/* CSS cho nút đặt lịch hẹn trong header */
+.appointment-button-header {
+  background-color: #9BBAFC;
+  color: #FFFFFF;
+  font-size: 15px;
+  font-weight: bold;
+  padding: 8px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+.appointment-button-header:hover {
+  background-color: #7a9cf5;
+  transform: translateY(-2px);
+}
+
+.appointment-button-header .appointment-icon {
+  font-size: 14px;
+}
+
+/* CSS cho icon đặt lịch hẹn */
+.appointment-icon-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  font-size: 20px;
+  color: #FFFFFF;
+  margin-right: 10px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.appointment-icon-container:hover {
+  transform: scale(1.1);
+}
+
+.header-icon {
+  color: #FFFFFF;
+}

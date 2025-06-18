@@ -7,10 +7,12 @@ import {
   faUser,
   faSignOutAlt,
   faChevronDown,
+  faCalendarAlt,
 } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
 import authService from "../../services/authService";
 import { Link } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const Header = () => {
   const navigate = useNavigate();
@@ -122,6 +124,31 @@ const Header = () => {
     setDropdownOpen(!dropdownOpen);
   };
 
+  // Xử lý khi người dùng click vào nút đặt lịch hẹn
+  const handleAppointmentClick = () => {
+    // Kiểm tra người dùng đã đăng nhập chưa
+    const currentUser = authService.getCurrentUser();
+    if (!currentUser) {
+      toast.info("Vui lòng đăng nhập để đặt lịch hẹn");
+      navigate("/login");
+      return;
+    }
+
+    // Kiểm tra vai trò của người dùng
+    if (currentUser.role && currentUser.role.toLowerCase() === 'patient') {
+      // Cuộn xuống phần đặt lịch hẹn
+      const appointmentElement = document.getElementById('appointment-section');
+      if (appointmentElement) {
+        appointmentElement.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        // Nếu không tìm thấy phần tử, chuyển hướng về trang chủ
+        navigate('/#appointment-section');
+      }
+    } else {
+      toast.info("Chỉ bệnh nhân mới có thể đặt lịch hẹn");
+    }
+  };
+
   // Render dropdown portal
   const renderDropdownPortal = () => {
     if (!dropdownOpen) return null;
@@ -206,6 +233,11 @@ const Header = () => {
       <div className="row-view5">
         <div className="cart-icon">
           <FontAwesomeIcon icon={faShoppingCart} />
+        </div>
+
+        {/* Icon đặt lịch hẹn */}
+        <div className="appointment-icon-container" onClick={handleAppointmentClick}>
+          <FontAwesomeIcon icon={faCalendarAlt} className="header-icon" />
         </div>
 
         {user ? (

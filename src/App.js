@@ -18,6 +18,7 @@ import EyeServices from "./pages/servicepage/EyeServices";
 import AboutPage from "./pages/aboutPage/about";
 import ShopPage from "./pages/shoppage";
 import ProductDetail from "./pages/ProductPage";
+import PayOSReturn from "./pages/payment/PayOSReturn";
 
 
 function App() {
@@ -48,6 +49,9 @@ function App() {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/dashboard/profile" element={<ProfilePage />} />
           <Route path="/product/:id" element={<ProductDetail />} />
+          
+          {/* Route xử lý kết quả thanh toán PayOS */}
+          <Route path="/payment/payos-return" element={<PayOSReturn />} />
           
           {/* Sử dụng các route components mới */}
           <Route path="/dashboard/receptionist/*" element={<ReceptionistRoutes />} />
