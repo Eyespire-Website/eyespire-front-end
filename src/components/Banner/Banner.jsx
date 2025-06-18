@@ -2,9 +2,39 @@ import React, { useState } from "react";
 import "./Banner.css";
 import homepage_header_1 from "../../assets/homepage_header_1.jpg";
 import homepage_header_2 from "../../assets/homepage_header_2.jpg";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCalendarAlt } from "@fortawesome/free-solid-svg-icons";
+import { useNavigate } from "react-router-dom";
+import authService from "../../services/authService";
+import { toast } from "react-toastify";
 
 const Banner = () => {
-  const [searchInput, setSearchInput] = useState('');
+  const navigate = useNavigate();
+
+  // Xử lý khi người dùng click vào nút đặt lịch hẹn
+  const handleAppointmentClick = () => {
+    // Kiểm tra người dùng đã đăng nhập chưa
+    const currentUser = authService.getCurrentUser();
+    if (!currentUser) {
+      toast.info("Vui lòng đăng nhập để đặt lịch hẹn");
+      navigate("/login");
+      return;
+    }
+
+    // Kiểm tra vai trò của người dùng
+    if (currentUser.role && currentUser.role.toLowerCase() === 'patient') {
+      // Cuộn xuống phần đặt lịch hẹn
+      const appointmentElement = document.getElementById('appointment-section');
+      if (appointmentElement) {
+        appointmentElement.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        // Nếu không tìm thấy phần tử, chuyển hướng về trang chủ
+        navigate('/#appointment-section');
+      }
+    } else {
+      toast.info("Chỉ bệnh nhân mới có thể đặt lịch hẹn");
+    }
+  };
 
   return (
     <div className="row-view6">
@@ -14,14 +44,9 @@ const Banner = () => {
           {"The Best Eye Doctors & Technology"}
         </span>
         <div className="column4">
-          <input
-            placeholder={"Search Service"}
-            value={searchInput}
-            onChange={(event) => setSearchInput(event.target.value)}
-            className="input"
-          />
-          <button className="button" onClick={() => alert("Pressed!")}>
-            <span className="text8">{""}</span>
+          <button className="banner-appointment-button" onClick={handleAppointmentClick}>
+            <FontAwesomeIcon icon={faCalendarAlt} className="banner-appointment-icon" />
+            <span>Đặt lịch khám ngay</span>
           </button>
         </div>
         
