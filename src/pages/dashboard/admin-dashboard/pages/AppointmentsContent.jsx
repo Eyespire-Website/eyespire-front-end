@@ -14,6 +14,8 @@ import {
     Clock,
     X,
 } from "lucide-react"
+import "../styles/appointments.css"
+
 
 const AppointmentsContent = () => {
     const [searchTerm, setSearchTerm] = useState("")
