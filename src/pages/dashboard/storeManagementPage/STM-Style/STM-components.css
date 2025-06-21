@@ -1,0 +1,268 @@
+/* Cards */
+.card {
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+.card-hdr {
+  padding: 20px 24px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.card-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.card-content {
+  padding: 24px;
+}
+
+.card-footer {
+  padding: 16px 24px;
+  border-top: 1px solid #f1f5f9;
+  background: #f8fafc;
+}
+
+.card-hdr-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+/* Stat Cards */
+.stat-card {
+  background: white;
+  padding: 24px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.stat-hdr {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.stat-title {
+  font-size: 14px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.stat-icon {
+  width: 24px;
+  height: 24px;
+  color: #3b82f6;
+}
+
+.stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.stat-change {
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.stat-change.positive {
+  color: #059669;
+}
+
+.stat-change.negative {
+  color: #dc2626;
+}
+
+.stat-change.neutral {
+  color: #64748b;
+}
+
+/* Search Box */
+.search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-input {
+  padding: 8px 12px 8px 36px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  width: 250px;
+  transition: border-color 0.2s;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.search-input::placeholder {
+  color: #9ca3af;
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  color: #6b7280;
+  font-size: 14px;
+  pointer-events: none;
+}
+
+/* Filter Bar */
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-group label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  white-space: nowrap;
+}
+
+/* Status badges */
+.status {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.status.active {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status.inactive {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.status.pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status.confirmed {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.status.processing {
+  background: #f3e8ff;
+  color: #7c3aed;
+}
+
+.status.shipped {
+  background: #cffafe;
+  color: #0891b2;
+}
+
+.status.delivered {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status.cancelled {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.status.paid {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status.failed {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.status.warning {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 24px;
+}
+
+.page-numbers {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+/* Action Buttons */
+.action-buttons {
+  display: flex;
+  gap: 4px;
+}
+
+/* Product Image */
+.product-img {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+}
+
+/* Rating Stars */
+.stars {
+  display: flex;
+  gap: 2px;
+}
+
+.rating-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.rating-text {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.star-filled {
+  color: #fbbf24;
+}
+
+.star-empty {
+  color: #d1d5db;
+}
+
+/* No Results */
+.no-results {
+  text-align: center;
+  color: #6b7280;
+  font-style: italic;
+  padding: 20px;
+}

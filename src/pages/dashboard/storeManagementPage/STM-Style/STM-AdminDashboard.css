@@ -1,0 +1,27 @@
+/* Main layout */
+.adm-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* Main content */
+.mc {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.mc-content {
+  flex: 1;
+  padding: 32px;
+}
+
+@media (max-width: 768px) {
+  .adm-layout {
+    flex-direction: column;
+  }
+
+  .mc-content {
+    padding: 16px;
+  }
+}
