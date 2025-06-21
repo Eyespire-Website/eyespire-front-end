@@ -19,6 +19,7 @@ import AboutPage from "./pages/aboutPage/about";
 import ShopPage from "./pages/shoppage";
 import ProductDetail from "./pages/ProductPage";
 import PayOSReturn from "./pages/payment/PayOSReturn";
+import StoreManagement from "./pages/dashboard/storeManagementPage/StoreManagerDashboard";
 
 
 function App() {
@@ -49,7 +50,7 @@ function App() {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/dashboard/profile" element={<ProfilePage />} />
           <Route path="/product/:id" element={<ProductDetail />} />
-          
+          <Route path="/storeManagement" element={<StoreManagement />} />
           {/* Route xử lý kết quả thanh toán PayOS */}
           <Route path="/payment/payos-return" element={<PayOSReturn />} />
           
