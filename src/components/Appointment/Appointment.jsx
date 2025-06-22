@@ -7,7 +7,7 @@ import authService from "../../services/authService";
 import paymentService from '../../services/paymentService';
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faLock, faCalendarAlt } from "@fortawesome/free-solid-svg-icons";
+import { faLock, faCalendarAlt, faClock, faCheckCircle } from "@fortawesome/free-solid-svg-icons";
 
 const Appointment = () => {
   const navigate = useNavigate();
@@ -84,10 +84,19 @@ const Appointment = () => {
   // Lấy danh sách khung giờ trống của bác sĩ theo ngày
   useEffect(() => {
     const fetchTimeSlots = async () => {
-      if (formData.doctorId && formData.appointmentDate) {
+      if (formData.appointmentDate) {
         try {
           setLoading(true);
-          const slots = await appointmentService.getAvailableTimeSlots(formData.doctorId, formData.appointmentDate);
+          let slots;
+          
+          if (formData.doctorId) {
+            // Nếu đã chọn bác sĩ, lấy khung giờ trống của bác sĩ đó
+            slots = await appointmentService.getAvailableTimeSlots(formData.doctorId, formData.appointmentDate);
+          } else {
+            // Nếu chưa chọn bác sĩ, lấy tất cả khung giờ trống trong ngày
+            slots = await appointmentService.getAvailableTimeSlotsForDate(formData.appointmentDate);
+          }
+          
           setAvailableTimeSlots(slots);
         } catch (error) {
           console.error("Lỗi khi lấy khung giờ trống:", error);
@@ -130,15 +139,16 @@ const Appointment = () => {
     if (!formData.phone.trim()) newErrors.phone = 'Vui lòng nhập số điện thoại';
     else if (!/^[0-9]{10}$/.test(formData.phone)) newErrors.phone = 'Số điện thoại phải có 10 chữ số';
     
-    if (!formData.serviceId) newErrors.serviceId = 'Vui lòng chọn dịch vụ';
-    if (!formData.doctorId) newErrors.doctorId = 'Vui lòng chọn bác sĩ';
+    // Không bắt buộc chọn dịch vụ và bác sĩ
+    // if (!formData.serviceId) newErrors.serviceId = 'Vui lòng chọn dịch vụ';
+    // if (!formData.doctorId) newErrors.doctorId = 'Vui lòng chọn bác sĩ';
+    
     if (!formData.appointmentDate) newErrors.appointmentDate = 'Vui lòng chọn ngày khám';
     if (!formData.hourSlot) newErrors.hourSlot = 'Vui lòng chọn giờ khám';
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
   // Xử lý khi người dùng gửi form
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -184,31 +194,93 @@ const Appointment = () => {
 
   // Render time slot options
   const renderTimeSlots = () => {
-    if (!formData.doctorId || !formData.appointmentDate) {
-      return <option value="">Vui lòng chọn bác sĩ và ngày khám</option>;
+    if (!formData.appointmentDate) {
+      return (
+        <div className="time-slot-container">
+          <div className="time-slot-header">
+            <div className="time-slot-title">
+              <FontAwesomeIcon icon={faClock} />
+              <span>Khung giờ khám</span>
+            </div>
+          </div>
+          <div className="time-slot-message">Vui lòng chọn ngày khám</div>
+        </div>
+      );
     }
     
     if (loading) {
-      return <option value="">Đang tải khung giờ...</option>;
+      return (
+        <div className="time-slot-container">
+          <div className="time-slot-header">
+            <div className="time-slot-title">
+              <FontAwesomeIcon icon={faClock} />
+              <span>Khung giờ khám</span>
+            </div>
+          </div>
+          <div className="time-slot-message">Đang tải khung giờ...</div>
+        </div>
+      );
     }
     
     if (availableTimeSlots.length === 0) {
-      return <option value="">Không có khung giờ trống</option>;
+      return (
+        <div className="time-slot-container">
+          <div className="time-slot-header">
+            <div className="time-slot-title">
+              <FontAwesomeIcon icon={faClock} />
+              <span>Khung giờ khám</span>
+            </div>
+          </div>
+          <div className="time-slot-message">Không có khung giờ trống</div>
+        </div>
+      );
     }
     
+    const availableCount = availableTimeSlots.filter(slot => slot.status === "AVAILABLE").length;
+    
     return (
-      <>
-        <option value="">Chọn giờ khám</option>
-        {allTimeSlots.map(slot => (
-          <option 
-            key={slot.value} 
-            value={slot.value}
-            disabled={!isTimeSlotAvailable(slot.value)}
-          >
-            {slot.label} {!isTimeSlotAvailable(slot.value) && formData.doctorId && formData.appointmentDate ? "(Đã đặt)" : ""}
-          </option>
-        ))}
-      </>
+      <div className="time-slot-container">
+        <div className="time-slot-header">
+          <div className="time-slot-title">
+            <FontAwesomeIcon icon={faClock} />
+            <span>Chọn giờ khám</span>
+          </div>
+          <div className="time-slot-count">{availableCount} khung giờ trống</div>
+        </div>
+        <div className="time-slot-grid">
+          {allTimeSlots.map(slot => {
+            const isAvailable = isTimeSlotAvailable(slot.value);
+            const isSelected = formData.hourSlot === slot.value.toString();
+            
+            return (
+              <div 
+                key={slot.value}
+                className={`time-slot-item ${isSelected ? 'selected' : ''} ${!isAvailable ? 'unavailable' : ''}`}
+                onClick={() => {
+                  if (isAvailable) {
+                    setFormData({
+                      ...formData,
+                      hourSlot: slot.value.toString()
+                    });
+                    
+                    // Clear error when user selects
+                    if (errors.hourSlot) {
+                      setErrors({
+                        ...errors,
+                        hourSlot: ''
+                      });
+                    }
+                  }
+                }}
+              >
+                {slot.label}
+                {isSelected && <FontAwesomeIcon icon={faCheckCircle} style={{ marginLeft: '5px' }} />}
+                {!isAvailable && formData.appointmentDate && <div className="unavailable-text">Đã đặt</div>}
+              </div>
+            );
+          })}
+        </div>
+      </div>
     );
   };
 
@@ -327,7 +399,7 @@ const Appointment = () => {
                   value={formData.serviceId}
                   onChange={handleInputChange}
                 >
-                  <option value="">Chọn dịch vụ</option>
+                  <option value="">Chọn dịch vụ (không bắt buộc)</option>
                   {services.map(service => (
                     <option key={service.id} value={service.id}>
                       {service.name}
@@ -343,7 +415,7 @@ const Appointment = () => {
                   value={formData.doctorId}
                   onChange={handleInputChange}
                 >
-                  <option value="">Chọn bác sĩ</option>
+                  <option value="">Chọn bác sĩ (không bắt buộc)</option>
                   {doctors.map(doctor => (
                     <option key={doctor.id} value={doctor.id}>
                       BS. {doctor.name} - {doctor.specialization}
@@ -360,28 +432,9 @@ const Appointment = () => {
                   className="form-input" 
                 />
                 {errors.appointmentDate && <span className="error-message">{errors.appointmentDate}</span>}
-              </div>
-              <div className="form-row">
-                <select 
-                  className="form-input"
-                  name="hourSlot"
-                  value={formData.hourSlot}
-                  onChange={handleInputChange}
-                  disabled={!formData.doctorId || !formData.appointmentDate || loading}
-                >
-                  {renderTimeSlots()}
-                </select>
-                {errors.hourSlot && <span className="error-message">{errors.hourSlot}</span>}
-                <div className="form-input time-slot-info">
-                  {formData.doctorId && formData.appointmentDate ? (
-                    loading ? "Đang tải..." : (
-                      availableTimeSlots.length > 0 ? 
-                        `${availableTimeSlots.filter(slot => slot.status === "AVAILABLE").length} khung giờ trống` : 
-                        "Không có khung giờ trống"
-                    )
-                  ) : "Vui lòng chọn bác sĩ và ngày khám"}
-                </div>
-              </div>
+              </div>              
+              {renderTimeSlots()}
+              {errors.hourSlot && <span className="error-message">{errors.hourSlot}</span>}
               <textarea 
                 placeholder="Thông tin bổ sung" 
                 name="notes"
@@ -396,6 +449,13 @@ const Appointment = () => {
               >
                 {isSubmitting ? "Đang xử lý..." : "Thanh toán đặt cọc và đặt lịch"}
               </button>
+              <div className="info-note">
+                <div className="info-icon">ℹ</div>
+                <p>
+                  <strong>Lưu ý:</strong> Nếu không chọn bác sĩ, lễ tân sẽ chỉ định bác sĩ phù hợp cho bạn. 
+                  Nếu không chọn dịch vụ, bác sĩ sẽ tư vấn và chỉ định dịch vụ phù hợp khi khám.
+                </p>
+              </div>
             </form>
           )}
         </div>
