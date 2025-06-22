@@ -5,18 +5,23 @@ import appointmentService from "../../../../services/appointmentService";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import '../styles/appointmentsPatient.css';
-import { Calendar, Package, FileText, History, User, Search, Filter, ChevronDown, ChevronUp } from 'lucide-react';
+import { Calendar, Package, FileText, History, User, Search, Filter, ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export default function AppointmentsPage() {
     const navigate = useNavigate();
     const [user, setUser] = useState(null);
     const [appointments, setAppointments] = useState([]);
-
-    const [activeTab, setActiveTab] = useState("all");
-    const [searchQuery, setSearchQuery] = useState("");
-    const [sortOrder, setSortOrder] = useState("newest");
     const [expandedAppointments, setExpandedAppointments] = useState({});
+    const [activeTab, setActiveTab] = useState("all");
+    const [sortOrder, setSortOrder] = useState("newest");
+    const [searchQuery, setSearchQuery] = useState("");
     const [loading, setLoading] = useState(true);
+    
+    // State cho hộp thoại hủy lịch
+    const [showCancelDialog, setShowCancelDialog] = useState(false);
+    const [selectedAppointment, setSelectedAppointment] = useState(null);
+    const [cancellationReason, setCancellationReason] = useState("");
+    const [cancellationInfo, setCancellationInfo] = useState(null);
 
     useEffect(() => {
         fetchUserData();
@@ -87,10 +92,13 @@ export default function AppointmentsPage() {
                     status: mapAppointmentStatus(appointment.status),
                     reason: appointment.reason || "Không có thông tin",
                     notes: appointment.notes || "Quý khách vui lòng tới trước giờ hẹn 15 phút!",
-                    canCancel: appointment.status === "SCHEDULED" || appointment.status === "CONFIRMED",
+                    canCancel: mapAppointmentStatus(appointment.status) === "pending" || mapAppointmentStatus(appointment.status) === "confirmed",
                     location: appointment.location || "Trung tâm Mắt EyeSpire",
                     room: appointment.room || "Phòng 101",
-                    duration: appointment.duration || "30 phút"
+                    duration: appointment.duration || "30 phút",
+                    cancellationTime: appointment.cancellationTime || null,
+                    cancellationReason: appointment.cancellationReason || "",
+                    appointmentTime: appointment.appointmentTime
                 };
             });
             
@@ -110,9 +118,16 @@ export default function AppointmentsPage() {
     
     // Hàm hỗ trợ định dạng giờ
     const formatTime = (date) => {
-        return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+        return date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
     };
-    
+
+    // Hàm định dạng thời gian hủy lịch
+    const formatCancellationTime = (date) => {
+        if (!date) return "N/A";
+        const d = new Date(date);
+        return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()} ${d.getHours()}:${d.getMinutes() < 10 ? '0' + d.getMinutes() : d.getMinutes()}`;
+    };
+
     // Chuyển đổi trạng thái từ API sang định dạng hiển thị
     const mapAppointmentStatus = (status) => {
         switch (status) {
@@ -122,8 +137,12 @@ export default function AppointmentsPage() {
                 return "confirmed";
             case "COMPLETED":
                 return "completed";
+            case "CANCELED":
+                return "cancelled";
             case "CANCELLED":
                 return "cancelled";
+            case "NO_SHOW":
+                return "no-show";
             default:
                 return "pending";
         }
@@ -194,11 +213,41 @@ export default function AppointmentsPage() {
         }));
     };
 
-    const handleCancelAppointment = async (appointmentId) => {
+    const openCancelDialog = (appointment) => {
+        setSelectedAppointment(appointment);
+        setShowCancelDialog(true);
+        setCancellationReason("");
+        
+        // Tính toán chính sách hoàn tiền
+        const appointmentDateTime = appointment.appointmentTime || `${appointment.date} ${appointment.time}`;
+        const now = new Date();
+        const refundPolicy = calculateRefundPolicy(new Date(appointmentDateTime), now);
+        setCancellationInfo(refundPolicy);
+    };
+    
+    const closeCancelDialog = () => {
+        setShowCancelDialog(false);
+        setSelectedAppointment(null);
+        setCancellationReason("");
+        setCancellationInfo(null);
+    };
+
+    const handleCancelAppointment = async () => {
+        if (!selectedAppointment || !cancellationReason.trim()) {
+            toast.error("Vui lòng nhập lý do hủy lịch!");
+            return;
+        }
+        
         try {
-            await appointmentService.cancelAppointment(appointmentId);
+            const now = new Date();
+            await appointmentService.cancelAppointment(
+                selectedAppointment.id, 
+                cancellationReason,
+                now.toISOString()
+            );
+            
             toast.success("Hủy lịch hẹn thành công!");
-            // Cập nhật lại danh sách cuộc hẹn
+            closeCancelDialog();
             await fetchAppointments();
         } catch (error) {
             console.error("Lỗi khi hủy lịch hẹn:", error);
@@ -219,26 +268,36 @@ export default function AppointmentsPage() {
         navigate(`/patient/${route}`);
     };
 
+        // Hàm tính toán chính sách hoàn tiền dựa trên thời gian hủy
+        const calculateRefundPolicy = (appointmentDate, cancellationTime) => {
+            if (!appointmentDate || !cancellationTime) return null;
+            
+            const appointmentTime = new Date(appointmentDate).getTime();
+            const cancelTime = new Date(cancellationTime).getTime();
+            const hoursDifference = (appointmentTime - cancelTime) / (1000 * 60 * 60);
+            
+            return {
+                isRefundable: hoursDifference >= 24,
+                hoursRemaining: Math.floor(hoursDifference)
+            };
+        };
+
     return (
         <div className="main-content" style={{ margin: 0, width: '100%', boxSizing: 'border-box' }}>
             <ToastContainer />
             <div className="content-header">
-                <h1>Lịch hẹn của tôi</h1>
+                <h1>Danh sách cuộc hẹn</h1>
                 <div className="header-actions">
                     <div className="search-container">
                         <Search className="search-icon" size={18} />
                         <input
                             type="text"
-                            placeholder="Tìm kiếm lịch hẹn..."
+                            placeholder="Tìm cuộc hẹn (Tên dịch vụ, bác sĩ...)"
                             className="search-input"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>
-                    <button className="filter-button" onClick={() => setSortOrder(sortOrder === "newest" ? "oldest" : "newest")}>
-                        <Filter size={16} />
-                        <span>{sortOrder === "newest" ? "Mới nhất" : "Cũ nhất"}</span>
-                    </button>
                 </div>
             </div>
 
@@ -288,87 +347,147 @@ export default function AppointmentsPage() {
                         <p>Không có cuộc hẹn nào</p>
                     </div>
                 ) : (
-                    <div className="appointments-list">
-                        {getFilteredAppointments().map((appointment) => (
-                            <div key={appointment.id} className="appointment-card">
-                                <div className="appointment-header">
-                                    <div className="appointment-info">
-                                        <div className="appointment-icon-container">
-                                            {getAppointmentIcon(appointment.status)}
-                                        </div>
-                                        <div className="appointment-details">
-                                            <h3 className="appointment-title">
-                                                {appointment.service}
-                                            </h3>
-                                            <div className="appointment-meta">
-                                                <span className="appointment-id">Mã cuộc hẹn: #{appointment.id}</span>
-                                                <span className="appointment-datetime">
-                                                    {appointment.date} - {appointment.time}
-                                                </span>
-                                            </div>
-                                            <div className="appointment-doctor">
-                                                <span className="doctor-label">Bác sĩ:</span>
-                                                <span className="doctor-name">{appointment.doctor}</span>
-                                            </div>
-                                            <div className="appointment-status-row">
-                                                <span className="status-label">Trạng thái:</span>
-                                                {getStatusBadge(appointment.status)}
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="appointment-actions">
-                                        <button
-                                            className="expand-button"
-                                            onClick={() => toggleAppointmentExpansion(appointment.id)}
-                                        >
-                                            {expandedAppointments[appointment.id] ? (
-                                                <ChevronUp size={20} />
-                                            ) : (
-                                                <ChevronDown size={20} />
-                                            )}
+                    <div className="table-container">
+                        <table className="appointments-table">
+                            <thead>
+                                <tr>
+                                    <th className="column-id">#</th>
+                                    <th className="column-service">Tên dịch vụ</th>
+                                    <th className="column-date">
+                                        Ngày hẹn
+                                        <button className="sort-button" onClick={() => setSortOrder(sortOrder === "newest" ? "oldest" : "newest")}>
+                                            {sortOrder === "newest" ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                                         </button>
-                                    </div>
-                                </div>
-
-                                {expandedAppointments[appointment.id] && (
-                                    <div className="appointment-expanded">
-                                        <div className="appointment-details-grid">
-                                            <div className="detail-row">
-                                                <span className="detail-label">Lý do khám:</span>
-                                                <span className="detail-value">{appointment.notes}</span>
-                                            </div>
-                                            <div className="detail-row">
-                                                <span className="detail-label">Địa chỉ khám:</span>
-                                                <span className="detail-value">{appointment.location}</span>
-                                            </div>
-                                            <div className="detail-row">
-                                                <span className="detail-label">Phòng khám:</span>
-                                                <span className="detail-value">{appointment.room}</span>
-                                            </div>
-                                            <div className="detail-row">
-                                                <span className="detail-label">Thời gian dự kiến:</span>
-                                                <span className="detail-value">{appointment.duration}</span>
-                                            </div>
-                                        </div>
-
-                                        {appointment.canCancel && (
-                                            <div className="appointment-actions-expanded">
+                                    </th>
+                                    <th className="column-doctor">Bác sĩ</th>
+                                    <th className="column-status">Trạng thái cuộc hẹn</th>
+                                    <th className="column-notes">Lý do khám</th>
+                                    <th className="column-actions">Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {getFilteredAppointments().map((appointment, index) => (
+                                    <tr key={appointment.id} className={`appointment-row ${appointment.status}`}>
+                                        <td className="column-id">{index + 1}</td>
+                                        <td className="column-service">{appointment.service}</td>
+                                        <td className="column-date">{appointment.date} - {appointment.time}</td>
+                                        <td className="column-doctor">{appointment.doctor}</td>
+                                        <td className="column-status">{getStatusBadge(appointment.status)}</td>
+                                        <td className="column-notes">{appointment.notes}</td>
+                                        <td className="column-actions">
+                                            {appointment.canCancel && (
                                                 <button
                                                     className="cancel-button"
-                                                    onClick={() => handleCancelAppointment(appointment.id)}
+                                                    onClick={() => openCancelDialog(appointment)}
+                                                    disabled={loading}
                                                 >
-                                                    Hủy cuộc hẹn
+                                                    Hủy lịch
                                                 </button>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
+                                            )}
+                                            {appointment.status === "cancelled" && (
+                                                <div className="cancellation-info">
+                                                    <span className="cancellation-time">
+                                                        Đã hủy: {formatCancellationTime(appointment.cancellationTime || new Date())}
+                                                    </span>
+                                                </div>
+                                            )}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                        
+                        <div className="pagination-container">
+                            <div className="pagination-controls">
+                                <button className="pagination-button">
+                                    <ChevronLeft size={16} />
+                                </button>
+                                <span className="pagination-current">1</span>
+                                <button className="pagination-button">
+                                    <ChevronRight size={16} />
+                                </button>
                             </div>
-                        ))}
+                            <div className="pagination-info">
+                                <span>10 / page</span>
+                            </div>
+                        </div>
                     </div>
                 )}
             </div>
+            
+            {/* Hộp thoại xác nhận hủy lịch */}
+            {showCancelDialog && selectedAppointment && (
+                <div className="modal-overlay">
+                    <div className="modal-container">
+                        <div className="modal-header">
+                            <h3>Xác nhận hủy lịch hẹn</h3>
+                            <button className="close-button" onClick={closeCancelDialog}>×</button>
+                        </div>
+                        <div className="modal-body">
+                            <div className="appointment-info-box">
+                                <div className="info-row">
+                                    <span className="info-label">Dịch vụ:</span>
+                                    <span className="info-value">{selectedAppointment.service}</span>
+                                </div>
+                                <div className="info-row">
+                                    <span className="info-label">Ngày giờ:</span>
+                                    <span className="info-value">
+                                        {selectedAppointment.date} - {selectedAppointment.time}
+                                    </span>
+                                </div>
+                                <div className="info-row">
+                                    <span className="info-label">Bác sĩ:</span>
+                                    <span className="info-value">{selectedAppointment.doctor}</span>
+                                </div>
+                            </div>
+                            
+                            {cancellationInfo && (
+                                <div className={`refund-policy-alert ${cancellationInfo.isRefundable ? 'refund-yes' : 'refund-no'}`}>
+                                    <h4>Chính sách hoàn tiền:</h4>
+                                    {cancellationInfo.isRefundable ? (
+                                        <p>
+                                            <strong>Hoàn tiền 100%</strong> - Bạn hủy lịch {cancellationInfo.hoursRemaining} giờ trước lịch hẹn 
+                                            (hơn 24 giờ trước lịch hẹn).
+                                        </p>
+                                    ) : (
+                                        <p>
+                                            <strong>Không hoàn tiền</strong> - Bạn hủy lịch quá gần thời gian hẹn 
+                                            (dưới 24 giờ trước lịch hẹn).
+                                        </p>
+                                    )}
+                                </div>
+                            )}
+                            
+                            <div className="form-group">
+                                <label htmlFor="cancellationReason">Lý do hủy lịch:</label>
+                                <textarea 
+                                    id="cancellationReason"
+                                    value={cancellationReason}
+                                    onChange={(e) => setCancellationReason(e.target.value)}
+                                    placeholder="Vui lòng nhập lý do hủy lịch..."
+                                    rows={4}
+                                    required
+                                />
+                            </div>
+                        </div>
+                        <div className="modal-footer">
+                            <button 
+                                className="cancel-button-secondary" 
+                                onClick={closeCancelDialog}
+                            >
+                                Quay lại
+                            </button>
+                            <button 
+                                className="cancel-button-primary" 
+                                onClick={handleCancelAppointment}
+                                disabled={!cancellationReason.trim()}
+                            >
+                                Xác nhận hủy
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

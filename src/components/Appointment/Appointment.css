@@ -92,11 +92,13 @@
   border-radius: 5px;
   font-size: 14px;
   outline: none;
-  transition: border-color 0.3s;
+  transition: all 0.3s;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
 .form-input:focus {
   border-color: #03246B;
+  box-shadow: 0 2px 8px rgba(3, 36, 107, 0.15);
 }
 
 .form-input.error {
@@ -133,7 +135,10 @@
   justify-content: center;
   color: #555;
   font-size: 14px;
-  background-color: #f8f9fa;
+  background-color: #f1f8ff;
+  border-left: 3px solid #3A80D2;
+  font-weight: 500;
+  padding-left: 10px;
 }
 
 .appointment-button {
@@ -287,6 +292,113 @@
   box-shadow: 0 5px 15px rgba(58, 128, 210, 0.3);
 }
 
+/* Thêm CSS cho phần chọn khung giờ */
+.time-slot-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.time-slot-item {
+  padding: 10px;
+  text-align: center;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s;
+  background-color: #fff;
+}
+
+.time-slot-item:hover {
+  border-color: #3A80D2;
+  background-color: #f1f8ff;
+}
+
+.time-slot-item.selected {
+  background-color: #03246B;
+  color: white;
+  border-color: #03246B;
+}
+
+.time-slot-item.unavailable {
+  background-color: #f8f9fa;
+  color: #aaa;
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+
+.time-slot-container {
+  margin-top: 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 15px;
+  background-color: #fff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.time-slot-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.time-slot-title {
+  font-weight: 600;
+  color: #03246B;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+}
+
+.time-slot-title svg {
+  margin-right: 8px;
+}
+
+.time-slot-count {
+  background-color: #03246B;
+  color: white;
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Cải thiện select dropdown cho khung giờ */
+select[name="hourSlot"] {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2303246B' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: calc(100% - 15px) center;
+  padding-right: 35px !important;
+}
+
+select[name="hourSlot"]:focus {
+  border-color: #03246B;
+}
+
+select[name="hourSlot"] option {
+  padding: 10px;
+}
+
+select[name="hourSlot"] option:disabled {
+  color: #aaa;
+  background-color: #f8f9fa;
+}
+
+/* Cải thiện input date */
+input[type="date"] {
+  position: relative;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2303246B' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z'/%3E%3C/svg%3E");
+  cursor: pointer;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .appointment-content {
@@ -296,5 +408,193 @@
   .form-row {
     flex-direction: column;
     gap: 10px;
+  }
+  
+  .time-slot-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .time-slot-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* CSS cho dialog xác nhận thanh toán */
+.appointment-section {
+  position: relative;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-container {
+  background-color: white;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+  animation: modalFadeIn 0.3s ease;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.modal-header h3 {
+  margin: 0;
+  color: #03246B;
+  font-size: 20px;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+  padding: 0;
+  line-height: 1;
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.appointment-summary {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 15px;
+  margin: 15px 0;
+}
+
+.appointment-summary p {
+  margin: 8px 0;
+  font-size: 14px;
+}
+
+.appointment-summary strong {
+  color: #03246B;
+}
+
+.payment-info {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px dashed #ddd;
+}
+
+.payment-info .note {
+  font-size: 13px;
+  color: #666;
+  font-style: italic;
+  margin-top: 5px;
+}
+
+.policy-note {
+  font-size: 13px;
+  color: #555;
+  margin: 15px 0;
+  text-align: center;
+  padding: 12px;
+  background-color: #f1f8ff;
+  border-radius: 5px;
+  border-left: 3px solid #3A80D2;
+}
+
+.text-link {
+  color: #3A80D2;
+  text-decoration: underline;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.text-link:hover {
+  color: #03246B;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 15px 20px;
+  border-top: 1px solid #eee;
+  gap: 10px;
+}
+
+.cancel-button {
+  background-color: #f1f1f1;
+  color: #333;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.3s;
+}
+
+.cancel-button:hover {
+  background-color: #e1e1e1;
+}
+
+.confirm-button {
+  background-color: #03246B;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.3s;
+}
+
+.confirm-button:hover {
+  background-color: #021d54;
+}
+
+.confirm-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+/* Responsive cho modal */
+@media (max-width: 576px) {
+  .modal-container {
+    width: 95%;
+  }
+  
+  .modal-footer {
+    flex-direction: column;
+  }
+  
+  .cancel-button,
+  .confirm-button {
+    width: 100%;
   }
 }

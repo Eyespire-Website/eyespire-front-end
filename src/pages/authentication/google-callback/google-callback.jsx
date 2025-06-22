@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import authService from '../../../services/authService';
 import './google-callback.css';
@@ -8,9 +8,17 @@ export default function GoogleCallback() {
     const [error, setError] = useState('');
     const navigate = useNavigate();
     const location = useLocation();
+    const isProcessingRef = useRef(false);
 
     useEffect(() => {
         const processGoogleCallback = async () => {
+            // Ngăn chặn xử lý trùng lặp
+            if (isProcessingRef.current) {
+                return;
+            }
+            
+            isProcessingRef.current = true;
+            
             try {
                 // Lấy code từ URL parameters
                 const queryParams = new URLSearchParams(location.search);
@@ -19,25 +27,27 @@ export default function GoogleCallback() {
                 if (!code) {
                     setError('Không nhận được mã xác thực từ Google');
                     setLoading(false);
+                    isProcessingRef.current = false;
                     return;
                 }
 
-                // Gửi code đến backend để xác thực và lưu kết quả trả về
+                // Gửi code đến backend để xác thực
                 const result = await authService.handleGoogleCallback(code);
                 
-                // Kiểm tra kết quả trả về trước khi chuyển hướng
-                if (result) {
+                // Chỉ chuyển hướng khi đăng nhập thành công
+                if (result && result.id) {
                     // Chuyển hướng đến trang chủ sau khi đăng nhập thành công
                     navigate('/');
                 } else {
-                    // Nếu không có kết quả trả về, hiển thị lỗi
+                    // Nếu không có kết quả hợp lệ, hiển thị lỗi
                     setError('Đăng nhập bằng Google thất bại. Vui lòng thử lại.');
                     setLoading(false);
                 }
             } catch (error) {
                 console.error('Google login error:', error);
-                setError('Đăng nhập bằng Google thất bại. Vui lòng thử lại.');
+                setError('Đăng nhập bằng Google thất bại: ' + (error.response?.data || error.message));
                 setLoading(false);
+                isProcessingRef.current = false;
             }
         };
 
