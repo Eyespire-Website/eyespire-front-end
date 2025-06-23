@@ -23,6 +23,10 @@
     align-items: center;
     gap: 16px;
 }
+.day-apt-status.canceled {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
 
 .date-picker-container {
     display: flex;

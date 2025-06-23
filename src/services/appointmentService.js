@@ -122,7 +122,28 @@ const appointmentService = {
       console.error('Lỗi khi hủy lịch hẹn:', error);
       throw error;
     }
-  }
+  },
+  getAppointmentsByPatientId: async (patientId) => {
+    try {
+      const response = await axiosInstance.get(`/appointments/patient/${patientId}`)
+      return response.data
+    } catch (error) {
+      console.error("Lỗi khi lấy danh sách lịch hẹn theo patient ID:", error)
+      throw error
+    }
+  },
+
+  getAllAppointments: async () => {
+    try {
+      const response = await axiosInstance.get("/appointments")
+      return response.data
+    } catch (error) {
+      console.error("Lỗi khi lấy tất cả lịch hẹn:", error)
+      throw error
+    }
+  },
+
 };
+
 
 export default appointmentService;

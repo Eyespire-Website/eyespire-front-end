@@ -1,359 +1,444 @@
-/* Container chính */
-.appointment-list-by-customer {
-    padding: 24px;
-    background-color: #f1f5f9;
+.customer-appointments-detail {
+    padding: 16px; /* Giảm từ 20px */
+    background-color: #f8fafc;
     min-height: 100vh;
 }
 
-/* Back button */
-.appointment-list-by-customer__back-button {
+.customer-appointments-detail__header {
+    margin-bottom: 20px; /* Giảm từ 24px */
+}
+
+.customer-appointments-detail__header-top {
     margin-bottom: 16px;
+}
+
+.customer-appointments-detail__back-button {
     display: flex;
     align-items: center;
-    color: #2563eb;
+    gap: 6px; /* Giảm từ 8px */
+    color: #3b82f6;
     background: none;
     border: none;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 13px; /* Giảm từ 14px */
     font-weight: 500;
     transition: all 0.2s ease;
-    padding: 8px 0;
+    padding: 6px 10px; /* Giảm từ 8px 12px */
+    border-radius: 6px;
 }
 
-.appointment-list-by-customer__back-button:hover {
-    color: #1d4ed8;
-    text-decoration: underline;
+.customer-appointments-detail__back-button:hover {
+    background-color: #eff6ff;
+    color: #2563eb;
 }
 
-.appointment-list-by-customer__back-icon {
+.customer-appointments-detail__back-button:focus {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+}
+
+.customer-appointments-detail__back-icon {
     width: 16px;
     height: 16px;
-    margin-right: 4px;
 }
 
-/* Title */
-.appointment-list-by-customer__title {
-    font-size: 24px;
-    font-weight: 600;
+.customer-appointments-detail__header-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px; /* Giảm từ 20px */
+}
+
+.customer-appointments-detail__title {
+    font-size: 24px; /* Giảm từ 28px */
+    font-weight: 700;
     color: #1e293b;
-    margin-bottom: 16px;
-    line-height: 1.2;
-}
-
-/* No data message */
-.appointment-list-by-customer__no-data {
-    color: #6b7280;
-    font-size: 16px;
-    text-align: center;
-    padding: 40px 20px;
-    background-color: white;
-    border-radius: 12px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     margin: 0;
 }
 
-/* Table container */
-.appointment-list-by-customer__table-container {
-    background-color: white;
-    border-radius: 12px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
+.customer-appointments-detail__search-container {
+    flex: 1;
+    max-width: 350px; /* Giảm từ 400px */
 }
 
-/* Table */
-.appointment-list-by-customer__table {
+.customer-appointments-detail__search-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.customer-appointments-detail__search-icon {
+    position: absolute;
+    left: 12px; /* Giảm từ 14px */
+    color: #64748b;
+    z-index: 1;
+    width: 16px; /* Giảm từ 18px */
+    height: 16px; /* Giảm từ 18px */
+}
+
+.customer-appointments-detail__search-input {
     width: 100%;
-    border-collapse: collapse;
-    font-size: 14px;
+    padding: 10px 10px 10px 40px; /* Giảm từ 12px 12px 12px 44px */
+    border: 2px solid #e2e8f0;
+    border-radius: 8px; /* Giảm từ 10px */
+    font-size: 14px; /* Giảm từ 15px */
+    background-color: white;
+    transition: all 0.3s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-/* Table head */
-.appointment-list-by-customer__table-head {
-    background-color: #f1f5f9;
+.customer-appointments-detail__search-input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+    transform: translateY(-1px);
 }
 
-.appointment-list-by-customer__table-head th {
+.customer-appointments-detail__table-container {
+    background-color: white;
+    border-radius: 12px; /* Giảm từ 14px */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+    margin-bottom: 16px; /* Giảm từ 20px */
+}
+
+.customer-appointments-detail__table-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 16px 20px; /* Giảm từ 20px 24px */
+}
+
+.customer-appointments-detail__table-header-content {
+    display: flex;
+    align-items: center;
+    gap: 12px; /* Giảm từ 16px */
+}
+
+.customer-appointments-detail__table-header-icon {
+    color: white;
+    width: 20px; /* Giảm từ 22px */
+    height: 20px; /* Giảm từ 22px */
+}
+
+.customer-appointments-detail__table-header-text {
+    color: white;
+    font-weight: 600;
+    font-size: 16px; /* Giảm từ 18px */
+    letter-spacing: 0.3px; /* Giảm từ 0.4px */
+}
+
+.customer-appointments-detail__table-wrapper {
+    overflow-x: auto;
+}
+
+.customer-appointments-detail__table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.customer-appointments-detail__table-head {
+    background-color: #f8fafc;
+    padding: 12px 16px; /* Giảm từ 16px 20px */
     text-align: left;
-    padding: 8px 16px;
     font-weight: 600;
     color: #374151;
-    border-bottom: 1px solid #e5e7eb;
-    font-size: 14px;
+    border-bottom: 2px solid #e5e7eb;
+    white-space: nowrap;
+    font-size: 13px; /* Giảm từ 14px */
+    text-transform: uppercase;
+    letter-spacing: 0.5px; /* Giảm từ 0.6px */
 }
 
-/* Table body */
-.appointment-list-by-customer__table tbody tr {
-    border-bottom: 1px solid #f3f4f6;
-    transition: background-color 0.2s ease;
-}
-
-.appointment-list-by-customer__table tbody tr:hover {
-    background-color: #f1f5f9;
-}
-
-.appointment-list-by-customer__table tbody tr:last-child {
-    border-bottom: none;
-}
-
-/* Table cells */
-.appointment-list-by-customer__table td {
-    padding: 8px 16px;
-    color: #374151;
-    vertical-align: top;
-    line-height: 1.4;
-}
-
-/* Reason cell - special styling for long text */
-.appointment-list-by-customer__reason-cell {
-    max-width: 300px;
-    white-space: normal;
-    word-wrap: break-word;
-    line-height: 1.5;
-}
-
-/* Status badges */
-.appointment-list-by-customer__status-badge {
-    display: inline-block;
-    padding: 4px 12px;
-    border-radius: 9999px; /* rounded-full */
-    font-size: 12px;
-    font-weight: 500;
+.customer-appointments-detail__table-head--number {
+    width: 60px; /* Giảm từ 70px */
     text-align: center;
-    border: 1px solid;
-    min-width: 80px;
 }
 
-/* Status badge variants */
-.appointment-list-by-customer__status-badge--confirmed {
-    background-color: #dcfce7; /* bg-green-100 */
-    color: #166534; /* text-green-800 */
-    border-color: #bbf7d0; /* border-green-300 */
+.customer-appointments-detail__table-row {
+    transition: all 0.2s ease;
+    border-bottom: 1px solid #f1f5f9;
 }
 
-.appointment-list-by-customer__status-badge--completed {
-    background-color: #dbeafe; /* bg-blue-100 */
-    color: #1e40af; /* text-blue-800 */
-    border-color: #bfdbfe; /* border-blue-300 */
+.customer-appointments-detail__table-row:hover {
+    background-color: #f8fafc;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-.appointment-list-by-customer__status-badge--cancelled {
-    background-color: #fee2e2; /* bg-red-100 */
-    color: #991b1b; /* text-red-800 */
-    border-color: #fecaca; /* border-red-300 */
+.customer-appointments-detail__table-cell {
+    padding: 12px 16px; /* Giảm từ 16px 20px */
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+    font-size: 13px; /* Giảm từ 14px */
+    line-height: 1.4; /* Giảm từ 1.5 */
 }
 
-/* Loading state */
-.appointment-list-by-customer__loading {
+.customer-appointments-detail__table-cell:first-child {
+    text-align: center;
+    font-weight: 600;
+    color: #6b7280;
+}
+
+.customer-appointments-detail__icon-text {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.customer-appointments-detail__icon {
+    width: 16px;
+    height: 16px;
+    color: #9ca3af;
+    flex-shrink: 0;
+}
+
+.customer-appointments-detail__service-name {
+    font-weight: 500;
+    color: #1f2937;
+}
+
+.customer-appointments-detail__status-badge {
+    display: inline-block;
+    padding: 4px 12px; /* Giảm từ 5px 14px */
+    border-radius: 20px; /* Giảm từ 22px */
+    font-size: 11px; /* Giảm từ 12px */
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px; /* Giảm từ 0.4px */
+}
+
+.customer-appointments-status-pending {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+.customer-appointments-status-confirmed {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+.customer-appointments-status-cancelled {
+    background-color: #fecaca;
+    color: #dc2626;
+}
+
+.customer-appointments-status-completed {
+    background-color: #d1fae5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+}
+
+.customer-appointments-status-unknown {
+    background-color: #f3f4f6;
+    color: #6b7280;
+}
+
+.customer-appointments-detail__reason-text {
+    max-width: 200px; /* Giảm từ 250px */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #6b7280;
+    font-size: 12px; /* Giảm từ 13px */
+}
+
+.customer-appointments-detail__no-results {
+    text-align: center;
+    padding: 64px 32px;
+    color: #6b7280;
+    font-style: italic;
+    font-size: 16px;
+    background-color: #f9fafb;
+}
+
+.customer-appointments-detail__pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px; /* Giảm từ 20px 24px */
+    background-color: white;
+    border-radius: 8px; /* Giảm từ 10px */
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin-top: 16px; /* Giảm từ 20px */
+}
+
+.customer-appointments-detail__pagination-info {
+    color: #6b7280;
+    font-size: 13px; /* Giảm từ 14px */
+    font-weight: 500;
+}
+
+.customer-appointments-detail__pagination-controls {
+    display: flex;
+    gap: 8px; /* Giảm từ 10px */
+    align-items: center;
+}
+
+.customer-appointments-detail__pagination-button {
+    padding: 8px 14px; /* Giảm từ 10px 16px */
+    border: 2px solid #e5e7eb;
+    background-color: white;
+    color: #374151;
+    border-radius: 6px; /* Giảm từ 7px */
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 12px; /* Giảm từ 13px */
+    font-weight: 600;
+    min-width: 36px; /* Giảm từ 40px */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.customer-appointments-detail__pagination-button:hover:not(:disabled) {
+    background-color: #f3f4f6;
+    border-color: #9ca3af;
+    transform: translateY(-1px);
+}
+
+.customer-appointments-detail__pagination-button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.customer-appointments-detail__pagination-button--active {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    color: white;
+    border-color: #3b82f6;
+    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+}
+
+/* Loading States */
+.customer-appointments-detail__loading {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 60px 20px;
-    color: #64748b;
-    background-color: white;
-    border-radius: 12px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    min-height: 500px;
+    gap: 24px;
 }
 
-.appointment-list-by-customer__loading-icon {
-    width: 24px;
-    height: 24px;
-    margin-bottom: 12px;
+.customer-appointments-detail__spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid #f3f4f6;
+    border-top: 4px solid #3b82f6;
+    border-radius: 50%;
     animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
-    from {
+    0% {
         transform: rotate(0deg);
     }
-    to {
+    100% {
         transform: rotate(360deg);
     }
 }
 
-.appointment-list-by-customer__loading-text {
-    font-size: 14px;
-    color: #64748b;
-}
-
-/* Error state */
-.appointment-list-by-customer__error {
-    background-color: white;
-    border-radius: 12px;
-    padding: 40px 20px;
-    text-align: center;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    margin-top: 20px;
-}
-
-.appointment-list-by-customer__error-message {
-    color: #dc2626;
+.customer-appointments-detail__loading p {
     font-size: 16px;
-    margin-bottom: 16px;
-    line-height: 1.5;
-}
-
-.appointment-list-by-customer__retry-button {
-    background-color: #3b82f6;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 14px;
+    color: #6b7280;
     font-weight: 500;
-    transition: background-color 0.2s ease;
 }
 
-.appointment-list-by-customer__retry-button:hover {
-    background-color: #2563eb;
+/* Responsive design */
+@media (max-width: 1024px) {
+    .customer-appointments-detail {
+        padding: 18px;
+    }
+
+    .customer-appointments-detail__table-cell {
+        padding: 14px 18px;
+    }
+
+    .customer-appointments-detail__pagination {
+        padding: 18px 22px;
+    }
 }
 
-/* Table header info */
-.appointment-list-by-customer__table-header {
-    background-color: #f8fafc;
-    padding: 12px 16px;
-    border-bottom: 1px solid #e5e7eb;
-    font-size: 14px;
-    font-weight: 500;
-    color: #374151;
-}
-
-/* Responsive Design */
 @media (max-width: 768px) {
-    .appointment-list-by-customer {
+    .customer-appointments-detail {
         padding: 16px;
     }
 
-    .appointment-list-by-customer__title {
-        font-size: 20px;
-        margin-bottom: 12px;
+    .customer-appointments-detail__header-main {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 18px;
     }
 
-    .appointment-list-by-customer__table-container {
-        overflow-x: auto;
+    .customer-appointments-detail__title {
+        font-size: 26px;
+        text-align: center;
     }
 
-    .appointment-list-by-customer__table {
-        min-width: 600px;
+    .customer-appointments-detail__search-container {
+        max-width: none;
     }
 
-    .appointment-list-by-customer__table-head th {
-        padding: 6px 12px;
-        font-size: 12px;
+    .customer-appointments-detail__table-wrapper {
+        overflow-x: scroll;
     }
 
-    .appointment-list-by-customer__table td {
-        padding: 6px 12px;
+    .customer-appointments-detail__table-cell {
+        padding: 14px 12px;
         font-size: 13px;
     }
 
-    .appointment-list-by-customer__reason-cell {
-        max-width: 200px;
+    .customer-appointments-detail__pagination {
+        flex-direction: column;
+        gap: 18px;
+        align-items: stretch;
+        padding: 18px;
+    }
+
+    .customer-appointments-detail__pagination-controls {
+        justify-content: center;
+    }
+
+    .customer-appointments-detail__pagination-button {
+        padding: 9px 15px;
         font-size: 12px;
-    }
-
-    .appointment-list-by-customer__status-badge {
-        font-size: 11px;
-        padding: 3px 8px;
-        min-width: 70px;
-    }
-
-    .appointment-list-by-customer__no-data {
-        padding: 30px 15px;
-        font-size: 14px;
     }
 }
 
 @media (max-width: 480px) {
-    .appointment-list-by-customer {
-        padding: 12px;
+    .customer-appointments-detail__table-head,
+    .customer-appointments-detail__table-cell {
+        padding: 12px 10px;
+        font-size: 12px;
     }
 
-    .appointment-list-by-customer__title {
-        font-size: 18px;
+    .customer-appointments-detail__pagination-button {
+        padding: 8px 12px;
+        min-width: 36px;
     }
 
-    .appointment-list-by-customer__table {
-        min-width: 500px;
-    }
-
-    .appointment-list-by-customer__reason-cell {
+    .customer-appointments-detail__reason-text {
         max-width: 150px;
     }
 }
 
-/* Print styles */
-@media print {
-    .appointment-list-by-customer {
-        background-color: white;
-        padding: 20px;
-    }
-
-    .appointment-list-by-customer__back-button {
-        display: none;
-    }
-
-    .appointment-list-by-customer__table-container {
-        box-shadow: none;
-        border: 1px solid #e5e7eb;
-    }
-
-    .appointment-list-by-customer__table tbody tr:hover {
-        background-color: transparent;
-    }
+/* Hover effects for better interactivity */
+.customer-appointments-detail__table-container {
+    transition: all 0.3s ease;
 }
 
-/* Focus states for accessibility */
-.appointment-list-by-customer__back-button:focus {
-    outline: 2px solid #3b82f6;
-    outline-offset: 2px;
-    border-radius: 4px;
+.customer-appointments-detail__table-container:hover {
+    box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
-.appointment-list-by-customer__retry-button:focus {
+/* Better focus states for accessibility */
+.customer-appointments-detail__pagination-button:focus,
+.customer-appointments-detail__back-button:focus {
     outline: 2px solid #3b82f6;
     outline-offset: 2px;
 }
 
-/* Dark mode support (optional) */
-@media (prefers-color-scheme: dark) {
-    .appointment-list-by-customer {
-        background-color: #0f172a;
-        color: #e2e8f0;
-    }
-
-    .appointment-list-by-customer__title {
-        color: #f1f5f9;
-    }
-
-    .appointment-list-by-customer__table-container {
-        background-color: #1e293b;
-    }
-
-    .appointment-list-by-customer__table-head {
-        background-color: #334155;
-    }
-
-    .appointment-list-by-customer__table-head th {
-        color: #e2e8f0;
-        border-bottom-color: #475569;
-    }
-
-    .appointment-list-by-customer__table td {
-        color: #cbd5e1;
-    }
-
-    .appointment-list-by-customer__table tbody tr {
-        border-bottom-color: #334155;
-    }
-
-    .appointment-list-by-customer__table tbody tr:hover {
-        background-color: #334155;
-    }
-
-    .appointment-list-by-customer__no-data {
-        background-color: #1e293b;
-        color: #94a3b8;
-    }
+/* Smooth transitions for all interactive elements */
+* {
+    transition: all 0.2s ease;
 }
