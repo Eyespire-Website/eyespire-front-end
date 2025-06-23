@@ -12,9 +12,12 @@ import {
 } from "lucide-react";
 import { HiOutlineBars3 } from "react-icons/hi2";
 import "./sidebar.css";
+import authService from "../../../../services/authService";
+import { useNavigate } from "react-router-dom";
 
 export default function Sidebar({ activeTab, setActiveTab }) {
     const [isCollapsed, setIsCollapsed] = useState(false);
+    const navigate = useNavigate();
 
     // Menu items được chia thành các nhóm
     const mainMenuItems = [
@@ -84,11 +87,17 @@ export default function Sidebar({ activeTab, setActiveTab }) {
                 </ul>
 
                 <div className="sidebar-footer-v2">
-                    <button className="logout-btn-v2">
+                    <button 
+                        className="logout-btn-v2"
+                        onClick={() => {
+                            authService.logout();
+                            navigate("/");
+                        }}
+                    >
                         <LogOut size={16} className="logout-icon-v2" />
                         <span className="logout-text-v2">Đăng xuất</span>
                     </button>
-                    <p className="footer-text-v2">© 2024 Eyespire</p>
+                    <p className="footer-text-v2"> 2024 Eyespire</p>
                 </div>
             </div>
         </div>
