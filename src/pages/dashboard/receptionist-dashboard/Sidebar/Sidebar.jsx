@@ -11,10 +11,12 @@ import {
 } from "react-icons/hi";
 import {HiOutlineBars3} from "react-icons/hi2";
 import "../../admin-dashboard/Sidebar/sidebar.css";
+import authService from "../../../../services/authService";
+import {useNavigate} from "react-router-dom";
 
 export default function Sidebar({ activeTab, setActiveTab }) {
     const [isCollapsed, setIsCollapsed] = useState(false);
-
+    const navigate = useNavigate();
     const menuItems = [
         { id: "schedule", label: "Lịch làm việc của bác sĩ", icon: <HiOutlineCalendar size={18} /> },
         { id: "appointments", label: "Lịch hẹn khách hàng", icon: <HiOutlineUserGroup size={18} /> },
@@ -25,6 +27,11 @@ export default function Sidebar({ activeTab, setActiveTab }) {
 
     const toggleSidebar = () => {
         setIsCollapsed(!isCollapsed);
+    };
+
+    const handleLogout = () => {
+        authService.logout();
+        navigate('/');
     };
 
     return (
@@ -61,7 +68,7 @@ export default function Sidebar({ activeTab, setActiveTab }) {
                 </ul>
 
                 <div className="sidebar-footer-v2">
-                    <button className="logout-btn-v2">
+                    <button className="logout-btn-v2" onClick={handleLogout}>
                         <HiOutlineLogout size={16} className="logout-icon-v2" />
                         <span className="logout-text-v2">Đăng xuất</span>
                     </button>
