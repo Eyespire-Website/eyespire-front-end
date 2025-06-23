@@ -1,91 +1,94 @@
 .customer-appointments {
-    padding: 2rem;
-    background-color: #f9fafb;
+    padding: 16px; /* Giảm từ 32px */
+    background-color: #f8fafc;
     min-height: 100vh;
-    flex: 1;
 }
 
 .customer-appointments__header {
-    margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px; /* Giảm từ 32px */
+    flex-wrap: wrap;
+    gap: 16px; /* Giảm từ 24px */
 }
 
 .customer-appointments__title {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: #111827;
-    margin-bottom: 1.5rem;
+    font-size: 24px; /* Giảm từ 32px */
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+    margin-bottom: 4px; /* Giảm từ 8px */
 }
 
 .customer-appointments__search-container {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    margin-bottom: 1.5rem;
+    flex: 1;
+    max-width: 350px; /* Giảm từ 450px */
 }
 
 .customer-appointments__search-wrapper {
     position: relative;
-    width: 24rem;
-    max-width: 100%;
+    display: flex;
+    align-items: center;
 }
 
 .customer-appointments__search-icon {
     position: absolute;
-    left: 0.75rem;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #9ca3af;
-    width: 1.25rem;
-    height: 1.25rem;
-    pointer-events: none;
+    left: 12px; /* Giảm từ 16px */
+    color: #64748b;
+    z-index: 1;
+    width: 16px; /* Giảm từ 20px */
+    height: 16px; /* Giảm từ 20px */
 }
 
 .customer-appointments__search-input {
     width: 100%;
-    padding: 0.75rem 1rem 0.75rem 2.5rem;
-    border: 1px solid #d1d5db;
-    border-radius: 0.5rem;
-    font-size: 0.875rem;
+    padding: 10px 10px 10px 40px; /* Giảm từ 16px 16px 16px 52px */
+    border: 2px solid #e2e8f0;
+    border-radius: 8px; /* Giảm từ 12px */
+    font-size: 14px; /* Giảm từ 16px */
     background-color: white;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    transition: all 0.3s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .customer-appointments__search-input:focus {
     outline: none;
-    border-color: #2563eb;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+    transform: translateY(-1px);
 }
 
 .customer-appointments__table-container {
     background-color: white;
-    border-radius: 0.5rem;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-    border: 1px solid #e5e7eb;
+    border-radius: 12px; /* Giảm từ 16px */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     overflow: hidden;
+    margin-bottom: 16px; /* Giảm từ 24px */
 }
 
 .customer-appointments__table-header {
-    padding: 1.5rem;
-    border-bottom: 1px solid #e5e7eb;
-    background-color: #f9fafb;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 16px 20px; /* Giảm từ 32px 40px */
 }
 
 .customer-appointments__table-header-content {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 12px; /* Giảm từ 20px */
 }
 
 .customer-appointments__table-header-icon {
-    width: 1.25rem;
-    height: 1.25rem;
-    color: #6b7280;
+    color: white;
+    width: 20px; /* Giảm từ 26px */
+    height: 20px; /* Giảm từ 26px */
 }
 
 .customer-appointments__table-header-text {
-    font-weight: 500;
-    color: #111827;
-    font-size: 1rem;
+    color: white;
+    font-weight: 600;
+    font-size: 16px; /* Giảm từ 20px */
+    letter-spacing: 0.3px; /* Giảm từ 0.5px */
 }
 
 .customer-appointments__table-wrapper {
@@ -94,234 +97,328 @@
 
 .customer-appointments__table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0;
 }
 
 .customer-appointments__table-head {
-    padding: 0.75rem 1rem;
+    background-color: #f8fafc;
+    padding: 12px 16px; /* Giảm từ 24px 28px */
     text-align: left;
-    font-weight: 500;
-    color: #6b7280;
-    font-size: 0.875rem;
-    background-color: #f9fafb;
-    border-bottom: 1px solid #e5e7eb;
+    font-weight: 600;
+    color: #374151;
+    border-bottom: 2px solid #e5e7eb;
+    white-space: nowrap;
+    font-size: 13px; /* Giảm từ 15px */
+    text-transform: uppercase;
+    letter-spacing: 0.5px; /* Giảm từ 0.8px */
 }
 
 .customer-appointments__table-head--number {
-    width: 4rem;
-}
-
-.customer-appointments__table-head-gender {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-}
-
-.customer-appointments__sort-icon {
-    width: 1rem;
-    height: 1rem;
-    color: #9ca3af;
+    width: 60px; /* Giảm từ 80px */
+    text-align: center;
 }
 
 .customer-appointments__table-row {
-    border-bottom: 1px solid #f3f4f6;
-    transition: background-color 0.2s ease;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid #f1f5f9;
 }
 
 .customer-appointments__table-row:hover {
-    background-color: #f9fafb;
+    background-color: #f8fafc;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .customer-appointments__table-cell {
-    padding: 1rem;
-    font-size: 0.875rem;
-    color: #374151;
+    padding: 12px 16px; /* Giảm từ 24px */
+    border-bottom: 1px solid #f1f5f9;
     vertical-align: middle;
+    font-size: 13px; /* Giảm từ 15px */
+    line-height: 1.4; /* Giảm từ 1.5 */
 }
 
-.customer-appointments__table-cell--number {
-    font-weight: 500;
-    color: #111827;
+.customer-appointments__table-cell:first-child {
+    text-align: center;
+    font-weight: 600;
+    color: #6b7280;
 }
 
-.customer-appointments__table-cell--name {
-    font-weight: 500;
-    color: #111827;
+.customer-appointments__username {
+    font-style: italic;
+    color: #6b7280;
+    font-size: 12px; /* Giảm từ 14px */
+    margin-top: 2px; /* Giảm từ 4px */
+    display: block;
 }
 
 .customer-appointments__gender-badge {
     display: inline-block;
-    padding: 0.25rem 0.75rem;
-    background-color: #dcfce7;
-    color: #166534;
-    font-size: 0.75rem;
-    font-weight: 500;
-    border-radius: 9999px;
-}
-
-.customer-appointments__status-badge {
-    display: inline-block;
-    padding: 0.25rem 0.75rem;
-    font-size: 0.75rem;
-    font-weight: 500;
-    border-radius: 9999px;
-    text-align: center;
-    min-width: 80px;
-}
-
-.customer-appointments__status-badge--pending {
-    background-color: #fef3c7;
-    color: #d97706;
-}
-
-.customer-appointments__status-badge--confirmed {
-    background-color: #dcfce7;
-    color: #166534;
-}
-
-.customer-appointments__status-badge--completed {
+    padding: 4px 12px; /* Giảm từ 6px 16px */
+    border-radius: 20px; /* Giảm từ 24px */
+    font-size: 11px; /* Giảm từ 13px */
+    font-weight: 600;
     background-color: #dbeafe;
     color: #1d4ed8;
+    text-transform: uppercase;
+    letter-spacing: 0.3px; /* Giảm từ 0.5px */
 }
 
 .customer-appointments__detail-button {
-    padding: 0.5rem 1rem;
-    background-color: #2563eb;
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
     color: white;
     border: none;
-    border-radius: 0.375rem;
-    font-size: 0.875rem;
-    font-weight: 500;
+    padding: 8px 16px; /* Giảm từ 12px 24px */
+    border-radius: 6px; /* Giảm từ 8px */
     cursor: pointer;
-    transition: background-color 0.2s ease;
+    font-size: 12px; /* Giảm từ 14px */
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
 }
 
 .customer-appointments__detail-button:hover {
-    background-color: #1d4ed8;
+    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+}
+
+.customer-appointments__detail-button:active {
+    transform: translateY(0);
 }
 
 .customer-appointments__pagination {
     display: flex;
-    align-items: center;
     justify-content: space-between;
-    padding: 1.5rem;
-    border-top: 1px solid #e5e7eb;
-    background-color: #f9fafb;
+    align-items: center;
+    padding: 16px 20px; /* Giảm từ 24px 32px */
+    background-color: white;
+    border-radius: 8px; /* Giảm từ 12px */
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin-top: 16px; /* Giảm từ 24px */
 }
 
 .customer-appointments__pagination-info {
-    font-size: 0.875rem;
     color: #6b7280;
+    font-size: 13px; /* Giảm từ 15px */
+    font-weight: 500;
 }
 
 .customer-appointments__pagination-controls {
     display: flex;
+    gap: 8px; /* Giảm từ 12px */
     align-items: center;
-    gap: 0.5rem;
 }
 
 .customer-appointments__pagination-button {
-    width: 2rem;
-    height: 2rem;
-    padding: 0;
-    border: 1px solid #d1d5db;
+    padding: 8px 14px; /* Giảm từ 12px 20px */
+    border: 2px solid #e5e7eb;
     background-color: white;
     color: #374151;
-    border-radius: 0.375rem;
-    font-size: 0.875rem;
+    border-radius: 6px; /* Giảm từ 8px */
     cursor: pointer;
     transition: all 0.2s ease;
+    font-size: 12px; /* Giảm từ 14px */
+    font-weight: 600;
+    min-width: 36px; /* Giảm từ 44px */
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.customer-appointments__pagination-button:hover {
+.customer-appointments__pagination-button:hover:not(:disabled) {
     background-color: #f3f4f6;
+    border-color: #9ca3af;
+    transform: translateY(-1px);
+}
+
+.customer-appointments__pagination-button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
 }
 
 .customer-appointments__pagination-button--active {
-    background-color: #2563eb;
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
     color: white;
-    border-color: #2563eb;
+    border-color: #3b82f6;
+    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
 }
 
-.customer-appointments__pagination-button--active:hover {
-    background-color: #1d4ed8;
+.no-results-message {
+    text-align: center;
+    padding: 64px 32px;
+    color: #6b7280;
+    font-style: italic;
+    font-size: 16px;
+    background-color: #f9fafb;
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
+/* Loading and Error States */
+.customer-appointments__loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 500px;
+    gap: 24px;
+}
+
+.customer-appointments__spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid #f3f4f6;
+    border-top: 4px solid #3b82f6;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.customer-appointments__loading p {
+    font-size: 16px;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.customer-appointments__error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 500px;
+    gap: 24px;
+    color: #dc2626;
+}
+
+.customer-appointments__error p {
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.customer-appointments__retry-button {
+    padding: 16px 32px;
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+}
+
+.customer-appointments__retry-button:hover {
+    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+}
+
+/* Responsive design */
+@media (max-width: 1024px) {
     .customer-appointments {
-        padding: 1rem;
+        padding: 24px;
     }
 
-    .customer-appointments__search-wrapper {
-        width: 100%;
+    .customer-appointments__table-cell {
+        padding: 20px 16px;
+    }
+
+    .customer-appointments__pagination {
+        padding: 20px 24px;
+    }
+}
+
+@media (max-width: 768px) {
+    .customer-appointments {
+        padding: 16px;
+    }
+
+    .customer-appointments__header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 20px;
+    }
+
+    .customer-appointments__title {
+        font-size: 28px;
+        text-align: center;
+    }
+
+    .customer-appointments__search-container {
+        max-width: none;
     }
 
     .customer-appointments__table-wrapper {
         overflow-x: scroll;
     }
 
-    .customer-appointments__table {
-        min-width: 700px;
+    .customer-appointments__table-cell {
+        padding: 16px 12px;
+        font-size: 14px;
+    }
+
+    .customer-appointments__pagination {
+        flex-direction: column;
+        gap: 20px;
+        align-items: stretch;
+        padding: 20px;
+    }
+
+    .customer-appointments__pagination-controls {
+        justify-content: center;
+    }
+
+    .customer-appointments__pagination-button {
+        padding: 10px 16px;
+        font-size: 13px;
     }
 }
-/* Status Badge Styling */
-.appointment-list__status-badge {
-    display: inline-block;
-    padding: 0.25rem 0.75rem;
-    font-size: 0.75rem;
-    font-weight: 500;
-    border-radius: 9999px;
-    text-align: center;
-    text-transform: capitalize;
+
+@media (max-width: 480px) {
+    .customer-appointments__table-head,
+    .customer-appointments__table-cell {
+        padding: 12px 8px;
+        font-size: 13px;
+    }
+
+    .customer-appointments__detail-button {
+        padding: 8px 16px;
+        font-size: 12px;
+    }
+
+    .customer-appointments__pagination-button {
+        padding: 8px 12px;
+        min-width: 36px;
+    }
 }
 
-.appointment-list__status-badge--confirmed {
-    background-color: #dcfce7;
-    color: #166534;
+/* Hover effects for better interactivity */
+.customer-appointments__table-container {
+    transition: all 0.3s ease;
 }
 
-.appointment-list__status-badge--cancelled {
-    background-color: #fee2e2;
-    color: #b91c1c;
+.customer-appointments__table-container:hover {
+    box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
-.appointment-list__status-badge--completed {
-    background-color: #dbeafe;
-    color: #1e40af;
+/* Better focus states for accessibility */
+.customer-appointments__detail-button:focus,
+.customer-appointments__pagination-button:focus,
+.customer-appointments__retry-button:focus {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
 }
 
-/* Modal Styling */
-.appointment-detail-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 50;
-}
-
-.appointment-detail-modal__overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(4px);
-}
-
-.appointment-detail-modal__content {
-    position: relative;
-    width: 100%;
-    max-width: 700px;
-    max-height: 90vh;
-    background-color: white;
-    border-radius: 0.5rem;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-    overflow-y: auto;
-    z-index: 51;
+/* Smooth transitions for all interactive elements */
+* {
+    transition: all 0.2s ease;
 }
