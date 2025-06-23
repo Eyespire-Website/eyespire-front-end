@@ -55,7 +55,32 @@ const staffService = {
   getStaffById: async (id) => {
     try {
       const response = await axiosInstance.get(`/admin/staff/${id}`)
-      return response.data
+      // Đảm bảo startDate luôn có giá trị
+      const staffData = {
+        ...response.data,
+        position: response.data.position || response.data.role, // Sử dụng position nếu có, nếu không thì dùng role
+        startDate: response.data.startDate || new Date().toISOString().split('T')[0] // Đảm bảo startDate luôn có giá trị
+      };
+
+      // Nếu là bác sĩ, lấy thêm thông tin từ bảng doctor
+      if (staffData.role === 'DOCTOR' || staffData.position === 'DOCTOR') {
+        try {
+          // Sử dụng endpoint mới để lấy thông tin bác sĩ theo userId
+          const doctorResponse = await axiosInstance.get(`/doctors/by-user/${id}`);
+          staffData.doctorInfo = doctorResponse.data;
+        } catch (doctorError) {
+          console.error("Lỗi khi lấy thông tin bác sĩ:", doctorError);
+          // Tạo doctorInfo rỗng để tránh lỗi undefined
+          staffData.doctorInfo = {
+            specialization: 'Chưa cập nhật',
+            qualification: 'Chưa cập nhật',
+            experience: 'Chưa cập nhật',
+            description: 'Chưa cập nhật'
+          };
+        }
+      }
+
+      return staffData;
     } catch (error) {
       console.error("Lỗi khi lấy thông tin nhân viên:", error)
       
@@ -74,8 +99,32 @@ const staffService = {
   // Thêm nhân viên mới
   createStaff: async (staffData) => {
     try {
-      const response = await axiosInstance.post("/admin/staff", staffData)
-      return response.data
+      // Format dữ liệu nhân viên
+      const formattedData = staffService.formatStaffData(staffData);
+      
+      // Gửi request tạo nhân viên
+      const response = await axiosInstance.post("/admin/staff", formattedData);
+      const createdStaff = response.data;
+      
+      // Nếu là bác sĩ, tạo thêm bản ghi Doctor
+      if (formattedData.role === "DOCTOR" && staffData.doctorInfo) {
+        try {
+          // Tạo bản ghi Doctor liên kết với User vừa tạo
+          await staffService.createDoctor({
+            ...staffData.doctorInfo,
+            userId: createdStaff.id, // ID của User vừa tạo
+            name: createdStaff.name // Tên bác sĩ (lấy từ thông tin nhân viên)
+          });
+          
+          // Cập nhật thông tin Doctor vào createdStaff để trả về
+          createdStaff.doctorInfo = staffData.doctorInfo;
+        } catch (doctorError) {
+          console.error("Lỗi khi tạo thông tin bác sĩ:", doctorError);
+          // Vẫn trả về thông tin nhân viên đã tạo, nhưng ghi log lỗi
+        }
+      }
+      
+      return createdStaff;
     } catch (error) {
       console.error("Lỗi khi thêm nhân viên mới:", error)
       
@@ -95,10 +144,46 @@ const staffService = {
   },
 
   // Cập nhật thông tin nhân viên
-  updateStaff: async (id, staffData) => {
+  updateStaff: async (staffData) => {
     try {
-      const response = await axiosInstance.put(`/admin/staff/${id}`, staffData)
-      return response.data
+      // Format dữ liệu nhân viên
+      const formattedData = staffService.formatStaffData(staffData);
+      const id = formattedData.id;
+      
+      // Gửi request cập nhật nhân viên
+      const response = await axiosInstance.put(`/admin/staff/${id}`, formattedData);
+      const updatedStaff = response.data;
+      
+      // Nếu là bác sĩ, cập nhật hoặc tạo mới thông tin bác sĩ
+      if (formattedData.role === "DOCTOR" && staffData.doctorInfo) {
+        try {
+          // Kiểm tra xem bác sĩ đã có thông tin chuyên môn chưa
+          const doctorResponse = await axiosInstance.get(`/doctors/by-user/${id}`);
+          
+          if (doctorResponse.data) {
+            // Nếu đã có, cập nhật thông tin
+            await axiosInstance.put(`/doctors/${doctorResponse.data.id}`, {
+              ...staffData.doctorInfo,
+              name: updatedStaff.name
+            });
+          } else {
+            // Nếu chưa có, tạo mới
+            await staffService.createDoctor({
+              ...staffData.doctorInfo,
+              userId: id,
+              name: updatedStaff.name
+            });
+          }
+          
+          // Cập nhật thông tin Doctor vào updatedStaff để trả về
+          updatedStaff.doctorInfo = staffData.doctorInfo;
+        } catch (doctorError) {
+          console.error("Lỗi khi cập nhật thông tin bác sĩ:", doctorError);
+          // Vẫn trả về thông tin nhân viên đã cập nhật, nhưng ghi log lỗi
+        }
+      }
+      
+      return updatedStaff;
     } catch (error) {
       console.error("Lỗi khi cập nhật thông tin nhân viên:", error)
       
@@ -107,7 +192,7 @@ const staffService = {
         console.log("API chưa sẵn sàng, sử dụng dữ liệu mẫu")
         return {
           ...staffData,
-          id: id
+          id: staffData.id
         }
       }
       
@@ -152,6 +237,17 @@ const staffService = {
     }
   },
 
+  // Tạo bản ghi Doctor liên kết với User
+  createDoctor: async (doctorData) => {
+    try {
+      const response = await axiosInstance.post("/admin/doctors", doctorData);
+      return response.data;
+    } catch (error) {
+      console.error("Lỗi khi tạo thông tin bác sĩ:", error);
+      throw error;
+    }
+  },
+
   // Validate dữ liệu nhân viên trước khi gửi API
   validateStaffData: (data) => {
     const errors = []
@@ -161,6 +257,19 @@ const staffService = {
     if (!data.phone || !/^\d{10}$/.test(data.phone.replace(/\D/g, ""))) errors.push("Số điện thoại phải có 10 chữ số")
     if (!data.position) errors.push("Chức vụ là bắt buộc")
     if (!data.startDate) errors.push("Ngày bắt đầu là bắt buộc")
+    
+    // Validate thông tin bác sĩ nếu role là DOCTOR
+    if (data.position === "DOCTOR") {
+      if (!data.doctorInfo) errors.push("Thông tin chuyên môn bác sĩ là bắt buộc");
+      else {
+        if (!data.doctorInfo.specialtyId) 
+          errors.push("Chuyên khoa là bắt buộc");
+        if (!data.doctorInfo.qualification || data.doctorInfo.qualification.trim() === "") 
+          errors.push("Bằng cấp là bắt buộc");
+        if (!data.doctorInfo.experience || data.doctorInfo.experience.trim() === "") 
+          errors.push("Kinh nghiệm là bắt buộc");
+      }
+    }
 
     return {
       isValid: errors.length === 0,

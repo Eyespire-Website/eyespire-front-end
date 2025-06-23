@@ -10,6 +10,7 @@ import Testimonials from "../../components/Testimonials/Testimonials";
 import Gallery from "../../components/Gallery/Gallery";
 import Contact from "../../components/Contact/Contact";
 import Footer from "../../components/Footer/Footer";
+import ChatBox from "../../components/ChatBox/ChatBox";
 
 const HomePage = () => {
   return (
@@ -44,6 +45,7 @@ const HomePage = () => {
         <Gallery />
         <Contact />
         <Footer />
+        <ChatBox />
       </div>
     </div>
   );

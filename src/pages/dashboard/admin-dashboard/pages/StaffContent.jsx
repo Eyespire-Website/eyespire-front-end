@@ -3,6 +3,7 @@ import { Search, Eye, Edit, Trash2, Plus, X, AlertCircle } from 'lucide-react';
 import '../styles/staff.css';
 import staffService, { getAvailablePositions } from '../../../../services/staffService';
 import emailService from '../../../../services/emailService';
+import specialtyService from '../../../../services/specialtyService';
 import { useNavigate } from 'react-router-dom';
 
 // Giả lập thư viện thông báo
@@ -19,13 +20,23 @@ const StaffContent = () => {
   const [showViewModal, setShowViewModal] = useState(false);
   const [selectedStaff, setSelectedStaff] = useState(null);
   const [staffData, setStaffData] = useState([]);
+  const [activeTab, setActiveTab] = useState('staff'); // 'staff' hoặc 'doctor'
+  const [specialties, setSpecialties] = useState([]); // Danh sách chuyên khoa
   const [newStaff, setNewStaff] = useState({
     id: '',
     name: '',
-    position: 'DOCTOR',
+    position: activeTab === 'doctor' ? 'DOCTOR' : 'RECEPTIONIST',
     email: '',
     phone: '',
     startDate: new Date().toISOString().split('T')[0], 
+    // Thông tin chuyên môn của bác sĩ
+    doctorInfo: {
+      specialization: '',
+      qualification: '',
+      experience: '',
+      description: '',
+      specialtyId: ''
+    }
   });
   const [editMode, setEditMode] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -42,6 +53,15 @@ const StaffContent = () => {
 
   // Lấy danh sách chức vụ từ UserRole enum (ngoại trừ ADMIN và PATIENT)
   const positions = getAvailablePositions();
+
+  // Lọc danh sách chức vụ theo tab hiện tại
+  const filteredPositions = positions.filter(position => {
+    if (activeTab === 'doctor') {
+      return position === 'DOCTOR';
+    } else {
+      return position === 'RECEPTIONIST' || position === 'STORE_MANAGER';
+    }
+  });
 
   // Hàm chuyển đổi mã chức vụ sang tên hiển thị
   const getPositionDisplayName = (positionCode) => {
@@ -100,9 +120,28 @@ const StaffContent = () => {
     }
   };
 
+  // Lấy danh sách chuyên khoa từ API
+  const fetchSpecialties = async () => {
+    try {
+      const data = await specialtyService.getAllSpecialties();
+      setSpecialties(data);
+    } catch (err) {
+      console.error("Lỗi khi lấy danh sách chuyên khoa:", err);
+      // Nếu API chưa được triển khai, sử dụng dữ liệu mẫu
+      const initialSpecialties = [
+        { id: 1, name: 'Nhãn khoa' },
+        { id: 2, name: 'Giác mạc' },
+        { id: 3, name: 'Đục thủy tinh thể' },
+        { id: 4, name: 'Võng mạc' }
+      ];
+      setSpecialties(initialSpecialties);
+    }
+  };
+
   // Gọi API khi component được mount
   useEffect(() => {
     fetchStaffData();
+    fetchSpecialties();
   }, []);
 
   // Hàm định dạng ngày từ YYYY-MM-DD sang DD/MM/YYYY
@@ -121,26 +160,50 @@ const StaffContent = () => {
   const handleAddStaff = () => {
     setNewStaff({
       name: '',
-      position: 'DOCTOR',
+      position: activeTab === 'doctor' ? 'DOCTOR' : 'RECEPTIONIST',
       email: '',
       phone: '',
       startDate: new Date().toISOString().split('T')[0], 
+      doctorInfo: {
+        specialization: '',
+        qualification: '',
+        experience: '',
+        description: '',
+        specialtyId: ''
+      }
     });
     setValidationErrors([]);
     setEditMode(false);
     setShowAddModal(true);
   };
 
-  const handleEditStaff = (staff) => {
-    // Đảm bảo startDate luôn có giá trị
-    const formattedStaff = {
-      ...staff,
-      startDate: staff.startDate || new Date().toISOString().split('T')[0]
-    };
-    setNewStaff(formattedStaff);
-    setValidationErrors([]);
-    setEditMode(true);
-    setShowAddModal(true);
+  const handleEditStaff = async (staff) => {
+    try {
+      // Lấy thông tin chi tiết của nhân viên từ API
+      const staffDetail = await staffService.getStaffById(staff.id);
+      
+      // Đảm bảo startDate luôn có giá trị
+      const formattedStaff = {
+        ...staffDetail,
+        startDate: staffDetail.startDate || new Date().toISOString().split('T')[0],
+        // Đảm bảo doctorInfo luôn tồn tại
+        doctorInfo: staffDetail.doctorInfo || {
+          specialization: '',
+          qualification: '',
+          experience: '',
+          description: '',
+          specialtyId: ''
+        }
+      };
+      
+      setNewStaff(formattedStaff);
+      setValidationErrors([]);
+      setEditMode(true);
+      setShowAddModal(true);
+    } catch (error) {
+      console.error("Lỗi khi lấy thông tin chi tiết nhân viên:", error);
+      toast.error("Không thể lấy thông tin chi tiết nhân viên");
+    }
   };
 
   const handleDeleteStaff = async (id) => {
@@ -177,65 +240,89 @@ const StaffContent = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setNewStaff(prev => ({
-      ...prev,
-      [name]: value,
-    }));
+    
+    // Xử lý thông tin bác sĩ
+    if (name.startsWith('doctor.')) {
+      const doctorField = name.split('.')[1];
+      setNewStaff(prev => ({
+        ...prev,
+        doctorInfo: {
+          ...prev.doctorInfo,
+          [doctorField]: value
+        }
+      }));
+    } else {
+      setNewStaff(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
   };
 
   const handleSubmit = async () => {
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
 
     setLoading(true);
+    setError(null);
+
     try {
-      const formattedData = staffService.formatStaffData(newStaff);
+      const dataToSend = { ...newStaff };
       
-      if (editMode) {
-        // Cập nhật nhân viên
-        const updatedStaff = await staffService.updateStaff(formattedData.id, formattedData);
-        setStaffData(staffData.map(staff =>
-          staff.id === updatedStaff.id ? updatedStaff : staff
-        ));
-        toast.success('Cập nhật nhân viên thành công');
-      } else {
-        // Thêm nhân viên mới - loại bỏ ID khi gửi lên server
-        const dataToSend = { ...formattedData };
-        delete dataToSend.id; // Loại bỏ ID khi thêm nhân viên mới
-        
-        const createdStaff = await staffService.createStaff(dataToSend);
-        setStaffData([...staffData, createdStaff]);
-        toast.success('Thêm nhân viên thành công');
-        
-        // Hiển thị thông tin đăng nhập cho nhân viên mới
-        setShowLoginInfo({
-          show: true,
-          username: formattedData.username,
-          password: formattedData.password,
-          email: formattedData.email,
-          name: formattedData.name,
-          sending: false
-        });
+      // Loại bỏ ID khi thêm mới
+      if (!editMode) {
+        delete dataToSend.id;
       }
       
-      setShowAddModal(false);
+      // Tách thông tin bác sĩ ra khỏi dữ liệu gửi đi nếu không phải là bác sĩ
+      if (dataToSend.position !== 'DOCTOR') {
+        delete dataToSend.doctorInfo;
+      }
+
+      const result = editMode
+        ? await staffService.updateStaff(dataToSend)
+        : await staffService.createStaff(dataToSend);
+
+      if (result) {
+        toast.success(`${editMode ? 'Cập nhật' : 'Thêm'} nhân viên thành công!`);
+        fetchStaffData();
+        handleCloseModal();
+        
+        // Hiển thị thông tin đăng nhập nếu thêm mới
+        if (!editMode) {
+          setShowLoginInfo({
+            show: true,
+            username: dataToSend.email,
+            password: '123456',
+            email: dataToSend.email,
+            name: dataToSend.name,
+            sending: false
+          });
+        }
+      }
     } catch (err) {
       console.error("Lỗi khi lưu nhân viên:", err);
-      toast.error('Lưu thông tin nhân viên thất bại. Vui lòng thử lại sau.');
+      setError("Không thể lưu thông tin nhân viên. Vui lòng thử lại sau.");
     } finally {
       setLoading(false);
     }
   };
+
   const handleCloseModal = () => {
     setShowAddModal(false);
     setNewStaff({
       id: '',
       name: '',
-      position: 'DOCTOR',
+      position: activeTab === 'doctor' ? 'DOCTOR' : 'RECEPTIONIST',
       email: '',
       phone: '',
       startDate: new Date().toISOString().split('T')[0], 
+      doctorInfo: {
+        specialization: '',
+        qualification: '',
+        experience: '',
+        description: '',
+        specialtyId: ''
+      }
     });
     setValidationErrors([]);
     setEditMode(false);
@@ -246,7 +333,7 @@ const StaffContent = () => {
     setSelectedStaff(null);
   };
 
-  // Lọc danh sách nhân viên theo từ khóa tìm kiếm và chức vụ
+  // Lọc danh sách nhân viên theo từ khóa tìm kiếm, chức vụ và tab hiện tại
   const filteredStaff = staffData.filter(staff => {
     // Lọc theo từ khóa tìm kiếm
     const searchMatch = 
@@ -258,7 +345,12 @@ const StaffContent = () => {
     const staffPosition = staff.position || staff.role;
     const positionMatch = positionFilter === 'all' || staffPosition === positionFilter;
     
-    return searchMatch && positionMatch;
+    // Lọc theo tab hiện tại
+    const tabMatch = activeTab === 'doctor' 
+      ? staffPosition === 'DOCTOR'
+      : (staffPosition === 'RECEPTIONIST' || staffPosition === 'STORE_MANAGER');
+    
+    return searchMatch && positionMatch && tabMatch;
   });
 
   // Hàm xử lý khi thay đổi bộ lọc chức vụ
@@ -301,6 +393,30 @@ const StaffContent = () => {
     }
   };
 
+  // Hàm xử lý khi thay đổi tab
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    setPositionFilter('all');
+  };
+
+  // Hàm xử lý khi thay đổi chức vụ
+  const handlePositionChange = (e) => {
+    const { value } = e.target;
+    // Nếu chức vụ là DOCTOR, đảm bảo doctorInfo được khởi tạo
+    if (value === 'DOCTOR' && (!newStaff.doctorInfo || Object.keys(newStaff.doctorInfo).length === 0)) {
+      setNewStaff(prev => ({
+        ...prev,
+        doctorInfo: {
+          specialization: '',
+          qualification: '',
+          experience: '',
+          description: '',
+          specialtyId: ''
+        }
+      }));
+    }
+  };
+
   if (error) return <div className="error-message">Lỗi: {error}</div>;
 
   return (
@@ -310,10 +426,27 @@ const StaffContent = () => {
             <h3 className="card-title">Danh sách nhân viên</h3>
             <button className="staff-add-btn" onClick={handleAddStaff} disabled={loading}>
               <Plus size={16} />
-              Thêm nhân viên
+              Thêm {activeTab === 'doctor' ? 'bác sĩ' : 'nhân viên'}
             </button>
           </div>
         </div>
+
+        {/* Tab Navigation */}
+        <div className="staff-tabs">
+          <button 
+            className={`staff-tab ${activeTab === 'staff' ? 'active' : ''}`}
+            onClick={() => handleTabChange('staff')}
+          >
+            Nhân viên
+          </button>
+          <button 
+            className={`staff-tab ${activeTab === 'doctor' ? 'active' : ''}`}
+            onClick={() => handleTabChange('doctor')}
+          >
+            Bác sĩ
+          </button>
+        </div>
+
         <div className="card-content">
           <div className="staff-filter-bar">
             <div className="staff-search">
@@ -321,7 +454,7 @@ const StaffContent = () => {
               <input
                   type="text"
                   className="staff-search-input"
-                  placeholder="Tìm kiếm theo tên, mã NV hoặc email..."
+                  placeholder={`Tìm kiếm ${activeTab === 'doctor' ? 'bác sĩ' : 'nhân viên'}...`}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   disabled={loading}
@@ -335,7 +468,7 @@ const StaffContent = () => {
                   disabled={loading}
               >
                 <option value="all">Tất cả chức vụ</option>
-                {positions.map(position => (
+                {filteredPositions.map(position => (
                     <option key={position} value={position}>{getPositionDisplayName(position)}</option>
                 ))}
               </select>
@@ -351,7 +484,7 @@ const StaffContent = () => {
                   <tr>
                     <th>Mã NV</th>
                     <th>Họ tên</th>
-                    <th>Chức vụ</th>
+                    {activeTab === 'staff' && <th>Chức vụ</th>}
                     <th>Email</th>
                     <th>Điện thoại</th>
                     <th>Ngày bắt đầu</th> 
@@ -364,7 +497,7 @@ const StaffContent = () => {
                         <tr key={staff.id}>
                         <td>{staff.id}</td>
                         <td>{staff.name}</td>
-                        <td>{getPositionDisplayName(staff.position || staff.role)}</td>
+                        {activeTab === 'staff' && <td>{getPositionDisplayName(staff.position || staff.role)}</td>}
                         <td>{staff.email}</td>
                         <td>{staff.phone}</td>
                         <td>{formatDate(staff.startDate)}</td> 
@@ -400,8 +533,8 @@ const StaffContent = () => {
                       ))
                   ) : (
                       <tr>
-                        <td colSpan="7" style={{ textAlign: 'center', padding: '20px' }}>
-                          Không tìm thấy nhân viên nào phù hợp với bộ lọc
+                        <td colSpan={activeTab === 'staff' ? "7" : "6"} style={{ textAlign: 'center', padding: '20px' }}>
+                          Không tìm thấy {activeTab === 'doctor' ? 'bác sĩ' : 'nhân viên'} nào phù hợp với bộ lọc
                         </td>
                       </tr>
                   )}
@@ -416,7 +549,11 @@ const StaffContent = () => {
             <div className="staff-modal-overlay" role="dialog" aria-modal="true">
               <div className="staff-modal">
                 <div className="staff-modal-header">
-                  <h3 className="staff-modal-title">{editMode ? 'Chỉnh sửa nhân viên' : 'Thêm nhân viên mới'}</h3>
+                  <h3 className="staff-modal-title">
+                    {editMode 
+                      ? `Chỉnh sửa ${(newStaff.position === 'DOCTOR') ? 'bác sĩ' : 'nhân viên'}`
+                      : `Thêm ${activeTab === 'doctor' ? 'bác sĩ' : 'nhân viên'} mới`}
+                  </h3>
                   <button
                       className="staff-modal-close"
                       onClick={handleCloseModal}
@@ -474,10 +611,13 @@ const StaffContent = () => {
                             className="staff-form-select"
                             name="position"
                             value={newStaff.position}
-                            onChange={handleInputChange}
-                            disabled={loading}
+                            onChange={(e) => {
+                              handleInputChange(e);
+                              handlePositionChange(e);
+                            }}
+                            disabled={loading || (!editMode && activeTab === 'doctor')}
                         >
-                          {positions.map(position => (
+                          {(editMode ? positions : filteredPositions).map(position => (
                               <option key={position} value={position}>{getPositionDisplayName(position)}</option>
                           ))}
                         </select>
@@ -503,7 +643,7 @@ const StaffContent = () => {
                             name="email"
                             value={newStaff.email}
                             onChange={handleInputChange}
-                            placeholder="example@eyespire.com"
+                            placeholder="Nhập email nhân viên"
                             disabled={loading}
                         />
                       </div>
@@ -515,11 +655,96 @@ const StaffContent = () => {
                             name="phone"
                             value={newStaff.phone}
                             onChange={handleInputChange}
-                            placeholder="0901234567"
+                            placeholder="Nhập số điện thoại"
                             disabled={loading}
                         />
                       </div>
                     </div>
+
+                    {/* Thông tin chuyên môn của bác sĩ */}
+                    {newStaff.position === 'DOCTOR' && (
+                      <>
+                        <div className="staff-form-section">
+                          <h4 className="staff-form-section-title">Thông tin chuyên môn</h4>
+                        </div>
+                        
+                        <div className="staff-form-row">
+                          <div className="staff-form-group">
+                            <label className="staff-form-label">Chuyên khoa</label>
+                            <select
+                              className="staff-form-select"
+                              name="doctor.specialtyId"
+                              value={newStaff.doctorInfo.specialtyId || ''}
+                              onChange={handleInputChange}
+                              disabled={loading}
+                            >
+                              <option value="">-- Chọn chuyên khoa --</option>
+                              {specialties.map(specialty => (
+                                <option key={specialty.id} value={specialty.id}>
+                                  {specialty.name}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          <div className="staff-form-group">
+                            <label className="staff-form-label">Bằng cấp</label>
+                            <input
+                                type="text"
+                                className="staff-form-input"
+                                name="doctor.qualification"
+                                value={newStaff.doctorInfo.qualification}
+                                onChange={handleInputChange}
+                                placeholder="Nhập bằng cấp"
+                                disabled={loading}
+                            />
+                          </div>
+                        </div>
+                        
+                        <div className="staff-form-row">
+                          <div className="staff-form-group">
+                            <label className="staff-form-label">Kinh nghiệm</label>
+                            <input
+                                type="text"
+                                className="staff-form-input"
+                                name="doctor.experience"
+                                value={newStaff.doctorInfo.experience}
+                                onChange={handleInputChange}
+                                placeholder="Nhập số năm kinh nghiệm"
+                                disabled={loading}
+                            />
+                          </div>
+                        </div>
+                        
+                        <div className="staff-form-row">
+                          <div className="staff-form-group" style={{ gridColumn: '1 / span 2' }}>
+                            <label className="staff-form-label">Mô tả</label>
+                            <textarea
+                                className="staff-form-textarea"
+                                name="doctor.description"
+                                value={newStaff.doctorInfo.description}
+                                onChange={handleInputChange}
+                                placeholder="Nhập mô tả về bác sĩ"
+                                rows={4}
+                                disabled={loading}
+                            />
+                          </div>
+                        </div>
+                      </>
+                    )}
+
+                    {validationErrors.length > 0 && (
+                      <div className="staff-validation-errors">
+                        <div className="error-header">
+                          <AlertCircle size={16} />
+                          <span>Vui lòng sửa các lỗi sau:</span>
+                        </div>
+                        <ul>
+                          {validationErrors.map((error, index) => (
+                            <li key={index}>{error}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="staff-modal-footer">
@@ -572,11 +797,11 @@ const StaffContent = () => {
                     <div className="staff-form-row">
                       <div className="staff-form-group">
                         <label className="staff-form-label">Chức vụ</label>
-                        <p className="staff-form-text">{getPositionDisplayName(selectedStaff.position)}</p>
+                        <p className="staff-form-text">{getPositionDisplayName(selectedStaff.position || selectedStaff.role)}</p>
                       </div>
                       <div className="staff-form-group">
                         <label className="staff-form-label">Ngày bắt đầu</label> 
-                        <p className="staff-form-text">{formatDate(selectedStaff.startDate)}</p> 
+                        <p className="staff-form-text">{selectedStaff.startDate ? formatDate(selectedStaff.startDate) : 'Không có dữ liệu'}</p> 
                       </div>
                     </div>
                     <div className="staff-form-row">
@@ -589,6 +814,40 @@ const StaffContent = () => {
                         <p className="staff-form-text">{selectedStaff.phone}</p>
                       </div>
                     </div>
+
+                    {/* Thông tin chuyên môn của bác sĩ */}
+                    {selectedStaff.position === 'DOCTOR' && (
+                      <>
+                        <div className="staff-form-section">
+                          <h4 className="staff-form-section-title">Thông tin chuyên môn</h4>
+                        </div>
+                        
+                        <div className="staff-form-row">
+                          <div className="staff-form-group">
+                            <label className="staff-form-label">Chuyên khoa</label>
+                            <p className="staff-form-text">{selectedStaff.doctorInfo?.specialization || 'Không có thông tin'}</p>
+                          </div>
+                          <div className="staff-form-group">
+                            <label className="staff-form-label">Bằng cấp</label>
+                            <p className="staff-form-text">{selectedStaff.doctorInfo?.qualification || 'Không có thông tin'}</p>
+                          </div>
+                        </div>
+                        
+                        <div className="staff-form-row">
+                          <div className="staff-form-group">
+                            <label className="staff-form-label">Kinh nghiệm</label>
+                            <p className="staff-form-text">{selectedStaff.doctorInfo?.experience || 'Không có thông tin'}</p>
+                          </div>
+                        </div>
+                        
+                        <div className="staff-form-row">
+                          <div className="staff-form-group" style={{ gridColumn: '1 / span 2' }}>
+                            <label className="staff-form-label">Mô tả</label>
+                            <p className="staff-form-text">{selectedStaff.doctorInfo?.description || 'Không có thông tin'}</p>
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
                 <div className="staff-modal-footer">
