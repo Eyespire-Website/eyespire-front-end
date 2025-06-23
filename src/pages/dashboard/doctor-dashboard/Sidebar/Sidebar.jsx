@@ -11,16 +11,33 @@ import {
 import { HiOutlineBars3 } from "react-icons/hi2"
 import "../../admin-dashboard/Sidebar/sidebar.css";
 
+// Re-export icons to fix ESLint issues
+const {
+    HiOutlineCalendar: Calendar,
+    HiOutlineLogout: Logout,
+    HiOutlineUser: User,
+    HiOutlineClipboardCheck: ClipboardCheck,
+    HiOutlineChat: Chat,
+    HiOutlineUserGroup: UserGroup,
+} = {
+    HiOutlineCalendar,
+    HiOutlineLogout,
+    HiOutlineUser,
+    HiOutlineClipboardCheck,
+    HiOutlineChat,
+    HiOutlineUserGroup,
+};
+
 export default function Sidebar({ activeTab, setActiveTab }) {
     const [isCollapsed, setIsCollapsed] = useState(false)
 
     const menuItems = [
-        { id: "profile", label: "Hồ sơ cá nhân", icon: <HiOutlineUser size={18} /> },
-        { id: "schedule", label: "Lịch làm việc", icon: <HiOutlineCalendar size={18} /> },
-        { id: "appointments", label: "Cuộc hẹn", icon: <HiOutlineCalendar size={18} /> },
-        { id: "records", label: "Hồ sơ bệnh án", icon: <HiOutlineClipboardCheck size={18} /> },
-        { id: "feedback", label: "Phản hồi", icon: <HiOutlineChat size={18} /> },
-        { id: "customers", label: "Khách hàng", icon: <HiOutlineUserGroup size={18} /> },
+        { id: "profile", label: "Hồ sơ cá nhân", icon: <User size={18} /> },
+        { id: "schedule", label: "Lịch làm việc", icon: <Calendar size={18} /> },
+        { id: "appointments", label: "Cuộc hẹn", icon: <Calendar size={18} /> },
+        { id: "records", label: "Hồ sơ bệnh án", icon: <ClipboardCheck size={18} /> },
+        { id: "feedback", label: "Phản hồi", icon: <Chat size={18} /> },
+        { id: "customers", label: "Khách hàng", icon: <UserGroup size={18} /> },
     ]
 
     const toggleSidebar = () => {
@@ -63,7 +80,7 @@ export default function Sidebar({ activeTab, setActiveTab }) {
 
                 <div className="sidebar-footer-v2">
                     <button className="logout-btn-v2">
-                        <HiOutlineLogout size={16} className="logout-icon-v2" />
+                        <Logout size={16} className="logout-icon-v2" />
                         <span className="logout-text-v2">Đăng xuất</span>
                     </button>
                     <p className="footer-text-v2">© 2024 Eyespire</p>
