@@ -16,6 +16,7 @@ import {
   User,
 } from "lucide-react"
 import adminService from "../../../../services/adminService"
+import "../styles/ScheduleModal.css"
 
 const ScheduleContent = () => {
   const [currentDate, setCurrentDate] = useState(new Date())
@@ -26,12 +27,24 @@ const ScheduleContent = () => {
   const [appointments, setAppointments] = useState([])
   const [doctors, setDoctors] = useState([])
   const [availabilities, setAvailabilities] = useState([])
-  const [showViewModal, setShowViewModal] = useState(false)
-  const [showMoreModal, setShowMoreModal] = useState(false)
+  
+  // Thay thế các state modal riêng biệt bằng state chung
+  const [modalOpen, setModalOpen] = useState(false)
+  const [modalType, setModalType] = useState(null) // 'viewAppointment', 'moreAppointments', 'availability'
+  
+  // Giữ lại các state dữ liệu
   const [selectedAppointment, setSelectedAppointment] = useState(null)
   const [moreAppointments, setMoreAppointments] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  
+  // State cho chuyển trang
+  const [currentPage, setCurrentPage] = useState("doctors") // "doctors" hoặc "schedule"
+  
+  // State cho quản lý lịch làm việc bác sĩ
+  const [availabilityMode, setAvailabilityMode] = useState("add") // add, edit
+  const [selectedAvailability, setSelectedAvailability] = useState(null)
+  const [showAvailabilityTab, setShowAvailabilityTab] = useState(false)
 
   const timeSlots = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"]
 
@@ -110,12 +123,25 @@ const ScheduleContent = () => {
 
   const loadAvailabilities = async () => {
     try {
+      setLoading(true)
+      let availabilityData = []
+
       if (selectedDoctor && selectedDoctor !== "all") {
-        const availabilityData = await adminService.getAvailableTimeSlots(selectedDoctor, selectedDate)
-        setAvailabilities(availabilityData)
+        // Lấy lịch làm việc của bác sĩ cụ thể
+        availabilityData = await adminService.getDoctorAvailability(selectedDoctor, selectedDate)
+      } else {
+        // Lấy tất cả lịch làm việc theo ngày
+        availabilityData = await adminService.getAvailabilitiesByDate(selectedDate)
       }
+
+      console.log("Availabilities data:", availabilityData)
+      setAvailabilities(availabilityData)
     } catch (err) {
+      console.error("Error loading availabilities:", err)
       toast.error("Lỗi khi tải lịch làm việc")
+      setAvailabilities([]) // Set empty array on error
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -240,6 +266,87 @@ const ScheduleContent = () => {
     return doctor ? doctor.name : "Unknown"
   }
 
+  // Hàm định dạng thởi gian để đảm bảo định dạng HH:MM
+  const formatTimeString = (timeStr) => {
+    if (!timeStr) return ""
+    
+    // Nếu đã đúng định dạng HH:MM thì trả về luôn
+    if (/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(timeStr)) {
+      return timeStr
+    }
+    
+    try {
+      // Nếu là đối tượng Date
+      if (timeStr instanceof Date) {
+        return `${String(timeStr.getHours()).padStart(2, '0')}:${String(timeStr.getMinutes()).padStart(2, '0')}`
+      }
+      
+      // Nếu là chuỗi có định dạng khác, cố gắng chuyển đổi
+      if (typeof timeStr === 'string') {
+        // Loại bỏ các ký tự không phải số và dấu hai chấm
+        const cleanedTime = timeStr.replace(/[^0-9:]/g, '')
+        
+        // Tách giờ và phút
+        const parts = cleanedTime.split(':')
+        if (parts.length >= 2) {
+          const hours = parseInt(parts[0], 10)
+          const minutes = parseInt(parts[1], 10)
+          
+          if (!isNaN(hours) && !isNaN(minutes)) {
+            return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`
+          }
+        }
+      }
+      
+      // Nếu không xử lý được, trả về chuỗi gốc
+      return timeStr
+    } catch (error) {
+      console.error("Error formatting time:", error)
+      return timeStr
+    }
+  }
+  
+  // Hàm định dạng ngày tháng để đảm bảo định dạng YYYY-MM-DD
+  const formatDateString = (dateStr) => {
+    if (!dateStr) return ""
+    
+    // Nếu đã đúng định dạng YYYY-MM-DD thì trả về luôn
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+      return dateStr
+    }
+    
+    try {
+      // Nếu là đối tượng Date
+      if (dateStr instanceof Date) {
+        return `${dateStr.getFullYear()}-${String(dateStr.getMonth() + 1).padStart(2, '0')}-${String(dateStr.getDate()).padStart(2, '0')}`
+      }
+      
+      // Nếu là chuỗi có định dạng khác, cố gắng chuyển đổi
+      if (typeof dateStr === 'string') {
+        // Loại bỏ các ký tự không phải số và dấu gạch ngang
+        const cleanedDate = dateStr.replace(/[^0-9-]/g, '')
+        
+        // Tách năm, tháng và ngày
+        const parts = cleanedDate.split('-')
+        if (parts.length >= 3) {
+          const year = parseInt(parts[0], 10)
+          const month = parseInt(parts[1], 10)
+          const day = parseInt(parts[2], 10)
+          
+          if (!isNaN(year) && !isNaN(month) && !isNaN(day)) {
+            return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+          }
+        }
+      }
+      
+      // Nếu không xử lý được, trả về chuỗi gốc
+      return dateStr
+    } catch (error) {
+      console.error("Error formatting date:", error)
+      return dateStr
+    }
+  }
+
   const monthNames = [
     "Tháng 1",
     "Tháng 2",
@@ -261,6 +368,11 @@ const ScheduleContent = () => {
     setCurrentDate((prev) => {
       const newDate = new Date(prev)
       newDate.setDate(prev.getDate() + direction * 7)
+      
+      // Cập nhật selectedDate để kích hoạt useEffect tải dữ liệu mới
+      const formattedDate = `${newDate.getFullYear()}-${String(newDate.getMonth() + 1).padStart(2, '0')}-${String(newDate.getDate()).padStart(2, '0')}`
+      setSelectedDate(formattedDate)
+      
       return newDate
     })
   }
@@ -294,22 +406,130 @@ const ScheduleContent = () => {
 
   const handleViewAppointment = (appointment) => {
     setSelectedAppointment(appointment)
-    setShowViewModal(true)
+    setModalType("viewAppointment")
+    setModalOpen(true)
   }
 
   const handleShowMoreAppointments = (appointments) => {
     setMoreAppointments(appointments)
-    setShowMoreModal(true)
+    setModalType("moreAppointments")
+    setModalOpen(true)
   }
 
-  const handleCloseMoreModal = () => {
-    setShowMoreModal(false)
-    setMoreAppointments([])
+  const handleCloseModal = () => {
+    setModalOpen(false)
+    // Đặt timeout để tránh hiệu ứng nhấp nháy khi đóng modal
+    setTimeout(() => {
+      setModalType(null)
+      // Reset các state dữ liệu nếu cần
+      if (modalType === "viewAppointment") {
+        setSelectedAppointment(null)
+      } else if (modalType === "moreAppointments") {
+        setMoreAppointments([])
+      } else if (modalType === "availability") {
+        setSelectedAvailability(null)
+      }
+    }, 200)
   }
 
-  const handleCloseViewModal = () => {
-    setShowViewModal(false)
-    setSelectedAppointment(null)
+  const handleSelectDoctor = (doctorId) => {
+    setSelectedDoctor(doctorId)
+    if (doctorId !== "all") {
+      setCurrentPage("schedule")
+    }
+  }
+
+  const handleBackToDoctorsList = () => {
+    setCurrentPage("doctors")
+  }
+
+  // Hàm mở modal thêm lịch làm việc mới
+  const handleAddAvailability = () => {
+    setAvailabilityMode("add")
+    setSelectedAvailability({
+      doctorId: selectedDoctor !== "all" ? selectedDoctor : "",
+      date: selectedDate,
+      startTime: "08:00",
+      endTime: "17:00",
+      status: "AVAILABLE",
+      notes: ""
+    })
+    setModalType("availability")
+    setModalOpen(true)
+  }
+
+  // Hàm mở modal chỉnh sửa lịch làm việc
+  const handleEditAvailability = (availability) => {
+    setAvailabilityMode("edit")
+    setSelectedAvailability(availability)
+    setModalType("availability")
+    setModalOpen(true)
+  }
+
+  // Hàm xử lý khi thay đổi thông tin lịch làm việc trong form
+  const handleAvailabilityChange = (e) => {
+    const { name, value } = e.target
+    setSelectedAvailability(prev => ({
+      ...prev,
+      [name]: value
+    }))
+  }
+
+  // Hàm lưu lịch làm việc (thêm mới hoặc cập nhật)
+  const handleSaveAvailability = async () => {
+    try {
+      setLoading(true)
+      
+      // Đảm bảo định dạng dữ liệu phù hợp với backend
+      const formattedData = {
+        ...selectedAvailability,
+        // Đảm bảo date là chuỗi định dạng YYYY-MM-DD
+        date: formatDateString(selectedAvailability.date),
+        // Đảm bảo thởi gian là chuỗi định dạng HH:MM
+        startTime: formatTimeString(selectedAvailability.startTime),
+        endTime: formatTimeString(selectedAvailability.endTime),
+        // Đảm bảo doctorId là chuỗi
+        doctorId: selectedAvailability.doctorId ? selectedAvailability.doctorId.toString() : ""
+      }
+      
+      console.log("Sending availability data:", formattedData)
+      
+      if (availabilityMode === "add") {
+        await adminService.createDoctorAvailability(formattedData)
+        toast.success("Thêm lịch làm việc thành công")
+      } else {
+        await adminService.updateDoctorAvailability(formattedData.id, formattedData)
+        toast.success("Cập nhật lịch làm việc thành công")
+      }
+      
+      // Tải lại dữ liệu sau khi thêm/sửa
+      loadAvailabilities()
+      handleCloseModal()
+    } catch (err) {
+      console.error("Error saving availability:", err)
+      toast.error(err.message || "Lỗi khi lưu lịch làm việc")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Hàm xóa lịch làm việc
+  const handleDeleteAvailability = async (availabilityId) => {
+    if (window.confirm("Bạn có chắc chắn muốn xóa lịch làm việc này?")) {
+      setLoading(true)
+      adminService
+        .deleteDoctorAvailability(availabilityId)
+        .then(() => {
+          toast.success("Xóa lịch làm việc thành công")
+          loadAvailabilities()
+        })
+        .catch((error) => {
+          toast.error(`Lỗi khi xóa lịch làm việc: ${error.message}`)
+        })
+        .finally(() => {
+          setLoading(false)
+        })
+    }
   }
 
   const getStatusText = (status) => {
@@ -342,10 +562,191 @@ const ScheduleContent = () => {
     }
   }
 
-  const handleSelectDoctor = (doctorId) => {
-    setSelectedDoctor((prev) => (prev === doctorId ? "all" : doctorId))
+  // Render availability day view (grid format)
+  const renderAvailabilityDayView = () => {
+    const dayAvailabilities = availabilities
+      .filter(avail => avail.date === formatDate(currentDate))
+      .sort((a, b) => a.startTime.localeCompare(b.startTime))
+    
+    // Group availabilities by time slot
+    const availabilitiesByTimeSlot = {}
+    timeSlots.forEach(slot => {
+      availabilitiesByTimeSlot[slot] = dayAvailabilities.filter(avail => {
+        // Check if the availability overlaps with this time slot
+        const slotHour = parseInt(slot.split(':')[0])
+        const availStartHour = parseInt(avail.startTime.split(':')[0])
+        const availEndHour = parseInt(avail.endTime.split(':')[0])
+        
+        return availStartHour <= slotHour && availEndHour > slotHour
+      })
+    })
+    
+    return (
+      <div className="day-view">
+        <div className="day-header-single">
+          <h3>
+            {dayNames[currentDate.getDay() === 0 ? 6 : currentDate.getDay() - 1]} - {currentDate.getDate()}/
+            {currentDate.getMonth() + 1}/{currentDate.getFullYear()}
+          </h3>
+        </div>
+        <div className="day-schedule">
+          {timeSlots.map((time) => {
+            const slotAvailabilities = availabilitiesByTimeSlot[time]
+            return (
+              <div key={time} className="day-time-slot">
+                <div className="day-time-label">{time}</div>
+                <div className="day-time-content">
+                  {slotAvailabilities.length > 0 ? (
+                    slotAvailabilities.map((avail) => {
+                      const doctor = doctors.find((d) => d.id === avail.doctorId)
+                      return (
+                        <div
+                          key={avail.id}
+                          className={`day-appointment ${avail.status.toLowerCase()}`}
+                          style={{ 
+                            borderLeft: `4px solid ${doctor?.color}`,
+                            minHeight: "60px",
+                            maxHeight: "80px"
+                          }}
+                          onClick={() => handleEditAvailability(avail)}
+                        >
+                          <div className="day-apt-header">
+                            <span className="day-apt-time">
+                              {avail.startTime} - {avail.endTime}
+                            </span>
+                            <span className={`day-apt-status ${avail.status.toLowerCase()}`}>
+                              {avail.status === "AVAILABLE" ? "Khả dụng" : "Không khả dụng"}
+                            </span>
+                          </div>
+                          <div className="day-apt-doctor" style={{ color: doctor?.color }}>
+                            {doctor?.name}
+                          </div>
+                          {avail.notes && <div className="day-apt-notes">{avail.notes}</div>}
+                          <div className="day-apt-actions">
+                            <button 
+                              className="btn btn-sm btn-secondary" 
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleEditAvailability(avail)
+                              }}
+                            >
+                              Sửa
+                            </button>
+                            <button 
+                              className="btn btn-sm btn-danger" 
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleDeleteAvailability(avail.id)
+                              }}
+                            >
+                              Xóa
+                            </button>
+                          </div>
+                        </div>
+                      )
+                    })
+                  ) : (
+                    <div className="empty-slot">Trống</div>
+                  )}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    )
   }
 
+  // Render availability week view (grid format)
+  const renderAvailabilityWeekView = () => {
+    const weekDays = getWeekDays(currentDate)
+    
+    // Helper function to get availabilities for a specific day and time slot
+    const getAvailabilitiesForDateTime = (day, timeSlot) => {
+      const dayFormatted = formatDate(day)
+      const hour = parseInt(timeSlot.split(':')[0])
+      
+      return availabilities.filter(avail => {
+        if (avail.date !== dayFormatted) return false
+        
+        const startHour = parseInt(avail.startTime.split(':')[0])
+        const endHour = parseInt(avail.endTime.split(':')[0])
+        
+        return startHour <= hour && endHour > hour
+      })
+    }
+    
+    return (
+      <div className="week-view">
+        <div className="week-header">
+          <div className="time-column-header">Giờ</div>
+          {weekDays.map((day, index) => (
+            <div key={index} className={`day-header ${isToday(day) ? "today" : ""}`}>
+              <div className="day-name">{dayNames[index]}</div>
+              <div className="day-date">
+                {day.getDate()}/{day.getMonth() + 1}
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="week-body">
+          {timeSlots.map((time) => (
+            <div key={time} className="time-row">
+              <div className="time-label">{time}</div>
+              {weekDays.map((day, dayIndex) => {
+                const dayAvailabilities = getAvailabilitiesForDateTime(day, time)
+                
+                return (
+                  <div key={dayIndex} className="time-cell">
+                    {dayAvailabilities.length > 0 && (
+                      <div className="appointment-group">
+                        {dayAvailabilities.map((avail) => {
+                          const doctor = doctors.find((d) => d.id === avail.doctorId)
+                          const durationHours = parseInt(avail.endTime.split(':')[0]) - parseInt(avail.startTime.split(':')[0])
+                          // Giảm độ cao xuống còn 40px mỗi giờ thay vì 60px
+                          const durationPixels = durationHours * 40 // 40px per hour
+                          
+                          return (
+                            <div
+                              key={avail.id}
+                              className={`appointment-block ${avail.status.toLowerCase()}`}
+                              style={{
+                                backgroundColor: doctor?.color + "20",
+                                borderLeft: `4px solid ${doctor?.color}`,
+                                height: `${durationPixels}px`,
+                                flex: 1,
+                                minWidth: "80px",
+                                maxHeight: "120px",
+                                minHeight: "60px",
+                                cursor: "pointer",
+                                fontSize: "0.85rem",
+                                padding: "4px",
+                                overflow: "hidden"
+                              }}
+                              onClick={() => handleEditAvailability(avail)}
+                              title={`${doctor?.name}: ${avail.startTime} - ${avail.endTime}`}
+                            >
+                              <div className="apt-time">{avail.startTime} - {avail.endTime}</div>
+                              <div className="apt-doctor">{doctor?.name}</div>
+                              <div className="apt-status">
+                                {avail.status === "AVAILABLE" ? "Khả dụng" : "Không khả dụng"}
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  // Render week view (grid format)
   const renderWeekView = () => {
     const weekDays = getWeekDays(currentDate)
     const MAX_VISIBLE_APPOINTMENTS = 1
@@ -431,6 +832,7 @@ const ScheduleContent = () => {
     )
   }
 
+  // Render day view (grid format)
   const renderDayView = () => {
     const dayAppointments = appointments
         .filter(
@@ -495,59 +897,100 @@ const ScheduleContent = () => {
     )
   }
 
-  if (error) return <div className="error-message">{error}</div>
-
-  return (
+  // Hàm render trang danh sách bác sĩ
+  const renderDoctorsPage = () => {
+    return (
       <div>
-        <div className="stats-grid">
-          <div className="stat-card">
-            <div className="stat-hdr">
-              <span className="stat-title">Tổng bác sĩ</span>
-              <Stethoscope size={24} className="stat-icon" />
-            </div>
-            <div className="stat-value">{doctors.length - 1}</div>
-            <div className="stat-change positive">Đang hoạt động</div>
+        <div className="admin-content-header">
+          <div className="admin-content-title">
+            <h2>
+              <Stethoscope className="icon" /> Danh sách bác sĩ
+            </h2>
+            <p>Chọn bác sĩ để xem lịch làm việc và lịch hẹn</p>
           </div>
-          <div className="stat-card">
-            <div className="stat-hdr">
-              <span className="stat-title">Lịch hẹn hôm nay</span>
-              <Calendar size={24} className="stat-icon" />
+        </div>
+        
+        <div className="card">
+          <div className="card-hdr">
+            <h3 className="card-title">Danh sách bác sĩ</h3>
+          </div>
+          <div className="card-content">
+            <div className="search-box doctor-search-box" style={{ marginBottom: "16px" }}>
+              <Search size={16} className="search-icon" />
+              <input
+                type="text"
+                className="search-input"
+                placeholder="Tìm kiếm bác sĩ..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                disabled={loading}
+              />
             </div>
-            <div className="stat-value">{appointments.filter((apt) => apt.date === formatDate(new Date())).length}</div>
-            <div className="stat-change positive">
-              +
-              {appointments.filter((apt) => apt.date === formatDate(new Date())).length -
-                  appointments.filter((apt) => {
-                    const yesterday = new Date()
-                    yesterday.setDate(yesterday.getDate() - 1)
-                    return apt.date === formatDate(yesterday)
-                  }).length}{" "}
-              từ hôm qua
+            <div className="doctor-legend">
+              {doctors
+                .filter(doctor => doctor.id !== "all" && doctor.name.toLowerCase().includes(searchTerm.toLowerCase()))
+                .map((doctor) => (
+                  <div
+                    key={doctor.id}
+                    className="legend-item"
+                    onClick={() => handleSelectDoctor(doctor.id)}
+                    style={{ cursor: "pointer" }}
+                  >
+                    <div className="legend-color" style={{ backgroundColor: doctor.color }}></div>
+                    <div className="legend-info">
+                      <div className="legend-name">{doctor.name}</div>
+                      {doctor.specialty && <div className="legend-specialty">{doctor.specialty}</div>}
+                    </div>
+                  </div>
+                ))}
             </div>
           </div>
-          <div className="stat-card">
-            <div className="stat-hdr">
-              <span className="stat-title">Giờ làm việc</span>
-              <Clock size={24} className="stat-icon" />
-            </div>
-            <div className="stat-value">9h</div>
-            <div className="stat-change">08:00 - 17:00</div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-hdr">
-              <span className="stat-title">Slot</span>
-              <ClockIcon size={24} className="stat-icon" />
-            </div>
-            <div className="stat-value">{timeSlots.length}</div>
-            <div className="stat-change">Slot/ngày</div>
+        </div>
+      </div>
+    );
+  };
+  
+  // Hàm render trang lịch của bác sĩ đã chọn
+  const renderSchedulePage = () => {
+    return (
+      <div style={{ width: "100%", display: "flex", flexDirection: "column", height: "100%" }}>
+        <div className="admin-content-header">
+          <div className="admin-content-title">
+            <button 
+              className="btn btn-secondary" 
+              onClick={handleBackToDoctorsList}
+              style={{ marginRight: "15px" }}
+            >
+              &larr; Quay lại
+            </button>
+            <h2>
+              <Calendar className="icon" /> Lịch của bác sĩ: {getDoctorName(selectedDoctor)}
+            </h2>
           </div>
         </div>
 
-        <div className="schedule-container">
-          <div className="card">
+        <div className="schedule-container" style={{ width: "100%", flex: 1, display: "flex", flexDirection: "column" }}>
+          <div className="card" style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", flex: 1 }}>
             <div className="card-hdr">
               <div className="schedule-controls">
                 <div className="view-controls">
+                  <div className="schedule-tabs" style={{ marginRight: "15px" }}>
+                    <button 
+                      className={`btn ${!showAvailabilityTab ? 'btn-primary' : 'btn-secondary'}`} 
+                      onClick={() => setShowAvailabilityTab(false)}
+                      disabled={loading}
+                    >
+                      Lịch hẹn
+                    </button>
+                    <button 
+                      className={`btn ${showAvailabilityTab ? 'btn-primary' : 'btn-secondary'}`} 
+                      onClick={() => setShowAvailabilityTab(true)}
+                      disabled={loading}
+                    >
+                      Lịch làm việc
+                    </button>
+                  </div>
+                  
                   <button
                       className={`btn ${viewMode === "day" ? "btn-primary" : "btn-secondary"}`}
                       onClick={() => setViewMode("day")}
@@ -595,173 +1038,420 @@ const ScheduleContent = () => {
                 </div>
               </div>
             </div>
-            <div className="card-content">
-              {loading ? (
+            <div className="card-content" style={{ flex: 1, overflow: "auto" }}>
+              {!showAvailabilityTab ? (
+                // Hiển thị lịch hẹn
+                loading ? (
                   <div className="loading">Đang tải...</div>
-              ) : viewMode === "week" ? (
+                ) : viewMode === "week" ? (
                   renderWeekView()
-              ) : (
+                ) : (
                   renderDayView()
+                )
+              ) : (
+                // Hiển thị lịch làm việc của bác sĩ
+                <div className="doctor-availability-container">
+                  <div className="availability-header">
+                    <h3>Lịch làm việc của bác sĩ</h3>
+                    <button 
+                      className="btn btn-primary" 
+                      onClick={handleAddAvailability}
+                      disabled={loading || selectedDoctor === "all"}
+                    >
+                      Thêm lịch làm việc mới
+                    </button>
+                  </div>
+                  
+                  {selectedDoctor === "all" ? (
+                    <div className="availability-notice">
+                      Vui lòng chọn một bác sĩ cụ thể để quản lý lịch làm việc
+                    </div>
+                  ) : loading ? (
+                    <div className="loading">Đang tải...</div>
+                  ) : availabilities.length === 0 ? (
+                    <div className="empty-data">Không có lịch làm việc nào cho bác sĩ này vào ngày đã chọn</div>
+                  ) : (
+                    <>
+                      {/* Hiển thị lịch làm việc dạng lưới */}
+                      <div className="availability-grid-view">
+                        {viewMode === "week" ? renderAvailabilityWeekView() : renderAvailabilityDayView()}
+                      </div>
+                      
+                      {/* Hiển thị lịch làm việc dạng bảng bên dưới */}
+                      <div className="availability-list" style={{ marginTop: "20px" }}>
+                        <h4>Danh sách chi tiết</h4>
+                        <table className="admin-table">
+                          <thead>
+                            <tr>
+                              <th>Ngày</th>
+                              <th>Giờ bắt đầu</th>
+                              <th>Giờ kết thúc</th>
+                              <th>Trạng thái</th>
+                              <th>Ghi chú</th>
+                              <th>Thao tác</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {availabilities.map((availability) => (
+                              <tr key={availability.id}>
+                                <td>{availability.date}</td>
+                                <td>{availability.startTime}</td>
+                                <td>{availability.endTime}</td>
+                                <td>
+                                  <span className={`status ${availability.status.toLowerCase()}`}>
+                                    {availability.status === "AVAILABLE" ? "Khả dụng" : 
+                                     availability.status === "UNAVAILABLE" ? "Không khả dụng" : 
+                                     availability.status === "BOOKED" ? "Đã đặt" : availability.status}
+                                  </span>
+                                </td>
+                                <td>{availability.notes || "-"}</td>
+                                <td>
+                                  <div className="action-buttons">
+                                    <button 
+                                      className="btn btn-sm btn-secondary" 
+                                      onClick={() => handleEditAvailability(availability)}
+                                      disabled={loading}
+                                    >
+                                      Sửa
+                                    </button>
+                                    <button 
+                                      className="btn btn-sm btn-danger" 
+                                      onClick={() => handleDeleteAvailability(availability.id)}
+                                      disabled={loading}
+                                    >
+                                      Xóa
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </>
+                  )}
+                </div>
               )}
-            </div>
-          </div>
-
-          <div className="card">
-            <div className="card-hdr">
-              <h3 className="card-title">Bác sĩ</h3>
-            </div>
-            <div className="card-content">
-              <div className="search-box doctor-search-box" style={{ marginBottom: "16px" }}>
-                <Search size={16} className="search-icon" />
-                <input
-                    type="text"
-                    className="search-input"
-                    placeholder="Tìm kiếm bác sĩ..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    disabled={loading}
-                />
-              </div>
-              <div className="doctor-legend">
-                {doctors
-                    .filter((doctor) => doctor.name.toLowerCase().includes(searchTerm.toLowerCase()))
-                    .map((doctor) => (
-                        <div
-                            key={doctor.id}
-                            className={`legend-item ${selectedDoctor === doctor.id ? "active" : ""}`}
-                            onClick={() => handleSelectDoctor(doctor.id)}
-                        >
-                          <div className="legend-color" style={{ backgroundColor: doctor.color }}></div>
-                          <div className="legend-info">
-                            <div className="legend-name">{doctor.name}</div>
-                            {doctor.specialty && <div className="legend-specialty">{doctor.specialty}</div>}
-                          </div>
-                        </div>
-                    ))}
-              </div>
             </div>
           </div>
         </div>
 
-        {/* Modal xem chi tiết lịch hẹn */}
-        {showViewModal && selectedAppointment && (
-            <div className="modal-overlay" role="dialog" aria-modal="true">
+        {/* Modal duy nhất với animation và thiết kế mới */}
+        {modalOpen && (
+          <div className="modal-overlay" onClick={handleCloseModal}>
+            <div className="modal" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <h3>
+                  {modalType === "viewAppointment" && (
+                    <>
+                      <Calendar className="icon" style={{ marginRight: "8px" }} />
+                      Chi tiết lịch hẹn
+                    </>
+                  )}
+                  {modalType === "moreAppointments" && (
+                    <>
+                      <Calendar className="icon" style={{ marginRight: "8px" }} />
+                      Lịch hẹn cùng thởi điểm
+                    </>
+                  )}
+                  {modalType === "availability" && (
+                    <>
+                      <Clock className="icon" style={{ marginRight: "8px" }} />
+                      {availabilityMode === "add" ? "Thêm lịch làm việc" : "Chỉnh sửa lịch làm việc"}
+                    </>
+                  )}
+                </h3>
+                <button className="close-btn" onClick={handleCloseModal}>
+                  <X size={18} />
+                </button>
+              </div>
+              
               <div className="modal-content">
-                <div className="modal-header">
-                  <h3>Xem chi tiết lịch hẹn</h3>
-                  <button className="modal-close" onClick={handleCloseViewModal} aria-label="Đóng modal" disabled={loading}>
-                    <X size={18} />
-                  </button>
-                </div>
-                <div className="modal-body">
-                  <div className="form">
-                    <div className="admin-detail-section">
-                      <h4 className="admin-detail-section-title">
-                        <User size={18} /> Thông tin lịch hẹn
-                      </h4>
-                      <div className="admin-detail-grid">
-                        <div className="admin-detail-item">
-                          <span className="admin-detail-label">Bác sĩ:</span>
-                          <span className="admin-detail-value">{getDoctorName(selectedAppointment.doctorId)}</span>
-                        </div>
-                        <div className="admin-detail-item">
-                          <span className="admin-detail-label">Ngày:</span>
-                          <span className="admin-detail-value">{selectedAppointment.date}</span>
-                        </div>
-                        <div className="admin-detail-item">
-                          <span className="admin-detail-label">Giờ:</span>
-                          <span className="admin-detail-value">
-                        {selectedAppointment.time} -{" "}
-                            {addMinutesToTime(selectedAppointment.time, Number.parseInt(selectedAppointment.duration))}
-                      </span>
-                        </div>
-                        <div className="admin-detail-item">
-                          <span className="admin-detail-label">Thời gian:</span>
-                          <span className="admin-detail-value">{selectedAppointment.duration} phút</span>
-                        </div>
-                        <div className="admin-detail-item">
-                          <span className="admin-detail-label">Bệnh nhân:</span>
-                          <span className="admin-detail-value">{selectedAppointment.patient}</span>
-                        </div>
-                        <div className="admin-detail-item">
-                          <span className="admin-detail-label">Dịch vụ:</span>
-                          <span className="admin-detail-value">{selectedAppointment.service}</span>
-                        </div>
-                        <div className="admin-detail-item">
-                          <span className="admin-detail-label">Số điện thoại:</span>
-                          <span className="admin-detail-value">{selectedAppointment.phone}</span>
-                        </div>
-                        <div className="admin-detail-item">
-                          <span className="admin-detail-label">Trạng thái:</span>
-                          <span className={`status ${selectedAppointment.status}`}>
+                {/* Nội dung modal xem chi tiết lịch hẹn - thiết kế mới */}
+                {modalType === "viewAppointment" && selectedAppointment && (
+                  <div className="appointment-details">
+                    <div className="appointment-status-banner" style={{ backgroundColor: getDoctorColor(selectedAppointment.doctorId) }}>
+                      <div className="status-icon">
                         {getStatusIcon(selectedAppointment.status)}
-                            {getStatusText(selectedAppointment.status)}
-                      </span>
-                        </div>
+                      </div>
+                      <div className="status-text">
+                        {getStatusText(selectedAppointment.status)}
                       </div>
                     </div>
+                    
+                    <div className="detail-row">
+                      <span className="detail-label"><User size={16} /> Bệnh nhân:</span>
+                      <span className="detail-value">{selectedAppointment.patient}</span>
+                    </div>
+                    <div className="detail-row">
+                      <span className="detail-label"><Stethoscope size={16} /> Bác sĩ:</span>
+                      <span className="detail-value" style={{ color: getDoctorColor(selectedAppointment.doctorId) }}>
+                        {getDoctorName(selectedAppointment.doctorId)}
+                      </span>
+                    </div>
+                    <div className="detail-row">
+                      <span className="detail-label"><CheckCircle size={16} /> Dịch vụ:</span>
+                      <span className="detail-value">{selectedAppointment.service}</span>
+                    </div>
+                    <div className="detail-row">
+                      <span className="detail-label"><Calendar size={16} /> Ngày:</span>
+                      <span className="detail-value">{formatDate(new Date(selectedAppointment.date))}</span>
+                    </div>
+                    <div className="detail-row">
+                      <span className="detail-label"><Clock size={16} /> Giờ:</span>
+                      <span className="detail-value">{selectedAppointment.time}</span>
+                    </div>
+                    <div className="detail-row">
+                      <span className="detail-label"><ClockIcon size={16} /> Thời lượng:</span>
+                      <span className="detail-value">{selectedAppointment.duration} phút</span>
+                    </div>
+                    <div className="detail-row">
+                      <span className="detail-label"><Phone size={16} /> Số điện thoại:</span>
+                      <span className="detail-value">{selectedAppointment.phone}</span>
+                    </div>
                   </div>
-                </div>
-                <div className="modal-footer">
-                  <button className="btn btn-secondary" onClick={handleCloseViewModal} disabled={loading}>
-                    Đóng
-                  </button>
-                </div>
-              </div>
-            </div>
-        )}
-
-        {/* Modal xem danh sách lịch hẹn trùng */}
-        {showMoreModal && moreAppointments.length > 0 && (
-            <div className="modal-overlay" role="dialog" aria-modal="true">
-              <div className="modal-content">
-                <div className="modal-header">
-                  <h3>Danh sách lịch hẹn</h3>
-                  <button className="modal-close" onClick={handleCloseMoreModal} aria-label="Đóng modal" disabled={loading}>
-                    <X size={18} />
-                  </button>
-                </div>
-                <div className="modal-body">
-                  <div className="appointment-list">
-                    {moreAppointments.map((apt) => {
-                      const doctor = doctors.find((d) => d.id === apt.doctorId)
-                      return (
-                          <div
-                              key={apt.id}
-                              className={`appointment-item ${apt.status}`}
-                              style={{ borderLeft: `4px solid ${doctor?.color}` }}
-                              onClick={() => {
-                                handleViewAppointment(apt)
-                                setShowMoreModal(false)
-                              }}
-                          >
-                            <div className="apt-header">
-                              <span className="apt-time">{apt.time}</span>
-                              <span className={`apt-status ${apt.status}`}>
-                          {getStatusIcon(apt.status)}
-                                {getStatusText(apt.status)}
-                        </span>
-                            </div>
-                            <div className="apt-patient">{apt.patient}</div>
-                            <div className="apt-service">{apt.service}</div>
-                            <div className="apt-doctor" style={{ color: doctor?.color }}>
-                              {doctor?.name}
-                            </div>
+                )}
+                
+                {/* Nội dung modal xem danh sách lịch hẹn cùng thởi điểm - thiết kế mới */}
+                {modalType === "moreAppointments" && moreAppointments.length > 0 && (
+                  <div className="appointments-list">
+                    {moreAppointments.map((appointment) => (
+                      <div 
+                        key={appointment.id} 
+                        className="appointment-item"
+                        style={{ borderLeftColor: getDoctorColor(appointment.doctorId) }}
+                      >
+                        <div className="appointment-header">
+                          <div className="appointment-time">
+                            <Clock size={16} style={{ color: "#4b5563" }} />
+                            <span>{appointment.time}</span>
                           </div>
-                      )
-                    })}
+                          <div 
+                            className="appointment-status"
+                            style={{ 
+                              color: appointment.status === "confirmed" ? "#10b981" : 
+                                    appointment.status === "pending" ? "#f59e0b" : 
+                                    appointment.status === "canceled" ? "#ef4444" : 
+                                    "#8b5cf6" 
+                            }}
+                          >
+                            {getStatusIcon(appointment.status)}
+                            <span>{getStatusText(appointment.status)}</span>
+                          </div>
+                        </div>
+                        
+                        <div className="appointment-doctor" style={{ color: getDoctorColor(appointment.doctorId) }}>
+                          <Stethoscope size={16} />
+                          <span>{getDoctorName(appointment.doctorId)}</span>
+                        </div>
+                        
+                        <div className="appointment-patient">
+                          <User size={16} />
+                          <span>{appointment.patient}</span>
+                        </div>
+                        
+                        <div className="appointment-service">
+                          <CheckCircle size={16} style={{ color: "#4b5563" }} />
+                          <span>{appointment.service}</span>
+                        </div>
+                        
+                        <div className="appointment-phone">
+                          <Phone size={16} style={{ color: "#4b5563" }} />
+                          <span>{appointment.phone}</span>
+                        </div>
+                        
+                        <button
+                          className="btn btn-primary"
+                          onClick={() => {
+                            setSelectedAppointment(appointment)
+                            setModalType("viewAppointment")
+                          }}
+                        >
+                          Xem chi tiết
+                        </button>
+                      </div>
+                    ))}
                   </div>
-                </div>
+                )}
+                
+                {/* Nội dung modal quản lý lịch làm việc - thiết kế mới */}
+                {modalType === "availability" && selectedAvailability && (
+                  <div className="availability-form">
+                    <div className="form-content">
+                      <div className="form-group">
+                        <label htmlFor="doctorId">
+                          <Stethoscope size={16} style={{ marginRight: "8px" }} />
+                          Bác sĩ
+                        </label>
+                        <select 
+                          id="doctorId" 
+                          name="doctorId" 
+                          value={selectedAvailability.doctorId} 
+                          onChange={handleAvailabilityChange}
+                          disabled={loading}
+                          required
+                          className="styled-select"
+                        >
+                          <option value="">Chọn bác sĩ</option>
+                          {doctors
+                            .filter(doctor => doctor.id !== "all")
+                            .map(doctor => (
+                              <option key={doctor.id} value={doctor.id}>
+                                {doctor.name}
+                              </option>
+                            ))
+                          }
+                        </select>
+                      </div>
+                      
+                      <div className="form-group">
+                        <label htmlFor="date">
+                          <Calendar size={16} style={{ marginRight: "8px" }} />
+                          Ngày
+                        </label>
+                        <input 
+                          type="date" 
+                          id="date" 
+                          name="date" 
+                          value={selectedAvailability.date} 
+                          onChange={handleAvailabilityChange}
+                          disabled={loading}
+                          required
+                          className="styled-input"
+                        />
+                      </div>
+                      
+                      <div className="form-row">
+                        <div className="form-group">
+                          <label htmlFor="startTime">
+                            <Clock size={16} style={{ marginRight: "8px" }} />
+                            Giờ bắt đầu
+                          </label>
+                          <input 
+                            type="time" 
+                            id="startTime" 
+                            name="startTime" 
+                            value={selectedAvailability.startTime} 
+                            onChange={handleAvailabilityChange}
+                            disabled={loading}
+                            required
+                            className="styled-input"
+                          />
+                        </div>
+                        
+                        <div className="form-group">
+                          <label htmlFor="endTime">
+                            <Clock size={16} style={{ marginRight: "8px" }} />
+                            Giờ kết thúc
+                          </label>
+                          <input 
+                            type="time" 
+                            id="endTime" 
+                            name="endTime" 
+                            value={selectedAvailability.endTime} 
+                            onChange={handleAvailabilityChange}
+                            disabled={loading}
+                            required
+                            className="styled-input"
+                          />
+                        </div>
+                      </div>
+                      
+                      <div className="form-group">
+                        <label htmlFor="status">
+                          <CheckCircle size={16} style={{ marginRight: "8px" }} />
+                          Trạng thái
+                        </label>
+                        <select 
+                          id="status" 
+                          name="status" 
+                          value={selectedAvailability.status} 
+                          onChange={handleAvailabilityChange}
+                          disabled={loading}
+                          required
+                          className="styled-select"
+                        >
+                          <option value="AVAILABLE">Khả dụng</option>
+                          <option value="UNAVAILABLE">Không khả dụng</option>
+                        </select>
+                      </div>
+                      
+                      <div className="form-group">
+                        <label htmlFor="notes">
+                          <ClockIcon size={16} style={{ marginRight: "8px" }} />
+                          Ghi chú
+                        </label>
+                        <textarea 
+                          id="notes" 
+                          name="notes" 
+                          value={selectedAvailability.notes || ""} 
+                          onChange={handleAvailabilityChange}
+                          disabled={loading}
+                          rows="3"
+                          className="styled-textarea"
+                          placeholder="Nhập ghi chú nếu cần..."
+                        ></textarea>
+                      </div>
+                    </div>
+                    
+                    {/* Footer cho modal availability */}
+                    <div className="modal-footer">
+                      <button 
+                        className="btn btn-secondary" 
+                        onClick={handleCloseModal} 
+                        disabled={loading}
+                      >
+                        <X size={16} style={{ marginRight: "4px" }} />
+                        Hủy
+                      </button>
+                      <button 
+                        className="btn btn-primary" 
+                        onClick={handleSaveAvailability} 
+                        disabled={loading}
+                      >
+                        <CheckCircle size={16} style={{ marginRight: "4px" }} />
+                        {availabilityMode === "add" ? "Thêm" : "Lưu"}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+              
+              {/* Footer chỉ hiển thị cho modal chi tiết lịch hẹn */}
+              {modalType === "viewAppointment" && (
                 <div className="modal-footer">
-                  <button className="btn btn-secondary" onClick={handleCloseMoreModal} disabled={loading}>
+                  <button className="btn btn-secondary" onClick={handleCloseModal}>
                     Đóng
                   </button>
                 </div>
-              </div>
+              )}
+              
+              {/* Footer chỉ hiển thị cho modal danh sách lịch hẹn */}
+              {modalType === "moreAppointments" && (
+                <div className="modal-footer">
+                  <button className="btn btn-secondary" onClick={handleCloseModal}>
+                    Đóng
+                  </button>
+                </div>
+              )}
             </div>
+          </div>
         )}
       </div>
-  )
-}
+    );
+  };
+
+  // Return chính của component
+  return (
+    <div className="schedule-content" style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", overflow: "auto" }}>
+      {loading && <div className="loading">Loading...</div>}
+      {error && <div className="error-message">{error}</div>}
+      
+      {!loading && !error && (
+        currentPage === "doctors" ? renderDoctorsPage() : renderSchedulePage()
+      )}
+    </div>
+  );
+};
 
 export default ScheduleContent
