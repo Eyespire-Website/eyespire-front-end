@@ -7,7 +7,6 @@ const axiosInstance = axios.create({
     withCredentials: true,
 })
 
-
 const adminService = {
     // ==================== DOCTOR ENDPOINTS ====================
 
@@ -132,7 +131,7 @@ const adminService = {
     // Lấy danh sách cuộc hẹn theo ngày
     getAppointmentsByDate: async (date) => {
         try {
-            const response = await axiosInstance.get("/appointments", {
+            const response = await axiosInstance.get(`/appointments/by-date`, {
                 params: { date: date },
             })
             return response.data
@@ -145,7 +144,7 @@ const adminService = {
     // Lấy danh sách cuộc hẹn theo bác sĩ và ngày
     getAppointmentsByDoctorAndDate: async (doctorId, date) => {
         try {
-            const response = await axiosInstance.get("/appointments", {
+            const response = await axiosInstance.get(`/appointments/by-doctor-and-date`, {
                 params: { doctorId: doctorId, date: date },
             })
             return response.data
@@ -169,9 +168,7 @@ const adminService = {
     // Cập nhật trạng thái cuộc hẹn
     updateAppointmentStatus: async (id, status) => {
         try {
-            const response = await axiosInstance.patch(`/appointments/${id}/status`, {
-                status: status.toUpperCase(),
-            })
+            const response = await axiosInstance.put(`/appointments/${id}/status`, { status: status })
             return response.data
         } catch (error) {
             console.error("Lỗi khi cập nhật trạng thái cuộc hẹn:", error)
@@ -206,16 +203,43 @@ const adminService = {
     // Tạo lịch làm việc mới cho bác sĩ
     createDoctorAvailability: async (availabilityData) => {
         try {
+            // Validate data trước khi gửi
+            const validation = adminService.validateAvailabilityData(availabilityData)
+            if (!validation.isValid) {
+                throw new Error(validation.errors.join(", "))
+            }
+            
+            // Đảm bảo định dạng ngày là "YYYY-MM-DD"
+            const formatDate = (dateStr) => {
+                if (!dateStr) return dateStr;
+                // Nếu là đối tượng Date, chuyển về chuỗi YYYY-MM-DD
+                if (dateStr instanceof Date) {
+                    return dateStr.toISOString().split('T')[0];
+                }
+                return dateStr;
+            };
+            
+            // Đảm bảo định dạng thời gian là "HH:MM:SS" (chỉ thời gian, không có ngày)
+            const formatTime = (timeStr) => {
+                if (!timeStr) return timeStr;
+                // Nếu thời gian không có phần giây, thêm ":00" vào cuối
+                return timeStr.length === 5 ? `${timeStr}:00` : timeStr;
+            };
+    
+            // Tạo payload phù hợp với cấu trúc bảng trong database
             const payload = {
                 doctorId: Number.parseInt(availabilityData.doctorId),
-                date: availabilityData.date,
-                startTime: availabilityData.startTime,
-                endTime: availabilityData.endTime,
+                date: formatDate(availabilityData.date),
+                startTime: formatTime(availabilityData.startTime),
+                endTime: formatTime(availabilityData.endTime),
                 status: availabilityData.status,
                 notes: availabilityData.notes || "",
             }
-
-            const response = await axiosInstance.post("/doctors/availability", payload)
+    
+            // Log payload để debug
+            console.log("Sending availability payload:", JSON.stringify(payload));
+            
+            const response = await axiosInstance.post(`/admin/doctor-availabilities`, payload)
             return response.data
         } catch (error) {
             console.error("Lỗi khi tạo lịch làm việc:", error)
@@ -226,6 +250,12 @@ const adminService = {
     // Cập nhật lịch làm việc
     updateDoctorAvailability: async (id, availabilityData) => {
         try {
+            // Validate data trước khi gửi
+            const validation = adminService.validateAvailabilityData(availabilityData)
+            if (!validation.isValid) {
+                throw new Error(validation.errors.join(", "))
+            }
+
             const payload = {
                 doctorId: Number.parseInt(availabilityData.doctorId),
                 date: availabilityData.date,
@@ -235,7 +265,7 @@ const adminService = {
                 notes: availabilityData.notes || "",
             }
 
-            const response = await axiosInstance.put(`/doctors/availability/${id}`, payload)
+            const response = await axiosInstance.put(`/admin/doctor-availabilities/${id}`, payload)
             return response.data
         } catch (error) {
             console.error("Lỗi khi cập nhật lịch làm việc:", error)
@@ -246,7 +276,7 @@ const adminService = {
     // Xóa lịch làm việc
     deleteDoctorAvailability: async (id) => {
         try {
-            const response = await axiosInstance.delete(`/doctors/availability/${id}`)
+            const response = await axiosInstance.delete(`/admin/doctor-availabilities/${id}`)
             return response.data
         } catch (error) {
             console.error("Lỗi khi xóa lịch làm việc:", error)
@@ -257,12 +287,12 @@ const adminService = {
     // Lấy lịch làm việc theo bác sĩ và ngày
     getDoctorAvailability: async (doctorId, date) => {
         try {
-            const response = await axiosInstance.get("/doctors/availability", {
+            const response = await axiosInstance.get(`/admin/doctor-availabilities/by-doctor-and-date`, {
                 params: { doctorId: doctorId, date: date },
             })
             return response.data
         } catch (error) {
-            console.error("Lỗi khi lấy lịch làm việc:", error)
+            console.error("Lỗi khi lấy lịch làm việc của bác sĩ:", error)
             throw error
         }
     },
@@ -270,10 +300,47 @@ const adminService = {
     // Lấy tất cả lịch làm việc
     getAllAvailabilities: async () => {
         try {
-            const response = await axiosInstance.get("/doctors/availability")
+            const response = await axiosInstance.get("/admin/doctor-availabilities")
             return response.data
         } catch (error) {
             console.error("Lỗi khi lấy tất cả lịch làm việc:", error)
+            throw error
+        }
+    },
+    
+    // Lấy lịch làm việc theo ngày
+    getAvailabilitiesByDate: async (date) => {
+        try {
+            const response = await axiosInstance.get(`/admin/doctor-availabilities/by-date`, {
+                params: { date: date },
+            })
+            return response.data
+        } catch (error) {
+            console.error("Lỗi khi lấy lịch làm việc theo ngày:", error)
+            throw error
+        }
+    },
+    
+    // Lấy lịch làm việc theo khoảng thời gian
+    getAvailabilitiesByDateRange: async (startDate, endDate) => {
+        try {
+            const response = await axiosInstance.get(`/admin/doctor-availabilities/by-date-range`, {
+                params: { startDate: startDate, endDate: endDate },
+            })
+            return response.data
+        } catch (error) {
+            console.error("Lỗi khi lấy lịch làm việc theo khoảng thời gian:", error)
+            throw error
+        }
+    },
+    
+    // Cập nhật trạng thái lịch làm việc
+    updateAvailabilityStatus: async (id, status) => {
+        try {
+            const response = await axiosInstance.put(`/admin/doctor-availabilities/${id}/status`, { status: status })
+            return response.data
+        } catch (error) {
+            console.error("Lỗi khi cập nhật trạng thái lịch làm việc:", error)
             throw error
         }
     },
@@ -294,10 +361,10 @@ const adminService = {
     // Lấy dịch vụ y tế
     getMedicalServices: async () => {
         try {
-            const response = await axiosInstance.get("/medical-services")
+            const response = await axiosInstance.get("/services")
             return response.data
         } catch (error) {
-            console.error("Lỗi khi lấy danh sách dịch vụ y tế:", error)
+            console.error("Lỗi khi lấy dịch vụ y tế:", error)
             throw error
         }
     },
