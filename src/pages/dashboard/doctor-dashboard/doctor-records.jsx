@@ -1,65 +1,87 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useLocation } from "react-router-dom"
 import "./doctor-records.css"
 import { Upload, Trash2, User, FileText, Stethoscope, Pill, StickyNote, Minus, Plus, ChevronDown } from "lucide-react"
+import medicalRecordService from '../../../services/medicalRecordService';
+import authService from '../../../services/authService';
 
 export default function CreateMedicalRecord() {
     const navigate = useNavigate()
+    const location = useLocation()
     const [loading, setLoading] = useState(false)
-    const [patients, setPatients] = useState([])
+    const [products, setProducts] = useState([])
     const [selectedFiles, setSelectedFiles] = useState([])
-    const [medications, setMedications] = useState([
-        { id: 1, name: "Chloramphenicol", quantity: 3 },
-        { id: 2, name: "Malachite Green", quantity: 1 },
-    ])
-    const [selectedMedication, setSelectedMedication] = useState("Malachite Green")
-    const [showMedicationDropdown, setShowMedicationDropdown] = useState(false)
-
-    const availableMedications = [
-        "Malachite Green",
-        "Chloramphenicol",
-        "Methylene Blue",
-        "Salt (NaCl)",
-        "Potassium Permanganate",
-        "Formalin",
-        "Acriflavine",
-        "Copper Sulfate",
-    ]
+    const [recommendedMedicines, setRecommendedMedicines] = useState([])
+    const [selectedMedicine, setSelectedMedicine] = useState("")
+    const [showMedicineDropdown, setShowMedicineDropdown] = useState(false)
+    const [error, setError] = useState(null)
 
     const [recordData, setRecordData] = useState({
         patientId: "",
         diagnosis: "",
-        prescription: "",
         notes: "",
-        recordFileUrl: "",
     })
 
-    // Fetch patients on component mount
+    // Lấy thông tin từ state
+    const { state } = location
+    const appointmentId = state?.appointmentId
+    const initialPatientId = state?.patientId
+    const initialPatientName = state?.patientName
+    const doctorId = state?.doctorId // Lấy doctorId từ state
+
+    // Log state để debug
+    console.log("Location state:", state)
+
     useEffect(() => {
-        const fetchPatients = async () => {
+        const fetchData = async () => {
             try {
                 setLoading(true)
-                // Simulate API call
-                await new Promise((resolve) => setTimeout(resolve, 500))
-                setPatients([
-                    { id: 1, name: "Nguyễn Văn A", phone: "0352195876", email: "nguyenvana@gmail.com" },
-                    { id: 2, name: "Trần Thị B", phone: "0987654321", email: "tranthib@gmail.com" },
-                    { id: 3, name: "Lê Văn C", phone: "0123456789", email: "levanc@gmail.com" },
-                ])
+
+                // Kiểm tra doctorId
+                if (!doctorId || isNaN(Number(doctorId))) {
+                    setError("ID bác sĩ không hợp lệ!")
+                    navigate("/dashboard/doctor/appointments")
+                    return
+                }
+
+                // Lấy danh sách thuốc
+                const productsData = await medicalRecordService.getProductsMedicine()
+                setProducts(productsData)
+
+                // Thiết lập patientId
+                if (initialPatientId && !isNaN(initialPatientId)) {
+                    setRecordData(prev => ({
+                        ...prev,
+                        patientId: Number(initialPatientId)
+                    }))
+                } else {
+                    setError("ID bệnh nhân không hợp lệ!")
+                    navigate("/dashboard/doctor/appointments")
+                }
+
+                // Kiểm tra trạng thái cuộc hẹn
+                if (appointmentId && !isNaN(appointmentId)) {
+                    const appointmentStatus = await medicalRecordService.getAppointmentStatus(appointmentId)
+                    if (appointmentStatus !== "COMPLETED") {
+                        setError("Cuộc hẹn chưa hoàn thành, không thể tạo hồ sơ!")
+                        navigate("/dashboard/doctor/appointments")
+                    }
+                } else {
+                    setError("ID cuộc hẹn không hợp lệ!")
+                    navigate("/dashboard/doctor/appointments")
+                }
             } catch (error) {
-                console.error("Error fetching patients:", error)
+                console.error("Error fetching data:", error)
+                setError("Không thể tải dữ liệu: " + (error.response?.data?.message || error.message))
+                navigate("/dashboard/doctor/appointments")
             } finally {
                 setLoading(false)
             }
         }
-        fetchPatients()
-    }, [])
-
-    const handleBackHome = () => {
-        navigate("/")
-    }
+        fetchData()
+    }, [initialPatientId, appointmentId, doctorId, navigate])
 
     const handleInputChange = (e) => {
         const { name, value } = e.target
@@ -73,7 +95,22 @@ export default function CreateMedicalRecord() {
         const files = Array.from(e.target.files)
         if (files.length === 0) return
 
-        const newFiles = files.map((file) => ({
+        const maxFileSize = 5 * 1024 * 1024 // 5MB
+        const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+
+        const validFiles = files.filter(file => {
+            if (file.size > maxFileSize) {
+                setError(`File ${file.name} quá lớn! Kích thước tối đa là 5MB.`)
+                return false
+            }
+            if (!allowedTypes.includes(file.type)) {
+                setError(`File ${file.name} có định dạng không được hỗ trợ!`)
+                return false
+            }
+            return true
+        })
+
+        const newFiles = validFiles.map((file) => ({
             file,
             preview: URL.createObjectURL(file),
             name: file.name,
@@ -91,107 +128,136 @@ export default function CreateMedicalRecord() {
         })
     }
 
-    const handleMedicationQuantity = (id, change) => {
-        setMedications((prev) =>
+    const handleMedicineQuantity = (id, change) => {
+        setRecommendedMedicines((prev) =>
             prev
                 .map((med) => (med.id === id ? { ...med, quantity: Math.max(0, med.quantity + change) } : med))
                 .filter((med) => med.quantity > 0),
         )
     }
 
-    const addMedication = () => {
-        if (!selectedMedication) return
+    const addMedicine = () => {
+        if (!selectedMedicine) {
+            setError("Vui lòng chọn thuốc!")
+            return
+        }
 
-        // Check if medication already exists
-        const exists = medications.some((med) => med.name.toLowerCase() === selectedMedication.toLowerCase())
+        const product = products.find(p => p.name === selectedMedicine)
+        if (!product) {
+            setError("Thuốc không tồn tại!")
+            return
+        }
 
+        const exists = recommendedMedicines.some((med) => med.id === product.id)
         if (!exists) {
-            setMedications((prev) => [
+            setRecommendedMedicines((prev) => [
                 ...prev,
                 {
-                    id: Date.now(),
-                    name: selectedMedication,
+                    id: product.id,
+                    name: product.name,
                     quantity: 1,
                 },
             ])
         } else {
-            // If exists, increase quantity
-            setMedications((prev) =>
+            setRecommendedMedicines((prev) =>
                 prev.map((med) =>
-                    med.name.toLowerCase() === selectedMedication.toLowerCase() ? { ...med, quantity: med.quantity + 1 } : med,
+                    med.id === product.id ? { ...med, quantity: med.quantity + 1 } : med,
                 ),
             )
         }
+        setSelectedMedicine("")
+        setShowMedicineDropdown(false)
     }
 
     const handleSubmit = async (e) => {
         e.preventDefault()
 
-        if (!recordData.patientId || !recordData.diagnosis) {
-            alert("Vui lòng điền đầy đủ thông tin bắt buộc!")
+        const patientId = Number(recordData.patientId)
+        if (!patientId || isNaN(patientId) || patientId <= 0 || !recordData.diagnosis.trim()) {
+            setError("Vui lòng điền đầy đủ thông tin bắt buộc và đảm bảo ID bệnh nhân là số hợp lệ!")
+            return
+        }
+
+        if (!appointmentId || isNaN(Number(appointmentId))) {
+            setError("ID cuộc hẹn không hợp lệ!")
+            return
+        }
+
+        if (!doctorId || isNaN(Number(doctorId))) {
+            setError("ID bác sĩ không hợp lệ!")
             return
         }
 
         try {
             setLoading(true)
+            setError(null)
+            const productQuantities = recommendedMedicines.map(med => ({
+                productId: Number(med.id),
+                quantity: Number(med.quantity)
+            }))
 
-            // Prepare data for submission
-            const formData = new FormData()
-
-            // Add record data
-            Object.keys(recordData).forEach((key) => {
-                if (recordData[key]) {
-                    formData.append(key, recordData[key])
-                }
+            console.log("Submitting data:", {
+                patientId,
+                doctorId: Number(doctorId),
+                diagnosis: recordData.diagnosis,
+                notes: recordData.notes,
+                appointmentId: Number(appointmentId),
+                productQuantities,
+                files: selectedFiles.map(f => f.name)
             })
 
-            // Add medications to prescription
-            const prescriptionData = medications.map((med) => `${med.name}: ${med.quantity}`).join("\n")
-            formData.append("prescription", prescriptionData)
-
-            // Add files
-            selectedFiles.forEach((fileObj, index) => {
-                formData.append(`files`, fileObj.file)
-            })
-
-            // Simulate API call
-            console.log("Submitting medical record:", recordData)
-            console.log("Medications:", medications)
-            await new Promise((resolve) => setTimeout(resolve, 1500))
-
+            const response = await medicalRecordService.createMedicalRecord(
+                {
+                    ...recordData,
+                    patientId,
+                    doctorId: Number(doctorId),
+                    appointmentId: Number(appointmentId),
+                    productQuantities
+                },
+                selectedFiles.map(fileObj => fileObj.file)
+            )
             alert("Hồ sơ bệnh án đã được tạo thành công!")
-
-            // Reset form
-            setRecordData({
-                patientId: "",
-                diagnosis: "",
-                prescription: "",
-                notes: "",
-                recordFileUrl: "",
-            })
+            setRecordData({ patientId: "", diagnosis: "", notes: "" })
             setSelectedFiles([])
-            setMedications([])
+            setRecommendedMedicines([])
+            navigate("/dashboard/doctor/records")
         } catch (error) {
-            console.error("Error creating medical record:", error)
-            alert("Có lỗi xảy ra khi tạo hồ sơ bệnh án!")
+            console.error("Error creating medical record:", error.response?.data, error.message)
+            setError("Có lỗi xảy ra khi tạo hồ sơ bệnh án: " + (error.response?.data?.message || error.message))
         } finally {
             setLoading(false)
         }
     }
 
-    const selectedPatient = patients.find((p) => p.id === Number.parseInt(recordData.patientId))
+    if (loading) {
+        return (
+            <div className="records-container">
+                <div className="records-content">
+                    <div className="records-header">
+                        <h1>Tạo hồ sơ bệnh án</h1>
+                    </div>
+                    <div className="loading-container">
+                        <p>Đang tải dữ liệu...</p>
+                    </div>
+                </div>
+            </div>
+        )
+    }
 
     return (
         <div className="records-container">
             <div className="records-content">
                 <div className="records-header">
                     <h1>Tạo hồ sơ bệnh án</h1>
+                    {initialPatientName && (
+                        <p>Đối với: {initialPatientName} (Cuộc hẹn ID: {appointmentId})</p>
+                    )}
+                    {error && <p className="error-message" style={{ color: 'red' }}>{error}</p>}
                 </div>
 
                 <div className="create-record-form-container">
                     <form onSubmit={handleSubmit} className="record-form">
                         <div className="form-grid-medical">
-                            {/* Patient Selection */}
                             <div className="form-section">
                                 <div className="section-header">
                                     <User size={20} />
@@ -202,35 +268,18 @@ export default function CreateMedicalRecord() {
                                     <label>
                                         <span className="required">*</span> Chọn bệnh nhân
                                     </label>
-                                    <select
+                                    <input
+                                        type="text"
                                         name="patientId"
-                                        value={recordData.patientId}
-                                        onChange={handleInputChange}
+                                        value={initialPatientName || "Không có dữ liệu"}
                                         className="form-control"
-                                        required
-                                    >
-                                        <option value="">-- Chọn bệnh nhân --</option>
-                                        {patients.map((patient) => (
-                                            <option key={patient.id} value={patient.id}>
-                                                {patient.name} - {patient.phone}
-                                            </option>
-                                        ))}
-                                    </select>
+                                        disabled
+                                    />
                                 </div>
 
-                                {selectedPatient && (
-                                    <div className="patient-info">
-                                        <p>
-                                            <strong>Tên:</strong> {selectedPatient.name}
-                                        </p>
-                                        <p>
-                                            <strong>Điện thoại:</strong> {selectedPatient.phone}
-                                        </p>
-                                        <p>
-                                            <strong>Email:</strong> {selectedPatient.email}
-                                        </p>
-                                    </div>
-                                )}
+                                <div className="patient-info">
+                                    <p><strong>Tên:</strong> {initialPatientName || "Không có dữ liệu"}</p>
+                                </div>
 
                                 <div className="form-group">
                                     <label>Hình ảnh / Tài liệu</label>
@@ -253,7 +302,7 @@ export default function CreateMedicalRecord() {
                                                 {selectedFiles.map((fileObj, index) => (
                                                     <div key={index} className="file-preview-item">
                                                         {fileObj.file.type.startsWith("image/") ? (
-                                                            <img src={fileObj.preview || "/placeholder.svg"} alt={`Preview ${index}`} />
+                                                            <img src={fileObj.preview} alt={`Preview ${index}`} />
                                                         ) : (
                                                             <div className="file-icon">
                                                                 <FileText size={32} />
@@ -271,7 +320,6 @@ export default function CreateMedicalRecord() {
                                 </div>
                             </div>
 
-                            {/* Medical Information */}
                             <div className="form-section">
                                 <div className="section-header">
                                     <Stethoscope size={20} />
@@ -307,36 +355,34 @@ export default function CreateMedicalRecord() {
                                 </div>
                             </div>
 
-                            {/* Medication Management */}
                             <div className="form-section">
                                 <div className="section-header">
                                     <Pill size={20} />
-                                    <h3>Tìm thuốc</h3>
+                                    <h3>Thuốc được đề xuất</h3>
                                 </div>
 
                                 <div className="form-group">
                                     <div className="medication-dropdown-container">
                                         <div
                                             className="medication-dropdown"
-                                            onClick={() => setShowMedicationDropdown(!showMedicationDropdown)}
+                                            onClick={() => setShowMedicineDropdown(!showMedicineDropdown)}
                                         >
-                                            <span>{selectedMedication}</span>
-                                            <ChevronDown size={16} className={showMedicationDropdown ? "rotated" : ""} />
+                                            <span>{selectedMedicine || "Chọn thuốc"}</span>
+                                            <ChevronDown size={16} className={showMedicineDropdown ? "rotated" : ""} />
                                         </div>
 
-                                        {showMedicationDropdown && (
+                                        {showMedicineDropdown && (
                                             <div className="medication-dropdown-menu">
-                                                {availableMedications.map((med) => (
+                                                {products.map((product) => (
                                                     <div
-                                                        key={med}
+                                                        key={product.id}
                                                         className="medication-dropdown-item"
                                                         onClick={() => {
-                                                            setSelectedMedication(med)
-                                                            setShowMedicationDropdown(false)
-                                                            addMedication()
+                                                            setSelectedMedicine(product.name)
+                                                            addMedicine()
                                                         }}
                                                     >
-                                                        {med}
+                                                        {product.name}
                                                     </div>
                                                 ))}
                                             </div>
@@ -345,14 +391,14 @@ export default function CreateMedicalRecord() {
                                 </div>
 
                                 <div className="medications-list-container">
-                                    {medications.map((med) => (
+                                    {recommendedMedicines.map((med) => (
                                         <div key={med.id} className="medication-item-new">
                                             <div className="medication-name">{med.name}</div>
                                             <div className="medication-controls">
                                                 <button
                                                     type="button"
                                                     className="quantity-btn minus"
-                                                    onClick={() => handleMedicationQuantity(med.id, -1)}
+                                                    onClick={() => handleMedicineQuantity(med.id, -1)}
                                                 >
                                                     <Minus size={14} />
                                                 </button>
@@ -360,14 +406,14 @@ export default function CreateMedicalRecord() {
                                                 <button
                                                     type="button"
                                                     className="quantity-btn plus"
-                                                    onClick={() => handleMedicationQuantity(med.id, 1)}
+                                                    onClick={() => handleMedicineQuantity(med.id, 1)}
                                                 >
                                                     <Plus size={14} />
                                                 </button>
                                                 <button
                                                     type="button"
                                                     className="remove-btn"
-                                                    onClick={() => handleMedicationQuantity(med.id, -med.quantity)}
+                                                    onClick={() => handleMedicineQuantity(med.id, -med.quantity)}
                                                 >
                                                     <Trash2 size={14} />
                                                 </button>
@@ -379,7 +425,7 @@ export default function CreateMedicalRecord() {
                         </div>
 
                         <div className="form-actions">
-                            <button type="button" className="cancel-button" onClick={() => navigate("/dashboard/doctor/records")}>
+                            <button type="button" className="cancel-button" onClick={() => navigate("/dashboard/doctor/appointments")}>
                                 Hủy
                             </button>
                             <button type="submit" className="create-record-button" disabled={loading}>
