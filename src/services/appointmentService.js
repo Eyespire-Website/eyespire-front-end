@@ -143,6 +143,25 @@ const appointmentService = {
     }
   },
 
+
+  getDoctorAppointmentsByUserId: async (userId) => {
+    try {
+      const response = await axiosInstance.get(`/doctors/by-user/${userId}/appointments`);
+      return response.data;
+    } catch (error) {
+      console.error("Lỗi khi lấy danh sách lịch hẹn của bác sĩ theo userId:", error);
+      throw error;
+    }
+  },
+  updateAppointmentStatus: async (appointmentId, status) => {
+    try {
+      const response = await axiosInstance.put(`/appointments/${appointmentId}/status`, { status });
+      return response.data;
+    } catch (error) {
+      console.error("Lỗi khi cập nhật trạng thái lịch hẹn:", error);
+      throw error;
+    }
+  }
 };
 
 
