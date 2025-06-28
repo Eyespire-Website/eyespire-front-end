@@ -1,0 +1,318 @@
+/* CSS cho phần hiển thị hóa đơn trong modal chi tiết cuộc hẹn */
+.appointment-detail-modal__invoice {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 16px;
+    margin-top: 10px;
+    background-color: #f9f9f9;
+}
+
+.appointment-detail-modal__invoice-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px dashed #e0e0e0;
+}
+
+.appointment-detail-modal__invoice-title {
+    font-weight: 600;
+    font-size: 16px;
+    color: #333;
+}
+
+.appointment-detail-modal__invoice-status {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.appointment-detail-modal__invoice-status--paid {
+    background-color: #e6f7e6;
+    color: #2e7d32;
+}
+
+.appointment-detail-modal__invoice-status--waiting {
+    background-color: #fff8e1;
+    color: #ff8f00;
+}
+
+.appointment-detail-modal__invoice-items {
+    margin-bottom: 16px;
+}
+
+.appointment-detail-modal__invoice-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    color: #555;
+}
+
+.appointment-detail-modal__invoice-item--deposit {
+    color: #2e7d32;
+    font-weight: 500;
+}
+
+.deposit-amount {
+    color: #2e7d32;
+    font-weight: 500;
+}
+
+.appointment-detail-modal__invoice-subtotal {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-top: 1px dashed #e0e0e0;
+    border-bottom: 1px dashed #e0e0e0;
+    font-weight: 500;
+    color: #333;
+}
+
+.appointment-detail-modal__invoice-total {
+    display: flex;
+    justify-content: space-between;
+    padding: 16px 0 8px;
+    font-weight: 600;
+    font-size: 18px;
+    color: #1976d2;
+}
+
+.remaining-amount {
+    color: #1976d2;
+    font-weight: 600;
+}
+
+.payment-time {
+    margin-top: 12px;
+    font-size: 14px;
+    color: #666;
+    text-align: right;
+    font-style: italic;
+}
+
+/* Các style hiện có cho modal chi tiết */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-container {
+    background-color: white;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.appointment-details-modal {
+    max-width: 700px;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.modal-header h3 {
+    margin: 0;
+    color: #1976d2;
+    font-size: 18px;
+}
+
+.close-button {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+}
+
+.modal-body {
+    padding: 20px;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding: 16px 20px;
+    border-top: 1px solid #e0e0e0;
+    gap: 10px;
+}
+
+.appointment-details-content {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.details-section {
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px;
+    gap: 10px;
+}
+
+.icon-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: #e3f2fd;
+    color: #1976d2;
+}
+
+.section-header h4 {
+    margin: 0;
+    color: #333;
+    font-size: 16px;
+}
+
+.details-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.details-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.details-row.full-width {
+    grid-column: 1 / -1;
+}
+
+.details-label {
+    font-size: 14px;
+    color: #666;
+}
+
+.details-value {
+    font-size: 15px;
+    color: #333;
+    font-weight: 500;
+}
+
+.highlight {
+    color: #1976d2;
+    font-weight: 600;
+}
+
+.highlight-date {
+    color: #2e7d32;
+    font-weight: 600;
+}
+
+.highlight-time {
+    color: #0277bd;
+    font-weight: 600;
+}
+
+.highlight-amount {
+    color: #d32f2f;
+    font-weight: 600;
+}
+
+.status-container {
+    display: flex;
+}
+
+.payment-status {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.payment-status.paid {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+}
+
+.payment-status.unpaid {
+    background-color: #ffebee;
+    color: #c62828;
+}
+
+.notes-text {
+    font-style: italic;
+    color: #555;
+}
+
+.no-payment-info {
+    color: #757575;
+    font-style: italic;
+    text-align: center;
+    padding: 12px;
+}
+
+.cancel-button-primary {
+    background-color: #f44336;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.cancel-button-primary:hover {
+    background-color: #d32f2f;
+}
+
+.cancel-button-secondary {
+    background-color: #e0e0e0;
+    color: #333;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.cancel-button-secondary:hover {
+    background-color: #bdbdbd;
+}
+
+.close-button-secondary {
+    background-color: #e0e0e0;
+    color: #333;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.close-button-secondary:hover {
+    background-color: #bdbdbd;
+}

@@ -1,407 +1,660 @@
-"use client"
-
-import { useState, useEffect } from "react"
-import { User } from "lucide-react"
-import ProfileAvatar from "./jsx/ProfileAvatar"
-import ProfileForm from "./jsx/ProfileForm"
-import PasswordModal from "./jsx/PasswordModal"
-import userService from "../../../../services/userService"
-import authService from "../../../../services/authService"
-import axios from "axios"
-import "./ProfilePage.css"
+import React, { useEffect, useState } from "react";
+import { useNavigate } from 'react-router-dom';
+import authService from "../../../../services/authService";
+import userService from "../../../../services/userService";
+import axios from 'axios';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import './ProfilePage.css'
+import { User } from 'lucide-react';
 
 export default function ProfilePage() {
-    const [user, setUser] = useState(null)
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState(null)
-
-    const [receptionistData, setReceptionistData] = useState({
+    const navigate = useNavigate();
+    const [user, setUser] = useState({
+        name: "",
         email: "",
-        fullName: "",
         phone: "",
-        gender: "Nam",
-        dateOfBirth: "",
+        gender: "",
+        username: "",
+        fullname: "",
+        address: "",
+        role: "",
+        birthdate: "",
         provinceCode: "",
         districtCode: "",
         wardCode: "",
-        addressDetail: "",
-    })
+    });
 
-    // Address data
-    const [provinces, setProvinces] = useState([])
-    const [districts, setDistricts] = useState([])
-    const [wards, setWards] = useState([])
-    const [addressLoading, setAddressLoading] = useState(false)
-
-    const [previewUrl, setPreviewUrl] = useState("")
-    const [selectedFile, setSelectedFile] = useState(null)
-    const [showPasswordModal, setShowPasswordModal] = useState(false)
+    const [provinces, setProvinces] = useState([]);
+    const [districts, setDistricts] = useState([]);
+    const [wards, setWards] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [saving, setSaving] = useState(false);
+    const [showPasswordModal, setShowPasswordModal] = useState(false);
     const [passwordData, setPasswordData] = useState({
         currentPassword: "",
         newPassword: "",
-        confirmPassword: "",
-    })
-    const [passwordError, setPasswordError] = useState("")
-    const [isUpdating, setIsUpdating] = useState(false)
+        confirmPassword: ""
+    });
+    const [passwordError, setPasswordError] = useState("");
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [previewUrl, setPreviewUrl] = useState("");
 
-    // Fetch provinces on component mount
+    // Kiểm tra xem người dùng đăng nhập bằng Google hay không
+    const isGoogleAccount = () => {
+        const currentUser = authService.getCurrentUser();
+        return currentUser && (
+            currentUser.isGoogleAccount === true ||
+            currentUser.isGoogleAccount === "true"
+        );
+    };
+
+    // Hàm xử lý URL avatar
+    const getAvatarUrl = (url) => {
+        if (!url) return null;
+
+        // Nếu là URL đầy đủ (bắt đầu bằng http hoặc https)
+        if (url.startsWith('http://') || url.startsWith('https://')) {
+            return url;
+        }
+
+        // Nếu là đường dẫn tương đối, thêm base URL
+        if (url.startsWith('/')) {
+            return `http://localhost:8080${url}`;
+        }
+
+        // Trường hợp khác
+        return url;
+    };
+
+    // Hàm lấy thông tin người dùng từ API
+    const fetchUserData = async () => {
+        try {
+            // Kiểm tra xem có thông tin người dùng trong localStorage không
+            const currentUserFromStorage = authService.getCurrentUser();
+            if (!currentUserFromStorage) {
+                // Nếu không có thông tin người dùng, chuyển hướng về trang đăng nhập
+                navigate('/login');
+                return;
+            }
+
+            setLoading(true);
+            // Lấy thông tin người dùng hiện tại từ API
+            const userData = await userService.getCurrentUserInfo();
+
+            // Cập nhật state với dữ liệu mới
+            setUser({
+                name: userData.name || "",
+                email: userData.email || "",
+                phone: userData.phone || "",
+                gender: userData.gender || "MALE",
+                username: userData.username || "",
+                fullname: userData.name || "",
+                address: userData.addressDetail || "",
+                role: userData.role || "RECEPTIONIST",
+                birthdate: userData.dateOfBirth || "",
+                provinceCode: userData.province || "",
+                districtCode: userData.district || "",
+                wardCode: userData.ward || "",
+            });
+
+            // Cập nhật avatar nếu có
+            if (userData.avatarUrl) {
+                setPreviewUrl(userData.avatarUrl);
+            }
+
+            // Nếu có provinceCode, load districts
+            if (userData.province) {
+                fetchDistricts(userData.province);
+            }
+
+            // Nếu có districtCode, load wards
+            if (userData.district) {
+                fetchWards(userData.district);
+            }
+
+            setLoading(false);
+        } catch (error) {
+            console.error("Lỗi khi lấy thông tin người dùng:", error);
+
+            // Nếu API lỗi, sử dụng dữ liệu từ localStorage
+            const currentUser = authService.getCurrentUser();
+            if (currentUser) {
+                setUser({
+                    name: currentUser.name || "",
+                    email: currentUser.email || "",
+                    phone: currentUser.phone || "",
+                    gender: currentUser.gender || "MALE",
+                    username: currentUser.username || "",
+                    fullname: currentUser.name || "",
+                    address: currentUser.address || "",
+                    role: currentUser.role || "RECEPTIONIST",
+                    birthdate: currentUser.birthdate || "",
+                    provinceCode: currentUser.provinceCode || "",
+                    districtCode: currentUser.districtCode || "",
+                    wardCode: currentUser.wardCode || "",
+                });
+
+                if (currentUser.avatarUrl) {
+                    setPreviewUrl(currentUser.avatarUrl);
+                }
+
+                // Nếu có provinceCode, load districts
+                if (currentUser.provinceCode) {
+                    fetchDistricts(currentUser.provinceCode);
+                }
+
+                // Nếu có districtCode, load wards
+                if (currentUser.districtCode) {
+                    fetchWards(currentUser.districtCode);
+                }
+            } else {
+                // Nếu không có thông tin người dùng, chuyển hướng về trang đăng nhập
+                navigate('/login');
+            }
+
+            setLoading(false);
+        }
+    };
+
+    // Fetch tất cả các tỉnh/thành phố khi component mount
     useEffect(() => {
         const fetchProvinces = async () => {
             try {
-                setAddressLoading(true)
-                const response = await axios.get("https://provinces.open-api.vn/api/p/")
-                setProvinces(response.data)
+                setLoading(true);
+                const response = await axios.get('https://provinces.open-api.vn/api/p/');
+                setProvinces(response.data);
+                setLoading(false);
             } catch (error) {
-                console.error("Lỗi khi lấy dữ liệu tỉnh/thành phố:", error)
-            } finally {
-                setAddressLoading(false)
+                console.error("Lỗi khi lấy dữ liệu tỉnh/thành phố:", error);
+                setLoading(false);
             }
-        }
+        };
 
-        fetchProvinces()
-    }, [])
+        fetchProvinces();
+    }, []);
 
-    // Load user data on component mount
+    // Lấy thông tin người dùng từ API
     useEffect(() => {
-        const fetchUser = async () => {
-            try {
-                setLoading(true)
-                setError(null)
+        fetchUserData();
+    }, []);
 
-                const currentUser = authService.getCurrentUser()
-                if (!currentUser) {
-                    setError("Vui lòng đăng nhập để xem thông tin")
-                    setLoading(false)
-                    return
-                }
-
-                const userData = await userService.getCurrentUserInfo()
-                setUser(userData)
-            } catch (err) {
-                console.error("Error fetching user:", err)
-                setError(err.message || "Không thể tải thông tin người dùng")
-            } finally {
-                setLoading(false)
-            }
-        }
-
-        fetchUser()
-    }, [])
-
-    // Update form data when user data loads
-    useEffect(() => {
-        if (user) {
-            const newData = {
-                email: user.email || "",
-                fullName: user.name || "",
-                phone: user.phone || "",
-                gender: user.gender === "MALE" ? "Nam" : user.gender === "FEMALE" ? "Nữ" : "Khác",
-                dateOfBirth: user.dateOfBirth || "",
-                provinceCode: user.province || "",
-                districtCode: user.district || "",
-                wardCode: user.ward || "",
-                addressDetail: user.addressDetail || "",
-            }
-
-            setReceptionistData(newData)
-
-            // Fix avatar URL setting
-            if (user.avatarUrl) {
-                setPreviewUrl(user.avatarUrl)
-            } else if (user.avatar) {
-                setPreviewUrl(user.avatar)
-            } else if (user.profilePicture) {
-                setPreviewUrl(user.profilePicture)
-            }
-
-            // Load districts if province is selected
-            if (user.province) {
-                fetchDistricts(user.province)
-            }
-
-            // Load wards if district is selected
-            if (user.district) {
-                fetchWards(user.district)
-            }
-        }
-    }, [user])
-
-    // Fetch districts when province is selected
+    // Fetch quận/huyện khi chọn tỉnh/thành phố
     const fetchDistricts = async (provinceCode) => {
         try {
-            setAddressLoading(true)
-            const response = await axios.get(`https://provinces.open-api.vn/api/p/${provinceCode}?depth=2`)
-            setDistricts(response.data.districts || [])
+            setLoading(true);
+            const response = await axios.get(`https://provinces.open-api.vn/api/p/${provinceCode}?depth=2`);
+            setDistricts(response.data.districts);
+            setLoading(false);
         } catch (error) {
-            console.error("Lỗi khi lấy dữ liệu quận/huyện:", error)
-            setDistricts([])
-        } finally {
-            setAddressLoading(false)
+            console.error("Lỗi khi lấy dữ liệu quận/huyện:", error);
+            setLoading(false);
         }
-    }
+    };
 
-    // Fetch wards when district is selected
+    // Fetch phường/xã khi chọn quận/huyện
     const fetchWards = async (districtCode) => {
         try {
-            setAddressLoading(true)
-            const response = await axios.get(`https://provinces.open-api.vn/api/d/${districtCode}?depth=2`)
-            setWards(response.data.wards || [])
+            setLoading(true);
+            const response = await axios.get(`https://provinces.open-api.vn/api/d/${districtCode}?depth=2`);
+            setWards(response.data.wards);
+            setLoading(false);
         } catch (error) {
-            console.error("Lỗi khi lấy dữ liệu phường/xã:", error)
-            setWards([])
-        } finally {
-            setAddressLoading(false)
+            console.error("Lỗi khi lấy dữ liệu phường/xã:", error);
+            setLoading(false);
         }
-    }
+    };
 
-    const handleInputChange = (e) => {
-        const { name, value } = e.target
-        setReceptionistData((prev) => ({ ...prev, [name]: value }))
-    }
+    const handleLogout = () => {
+        authService.logout();
+        navigate('/');
+    };
 
-    // Handle province change
+    const handleBackHome = () => {
+        navigate('/');
+    };
+
+    const handleSave = async () => {
+        try {
+            setSaving(true);
+
+            // Chuẩn bị dữ liệu để gửi đi
+            const userData = {
+                name: user.fullname,
+                phone: user.phone,
+                gender: user.gender, // Đã được lưu đúng định dạng enum
+                username: user.username,
+                birthdate: user.birthdate,
+                provinceCode: user.provinceCode,
+                districtCode: user.districtCode,
+                wardCode: user.wardCode,
+                address: user.address
+            };
+
+            // Gọi API cập nhật thông tin
+            const response = await userService.updateProfile(userData);
+
+            // Cập nhật state với dữ liệu mới
+            setUser(prev => ({
+                ...prev,
+                ...response
+            }));
+
+            // Hiển thị thông báo thành công
+            toast.success('Cập nhật thông tin thành công!');
+
+        } catch (error) {
+            console.error('Lỗi khi cập nhật thông tin:', error);
+            toast.error('Có lỗi xảy ra khi cập nhật thông tin!');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setUser(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    // Xử lý khi chọn tỉnh/thành phố
     const handleProvinceChange = (e) => {
-        const provinceCode = e.target.value
-        setReceptionistData((prev) => ({
+        const provinceCode = e.target.value;
+        // Reset district và ward khi thay đổi province
+        setUser(prev => ({
             ...prev,
             provinceCode,
             districtCode: "",
-            wardCode: "",
-        }))
-        setDistricts([])
-        setWards([])
+            wardCode: ""
+        }));
+        setDistricts([]);
+        setWards([]);
 
         if (provinceCode) {
-            fetchDistricts(provinceCode)
+            fetchDistricts(provinceCode);
         }
-    }
+    };
 
-    // Handle district change
+    // Xử lý khi chọn quận/huyện
     const handleDistrictChange = (e) => {
-        const districtCode = e.target.value
-        setReceptionistData((prev) => ({
+        const districtCode = e.target.value;
+        // Reset ward khi thay đổi district
+        setUser(prev => ({
             ...prev,
             districtCode,
-            wardCode: "",
-        }))
-        setWards([])
+            wardCode: ""
+        }));
+        setWards([]);
 
         if (districtCode) {
-            fetchWards(districtCode)
+            fetchWards(districtCode);
         }
-    }
-
-    const handleFileChange = (e) => {
-        const file = e.target.files[0]
-        if (file) {
-            setSelectedFile(file)
-            const reader = new FileReader()
-            reader.onloadend = () => setPreviewUrl(reader.result)
-            reader.readAsDataURL(file)
-        }
-    }
-
-    const handleAvatarUpload = async () => {
-        if (!selectedFile) {
-            alert("Vui lòng chọn ảnh")
-            return
-        }
-
-        try {
-            setIsUpdating(true)
-
-            const formData = new FormData()
-            formData.append("avatar", selectedFile)
-
-            const avatarUrl = await userService.updateAvatar(formData)
-
-            const updatedUser = await userService.getCurrentUserInfo()
-            setUser(updatedUser)
-
-            setSelectedFile(null)
-            alert("Ảnh đã được cập nhật!")
-        } catch (error) {
-            console.error("Avatar upload error:", error)
-            alert(`Không thể cập nhật ảnh: ${error.message}`)
-        } finally {
-            setIsUpdating(false)
-        }
-    }
+    };
 
     const handlePasswordChange = (e) => {
-        const { name, value } = e.target
-        setPasswordData((prev) => ({ ...prev, [name]: value }))
-        if (passwordError) setPasswordError("")
-    }
+        const { name, value } = e.target;
+        setPasswordData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+        // Reset error when user types
+        if (passwordError) setPasswordError("");
+    };
 
     const handlePasswordSubmit = async () => {
+        // Validate passwords
         if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
-            setPasswordError("Vui lòng điền đầy đủ thông tin")
-            return
+            setPasswordError("Vui lòng điền đầy đủ thông tin");
+            return;
         }
+
         if (passwordData.newPassword !== passwordData.confirmPassword) {
-            setPasswordError("Mật khẩu mới không khớp")
-            return
+            setPasswordError("Mật khẩu mới không khớp");
+            return;
+        }
+
+        if (passwordData.newPassword.length < 6) {
+            setPasswordError("Mật khẩu mới phải có ít nhất 6 ký tự");
+            return;
         }
 
         try {
-            setIsUpdating(true)
-            const changePasswordRequest = {
+            // Gọi API đổi mật khẩu
+            await userService.changePassword({
                 currentPassword: passwordData.currentPassword,
-                newPassword: passwordData.newPassword,
-            }
+                newPassword: passwordData.newPassword
+            });
 
-            await userService.changePassword(changePasswordRequest)
-
-            alert("Đổi mật khẩu thành công!")
-            setShowPasswordModal(false)
+            // Reset form và đóng modal khi thành công
             setPasswordData({
                 currentPassword: "",
                 newPassword: "",
-                confirmPassword: "",
-            })
-            setPasswordError("")
-        } catch (error) {
-            console.error("Password change error:", error)
-            setPasswordError(error.response?.data || error.message || "Không thể đổi mật khẩu")
-        } finally {
-            setIsUpdating(false)
-        }
-    }
+                confirmPassword: ""
+            });
+            setShowPasswordModal(false);
 
-    const handleUpdate = async () => {
+            // Hiển thị thông báo thành công
+            toast.success('Đổi mật khẩu thành công!');
+        } catch (error) {
+            console.error('Lỗi khi đổi mật khẩu:', error);
+            if (error.response && error.response.status === 400) {
+                setPasswordError("Mật khẩu hiện tại không đúng");
+            } else {
+                setPasswordError("Có lỗi xảy ra, vui lòng thử lại sau");
+            }
+        }
+    };
+
+    // Xử lý chọn file ảnh đại diện
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setSelectedFile(file);
+
+            // Tạo URL preview cho ảnh đã chọn
+            const fileReader = new FileReader();
+            fileReader.onload = () => {
+                setPreviewUrl(fileReader.result);
+            };
+            fileReader.readAsDataURL(file);
+        }
+    };
+
+    // Xử lý upload ảnh đại diện
+    const handleAvatarUpload = async () => {
+        if (!selectedFile) {
+            toast.warning('Vui lòng chọn ảnh trước khi tải lên');
+            return;
+        }
+
         try {
-            setIsUpdating(true)
+            setSaving(true);
 
-            const genderMap = {
-                Nam: "MALE",
-                Nữ: "FEMALE",
-                Khác: "OTHER",
-            }
+            // Tạo FormData để gửi file
+            const formData = new FormData();
+            formData.append('avatar', selectedFile);
 
-            const updateRequest = {
-                name: receptionistData.fullName,
-                email: receptionistData.email,
-                phone: receptionistData.phone,
-                gender: genderMap[receptionistData.gender] || "MALE",
-                dateOfBirth: receptionistData.dateOfBirth || null,
-                province: receptionistData.provinceCode || null,
-                district: receptionistData.districtCode || null,
-                ward: receptionistData.wardCode || null,
-                addressDetail: receptionistData.addressDetail || null,
-            }
+            // Gọi API upload ảnh
+            await userService.updateAvatar(formData);
 
-            const updatedUser = await userService.updateProfile(updateRequest)
-            setUser(updatedUser)
-            alert("Thông tin đã được cập nhật!")
+            // Tải lại thông tin người dùng
+            await fetchUserData();
+
+            // Hiển thị thông báo thành công
+            toast.success('Cập nhật ảnh đại diện thành công!');
+
+            // Reset selectedFile và previewUrl sau khi upload thành công
+            setSelectedFile(null);
+            setPreviewUrl(null);
         } catch (error) {
-            console.error("Profile update error:", error)
-            alert(`Không thể cập nhật thông tin: ${error.response?.data || error.message}`)
+            console.error('Lỗi khi cập nhật ảnh đại diện:', error);
+            toast.error('Có lỗi xảy ra khi cập nhật ảnh đại diện!');
         } finally {
-            setIsUpdating(false)
+            setSaving(false);
         }
-    }
-
-    if (loading) {
-        return (
-            <div className="profile">
-                <div className="profile__loading">
-                    <div className="profile__spinner"></div>
-                    <p>Đang tải thông tin...</p>
-                </div>
-            </div>
-        )
-    }
-
-    if (error) {
-        return (
-            <div className="profile">
-                <div className="profile__error">
-                    <p>{error}</p>
-                    <button onClick={() => window.location.reload()} className="profile__retry-button">
-                        Thử lại
-                    </button>
-                </div>
-            </div>
-        )
-    }
-
-    if (!user) {
-        return (
-            <div className="profile">
-                <div className="profile__error">
-                    <p>❓ Không tìm thấy thông tin người dùng</p>
-                </div>
-            </div>
-        )
-    }
+    };
 
     return (
-        <div className="profile">
-            <div className="profile__header">
-                <h1 className="profile__title">Hồ sơ cá nhân</h1>
-            </div>
+        <div className="main-content" style={{ margin: 0, width: '100%', boxSizing: 'border-box' }}>
+            <ToastContainer position="top-right" autoClose={3000} />
+            {/* Header */}
+            <header className="content-header">
+                <h1>Hồ sơ cá nhân</h1>
+            </header>
 
-            <div className="profile__container">
-                <div className="profile__table-header">
-                    <div className="profile__table-header-content">
-                        <User className="profile__table-header-icon" />
-                        <span className="profile__table-header-text">
-              Thông tin cá nhân của {receptionistData.fullName || "người dùng"}
-            </span>
+            {/* Profile Content */}
+            <div className="profile-content">
+                <div className="profile-left">
+                    <div className="profile-avatar-container">
+                        <div className="profile-avatar-large">
+                            {previewUrl ? (
+                                <img src={getAvatarUrl(previewUrl)} alt="Avatar" className="avatar-image" />
+                            ) : (
+                                user.name.charAt(0) || "U"
+                            )}
+                        </div>
+                        <label htmlFor="avatar-upload" className="change-avatar-btn">
+                            <span className="camera-icon">📷</span>
+                        </label>
+                        <input
+                            type="file"
+                            id="avatar-upload"
+                            onChange={handleFileChange}
+                            accept="image/*"
+                            style={{ display: 'none' }}
+                        />
+                        {selectedFile && (
+                            <button
+                                className="upload-avatar-btn"
+                                onClick={handleAvatarUpload}
+                                disabled={saving}
+                            >
+                                {saving ? 'Đang tải lên...' : 'Lưu ảnh'}
+                            </button>
+                        )}
+                    </div>
+
+                    <div className="profile-info">
+                        <h3>{user.name}</h3>
+                        <p className="user-email">{user.email}</p>
+                        <p className="user-role">Lễ tân</p>
+                        {isGoogleAccount() ? (
+                            <p className="google-account-text">Tài khoản Google</p>
+                        ) : (
+                            <button className="edit-profile-btn" onClick={() => setShowPasswordModal(true)}>
+                                <span className="password-icon">🔒</span> Thay đổi mật khẩu ở đây!
+                            </button>
+                        )}
                     </div>
                 </div>
 
-                <div className="profile__content">
-                    <div className="profile__left-column">
-                        <ProfileAvatar
-                            fullName={receptionistData.fullName}
-                            previewUrl={previewUrl}
-                            handleFileChange={handleFileChange}
-                            handleAvatarUpload={handleAvatarUpload}
-                            selectedFile={selectedFile}
-                            isUploading={isUpdating}
-                        />
-                        <button onClick={() => setShowPasswordModal(true)} className="profile__password-btn" disabled={isUpdating}>
-                            🔒 Thay đổi mật khẩu ở đây!
-                        </button>
-                    </div>
-                    <div className="profile__right-column">
-                        <ProfileForm
-                            data={receptionistData}
-                            handleChange={handleInputChange}
-                            onUpdate={handleUpdate}
-                            isUpdating={isUpdating}
-                            userRole={user.role}
-                            // Address props
-                            provinces={provinces}
-                            districts={districts}
-                            wards={wards}
-                            addressLoading={addressLoading}
-                            onProvinceChange={handleProvinceChange}
-                            onDistrictChange={handleDistrictChange}
-                        />
+                <div className="profile-right">
+                    <div className="profile-form">
+                        <div className="form-grid">
+                            <div className="form-group">
+                                <label>Email <span className="required">*</span></label>
+                                <input
+                                    type="email"
+                                    name="email"
+                                    value={user.email}
+                                    onChange={handleChange}
+                                    className="form-control"
+                                    readOnly
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label>Số điện thoại <span className="required">*</span></label>
+                                <div className="phone-input">
+                                    <div className="phone-prefix">+84</div>
+                                    <input
+                                        type="text"
+                                        name="phone"
+                                        value={user.phone}
+                                        onChange={handleChange}
+                                        className="form-control"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="form-group">
+                                <label>Giới tính <span className="required">*</span></label>
+                                <select
+                                    name="gender"
+                                    value={user.gender}
+                                    onChange={handleChange}
+                                    className="form-control"
+                                >
+                                    <option value="MALE">Nam</option>
+                                    <option value="FEMALE">Nữ</option>
+                                    <option value="OTHER">Khác</option>
+                                </select>
+                            </div>
+
+                            <div className="form-group">
+                                <label>Tên tài khoản <span className="required">*</span></label>
+                                <input
+                                    type="text"
+                                    name="username"
+                                    value={user.username}
+                                    onChange={handleChange}
+                                    className="form-control"
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label>Ngày sinh <span className="required">*</span></label>
+                                <input
+                                    type="date"
+                                    name="birthdate"
+                                    value={user.birthdate}
+                                    onChange={handleChange}
+                                    className="form-control"
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label>Họ và tên <span className="required">*</span></label>
+                                <input
+                                    type="text"
+                                    name="fullname"
+                                    value={user.fullname}
+                                    onChange={handleChange}
+                                    className="form-control"
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label>Tỉnh/Thành phố</label>
+                                <select
+                                    name="provinceCode"
+                                    value={user.provinceCode}
+                                    onChange={handleProvinceChange}
+                                    className="form-control"
+                                    disabled={loading}
+                                >
+                                    <option value="">-- Chọn Tỉnh/Thành phố --</option>
+                                    {provinces.map(province => (
+                                        <option key={province.code} value={province.code}>
+                                            {province.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="form-group">
+                                <label>Quận/Huyện</label>
+                                <select
+                                    name="districtCode"
+                                    value={user.districtCode}
+                                    onChange={handleDistrictChange}
+                                    className="form-control"
+                                    disabled={!user.provinceCode || loading}
+                                >
+                                    <option value="">-- Chọn Quận/Huyện --</option>
+                                    {districts.map(district => (
+                                        <option key={district.code} value={district.code}>
+                                            {district.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="form-group">
+                                <label>Phường/Xã</label>
+                                <select
+                                    name="wardCode"
+                                    value={user.wardCode}
+                                    onChange={handleChange}
+                                    className="form-control"
+                                    disabled={!user.districtCode || loading}
+                                >
+                                    <option value="">-- Chọn Phường/Xã --</option>
+                                    {wards.map(ward => (
+                                        <option key={ward.code} value={ward.code}>
+                                            {ward.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="form-group full-width">
+                                <label>Địa chỉ</label>
+                                <input
+                                    type="text"
+                                    name="address"
+                                    value={user.address}
+                                    onChange={handleChange}
+                                    className="form-control"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="form-actions">
+                            <button
+                                className="save-button"
+                                onClick={handleSave}
+                                disabled={saving}
+                            >
+                                {saving ? 'Đang lưu...' : 'Cập nhật'}
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <PasswordModal
-                visible={showPasswordModal}
-                onClose={() => {
-                    setShowPasswordModal(false)
-                    setPasswordError("")
-                    setPasswordData({
-                        currentPassword: "",
-                        newPassword: "",
-                        confirmPassword: "",
-                    })
-                }}
-                onSubmit={handlePasswordSubmit}
-                onChange={handlePasswordChange}
-                data={passwordData}
-                error={passwordError}
-                isSubmitting={isUpdating}
-            />
+            {/* Password Change Modal */}
+            {showPasswordModal && (
+                <div className="modal-overlay">
+                    <div className="modal-container">
+                        <div className="modal-header">
+                            <h3>Thay đổi mật khẩu</h3>
+                            <button className="close-modal" onClick={() => setShowPasswordModal(false)}>×</button>
+                        </div>
+                        <div className="modal-body">
+                            {passwordError && (
+                                <div className="error-message">{passwordError}</div>
+                            )}
+                            <div className="form-group">
+                                <label>Mật khẩu hiện tại</label>
+                                <input
+                                    type="password"
+                                    name="currentPassword"
+                                    value={passwordData.currentPassword}
+                                    onChange={handlePasswordChange}
+                                    className="form-control"
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label>Mật khẩu mới</label>
+                                <input
+                                    type="password"
+                                    name="newPassword"
+                                    value={passwordData.newPassword}
+                                    onChange={handlePasswordChange}
+                                    className="form-control"
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label>Xác nhận mật khẩu mới</label>
+                                <input
+                                    type="password"
+                                    name="confirmPassword"
+                                    value={passwordData.confirmPassword}
+                                    onChange={handlePasswordChange}
+                                    className="form-control"
+                                />
+                            </div>
+                        </div>
+                        <div className="modal-footer">
+                            <button className="cancel-button" onClick={() => setShowPasswordModal(false)}>Hủy</button>
+                            <button className="save-button" onClick={handlePasswordSubmit}>Lưu thay đổi</button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
-    )
+    );
 }

@@ -137,42 +137,12 @@ export default function DoctorAppointmentsPage() {
         })
     }
 
-    // Handle complete appointment
-    const handleCompleteAppointment = async (appointmentId) => {
-        const confirmed = window.confirm("Bạn có chắc chắn muốn hoàn thành cuộc hẹn này không?")
-        if (!confirmed) {
-            return
-        }
 
-        try {
-            const appointment = allAppointments.find(apt => apt.id === appointmentId)
-            if (appointment?.status !== "CONFIRMED") {
-                setError("Chỉ có thể hoàn thành các cuộc hẹn ở trạng thái Đã xác nhận.")
-                return
-            }
-
-            await appointmentService.updateAppointmentStatus(appointmentId, "COMPLETED")
-            setAllAppointments(prev =>
-                prev.map(apt =>
-                    apt.id === appointmentId ? { ...apt, status: "COMPLETED" } : apt
-                )
-            )
-        } catch (err) {
-            console.error("Failed to complete appointment:", err)
-            if (err.response?.status === 401) {
-                setError("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.")
-            } else if (err.response?.status === 404) {
-                setError("Không tìm thấy cuộc hẹn.")
-            } else {
-                setError("Không thể hoàn thành cuộc hẹn. Vui lòng thử lại.")
-            }
-        }
-    }
 
     // Handle create medical record
     const handleCreateMedicalRecord = (appointment) => {
-        if (appointment.status !== "COMPLETED") {
-            alert("Chỉ có thể tạo hồ sơ bệnh án cho cuộc hẹn đã hoàn thành!")
+        if (appointment.status !== "CONFIRMED") {
+            alert("Chỉ có thể tạo hồ sơ bệnh án cho cuộc hẹn đã xác nhận!")
             return
         }
         navigate("/dashboard/doctor/create-medical-record", {
@@ -363,16 +333,8 @@ export default function DoctorAppointmentsPage() {
                                                 >
                                                     Xem chi tiết
                                                 </button>
-                                                {appointment.status === "CONFIRMED" && (
-                                                    <button
-                                                        className="appointments__complete-button"
-                                                        onClick={() => handleCompleteAppointment(appointment.id)}
-                                                        title="Hoàn thành cuộc hẹn"
-                                                    >
-                                                        Hoàn thành
-                                                    </button>
-                                                )}
-                                                {appointment.status === "COMPLETED" && !appointment.hasMedicalRecord && (
+
+                                                {appointment.status === "CONFIRMED" && !appointment.hasMedicalRecord && (
                                                     <button
                                                         className="appointments__create-record-button"
                                                         onClick={() => handleCreateMedicalRecord(appointment)}

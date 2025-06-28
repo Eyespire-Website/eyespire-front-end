@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import authService from "../../../../services/authService";
+import medicalRecordService from "../../../../services/medicalRecordService";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import '../styles/medical-records.css';
@@ -16,53 +17,12 @@ export default function MedicalRecordsPage() {
         role: "patient",
     });
 
-    const [medicalRecords, setMedicalRecords] = useState([
-        {
-            id: 1,
-            storageId: "EYE2024001",
-            service: "Khám mắt tổng quát",
-            doctor: "BS. Nguyễn Thị Mai",
-            date: "14/11/2024",
-            status: "completed",
-        },
-        {
-            id: 2,
-            storageId: "EYE2024002",
-            service: "Đo độ cận thị",
-            doctor: "BS. Trần Văn Nam",
-            date: "13/11/2024",
-            status: "completed",
-        },
-        {
-            id: 3,
-            storageId: "EYE2024003",
-            service: "Điều trị khô mắt",
-            doctor: "BS. Lê Thị Hoa",
-            date: "10/11/2024",
-            status: "completed",
-        },
-        {
-            id: 4,
-            storageId: "EYE2024004",
-            service: "Kiểm tra đáy mắt",
-            doctor: "BS. Phạm Minh Tuấn",
-            date: "08/11/2024",
-            status: "completed",
-        },
-        {
-            id: 5,
-            storageId: "EYE2024005",
-            service: "Phẫu thuật cận thị LASIK",
-            doctor: "BS. Hoàng Văn Đức",
-            date: "05/11/2024",
-            status: "completed",
-        },
-    ]);
-
+    const [medicalRecords, setMedicalRecords] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [itemsPerPage, setItemsPerPage] = useState(10);
     const [currentPage, setCurrentPage] = useState(1);
+    const [error, setError] = useState(null);
 
     // Lấy thông tin người dùng khi component mount
     useEffect(() => {
@@ -76,9 +36,61 @@ export default function MedicalRecordsPage() {
             name: currentUser.name || "Đỗ Quang Dũng",
             email: currentUser.email || "doquangdung1782004@gmail.com",
             role: currentUser.role || "patient",
-            avatar: currentUser.avatarUrl || null
+            avatar: currentUser.avatarUrl || null,
+            id: currentUser.id
         });
+
+        // Gọi API để lấy dữ liệu hồ sơ điều trị khi người dùng đã được xác định
+        fetchMedicalRecords(currentUser.id);
     }, [navigate]);
+
+    // Hàm gọi API để lấy dữ liệu hồ sơ điều trị
+    const fetchMedicalRecords = async (patientId) => {
+        setLoading(true);
+        setError(null);
+        try {
+            const data = await medicalRecordService.getPatientMedicalRecords(patientId);
+            console.log("Dữ liệu hồ sơ điều trị từ API:", data);
+            
+            // Chuyển đổi dữ liệu từ API sang định dạng phù hợp với giao diện
+            const formattedRecords = data.map((record, index) => {
+                // Xử lý tên bác sĩ - kiểm tra cấu trúc dữ liệu thực tế
+                let doctorName = "Bác sĩ";
+                if (record.doctor) {
+                    if (record.doctor.user && record.doctor.user.fullName) {
+                        doctorName = "BS. " + record.doctor.user.fullName;
+                    } else if (record.doctor.fullName) {
+                        doctorName = "BS. " + record.doctor.fullName;
+                    } else if (record.doctor.name) {
+                        doctorName = "BS. " + record.doctor.name;
+                    }
+                }
+
+                // Tạo ID hiển thị dạng EYE + ID
+                const displayId = `EYE${record.id}`;
+
+                return {
+                    id: index + 1, // Số thứ tự hiển thị
+                    storageId: displayId, // ID hiển thị
+                    service: record.diagnosis || "Khám mắt", // Sử dụng trường diagnosis
+                    doctor: doctorName,
+                    date: new Date(record.createdAt).toLocaleDateString('vi-VN'),
+                    status: "completed",
+                    recordId: record.id // ID thực trong database để sử dụng khi gọi API
+                };
+            });
+            
+            setMedicalRecords(formattedRecords);
+        } catch (err) {
+            console.error("Lỗi khi lấy dữ liệu hồ sơ điều trị:", err);
+            setError("Không thể tải hồ sơ điều trị. Vui lòng thử lại sau.");
+            toast.error("Không thể tải hồ sơ điều trị. Vui lòng thử lại sau.");
+            // Nếu có lỗi, sử dụng dữ liệu mẫu để hiển thị
+            setMedicalRecords([]);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     // Hàm xử lý URL avatar
     const getAvatarUrl = (url) => {
@@ -99,9 +111,9 @@ export default function MedicalRecordsPage() {
 
     // Lọc dữ liệu theo từ khóa tìm kiếm
     const filteredRecords = medicalRecords.filter(record =>
-        record.storageId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        record.service.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        record.doctor.toLowerCase().includes(searchTerm.toLowerCase())
+        record.storageId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        record.service?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        record.doctor?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     // Phân trang
@@ -110,10 +122,11 @@ export default function MedicalRecordsPage() {
     const endIndex = startIndex + itemsPerPage;
     const currentRecords = filteredRecords.slice(startIndex, endIndex);
 
-    // FIX: Sử dụng storageId thay vì id để navigate
-    const handleViewDetails = (recordId) => {
-        console.log('Navigating to record:', recordId);
-        navigate(`/patient/medical-records/${recordId}`);
+    // Sửa: Sử dụng recordId (ID số) thay vì storageId để navigate
+    const handleViewDetails = (record) => {
+        console.log('Navigating to record:', record);
+        // Sửa đường dẫn từ /patient/medical-records/ thành /dashboard/patient/medical-records/
+        navigate(`/dashboard/patient/medical-records/${record.recordId}`);
     };
 
     const handleSearch = (e) => {
@@ -218,20 +231,16 @@ export default function MedicalRecordsPage() {
                             </tr>
                         ) : (
                             currentRecords.map((record) => (
-                                <tr key={record.id} className="table-row">
+                                <tr key={record.id} onClick={() => handleViewDetails(record)}>
                                     <td className="text-center font-medium">{record.id}</td>
                                     <td className="storage-id">{record.storageId}</td>
                                     <td className="font-medium">{record.service}</td>
                                     <td>{record.doctor}</td>
                                     <td>{record.date}</td>
                                     <td>
-                                        {/* FIX: Sử dụng storageId thay vì id */}
-                                        <button
-                                            className="view-details-btn"
-                                            onClick={() => handleViewDetails(record.storageId)}
-                                        >
-                                            Xem chi tiết
-                                        </button>
+                                        <span className={`status-badge ${record.status}`}>
+                                            {record.status === "completed" ? "Hoàn thành" : record.status}
+                                        </span>
                                     </td>
                                 </tr>
                             ))

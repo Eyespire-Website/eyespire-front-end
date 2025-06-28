@@ -131,26 +131,6 @@ export default function ViewAppointmentPage() {
         fetchMedicalRecordStatus()
     }, [state])
 
-    // Xử lý hoàn thành cuộc hẹn
-    const handleCompleteAppointment = async () => {
-        const confirmed = window.confirm("Bạn có chắc chắn muốn hoàn thành cuộc hẹn này không?")
-        if (!confirmed) return
-
-        try {
-            await appointmentService.updateAppointmentStatus(appointment.id, "COMPLETED")
-            setAppointment(prev => ({ ...prev, status: "COMPLETED" }))
-        } catch (err) {
-            console.error("Failed to complete appointment:", err)
-            if (err.response?.status === 401) {
-                setError("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.")
-            } else if (err.response?.status === 404) {
-                setError("Không tìm thấy cuộc hẹn.")
-            } else {
-                setError("Không thể hoàn thành cuộc hẹn. Vui lòng thử lại.")
-            }
-        }
-    }
-
     // Xử lý quay lại
     const handleBack = () => {
         navigate("/dashboard/doctor/appointments")
@@ -158,8 +138,8 @@ export default function ViewAppointmentPage() {
 
     // Xử lý tạo hồ sơ bệnh án
     const handleCreateMedicalRecord = () => {
-        if (appointment.status !== "COMPLETED") {
-            alert("Chỉ có thể tạo hồ sơ bệnh án cho cuộc hẹn đã hoàn thành!")
+        if (appointment.status !== "CONFIRMED") {
+            alert("Chỉ có thể tạo hồ sơ bệnh án cho cuộc hẹn đã xác nhận!")
             return
         }
         navigate("/dashboard/doctor/create-medical-record", {
@@ -340,16 +320,8 @@ export default function ViewAppointmentPage() {
                             <ArrowLeft size={16} className="view-appointment__icon" />
                             Quay lại
                         </button>
-                        {appointment.status === "CONFIRMED" && (
-                            <button
-                                className="view-appointment__complete-button"
-                                onClick={handleCompleteAppointment}
-                                title="Hoàn thành cuộc hẹn"
-                            >
-                                Hoàn thành
-                            </button>
-                        )}
-                        {appointment.status === "COMPLETED" && !hasMedicalRecord && (
+
+                        {appointment.status === "CONFIRMED" && !hasMedicalRecord && (
                             <button
                                 className="view-appointment__create-record-button"
                                 onClick={handleCreateMedicalRecord}

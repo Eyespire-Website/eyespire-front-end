@@ -19,6 +19,7 @@ import AboutPage from "./pages/aboutPage/about";
 import ShopPage from "./pages/shoppage";
 import ProductDetail from "./pages/ProductPage";
 import PayOSReturn from "./pages/payment/PayOSReturn";
+import VirtualGlasses from './pages/dashboard/patient-dashboard/pages/VirtualGlasses/VirtualGlasses';
 
 
 function App() {
@@ -58,7 +59,7 @@ function App() {
           <Route path="/dashboard/doctor/*" element={<DoctorRoutes />} />
           <Route path="/dashboard/admin/*" element={<AdminRoutes />} />
           <Route path="/dashboard/patient/*" element={<PatientRoutes />} />
-
+          <Route path="/dashboard/patient/virtual-glasses" element={<VirtualGlasses />} />
         </Routes>
       </div>
     </Router>

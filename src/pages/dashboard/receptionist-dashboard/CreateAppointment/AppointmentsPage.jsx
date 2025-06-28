@@ -9,9 +9,9 @@ import { getAllAppointments } from "../../../../services/appointmentsService"
 const statusConfig = {
     PENDING: { label: "Chờ xác nhận", className: "appointments-status-pending" },
     CONFIRMED: { label: "Đã xác nhận", className: "appointments-status-confirmed" },
-    CANCELED: { label: "Đã hủy", className: "appointments-status-cancelled" },
-    COMPLETED: { label: "Hoàn thành", className: "appointments-status-completed" },
-    UNKNOWN: { label: "Không xác định", className: "appointments-status-unknown" },
+    COMPLETED: { label: "Đã hoàn thành", className: "appointments-status-completed" },
+    CANCELLED: { label: "Đã hủy", className: "appointments-status-cancelled" },
+    UNKNOWN: { label: "Không xác định", className: "appointments-status-unknown" }
 }
 
 export default function AppointmentsPage() {
@@ -54,14 +54,18 @@ export default function AppointmentsPage() {
         })
     }
 
-    // Filter appointments based on search query
+    // Filter appointments to only show PENDING status and apply search query
     const filteredAppointments = useMemo(() => {
+        // First filter to only show PENDING appointments
+        const pendingAppointments = allAppointments.filter(appointment => appointment.status === 'PENDING')
+        
+        // Then apply search query if any
         if (!searchQuery.trim()) {
-            return allAppointments
+            return pendingAppointments
         }
 
         const query = searchQuery.toLowerCase().trim()
-        return allAppointments.filter((appointment) => {
+        return pendingAppointments.filter((appointment) => {
             return (
                 appointment.patientName?.toLowerCase().includes(query) ||
                 appointment.appointmentDate?.includes(query) ||

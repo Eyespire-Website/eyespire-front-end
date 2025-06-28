@@ -9,6 +9,7 @@ import {
     LogOut,
     Clock,
     Stethoscope,
+    Activity,
 } from "lucide-react";
 import { HiOutlineBars3 } from "react-icons/hi2";
 import "./sidebar.css";
@@ -30,7 +31,11 @@ export default function Sidebar({ activeTab, setActiveTab }) {
         { id: "users", label: "Người dùng", icon: <Users size={18} /> },
         { id: "staff", label: "Nhân viên", icon: <UserCircle size={18} /> },
         { id: "services", label: "Dịch vụ", icon: <Stethoscope size={18} /> },
+        { id: "specialties", label: "Chuyên khoa", icon: <Activity size={18} /> },
         { id: "inventory", label: "Kho hàng", icon: <Package size={18} /> },
+    ];
+
+    const accountItems = [
         { id: "profile", label: "Hồ sơ cá nhân", icon: <UserCircle size={18} /> },
     ];
 
@@ -84,20 +89,33 @@ export default function Sidebar({ activeTab, setActiveTab }) {
                             <span className="label-v2">{item.label}</span>
                         </li>
                     ))}
-                </ul>
 
-                <div className="sidebar-footer-v2">
-                    <button 
-                        className="logout-btn-v2"
+                    {/* Account */}
+                    <li className="menu-category">Tài khoản</li>
+                    {accountItems.map((item) => (
+                        <li
+                            key={item.id}
+                            className={`menu-item-v2 ${activeTab === item.id ? "active" : ""}`}
+                            onClick={() => setActiveTab(item.id)}
+                        >
+                            <span className="icon-v2">{item.icon}</span>
+                            <span className="label-v2">{item.label}</span>
+                        </li>
+                    ))}
+                    <li
+                        className="menu-item-v2 logout-item"
                         onClick={() => {
                             authService.logout();
                             navigate("/");
                         }}
                     >
-                        <LogOut size={16} className="logout-icon-v2" />
-                        <span className="logout-text-v2">Đăng xuất</span>
-                    </button>
-                    <p className="footer-text-v2"> 2024 Eyespire</p>
+                        <span className="icon-v2"><LogOut size={18} /></span>
+                        <span className="label-v2">Đăng xuất</span>
+                    </li>
+                </ul>
+
+                <div className="sidebar-footer-v2">
+                    <span className="footer-text-v2">2024 Eyespire</span>
                 </div>
             </div>
         </div>

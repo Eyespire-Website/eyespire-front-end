@@ -142,3 +142,76 @@ export const getAvailableTimeSlots = async (doctorId, date) => {
         console.error("Error fetching available time slots:", error)
     }
 }
+
+export const getAvailableDoctorsForDate = async (date) => {
+    try {
+        const response = await axios.get(`${API_URL}/doctors/available`, {
+            params: { date },
+        })
+        return Array.isArray(response.data) ? response.data.map(doctor => ({
+            id: doctor.id,
+            name: doctor.name
+        })) : []
+    } catch (error) {
+        console.error("Error fetching available doctors for date:", error)
+        // Fallback to getting all doctors if the endpoint isn't implemented yet
+        try {
+            const allDoctors = await getAllDoctors()
+            return allDoctors
+        } catch (innerError) {
+            console.error("Error fetching fallback doctors:", innerError)
+            return []
+        }
+    }
+}
+
+// Lấy thông tin hóa đơn của cuộc hẹn
+export const getAppointmentInvoice = async (appointmentId) => {
+    try {
+        const response = await axios.get(`${API_URL}/appointments/${appointmentId}/invoice`)
+        return response.data
+    } catch (error) {
+        console.error("Error fetching appointment invoice:", error)
+        throw error
+    }
+}
+
+// Lấy danh sách các cuộc hẹn đang chờ thanh toán
+export const getWaitingPaymentAppointments = async () => {
+    try {
+        const response = await axios.get(`${API_URL}/appointments/waiting-payment`)
+        return response.data.map((appointment) => ({
+            id: appointment.id,
+            serviceId: appointment.serviceId,
+            doctorId: appointment.doctorId,
+            appointmentDate: appointment.appointmentDate || "N/A",
+            timeSlot: appointment.timeSlot || "N/A",
+            status: appointment.status || "UNKNOWN",
+            notes: appointment.notes || "",
+            patientName: appointment.patientName || "Unknown",
+            patientEmail: appointment.patientEmail || "",
+            patientPhone: appointment.patientPhone || "",
+            patient: {
+                id: appointment.patient?.id || null,
+                name: appointment.patient?.name || appointment.patientName || "Unknown",
+                email: appointment.patient?.email || appointment.patientEmail || "",
+                phone: appointment.patient?.phone || appointment.patientPhone || "",
+            },
+            invoice: appointment.invoice || null,
+        }))
+    } catch (error) {
+        console.error("Error fetching waiting payment appointments:", error)
+        throw error
+    }
+}
+
+// Xác nhận thanh toán cho cuộc hẹn
+export const markAppointmentAsPaid = async (appointmentId, paymentData) => {
+    try {
+        const response = await axios.post(`${API_URL}/appointments/${appointmentId}/mark-paid`, paymentData)
+        return response.data
+    } catch (error) {
+        console.error("Error marking appointment as paid:", error)
+        throw error
+    }
+}

@@ -6,6 +6,7 @@ import "./doctor-records.css"
 import { Upload, Trash2, User, FileText, Stethoscope, Pill, StickyNote, Minus, Plus, ChevronDown } from "lucide-react"
 import medicalRecordService from '../../../services/medicalRecordService';
 import authService from '../../../services/authService';
+import appointmentService from '../../../services/appointmentService';
 
 export default function CreateMedicalRecord() {
     const navigate = useNavigate()
@@ -64,8 +65,8 @@ export default function CreateMedicalRecord() {
                 // Kiểm tra trạng thái cuộc hẹn
                 if (appointmentId && !isNaN(appointmentId)) {
                     const appointmentStatus = await medicalRecordService.getAppointmentStatus(appointmentId)
-                    if (appointmentStatus !== "COMPLETED") {
-                        setError("Cuộc hẹn chưa hoàn thành, không thể tạo hồ sơ!")
+                    if (appointmentStatus !== "CONFIRMED") {
+                        setError("Cuộc hẹn phải ở trạng thái XÁC NHẬN để tạo hồ sơ bệnh án!")
                         navigate("/dashboard/doctor/appointments")
                     }
                 } else {
@@ -206,6 +207,19 @@ export default function CreateMedicalRecord() {
                 files: selectedFiles.map(f => f.name)
             })
 
+            // Tính tổng chi phí từ các thuốc được kê
+            let totalMedicationCost = 0
+            for (const med of recommendedMedicines) {
+                const price = Number(med.price) || 0
+                const quantity = Number(med.quantity) || 0
+                totalMedicationCost += price * quantity
+            }
+
+            // Giả sử chi phí khám cơ bản là 300,000 VND
+            const baseExaminationFee = 300000
+            const totalAmount = baseExaminationFee + totalMedicationCost
+
+            // Tạo hồ sơ bệnh án
             const response = await medicalRecordService.createMedicalRecord(
                 {
                     ...recordData,
@@ -216,7 +230,14 @@ export default function CreateMedicalRecord() {
                 },
                 selectedFiles.map(fileObj => fileObj.file)
             )
-            alert("Hồ sơ bệnh án đã được tạo thành công!")
+
+            // Chuyển trạng thái cuộc hẹn sang chờ thanh toán
+            await appointmentService.setAppointmentWaitingPayment(
+                Number(appointmentId),
+                totalAmount
+            )
+
+            alert("Hồ sơ bệnh án đã được tạo thành công! Cuộc hẹn đã chuyển sang trạng thái chờ thanh toán.")
             setRecordData({ patientId: "", diagnosis: "", notes: "" })
             setSelectedFiles([])
             setRecommendedMedicines([])

@@ -1,5 +1,5 @@
 import React, { useState } from "react"
-import { Stethoscope, Users, Calendar, Package, UserCircle, LogOut, Home, Clock as ClockIcon, ChevronLeft, ChevronRight, Menu } from "lucide-react"
+import { Stethoscope, Users, Calendar, Package, UserCircle, LogOut, Home, Clock as ClockIcon, ChevronLeft, ChevronRight, Menu, Activity } from "lucide-react"
 import "./styles/index.css"
 
 import {
@@ -27,8 +27,9 @@ import ProfileContent from "./pages/ProfileContent"
 import StaffContent from "./pages/StaffContent"
 import ServicesContent from "./pages/ServicesContent"
 import ScheduleContent from "./pages/ScheduleContent"
-import AppointmentsContent from "./pages/AppointmentsContent"
+import CustomerAppointments from "./pages/Appointments/CustomerAppointments"
 import UsersContent from "./pages/UsersContent"
+import SpecialtiesContent from "./pages/SpecialtiesContent"
 
 const AdminDashboard = () => {
   const [activeSection, setActiveSection] = useState("dashboard")
@@ -47,6 +48,7 @@ const AdminDashboard = () => {
     { id: "users", label: "Người dùng", icon: <Users size={18} /> },
     { id: "staff", label: "Nhân viên", icon: <UserCircle size={18} /> },
     { id: "services", label: "Dịch vụ", icon: <Stethoscope size={18} /> },
+    { id: "specialties", label: "Chuyên khoa", icon: <Activity size={18} /> },
     { id: "inventory", label: "Kho hàng", icon: <Package size={18} /> },
   ]
 
@@ -62,10 +64,12 @@ const AdminDashboard = () => {
         return <StaffContent />
       case "services":
         return <ServicesContent />
+      case "specialties":
+        return <SpecialtiesContent />
       case "schedule":
         return <ScheduleContent />
       case "appointments":
-        return <AppointmentsContent />
+        return <CustomerAppointments />
       case "users":
         return (
           <UsersContent

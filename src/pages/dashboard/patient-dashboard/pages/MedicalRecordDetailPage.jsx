@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from 'react-router-dom';
 import authService from "../../../../services/authService";
+import medicalRecordService from "../../../../services/medicalRecordService";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import '../styles/medical-records-detail.css';
@@ -15,118 +16,9 @@ const MedicalRecordDetailPage = () => {
         role: "patient",
     });
 
-    const [loading, setLoading] = useState(false);
-
-    const mockRecords = {
-        "EYE2024001": {
-            id: "EYE2024001",
-            patient: "Đỗ Quang Dũng",
-            examType: "Khám mắt tổng quát",
-            date: "14/11/2024",
-            doctor: "BS. Nguyễn Thị Mai",
-            diagnosis: "Cận thị độ nhẹ (-1.25D mắt phải, -1.0D mắt trái)",
-            treatment: "Kê đơn kính cận và thuốc nhỏ mắt. Hướng dẫn bài tập thư giãn mắt và chế độ sử dụng máy tính hợp lý.",
-            prescription: [
-                {
-                    name: "Systane Ultra",
-                    dosage: "1-2 giọt mỗi mắt",
-                    frequency: "3-4 lần/ngày",
-                    duration: "2 tuần",
-                    note: "Sử dụng khi cảm thấy khô mắt",
-                },
-                {
-                    name: "Kính cận",
-                    dosage: "Mắt phải: -1.25D, Mắt trái: -1.0D",
-                    frequency: "Đeo thường xuyên",
-                    duration: "Tái khám sau 6 tháng",
-                    note: "Đeo khi nhìn xa, học tập, lái xe",
-                },
-            ],
-            images: [
-                "/placeholder.svg?height=150&width=150",
-                "/placeholder.svg?height=150&width=150"
-            ],
-        },
-        "EYE2024002": {
-            id: "EYE2024002",
-            patient: "Đỗ Quang Dũng",
-            examType: "Đo độ cận thị",
-            date: "13/11/2024",
-            doctor: "BS. Trần Văn Nam",
-            diagnosis: "Cận thị tăng (-2.0D mắt phải, -1.75D mắt trái)",
-            treatment: "Điều chỉnh độ kính và theo dõi định kỳ",
-            prescription: [
-                {
-                    name: "Kính cận mới",
-                    dosage: "Mắt phải: -2.0D, Mắt trái: -1.75D",
-                    frequency: "Đeo thường xuyên",
-                    duration: "Tái khám sau 3 tháng",
-                    note: "Thay thế kính cũ",
-                },
-            ],
-            images: [],
-        },
-        "EYE2024003": {
-            id: "EYE2024003",
-            patient: "Đỗ Quang Dũng",
-            examType: "Điều trị khô mắt",
-            date: "10/11/2024",
-            doctor: "BS. Lê Thị Hoa",
-            diagnosis: "Hội chứng khô mắt mức độ trung bình",
-            treatment: "Điều trị bằng thuốc nhỏ mắt và thay đổi thói quen sử dụng máy tính",
-            prescription: [
-                {
-                    name: "Tears Natural",
-                    dosage: "2-3 giọt mỗi mắt",
-                    frequency: "4-5 lần/ngày",
-                    duration: "1 tháng",
-                    note: "Sử dụng thường xuyên",
-                },
-            ],
-            images: [],
-        },
-        "EYE2024004": {
-            id: "EYE2024004",
-            patient: "Đỗ Quang Dũng",
-            examType: "Kiểm tra đáy mắt",
-            date: "08/11/2024",
-            doctor: "BS. Phạm Minh Tuấn",
-            diagnosis: "Đáy mắt bình thường, không có bất thường",
-            treatment: "Theo dõi định kỳ hàng năm",
-            prescription: [],
-            images: [
-                "/placeholder.svg?height=150&width=150"
-            ],
-        },
-        "EYE2024005": {
-            id: "EYE2024005",
-            patient: "Đỗ Quang Dũng",
-            examType: "Phẫu thuật cận thị LASIK",
-            date: "05/11/2024",
-            doctor: "BS. Hoàng Văn Đức",
-            diagnosis: "Phẫu thuật LASIK thành công",
-            treatment: "Chăm sóc sau phẫu thuật và theo dõi hồi phục",
-            prescription: [
-                {
-                    name: "Thuốc kháng sinh",
-                    dosage: "1 viên",
-                    frequency: "2 lần/ngày",
-                    duration: "1 tuần",
-                    note: "Uống sau ăn",
-                },
-                {
-                    name: "Thuốc giảm viêm",
-                    dosage: "1-2 giọt",
-                    frequency: "3 lần/ngày",
-                    duration: "2 tuần",
-                    note: "Nhỏ mắt đúng giờ",
-                },
-            ],
-            images: [],
-        },
-    };
-
+    const [loading, setLoading] = useState(true);
     const [recordDetail, setRecordDetail] = useState(null);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
         const currentUser = authService.getCurrentUser();
@@ -139,19 +31,90 @@ const MedicalRecordDetailPage = () => {
             name: currentUser.name || "Đỗ Quang Dũng",
             email: currentUser.email || "doquangdung1782004@gmail.com",
             role: currentUser.role || "patient",
-            avatar: currentUser.avatarUrl || null
+            avatar: currentUser.avatarUrl || null,
+            id: currentUser.id
         });
 
-        console.log('Loading record detail for ID:', recordId);
-        const record = mockRecords[recordId];
-        if (record) {
-            setRecordDetail(record);
-        } else {
-            console.error('Record not found:', recordId);
-            toast.error('Không tìm thấy hồ sơ này');
-            navigate('/medical-records');
-        }
+        fetchMedicalRecordDetail(recordId);
     }, [navigate, recordId]);
+
+    const fetchMedicalRecordDetail = async (id) => {
+        setLoading(true);
+        setError(null);
+        try {
+            const data = await medicalRecordService.getMedicalRecordById(id);
+            console.log("Chi tiết hồ sơ điều trị từ API:", data);
+            
+            // Xử lý tên bác sĩ
+            let doctorName = "Bác sĩ";
+            if (data.doctor) {
+                if (data.doctor.user && data.doctor.user.fullName) {
+                    doctorName = "BS. " + data.doctor.user.fullName;
+                } else if (data.doctor.fullName) {
+                    doctorName = "BS. " + data.doctor.fullName;
+                } else if (data.doctor.name) {
+                    doctorName = "BS. " + data.doctor.name;
+                }
+            }
+            
+            // Xử lý tên bệnh nhân
+            let patientName = user.name;
+            if (data.patient) {
+                if (data.patient.fullName) {
+                    patientName = data.patient.fullName;
+                } else if (data.patient.name) {
+                    patientName = data.patient.name;
+                }
+            }
+            
+            // Xử lý toa thuốc
+            let prescriptions = [];
+            if (data.recommendedProducts && data.recommendedProducts.length > 0) {
+                prescriptions = data.recommendedProducts.map(item => ({
+                    name: item.product ? item.product.name : "Thuốc",
+                    dosage: "Theo chỉ định",
+                    frequency: "Theo chỉ định",
+                    duration: `${item.quantity} viên`,
+                    note: ""
+                }));
+            }
+            
+            const formattedRecord = {
+                id: `EYE${data.id}`,
+                patient: patientName,
+                examType: data.diagnosis || "Khám mắt",
+                date: new Date(data.createdAt).toLocaleDateString('vi-VN'),
+                doctor: doctorName,
+                diagnosis: data.diagnosis || "Không có chẩn đoán",
+                treatment: data.notes || "Không có phác đồ điều trị",
+                prescription: prescriptions,
+                images: data.recordFileUrl ? [getImageUrl(data.recordFileUrl)] : []
+            };
+            
+            console.log("Dữ liệu đã format:", formattedRecord);
+            setRecordDetail(formattedRecord);
+        } catch (err) {
+            console.error("Error fetching medical record detail:", err);
+            setError("Không thể tải chi tiết hồ sơ điều trị. Vui lòng thử lại sau.");
+            toast.error("Không thể tải chi tiết hồ sơ điều trị. Vui lòng thử lại sau.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const getImageUrl = (url) => {
+        if (!url) return null;
+
+        if (url.startsWith('http://') || url.startsWith('https://')) {
+            return url;
+        }
+
+        if (url.startsWith('/')) {
+            return `http://localhost:8080${url}`;
+        }
+
+        return `http://localhost:8080/${url}`;
+    };
 
     const getAvatarUrl = (url) => {
         if (!url) return null;
@@ -169,7 +132,7 @@ const MedicalRecordDetailPage = () => {
 
     const handleBackToList = () => {
         console.log('Going back to medical records list');
-        navigate('/patient/medical-records');
+        navigate('/dashboard/patient/medical-records');
     };
 
     const handleMenuClick = (route) => {
@@ -347,7 +310,7 @@ const MedicalRecordDetailPage = () => {
                 <footer className="content-footer">
                     <div className="footer-content">
                         <div className="footer-left">
-                            © 2025 EyeSpire. All rights reserved.
+                            2025 EyeSpire. All rights reserved.
                         </div>
                         <div className="footer-right">
                             <a href="#" className="footer-link">Privacy Policy</a>
