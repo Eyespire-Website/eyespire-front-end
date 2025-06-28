@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from 'react-router-dom';
-import authService from "../../../../services/authService";
+import { useNavigate } from "react-router-dom";
+import { Calendar, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Search, History, FileText, User, Package } from "lucide-react";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import appointmentService from "../../../../services/appointmentService";
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import medicalRecordService from '../../../../services/medicalRecordService';
+import authService from "../../../../services/authService";
+import "./AppointmentsPage.css";
 import '../styles/appointmentsPatient.css';
-import { Calendar, Package, FileText, History, User, Search, Filter, ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export default function AppointmentsPage() {
     const navigate = useNavigate();
@@ -22,6 +24,10 @@ export default function AppointmentsPage() {
     const [selectedAppointment, setSelectedAppointment] = useState(null);
     const [cancellationReason, setCancellationReason] = useState("");
     const [cancellationInfo, setCancellationInfo] = useState(null);
+
+    // Thêm state để lưu trữ thông tin chi tiết cuộc hẹn
+    const [appointmentDetails, setAppointmentDetails] = useState(null);
+    const [showDetailsModal, setShowDetailsModal] = useState(false);
 
     useEffect(() => {
         fetchUserData();
@@ -143,6 +149,8 @@ export default function AppointmentsPage() {
                 return "cancelled";
             case "NO_SHOW":
                 return "no-show";
+            case "WAITING_PAYMENT":
+                return "waiting-payment";
             default:
                 return "pending";
         }
@@ -197,6 +205,8 @@ export default function AppointmentsPage() {
                 return <span className="status-badge status-completed">Đã hoàn thành</span>;
             case "cancelled":
                 return <span className="status-badge status-cancelled">Đã hủy</span>;
+            case "waiting-payment":
+                return <span className="status-badge status-waiting-payment">Đang chờ thanh toán</span>;
             default:
                 return <span className="status-badge">Không xác định</span>;
         }
@@ -268,19 +278,220 @@ export default function AppointmentsPage() {
         navigate(`/patient/${route}`);
     };
 
-        // Hàm tính toán chính sách hoàn tiền dựa trên thời gian hủy
-        const calculateRefundPolicy = (appointmentDate, cancellationTime) => {
-            if (!appointmentDate || !cancellationTime) return null;
-            
-            const appointmentTime = new Date(appointmentDate).getTime();
-            const cancelTime = new Date(cancellationTime).getTime();
-            const hoursDifference = (appointmentTime - cancelTime) / (1000 * 60 * 60);
-            
-            return {
-                isRefundable: hoursDifference >= 24,
-                hoursRemaining: Math.floor(hoursDifference)
-            };
+    // Hàm tính toán chính sách hoàn tiền dựa trên thời gian hủy
+    const calculateRefundPolicy = (appointmentDate, cancellationTime) => {
+        if (!appointmentDate || !cancellationTime) return null;
+        
+        const appointmentTime = new Date(appointmentDate).getTime();
+        const cancelTime = new Date(cancellationTime).getTime();
+        const hoursDifference = (appointmentTime - cancelTime) / (1000 * 60 * 60);
+        
+        return {
+            isRefundable: hoursDifference >= 24,
+            hoursRemaining: Math.floor(hoursDifference)
         };
+    };
+
+    // Hàm để hiển thị chi tiết cuộc hẹn
+    const viewAppointmentDetails = async (appointmentId) => {
+        try {
+            setLoading(true);
+            // Lấy thông tin chi tiết cuộc hẹn
+            const details = await appointmentService.getAppointmentById(appointmentId);
+            
+            // Lấy thông tin hóa đơn của cuộc hẹn
+            let invoiceDetails = null;
+            try {
+                invoiceDetails = await appointmentService.getAppointmentInvoice(appointmentId);
+                console.log("Invoice details:", invoiceDetails);
+            } catch (invoiceError) {
+                console.error("Lỗi khi lấy thông tin hóa đơn:", invoiceError);
+                // Không throw lỗi ở đây để vẫn hiển thị thông tin cuộc hẹn nếu không có hóa đơn
+            }
+            
+            // Log toàn bộ dữ liệu hóa đơn để kiểm tra
+            console.log("Chi tiết hóa đơn:", JSON.stringify(invoiceDetails, null, 2));
+            
+            // Lấy phí dịch vụ khám - đảm bảo là số
+            const servicePrice = Number(details.service?.price || 0);
+            console.log("Phí dịch vụ khám:", servicePrice);
+            
+            // Lấy thông tin thuốc từ API riêng (giống bên tiếp tân)
+            let medicationDetails = { products: [], totalAmount: 0 };
+            try {
+                medicationDetails = await medicalRecordService.getMedicationsByAppointmentId(appointmentId);
+                console.log("Medication details from API:", medicationDetails);
+            } catch (medicationError) {
+                console.log("Không có thông tin thuốc hoặc lỗi khi lấy thông tin thuốc:", medicationError);
+                medicationDetails = { products: [], totalAmount: 0 };
+            }
+            
+            // Lấy phí thuốc từ API riêng (giống bên tiếp tân)
+            let medicationAmount = Number(medicationDetails?.totalAmount || 0);
+            console.log("Phí thuốc từ API riêng:", medicationAmount);
+            
+            // Nếu không có dữ liệu từ API riêng, thử lấy từ hóa đơn
+            if (medicationAmount === 0) {
+                console.log("Không có dữ liệu thuốc từ API riêng, thử lấy từ hóa đơn...");
+                
+                // Kiểm tra nếu có thông tin về sản phẩm thuốc trong hóa đơn
+                if (invoiceDetails?.products && Array.isArray(invoiceDetails.products)) {
+                    console.log("Danh sách sản phẩm thuốc từ hóa đơn:", invoiceDetails.products);
+                    
+                    // Tính tổng tiền thuốc dựa trên giá và số lượng
+                    medicationAmount = invoiceDetails.products.reduce((total, product) => {
+                        const price = Number(product.price || 0);
+                        const quantity = Number(product.quantity || 1);
+                        console.log(`Sản phẩm: ${product.name}, Giá: ${price}, Số lượng: ${quantity}, Thành tiền: ${price * quantity}`);
+                        return total + (price * quantity);
+                    }, 0);
+                } 
+                // Kiểm tra các trường khác có thể chứa thông tin về phí thuốc
+                else if (invoiceDetails?.medicationProducts && Array.isArray(invoiceDetails.medicationProducts)) {
+                    console.log("Danh sách sản phẩm thuốc (medicationProducts):", invoiceDetails.medicationProducts);
+                    
+                    medicationAmount = invoiceDetails.medicationProducts.reduce((total, product) => {
+                        const price = Number(product.price || 0);
+                        const quantity = Number(product.quantity || 1);
+                        return total + (price * quantity);
+                    }, 0);
+                }
+                // Kiểm tra các trường khác có thể chứa thông tin về phí thuốc
+                else if (invoiceDetails?.medications && Array.isArray(invoiceDetails.medications)) {
+                    console.log("Danh sách thuốc (medications):", invoiceDetails.medications);
+                    
+                    medicationAmount = invoiceDetails.medications.reduce((total, med) => {
+                        const price = Number(med.price || 0);
+                        const quantity = Number(med.quantity || 1);
+                        return total + (price * quantity);
+                    }, 0);
+                }
+                // Nếu không có thông tin chi tiết, kiểm tra các trường tổng hợp
+                else if (invoiceDetails?.medicationAmount) {
+                    medicationAmount = Number(invoiceDetails.medicationAmount);
+                } else if (invoiceDetails?.medicationCost) {
+                    medicationAmount = Number(invoiceDetails.medicationCost);
+                } else if (invoiceDetails?.medicationFee) {
+                    medicationAmount = Number(invoiceDetails.medicationFee);
+                } else if (invoiceDetails?.medicationTotal) {
+                    medicationAmount = Number(invoiceDetails.medicationTotal);
+                }
+                
+                // Đặc biệt kiểm tra trường totalAmount trong medicationDetails của hóa đơn
+                if (invoiceDetails?.medicationDetails?.totalAmount) {
+                    console.log("Tìm thấy medicationDetails.totalAmount trong hóa đơn:", invoiceDetails.medicationDetails.totalAmount);
+                    medicationAmount = Number(invoiceDetails.medicationDetails.totalAmount);
+                }
+            }
+            
+            console.log("Phí thuốc đã tính toán:", medicationAmount);
+            
+            // Tính tổng tiền tạm tính (dịch vụ + thuốc) - đảm bảo là số
+            const totalAmount = Number(servicePrice) + Number(medicationAmount);
+            console.log("Tạm tính (dịch vụ + thuốc):", totalAmount);
+            
+            // Lấy tiền đặt cọc - đảm bảo là số
+            const depositAmount = Number(invoiceDetails?.depositAmount || 0);
+            console.log("Tiền cọc đã thanh toán:", depositAmount);
+            
+            // Tính số tiền còn lại cần thanh toán
+            const remainingAmount = totalAmount - depositAmount;
+            console.log("Số tiền cần thanh toán:", remainingAmount);
+            
+            // Kiểm tra trạng thái thanh toán
+            const isFullyPaid = invoiceDetails?.paymentStatus === 'PAID' || 
+                              invoiceDetails?.status === 'PAID' || 
+                              details.status === "COMPLETED" || 
+                              remainingAmount <= 0;
+            
+            // Chuyển đổi trạng thái từ API sang định dạng hiển thị
+            const formattedDetails = {
+                ...details,
+                id: details.id,
+                patientName: details.patient?.fullName || "Không có thông tin",
+                patientEmail: details.patient?.email || "Không có thông tin",
+                patientPhone: details.patient?.phoneNumber || "Không có thông tin",
+                doctorName: details.doctor?.fullName || "Không có thông tin",
+                serviceName: details.service?.name || "Không có thông tin",
+                servicePrice: Number(details.service?.price || 0),
+                date: details.date ? new Date(details.date).toLocaleDateString('vi-VN') : "Không có thông tin",
+                time: details.time || "Không có thông tin",
+                status: details.status || "PENDING",
+                statusText: getStatusText(details.status),
+                statusClass: getStatusClass(details.status),
+                note: details.note || "Không có ghi chú",
+                medicationAmount: Number(medicationAmount),
+                medicationDetails: medicationDetails, // Thêm dữ liệu thuốc chi tiết
+                depositAmount: Number(depositAmount),
+                totalAmount: Number(totalAmount),
+                remainingAmount: Number(remainingAmount),
+                isFullyPaid: isFullyPaid,
+                paidAt: invoiceDetails?.paidAt || null,
+                invoiceId: invoiceDetails?.id || details.id,
+                paymentStatus: isFullyPaid ? 'Đã thanh toán' : 'Chờ thanh toán',
+                cancellationReason: details.cancellationReason || "",
+                cancellationTime: details.cancellationTime || null,
+                refundPolicy: details.cancellationTime ? calculateRefundPolicy(details.date, details.cancellationTime) : null
+            };
+            
+            console.log("Formatted details:", formattedDetails);
+            setAppointmentDetails(formattedDetails);
+            setShowDetailsModal(true);
+            setLoading(false);
+        } catch (error) {
+            console.error("Lỗi khi lấy chi tiết cuộc hẹn:", error);
+            toast.error("Không thể lấy thông tin chi tiết cuộc hẹn");
+            setLoading(false);
+        }
+    };
+    
+    // Hàm để đóng modal chi tiết
+    const closeDetailsModal = () => {
+        setShowDetailsModal(false);
+        setAppointmentDetails(null);
+    };
+
+    // Hàm định dạng tiền tệ
+    const formatCurrency = (amount) => {
+        if (!amount) return "0 VNĐ";
+        return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+    };
+    
+    // Hàm chuyển đổi trạng thái cuộc hẹn sang text hiển thị
+    const getStatusText = (status) => {
+        switch (status) {
+            case "PENDING":
+                return "Chờ xác nhận";
+            case "CONFIRMED":
+                return "Đã xác nhận";
+            case "COMPLETED":
+                return "Hoàn thành";
+            case "CANCELLED":
+                return "Đã hủy";
+            case "RESCHEDULED":
+                return "Đã đổi lịch";
+            default:
+                return "Chờ xác nhận";
+        }
+    };
+    
+    // Hàm lấy class CSS cho trạng thái cuộc hẹn
+    const getStatusClass = (status) => {
+        switch (status) {
+            case "PENDING":
+                return "status-pending";
+            case "CONFIRMED":
+                return "status-confirmed";
+            case "COMPLETED":
+                return "status-completed";
+            case "CANCELLED":
+                return "status-cancelled";
+            case "RESCHEDULED":
+                return "status-rescheduled";
+            default:
+                return "status-pending";
+        }
+    };
 
     return (
         <div className="main-content" style={{ margin: 0, width: '100%', boxSizing: 'border-box' }}>
@@ -375,22 +586,25 @@ export default function AppointmentsPage() {
                                         <td className="column-status">{getStatusBadge(appointment.status)}</td>
                                         <td className="column-notes">{appointment.notes}</td>
                                         <td className="column-actions">
-                                            {appointment.canCancel && (
+                                            <div className="action-buttons">
                                                 <button
-                                                    className="cancel-button"
-                                                    onClick={() => openCancelDialog(appointment)}
-                                                    disabled={loading}
+                                                    className="view-details-button"
+                                                    onClick={() => viewAppointmentDetails(appointment.id)}
                                                 >
-                                                    Hủy lịch
+                                                    <FileText size={16} />
+                                                    <span>Chi tiết</span>
                                                 </button>
-                                            )}
-                                            {appointment.status === "cancelled" && (
-                                                <div className="cancellation-info">
-                                                    <span className="cancellation-time">
-                                                        Đã hủy: {formatCancellationTime(appointment.cancellationTime || new Date())}
-                                                    </span>
-                                                </div>
-                                            )}
+                                                {appointment.canCancel && (
+                                                    <button
+                                                        className="cancel-button"
+                                                        onClick={() => openCancelDialog(appointment)}
+                                                        disabled={loading}
+                                                    >
+                                                        <History size={16} />
+                                                        <span>Hủy lịch</span>
+                                                    </button>
+                                                )}
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
@@ -483,6 +697,187 @@ export default function AppointmentsPage() {
                                 disabled={!cancellationReason.trim()}
                             >
                                 Xác nhận hủy
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            
+            {/* Modal hiển thị chi tiết cuộc hẹn */}
+            {showDetailsModal && appointmentDetails && (
+                <div className="modal-overlay">
+                    <div className="modal-container appointment-details-modal">
+                        <div className="modal-header">
+                            <h3>Chi tiết cuộc hẹn</h3>
+                            <button className="close-button" onClick={closeDetailsModal}>×</button>
+                        </div>
+                        <div className="modal-body">
+                            <div className="appointment-details-content">
+                                <div className="details-section appointment-info">
+                                    <div className="section-header">
+                                        <div className="icon-container">
+                                            <Calendar size={20} />
+                                        </div>
+                                        <h4>Thông tin cuộc hẹn</h4>
+                                    </div>
+                                    <div className="details-grid">
+                                        <div className="details-row">
+                                            <span className="details-label">Mã cuộc hẹn:</span>
+                                            <span className="details-value highlight">{appointmentDetails.id}</span>
+                                        </div>
+                                        <div className="details-row">
+                                            <span className="details-label">Dịch vụ:</span>
+                                            <span className="details-value">
+                                                {typeof appointmentDetails.service === 'object' 
+                                                    ? appointmentDetails.service.name 
+                                                    : appointmentDetails.service}
+                                            </span>
+                                        </div>
+                                        <div className="details-row">
+                                            <span className="details-label">Ngày hẹn:</span>
+                                            <span className="details-value highlight-date">
+                                                {appointmentDetails.appointmentDate}
+                                            </span>
+                                        </div>
+                                        <div className="details-row">
+                                            <span className="details-label">Giờ hẹn:</span>
+                                            <span className="details-value highlight-time">
+                                                {appointmentDetails.timeSlot}
+                                            </span>
+                                        </div>
+                                        <div className="details-row">
+                                            <span className="details-label">Bác sĩ:</span>
+                                            <span className="details-value">{appointmentDetails.doctor?.name || 'Chưa phân công'}</span>
+                                        </div>
+                                        <div className="details-row">
+                                            <span className="details-label">Trạng thái:</span>
+                                            <span className="details-value status-container">
+                                                {getStatusBadge(appointmentDetails.status)}
+                                            </span>
+                                        </div>
+                                        <div className="details-row full-width">
+                                            <span className="details-label">Ghi chú:</span>
+                                            <span className="details-value notes-text">{appointmentDetails.notes || 'Không có'}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Phần thông tin bệnh nhân */}
+                                <div className="details-section patient-info">
+                                    <div className="section-header">
+                                        <div className="icon-container">
+                                            <User size={20} />
+                                        </div>
+                                        <h4>Thông tin bệnh nhân</h4>
+                                    </div>
+                                    <div className="details-grid">
+                                        <div className="details-row">
+                                            <span className="details-label">Họ tên:</span>
+                                            <span className="details-value">{appointmentDetails.patientName}</span>
+                                        </div>
+                                        <div className="details-row">
+                                            <span className="details-label">Email:</span>
+                                            <span className="details-value">{appointmentDetails.patientEmail}</span>
+                                        </div>
+                                        <div className="details-row">
+                                            <span className="details-label">Số điện thoại:</span>
+                                            <span className="details-value">{appointmentDetails.patientPhone}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Phần thông tin thanh toán */}
+                                <div className="details-section payment-details">
+                                    <div className="section-header">
+                                        <div className="icon-container">
+                                            <Package size={20} />
+                                        </div>
+                                        <h4>Thông tin thanh toán</h4>
+                                    </div>
+                                    {appointmentDetails.totalAmount ? (
+                                        <div className="appointment-detail-modal__invoice">
+                                            <div className="appointment-detail-modal__invoice-header">
+                                                <div className="appointment-detail-modal__invoice-title">Hóa đơn #{appointmentDetails.id}</div>
+                                                <div className={`appointment-detail-modal__invoice-status ${appointmentDetails.isFullyPaid ? "appointment-detail-modal__invoice-status--paid" : "appointment-detail-modal__invoice-status--waiting"}`}>
+                                                    {appointmentDetails.isFullyPaid ? "Đã thanh toán" : "Chờ thanh toán"}
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="appointment-detail-modal__invoice-items">
+                                                {/* Phí dịch vụ khám */}
+                                                <div className="appointment-detail-modal__invoice-item">
+                                                    <div>Phí dịch vụ khám</div>
+                                                    <div>
+                                                        {formatCurrency(appointmentDetails.servicePrice)}
+                                                    </div>
+                                                </div>
+                                                
+                                                {/* Tiền thuốc nếu có - luôn hiển thị để đồng bộ với tiếp tân */}
+                                                <div className="appointment-detail-modal__invoice-item">
+                                                    <div>Tiền thuốc</div>
+                                                    <div>
+                                                        {formatCurrency(appointmentDetails.medicationAmount || 0)}
+                                                    </div>
+                                                </div>
+                                                
+                                                {/* Tạm tính */}
+                                                <div className="appointment-detail-modal__invoice-subtotal">
+                                                    <div>Tạm tính</div>
+                                                    <div>
+                                                        {formatCurrency(appointmentDetails.totalAmount)}
+                                                    </div>
+                                                </div>
+                                                
+                                                {/* Tiền cọc */}
+                                                {appointmentDetails.depositAmount > 0 && (
+                                                    <div className="appointment-detail-modal__invoice-item appointment-detail-modal__invoice-item--deposit">
+                                                        <div>Tiền cọc đã thanh toán</div>
+                                                        <div className="deposit-amount">-{formatCurrency(appointmentDetails.depositAmount)}</div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            
+                                            <div className="appointment-detail-modal__invoice-total">
+                                                <div>Số tiền cần thanh toán</div>
+                                                <div className="remaining-amount">
+                                                    {formatCurrency(appointmentDetails.remainingAmount)}
+                                                </div>
+                                            </div>
+                                            
+                                            {appointmentDetails.isFullyPaid && appointmentDetails.paidAt && (
+                                                <div className="payment-time">
+                                                    <span>Thời gian thanh toán: </span>
+                                                    <span>
+                                                        {new Date(appointmentDetails.paidAt).toLocaleString('vi-VN')}
+                                                    </span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <div className="no-payment-info">
+                                            Chưa có thông tin thanh toán
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                        <div className="modal-footer">
+                            {appointmentDetails.status === "pending" || appointmentDetails.status === "confirmed" ? (
+                                <button 
+                                    className="cancel-button-primary" 
+                                    onClick={() => {
+                                        closeDetailsModal();
+                                        openCancelDialog(appointmentDetails);
+                                    }}
+                                >
+                                    Hủy lịch hẹn
+                                </button>
+                            ) : null}
+                            <button 
+                                className="close-button-secondary" 
+                                onClick={closeDetailsModal}
+                            >
+                                Đóng
                             </button>
                         </div>
                     </div>

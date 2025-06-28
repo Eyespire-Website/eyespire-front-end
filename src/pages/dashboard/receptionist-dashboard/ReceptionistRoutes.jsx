@@ -7,6 +7,7 @@ import CustomerAppointments from "../receptionist-dashboard/Appointments/Custome
 import AppointmentListByCustomer from "../receptionist-dashboard/Appointments/AppointmentListByCustomer";
 import CreateAppointment from "../receptionist-dashboard/CreateAppointment/CreateAppointment";
 import AppointmentsPage from "../receptionist-dashboard/CreateAppointment/AppointmentsPage";
+import PaymentManagement from "../receptionist-dashboard/payment-management";
 import ScheduleContent from "../admin-dashboard/pages/ScheduleContent";
 export default function ReceptionistRoutes() {
     return (
@@ -20,6 +21,9 @@ export default function ReceptionistRoutes() {
 
                 {/* Route trang quản lý tất cả cuộc hẹn */}
                 <Route path="all-appointments" element={<AppointmentsPage />} />
+
+                {/* Route trang quản lý thanh toán */}
+                <Route path="payment-management" element={<PaymentManagement />} />
 
                 <Route path="schedule" element={<ScheduleContent />} />
 

@@ -97,6 +97,76 @@ const specialtyService = {
       
       throw error;
     }
+  },
+
+  /**
+   * Tạo chuyên khoa mới
+   * @param {Object} specialtyData Dữ liệu chuyên khoa mới
+   * @returns {Promise<Object>} Chuyên khoa đã được tạo
+   */
+  createSpecialty: async (specialtyData) => {
+    try {
+      const response = await axiosInstance.post('/specialties', specialtyData);
+      return response.data;
+    } catch (error) {
+      console.error('Lỗi khi tạo chuyên khoa mới:', error);
+      
+      // Nếu API chưa sẵn sàng, giả lập tạo mới với dữ liệu mẫu
+      if (error.response && error.response.status === 404) {
+        console.log("API chưa sẵn sàng, giả lập tạo mới");
+        const mockData = getMockSpecialties();
+        const newId = Math.max(...mockData.map(s => s.id)) + 1;
+        const newSpecialty = { ...specialtyData, id: newId };
+        return newSpecialty;
+      }
+      
+      throw error;
+    }
+  },
+
+  /**
+   * Cập nhật thông tin chuyên khoa
+   * @param {number} id ID của chuyên khoa cần cập nhật
+   * @param {Object} specialtyData Dữ liệu cập nhật
+   * @returns {Promise<Object>} Chuyên khoa đã được cập nhật
+   */
+  updateSpecialty: async (id, specialtyData) => {
+    try {
+      const response = await axiosInstance.put(`/specialties/${id}`, specialtyData);
+      return response.data;
+    } catch (error) {
+      console.error(`Lỗi khi cập nhật chuyên khoa ID=${id}:`, error);
+      
+      // Nếu API chưa sẵn sàng, giả lập cập nhật với dữ liệu mẫu
+      if (error.response && error.response.status === 404) {
+        console.log("API chưa sẵn sàng, giả lập cập nhật");
+        return { ...specialtyData, id: parseInt(id) };
+      }
+      
+      throw error;
+    }
+  },
+
+  /**
+   * Xóa chuyên khoa
+   * @param {number} id ID của chuyên khoa cần xóa
+   * @returns {Promise<void>}
+   */
+  deleteSpecialty: async (id) => {
+    try {
+      await axiosInstance.delete(`/specialties/${id}`);
+      return true;
+    } catch (error) {
+      console.error(`Lỗi khi xóa chuyên khoa ID=${id}:`, error);
+      
+      // Nếu API chưa sẵn sàng, giả lập xóa thành công
+      if (error.response && error.response.status === 404) {
+        console.log("API chưa sẵn sàng, giả lập xóa thành công");
+        return true;
+      }
+      
+      throw error;
+    }
   }
 };
 
@@ -106,10 +176,10 @@ const specialtyService = {
  */
 function getMockSpecialties() {
   return [
-    { id: 1, name: 'Nhãn khoa', description: 'Chuyên khoa về các bệnh lý về mắt' },
-    { id: 2, name: 'Giác mạc', description: 'Chuyên khoa về bệnh lý giác mạc' },
-    { id: 3, name: 'Đục thủy tinh thể', description: 'Chuyên khoa về bệnh đục thủy tinh thể' },
-    { id: 4, name: 'Võng mạc', description: 'Chuyên khoa về bệnh lý võng mạc' }
+    { id: 1, name: 'Nhãn khoa', description: 'Chuyên khoa về các bệnh lý về mắt', imageUrl: 'https://example.com/images/nhan-khoa.jpg' },
+    { id: 2, name: 'Giác mạc', description: 'Chuyên khoa về bệnh lý giác mạc', imageUrl: 'https://example.com/images/giac-mac.jpg' },
+    { id: 3, name: 'Đục thủy tinh thể', description: 'Chuyên khoa về bệnh đục thủy tinh thể', imageUrl: 'https://example.com/images/duc-thuy-tinh-the.jpg' },
+    { id: 4, name: 'Võng mạc', description: 'Chuyên khoa về bệnh lý võng mạc', imageUrl: 'https://example.com/images/vong-mac.jpg' }
   ];
 }
 

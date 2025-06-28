@@ -8,12 +8,16 @@ import {
     createAppointment,
     updateAppointment,
     cancelAppointment,
-    unconfirmAppointment, // Add this new import
+    unconfirmAppointment,
     getAllServices,
     getAllDoctors,
     getAvailableTimeSlots,
+    getAvailableDoctorsForDate,
+    getAppointmentInvoice,
+    markAppointmentAsPaid,
 } from "../../../../services/appointmentsService"
 import React from "react"
+import toast from "react-hot-toast"
 
 // Custom Components
 const Card = ({ children, className = "" }) => <div className={`apt-card ${className}`}>{children}</div>
@@ -153,6 +157,8 @@ export default function CreateAppointment() {
     const [doctors, setDoctors] = useState([])
     const [loading, setLoading] = useState(false)
     const [isEditingTime, setIsEditingTime] = useState(mode === "create")
+    const [invoiceData, setInvoiceData] = useState(null)
+    const [loadingInvoice, setLoadingInvoice] = useState(false)
 
     const isReadOnly = mode === "edit" && appointmentData?.status !== "PENDING"
 
@@ -231,10 +237,10 @@ export default function CreateAppointment() {
         fetchWards()
     }, [selectedDistrict])
 
-    // Fetch available dates
+    // Fetch available dates - now works without requiring a doctor to be selected first
     const fetchAvailableDates = useCallback(
         async (doctorId) => {
-            if (!doctorId || isNaN(currentMonth) || currentMonth < 0 || currentMonth > 11) {
+            if (isNaN(currentMonth) || currentMonth < 0 || currentMonth > 11) {
                 setAvailableDates([])
                 return
             }
@@ -244,18 +250,36 @@ export default function CreateAppointment() {
                 const endDate = new Date(currentYear, currentMonth + 1, 0).toISOString().split("T")[0]
                 const availableSlots = []
                 const currentDate = new Date(startDate)
-                while (currentDate <= new Date(endDate)) {
-                    const dateStr = currentDate.toISOString().split("T")[0]
-                    try {
-                        const slots = await getAvailableTimeSlots(doctorId, dateStr)
-                        if (slots && Array.isArray(slots) && slots.some((slot) => slot?.status === "AVAILABLE")) {
+                
+                // If a doctor is selected, fetch only dates available for that doctor
+                if (doctorId) {
+                    while (currentDate <= new Date(endDate)) {
+                        const dateStr = currentDate.toISOString().split("T")[0]
+                        try {
+                            const slots = await getAvailableTimeSlots(doctorId, dateStr)
+                            if (slots && Array.isArray(slots) && slots.some((slot) => slot?.status === "AVAILABLE")) {
+                                availableSlots.push(currentDate.getDate())
+                            }
+                        } catch (error) {
+                            console.error(`Error fetching slots for ${dateStr}:`, error)
+                        }
+                        currentDate.setDate(currentDate.getDate() + 1)
+                    }
+                } else {
+                    // If no doctor is selected, all dates in the current month that are not in the past are available
+                    while (currentDate <= new Date(endDate)) {
+                        const isPast =
+                            currentYear < today.getFullYear() ||
+                            (currentYear === today.getFullYear() && currentMonth < today.getMonth()) ||
+                            (currentYear === today.getFullYear() && currentMonth === today.getMonth() && currentDate.getDate() < currentDay)
+                        
+                        if (!isPast) {
                             availableSlots.push(currentDate.getDate())
                         }
-                    } catch (error) {
-                        console.error(`Error fetching slots for ${dateStr}:`, error)
+                        currentDate.setDate(currentDate.getDate() + 1)
                     }
-                    currentDate.setDate(currentDate.getDate() + 1)
                 }
+                
                 // Ensure the appointment date is included if in edit mode
                 if (appointmentData && selectedDate) {
                     availableSlots.push(selectedDate)
@@ -268,7 +292,7 @@ export default function CreateAppointment() {
                 setLoading(false)
             }
         },
-        [currentMonth, currentYear, selectedDate, appointmentData],
+        [currentMonth, currentYear, selectedDate, appointmentData, today, currentDay],
     )
 
     // Fetch time slots
@@ -301,19 +325,60 @@ export default function CreateAppointment() {
         [currentMonth, currentYear, appointmentData],
     )
 
-    // Fetch available dates and time slots when doctor or month changes
-    useEffect(() => {
-        if (selectedDoctor) {
-            fetchAvailableDates(selectedDoctor)
-            if (selectedDate) {
-                fetchTimeSlots(selectedDoctor, selectedDate)
+    // Fetch available doctors for a specific date
+    const fetchAvailableDoctorsForSelectedDate = useCallback(async () => {
+        if (!selectedDate || isNaN(currentMonth) || currentMonth < 0 || currentMonth > 11) {
+            return
+        }
+        try {
+            setLoading(true)
+            const dateStr = `${currentYear}-${(currentMonth + 1).toString().padStart(2, "0")}-${selectedDate.toString().padStart(2, "0")}`
+            const availableDoctors = await getAvailableDoctorsForDate(dateStr)
+            if (availableDoctors && Array.isArray(availableDoctors)) {
+                setDoctors(availableDoctors)
             }
-        } else {
-            setAvailableDates([])
-            setSelectedDate(null)
-            setSelectedTime("")
+        } catch (error) {
+            console.error("Error fetching available doctors:", error)
+        } finally {
+            setLoading(false)
+        }
+    }, [selectedDate, currentMonth, currentYear])
+
+    // Fetch available dates when month changes or doctor is selected
+    useEffect(() => {
+        // Always fetch available dates (with or without doctor)
+        fetchAvailableDates(selectedDoctor)
+        
+        // If doctor is selected and we have a date, fetch time slots
+        if (selectedDoctor && selectedDate) {
+            fetchTimeSlots(selectedDoctor, selectedDate)
         }
     }, [selectedDoctor, currentMonth, currentYear, fetchAvailableDates, selectedDate, fetchTimeSlots])
+    
+    // When a date is selected, fetch available doctors for that date
+    useEffect(() => {
+        if (selectedDate && !selectedDoctor && mode === "create") {
+            fetchAvailableDoctorsForSelectedDate()
+        }
+    }, [selectedDate, selectedDoctor, fetchAvailableDoctorsForSelectedDate, mode])
+    
+    // Fetch invoice data if in edit mode
+    useEffect(() => {
+        const fetchInvoiceData = async () => {
+            if (mode === "edit" && appointmentData?.id) {
+                try {
+                    setLoadingInvoice(true)
+                    const data = await getAppointmentInvoice(appointmentData.id)
+                    setInvoiceData(data)
+                } catch (error) {
+                    console.error("Error fetching invoice data:", error)
+                } finally {
+                    setLoadingInvoice(false)
+                }
+            }
+        }
+        fetchInvoiceData()
+    }, [mode, appointmentData?.id])
 
     const monthNames = [
         "Tháng 1",
@@ -485,6 +550,32 @@ export default function CreateAppointment() {
 
     const handleBackToList = () => navigate("/dashboard/receptionist/all-appointments")
 
+    // Handle confirm payment
+    const handleConfirmPayment = async () => {
+        try {
+            setLoading(true)
+            const paymentData = {
+                paymentMethod: "CASH", // Mặc định là thanh toán tiền mặt
+                amount: invoiceData?.remainingAmount || 0,
+            }
+            await markAppointmentAsPaid(appointmentData.id, paymentData)
+            toast.success("Xác nhận thanh toán thành công!")
+            
+            // Cập nhật lại dữ liệu cuộc hẹn và hóa đơn
+            const updatedInvoice = await getAppointmentInvoice(appointmentData.id)
+            setInvoiceData(updatedInvoice)
+            
+            // Cập nhật lại trạng thái cuộc hẹn trong state
+            const updatedAppointmentData = { ...appointmentData, status: "COMPLETED" }
+            navigate(location.pathname, { state: { appointmentData: updatedAppointmentData, mode: "edit" } })
+        } catch (error) {
+            console.error("Error confirming payment:", error)
+            toast.error("Không thể xác nhận thanh toán: " + (error.message || "Lỗi không xác định"))
+        } finally {
+            setLoading(false)
+        }
+    }
+
     return (
         <div className="apt-wrap">
             <div className="apt-back-btn">
@@ -558,16 +649,59 @@ export default function CreateAppointment() {
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="apt-y3">
-                            <div className="apt-pay-row">
-                                <span className="apt-pay-lbl">Phí tạo:</span>
-                                <span className="apt-pay-val">10.000 đ</span>
-                            </div>
-                            <hr />
-                            <div className="apt-pay-tot">
-                                <span>Tổng tiền:</span>
-                                <span>10.000 đ</span>
-                            </div>
-                            <div className="apt-pay-note">* Giá có thể thay đổi tùy theo dịch vụ</div>
+                            {loadingInvoice ? (
+                                <div className="flex justify-center items-center py-4">
+                                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+                                </div>
+                            ) : (
+                                <>
+                                    <div className="apt-pay-row">
+                                        <span className="apt-pay-lbl">Phí đặt cọc:</span>
+                                        <span className="apt-pay-val">
+                                            {invoiceData?.depositAmount ? `${invoiceData.depositAmount.toLocaleString()} đ` : "10.000 đ"}
+                                        </span>
+                                    </div>
+                                    
+                                    {invoiceData && (
+                                        <>
+                                            <div className="apt-pay-row">
+                                                <span className="apt-pay-lbl">Trạng thái đặt cọc:</span>
+                                                <span className={`apt-pay-val ${invoiceData.depositAmount ? "text-green-600 font-medium" : ""}`}>
+                                                    {invoiceData.depositAmount ? "Đã thanh toán" : "Chưa thanh toán"}
+                                                </span>
+                                            </div>
+                                            
+                                            {appointmentData?.status === "WAITING_PAYMENT" && (
+                                                <>
+                                                    <div className="apt-pay-row">
+                                                        <span className="apt-pay-lbl">Phí điều trị:</span>
+                                                        <span className="apt-pay-val">
+                                                            {invoiceData.remainingAmount ? `${invoiceData.remainingAmount.toLocaleString()} đ` : "0 đ"}
+                                                        </span>
+                                                    </div>
+                                                    <div className="apt-pay-row">
+                                                        <span className="apt-pay-lbl">Trạng thái thanh toán:</span>
+                                                        <span className={`apt-pay-val ${invoiceData.isFullyPaid ? "text-green-600 font-medium" : "text-yellow-600 font-medium"}`}>
+                                                            {invoiceData.isFullyPaid ? "Đã thanh toán đầy đủ" : "Chờ thanh toán"}
+                                                        </span>
+                                                    </div>
+                                                </>
+                                            )}
+                                        </>
+                                    )}
+                                    
+                                    <hr />
+                                    <div className="apt-pay-tot">
+                                        <span>Tổng tiền:</span>
+                                        <span>
+                                            {invoiceData?.totalAmount 
+                                                ? `${invoiceData.totalAmount.toLocaleString()} đ` 
+                                                : "10.000 đ"}
+                                        </span>
+                                    </div>
+                                    <div className="apt-pay-note">* Giá có thể thay đổi tùy theo dịch vụ</div>
+                                </>
+                            )}
                         </CardContent>
                     </Card>
                 </div>
@@ -656,7 +790,18 @@ export default function CreateAppointment() {
                                             {calendarDays.map((date, index) => (
                                                 <button
                                                     key={index}
-                                                    onClick={() => !date.disabled && !isReadOnly && setSelectedDate(date.day)}
+                                                    onClick={() => {
+                                                        if (!date.disabled && !isReadOnly) {
+                                                            setSelectedDate(date.day)
+                                                            if (selectedDoctor) {
+                                                                fetchTimeSlots(selectedDoctor, date.day)
+                                                            } else if (mode === "create") {
+                                                                // When selecting a date without a doctor, reset doctor selection
+                                                                // and trigger fetching available doctors
+                                                                setSelectedDoctor("")
+                                                            }
+                                                        }
+                                                    }}
                                                     className={getDateClassName(date)}
                                                     disabled={date.disabled || isReadOnly}
                                                 >
@@ -958,6 +1103,34 @@ export default function CreateAppointment() {
                                         className="apt-button-primary"
                                         style={{ background: "#dc3545" }}
                                         onClick={handleCancelAppointment}
+                                    >
+                                        Hủy lịch hẹn
+                                    </Button>
+                                </div>
+                            ) : mode === "edit" && appointmentData?.status === "WAITING_PAYMENT" ? (
+                                <div className="flex gap-3">
+                                    {invoiceData && !invoiceData.isFullyPaid && (
+                                        <Button
+                                            className="apt-button-primary"
+                                            style={{ background: "#28a745" }}
+                                            onClick={handleConfirmPayment}
+                                            disabled={loading}
+                                        >
+                                            {loading ? (
+                                                <>
+                                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                                    Đang xử lý...
+                                                </>
+                                            ) : (
+                                                "Xác nhận thanh toán"
+                                            )}
+                                        </Button>
+                                    )}
+                                    <Button
+                                        className="apt-button-primary"
+                                        style={{ background: "#dc3545" }}
+                                        onClick={handleCancelAppointment}
+                                        disabled={loading}
                                     >
                                         Hủy lịch hẹn
                                     </Button>

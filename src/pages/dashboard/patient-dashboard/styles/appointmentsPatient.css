@@ -116,63 +116,50 @@
 /* Table styles */
 .table-container {
     background-color: #ffffff;
-    border-radius: 0.75rem;
-    border: 1px solid #e2e8f0;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     margin: 0 1rem;
 }
 
 .appointments-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.875rem;
 }
 
 .appointments-table th,
 .appointments-table td {
-    padding: 0.875rem 1rem;
+    padding: 0.75rem 1rem;
     text-align: left;
     border-bottom: 1px solid #e2e8f0;
 }
 
 .appointments-table th {
     font-weight: 600;
-    color: #1e293b;
+    color: #475569;
     background-color: #f8fafc;
-    position: relative;
+    font-size: 0.875rem;
 }
 
-.appointments-table th:not(:last-child)::after {
-    content: '';
-    position: absolute;
-    right: 0;
-    top: 25%;
-    height: 50%;
-    width: 1px;
-    background-color: #e2e8f0;
+.appointments-table tr:last-child td {
+    border-bottom: none;
 }
 
-.appointments-table tbody tr:hover {
+.appointments-table tr:hover {
     background-color: #f1f5f9;
-    transition: background-color 0.2s ease;
 }
 
-/* Column specific styles */
+/* Column widths */
 .column-id {
-    width: 50px;
-    text-align: center;
-    font-weight: 500;
+    width: 5%;
 }
 
 .column-service {
     width: 20%;
-    font-weight: 500;
 }
 
 .column-date {
     width: 15%;
-    position: relative;
 }
 
 .column-doctor {
@@ -184,169 +171,95 @@
 }
 
 .column-notes {
-    width: 25%;
-    color: #4b5563;
+    width: 20%;
 }
 
 .column-actions {
     width: 10%;
-    text-align: center;
 }
 
-/* Sort button */
-.sort-button {
-    background: none;
-    border: none;
+/* Action buttons */
+.action-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.view-details-button,
+.cancel-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
     cursor: pointer;
-    margin-left: 0.25rem;
-    padding: 0;
-    vertical-align: middle;
-    color: #64748b;
+    transition: all 0.2s ease;
+    border: none;
 }
 
-.sort-button:hover {
-    color: #3b82f6;
+.view-details-button {
+    background-color: #e0f2fe;
+    color: #0284c7;
+}
+
+.view-details-button:hover {
+    background-color: #bae6fd;
+}
+
+.cancel-button {
+    background-color: #fee2e2;
+    color: #ef4444;
+}
+
+.cancel-button:hover {
+    background-color: #fecaca;
+}
+
+.view-details-button:disabled,
+.cancel-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 /* Status badges */
 .status-badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.375rem 0.875rem;
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
     font-size: 0.75rem;
-    font-weight: 600;
-    border-radius: 2rem;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-    min-width: 100px;
+    font-weight: 500;
     text-align: center;
-    letter-spacing: 0.02em;
+    white-space: nowrap;
 }
 
-.status-badge.status-confirmed {
-    background-color: #e0f2fe;
-    color: #0369a1;
-    border: 1px solid #bae6fd;
+.status-pending {
+    background-color: #fef9c3;
+    color: #854d0e;
 }
 
-.status-badge.status-cancelled {
-    background-color: #fee2e2;
-    color: #b91c1c;
-    border: 1px solid #fecaca;
+.status-confirmed {
+    background-color: #dbeafe;
+    color: #1d4ed8;
 }
 
-.status-badge.status-completed {
+.status-completed {
     background-color: #dcfce7;
     color: #15803d;
-    border: 1px solid #bbf7d0;
 }
 
-.status-badge.status-pending {
+.status-cancelled {
+    background-color: #fee2e2;
+    color: #b91c1c;
+}
+
+.status-waiting-payment {
     background-color: #fef3c7;
-    color: #b45309;
-    border: 1px solid #fde68a;
+    color: #92400e;
 }
 
-/* Cancel button */
-.cancel-button {
-    padding: 0.375rem 0.75rem;
-    background-color: #ffffff;
-    color: #ef4444;
-    border: 1px solid #ef4444;
-    border-radius: 0.375rem;
-    font-size: 0.75rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-}
-
-.cancel-button:hover {
-    background-color: #fef2f2;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-/* Pagination */
-.pagination-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.875rem 1rem;
-    border-top: 1px solid #e2e8f0;
-    background-color: #f8fafc;
-}
-
-.pagination-controls {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.pagination-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 2rem;
-    height: 2rem;
-    padding: 0;
-    background-color: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 0.375rem;
-    color: #64748b;
-    cursor: pointer;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-    transition: all 0.2s ease;
-}
-
-.pagination-button:hover {
-    border-color: #3b82f6;
-    color: #3b82f6;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.pagination-current {
-    font-weight: 500;
-    color: #1e293b;
-    padding: 0 0.5rem;
-}
-
-.pagination-info {
-    color: #64748b;
-    font-size: 0.875rem;
-    font-weight: 500;
-}
-
-/* Loading and empty states */
-.loading-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 3rem 0;
-}
-
-.loading-spinner {
-    border: 3px solid #f3f3f3;
-    border-top: 3px solid #3b82f6;
-    border-radius: 50%;
-    width: 2rem;
-    height: 2rem;
-    animation: spin 1s linear infinite;
-    margin-bottom: 1rem;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-.no-appointments {
-    text-align: center;
-    padding: 3rem 0;
-    color: #64748b;
-}
-
-/* Modal dialog */
+/* Modal styles */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -361,28 +274,128 @@
 }
 
 .modal-container {
-    background-color: white;
+    background-color: #ffffff;
     border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     width: 90%;
-    max-width: 500px;
+    max-width: 600px;
     max-height: 90vh;
     overflow-y: auto;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    display: flex;
+    flex-direction: column;
+}
+
+.appointment-details-modal {
+    width: 90%;
+    max-width: 800px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.appointment-details-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    width: 100%;
+}
+
+.details-section {
+    background-color: #f8fafc;
+    border-radius: 0.5rem;
+    padding: 1.25rem;
+    border: 1px solid #e2e8f0;
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 1rem;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+    color: #0f172a;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #e2e8f0;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.section-header .icon-container {
+    width: 40px;
+    height: 40px;
+    border-radius: 0.5rem;
+    background-color: #eff6ff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.section-header svg {
+    width: 20px;
+    height: 20px;
+    color: #3b82f6;
+}
+
+.section-header h4 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin: 0;
+    padding: 0;
+    color: #1e40af;
+    flex-grow: 1;
+    white-space: nowrap;
+    line-height: 1.5;
+}
+
+.details-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    width: 100%;
+    margin-top: 0.5rem;
+}
+
+/* Màu sắc cho từng phần */
+.appointment-info .section-header .icon-container {
+    background-color: #eff6ff;
+}
+
+.appointment-info .section-header svg {
+    color: #2563eb;
+}
+
+.patient-info .section-header .icon-container {
+    background-color: #f5f3ff;
+}
+
+.patient-info .section-header svg {
+    color: #7c3aed;
+}
+
+.payment-details .section-header .icon-container {
+    background-color: #ecfdf5;
+}
+
+.payment-details .section-header svg {
+    color: #059669;
 }
 
 .modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem;
+    padding: 1rem 1.5rem;
     border-bottom: 1px solid #e2e8f0;
 }
 
 .modal-header h3 {
-    margin: 0;
     font-size: 1.25rem;
     font-weight: 600;
     color: #1e293b;
+    margin: 0;
 }
 
 .close-button {
@@ -394,47 +407,190 @@
 }
 
 .modal-body {
-    padding: 1rem;
+    padding: 1.5rem;
+    overflow-y: auto;
 }
 
 .modal-footer {
     display: flex;
     justify-content: flex-end;
-    gap: 0.75rem;
-    padding: 1rem;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
     border-top: 1px solid #e2e8f0;
 }
 
+/* Appointment details styles */
+.appointment-details-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.details-section {
+    background-color: #f8fafc;
+    border-radius: 0.5rem;
+    padding: 1.25rem;
+    border: 1px solid #e2e8f0;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+    color: #0f172a;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #e2e8f0;
+    position: relative;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.section-header svg {
+    min-width: 40px;
+    height: 40px;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    background-color: #eff6ff;
+    color: #3b82f6;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    flex-shrink: 0;
+}
+
+.section-header h4 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin: 0;
+    color: #1e40af;
+    flex-grow: 1;
+    white-space: nowrap;
+}
+
+.appointment-info .section-header svg {
+    background-color: #eff6ff;
+    color: #2563eb;
+}
+
+.patient-info .section-header svg {
+    background-color: #f5f3ff;
+    color: #7c3aed;
+}
+
+.payment-details .section-header svg {
+    background-color: #ecfdf5;
+    color: #059669;
+}
+
+.details-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.details-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.details-row.full-width {
+    grid-column: span 2;
+}
+
+.details-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #64748b;
+}
+
+.details-value {
+    font-size: 0.875rem;
+    color: #1e293b;
+    font-weight: 500;
+}
+
+.details-value.highlight {
+    color: #0284c7;
+    font-weight: 600;
+}
+
+.details-value.highlight-date {
+    color: #0891b2;
+    font-weight: 600;
+}
+
+.details-value.highlight-time {
+    color: #0891b2;
+    font-weight: 600;
+}
+
+.details-value.highlight-amount {
+    color: #0f766e;
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.details-value.notes-text {
+    background-color: #f1f5f9;
+    padding: 0.75rem;
+    border-radius: 0.25rem;
+    font-style: italic;
+}
+
+.payment-status {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+}
+
+.payment-status.paid {
+    background-color: #dcfce7;
+    color: #15803d;
+}
+
+.payment-status.unpaid {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+.no-payment-info {
+    padding: 1rem;
+    text-align: center;
+    color: #64748b;
+    font-style: italic;
+    background-color: #f1f5f9;
+    border-radius: 0.25rem;
+}
+
+/* Cancel dialog styles */
 .appointment-info-box {
     background-color: #f8fafc;
-    border-radius: 0.25rem;
+    border-radius: 0.5rem;
     padding: 1rem;
     margin-bottom: 1rem;
+    border: 1px solid #e2e8f0;
 }
 
 .info-row {
     display: flex;
+    justify-content: space-between;
     margin-bottom: 0.5rem;
-}
-
-.info-row:last-child {
-    margin-bottom: 0;
 }
 
 .info-label {
     font-weight: 500;
-    color: #475569;
-    width: 100px;
-    flex-shrink: 0;
+    color: #64748b;
 }
 
 .info-value {
+    font-weight: 500;
     color: #1e293b;
 }
 
 .refund-policy-alert {
     padding: 1rem;
-    border-radius: 0.25rem;
+    border-radius: 0.5rem;
     margin-bottom: 1rem;
 }
 
@@ -442,21 +598,16 @@
     margin-top: 0;
     margin-bottom: 0.5rem;
     font-size: 1rem;
-    font-weight: 600;
 }
 
-.refund-policy-alert p {
-    margin: 0;
+.refund-yes {
+    background-color: #dcfce7;
+    border: 1px solid #86efac;
 }
 
-.refund-policy-alert.refund-yes {
-    background-color: #d1fae5;
-    color: #065f46;
-}
-
-.refund-policy-alert.refund-no {
+.refund-no {
     background-color: #fee2e2;
-    color: #b91c1c;
+    border: 1px solid #fecaca;
 }
 
 .form-group {
@@ -474,9 +625,9 @@
     width: 100%;
     padding: 0.75rem;
     border: 1px solid #e2e8f0;
-    border-radius: 0.25rem;
-    font-size: 0.875rem;
+    border-radius: 0.5rem;
     resize: vertical;
+    font-family: inherit;
 }
 
 .form-group textarea:focus {
@@ -485,91 +636,66 @@
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-.cancel-button-secondary {
-    padding: 0.5rem 1rem;
-    background-color: #f1f5f9;
-    color: #475569;
-    border: 1px solid #e2e8f0;
-    border-radius: 0.25rem;
+/* Button styles */
+.cancel-button-primary,
+.cancel-button-secondary,
+.close-button-secondary {
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
     font-weight: 500;
     cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
 }
 
 .cancel-button-primary {
-    padding: 0.5rem 1rem;
     background-color: #ef4444;
     color: white;
-    border: none;
-    border-radius: 0.25rem;
-    font-weight: 500;
-    cursor: pointer;
 }
 
 .cancel-button-primary:hover {
     background-color: #dc2626;
 }
 
+.cancel-button-secondary,
+.close-button-secondary {
+    background-color: #f1f5f9;
+    color: #475569;
+}
+
+.cancel-button-secondary:hover,
+.close-button-secondary:hover {
+    background-color: #e2e8f0;
+}
+
 .cancel-button-primary:disabled {
-    background-color: #fca5a5;
+    opacity: 0.5;
     cursor: not-allowed;
 }
 
-/* Row styles based on status */
-.appointment-row.confirmed td {
-    background-color: rgba(219, 234, 254, 0.15);
-}
-
-.appointment-row.completed td {
-    background-color: rgba(209, 250, 229, 0.15);
-}
-
-.appointment-row.cancelled td {
-    background-color: rgba(254, 226, 226, 0.15);
-}
-
-.appointment-row.pending td {
-    background-color: rgba(254, 243, 199, 0.15);
-}
-
-/* Cancellation info styles */
-.cancellation-info {
-    display: flex;
-    flex-direction: column;
-    font-size: 0.75rem;
-}
-
-.cancellation-time {
-    font-weight: 500;
-    color: #ef4444;
-    white-space: nowrap;
-}
-
-/* Refund policy styles */
-.refund-policy-alert {
-    margin: 1rem 0;
-    padding: 0.75rem;
-    border-radius: 0.5rem;
-    font-size: 0.875rem;
-}
-
-.refund-policy-alert h4 {
-    margin-top: 0;
-    margin-bottom: 0.5rem;
-    font-size: 0.9rem;
-}
-
-.refund-policy-alert p {
-    margin: 0;
-}
-
-.refund-policy-alert.refund-yes {
-    background-color: #dcfce7;
-    color: #15803d;
-    border: 1px solid #bbf7d0;
-}
-
-.refund-policy-alert.refund-no {
-    background-color: #fee2e2;
-    color: #b91c1c;
-    border: 1px solid #fecaca;
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .details-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .details-row.full-width {
+        grid-column: span 1;
+    }
+    
+    .appointments-table {
+        display: block;
+        overflow-x: auto;
+    }
+    
+    .column-notes {
+        max-width: 150px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
 }

@@ -161,8 +161,73 @@ const appointmentService = {
       console.error("Lỗi khi cập nhật trạng thái lịch hẹn:", error);
       throw error;
     }
+  },
+
+  // Chuyển trạng thái cuộc hẹn sang chờ thanh toán sau khi bác sĩ tạo hồ sơ bệnh án
+  setAppointmentWaitingPayment: async (appointmentId, totalAmount) => {
+    try {
+      const response = await axiosInstance.put(`/appointments/${appointmentId}/waiting-payment`, { totalAmount });
+      return response.data;
+    } catch (error) {
+      console.error("Lỗi khi chuyển trạng thái cuộc hẹn sang chờ thanh toán:", error);
+      throw error;
+    }
+  },
+
+  // Đánh dấu cuộc hẹn đã thanh toán và chuyển trạng thái sang hoàn thành
+  markAppointmentAsPaid: async (appointmentId, transactionId) => {
+    try {
+      const response = await axiosInstance.put(`/appointments/${appointmentId}/mark-as-paid`, { transactionId });
+      return response.data;
+    } catch (error) {
+      console.error("Lỗi khi đánh dấu cuộc hẹn đã thanh toán:", error);
+      throw error;
+    }
+  },
+
+  // Lấy danh sách cuộc hẹn đang chờ thanh toán
+  getWaitingPaymentAppointments: async () => {
+    try {
+      const response = await axiosInstance.get('/appointments/waiting-payment');
+      return response.data;
+    } catch (error) {
+      console.error("Lỗi khi lấy danh sách cuộc hẹn đang chờ thanh toán:", error);
+      throw error;
+    }
+  },
+
+  // Lấy danh sách cuộc hẹn đang chờ thanh toán của bác sĩ
+  getWaitingPaymentAppointmentsByDoctor: async (doctorId) => {
+    try {
+      const response = await axiosInstance.get(`/appointments/doctor/${doctorId}/waiting-payment`);
+      return response.data;
+    } catch (error) {
+      console.error("Lỗi khi lấy danh sách cuộc hẹn đang chờ thanh toán của bác sĩ:", error);
+      throw error;
+    }
+  },
+
+  // Lấy thông tin hóa đơn của cuộc hẹn
+  getAppointmentInvoice: async (appointmentId) => {
+    try {
+      const response = await axiosInstance.get(`/appointments/${appointmentId}/invoice`);
+      return response.data;
+    } catch (error) {
+      console.error("Lỗi khi lấy thông tin hóa đơn của cuộc hẹn:", error);
+      throw error;
+    }
+  },
+  
+  // Lấy chi tiết cuộc hẹn theo ID
+  getAppointmentById: async (appointmentId) => {
+    try {
+      const response = await axiosInstance.get(`/appointments/${appointmentId}`);
+      return response.data;
+    } catch (error) {
+      console.error("Lỗi khi lấy chi tiết cuộc hẹn:", error);
+      throw error;
+    }
   }
 };
-
 
 export default appointmentService;

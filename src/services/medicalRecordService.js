@@ -11,19 +11,32 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
     (config) => {
         const user = authService.getCurrentUser();
-        const token = localStorage.getItem("token");
+        let token = null;
+        
+        // Lấy token từ đối tượng user nếu có
+        if (user && user.token) {
+            token = user.token;
+        } else if (user && user.accessToken) {
+            token = user.accessToken;
+        } else {
+            // Kiểm tra token riêng biệt (phòng trường hợp lưu riêng)
+            token = localStorage.getItem("token");
+        }
+        
         console.log("Request Interceptor:", {
             user: user ? { id: user.id, role: user.role } : null,
             token: token ? `${token.substring(0, 10)}...` : null,
             url: config.url
         });
+        
         if (user) {
             config.headers['User-Id'] = user.id;
         }
+        
         if (token) {
             config.headers['Authorization'] = `Bearer ${token}`;
         } else {
-            console.warn("No token found in localStorage");
+            console.warn("No token found in user object or localStorage");
         }
         return config;
     },
@@ -128,6 +141,39 @@ const medicalRecordService = {
         }
     },
 
+    getPatientMedicalRecords: async (patientId) => {
+        try {
+            console.log(`Fetching medical records for patient: ${patientId}`);
+            const response = await axiosInstance.get(`/medical-records/patient/${patientId}`);
+            console.log("Patient Medical Records API Response:", JSON.stringify(response.data, null, 2));
+            return response.data;
+        } catch (error) {
+            console.error('Lỗi khi lấy danh sách hồ sơ điều trị:', {
+                status: error.response?.status,
+                data: error.response?.data,
+                message: error.message
+            });
+            throw error;
+        }
+    },
+
+    getMedicalRecordById: async (recordId) => {
+        try {
+            console.log(`Fetching medical record with ID: ${recordId}`);
+            const response = await axiosInstance.get(`/medical-records/${recordId}`);
+            console.log("Medical Record Detail API Response:", JSON.stringify(response.data, null, 2));
+            return response.data;
+        } catch (error) {
+            console.error('Lỗi khi lấy chi tiết hồ sơ điều trị:', {
+                status: error.response?.status,
+                data: error.response?.data,
+                message: error.message
+            });
+            throw error;
+        }
+    },
+
+
     checkMedicalRecordExistsByAppointmentId: async (appointmentId) => {
         try {
             console.log(`Checking medical record for appointmentId: ${appointmentId}`);
@@ -153,6 +199,30 @@ const medicalRecordService = {
                 return false;
             }
             throw error;
+        }
+    },
+    
+    /**
+     * Lấy thông tin chi tiết về thuốc từ hồ sơ y tế theo ID cuộc hẹn
+     * Bao gồm thông tin về sản phẩm, số lượng và giá tiền
+     */
+    getMedicationsByAppointmentId: async (appointmentId) => {
+        try {
+            console.log(`Fetching medications for appointmentId: ${appointmentId}`);
+            const response = await axiosInstance.get(`/medical-records/by-appointment/${appointmentId}/medications`);
+            console.log("Medications API Response:", response.data);
+            return response.data;
+        } catch (error) {
+            console.error('Lỗi khi lấy thông tin thuốc:', {
+                status: error.response?.status,
+                data: error.response?.data,
+                message: error.message
+            });
+            if (error.response?.status === 404) {
+                console.log(`No medications found for appointmentId ${appointmentId}`);
+                return { products: [], totalAmount: 0 };
+            }
+            return { products: [], totalAmount: 0 };
         }
     }
 };

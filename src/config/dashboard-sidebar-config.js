@@ -13,6 +13,7 @@ import {
     WarehouseIcon as Inventory,
     Clock,
     MessageSquare,
+    DollarSign,
 } from "lucide-react"
 
 // Menu items cho từng role
@@ -49,6 +50,7 @@ export const receptionistMenuItems = [
     { id: "checkin", label: "Check-in bệnh nhân", icon: UserCheck },
     { id: "patients", label: "Danh sách bệnh nhân", icon: Users },
     { id: "payments", label: "Thanh toán", icon: History },
+    { id: "payment-management", label: "Quản lý thanh toán", icon: DollarSign },
     { id: "schedule", label: "Lịch bác sĩ", icon: Calendar },
     { id: "profile", label: "Hồ sơ cá nhân", icon: User },
 ]
