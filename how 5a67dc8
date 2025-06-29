@@ -1,0 +1,92 @@
+[33m5a67dc8[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mcreateRecordByDoctor[m[33m, [m[1;31morigin/createRecordByDoctor[m[33m)[m HEAD@{0}: checkout: moving from main to createRecordByDoctor
+[33m72ac51d[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m HEAD@{1}: checkout: moving from updateBookAppointment to main
+[33m60f3b5c[m[33m ([m[1;31morigin/updateBookAppointment[m[33m, [m[1;32mupdateBookAppointment[m[33m)[m HEAD@{2}: checkout: moving from createRecordByDoctor to updateBookAppointment
+[33m5a67dc8[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mcreateRecordByDoctor[m[33m, [m[1;31morigin/createRecordByDoctor[m[33m)[m HEAD@{3}: checkout: moving from main to createRecordByDoctor
+[33m72ac51d[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m HEAD@{4}: checkout: moving from createRecordByDoctor to main
+[33m5a67dc8[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mcreateRecordByDoctor[m[33m, [m[1;31morigin/createRecordByDoctor[m[33m)[m HEAD@{5}: checkout: moving from main to createRecordByDoctor
+[33m72ac51d[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m HEAD@{6}: checkout: moving from createRecordByDoctor to main
+[33m5a67dc8[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mcreateRecordByDoctor[m[33m, [m[1;31morigin/createRecordByDoctor[m[33m)[m HEAD@{7}: checkout: moving from main to createRecordByDoctor
+[33m72ac51d[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m HEAD@{8}: pull: Fast-forward
+[33made9ad4[m HEAD@{9}: checkout: moving from createRecordByDoctor to main
+[33m5a67dc8[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mcreateRecordByDoctor[m[33m, [m[1;31morigin/createRecordByDoctor[m[33m)[m HEAD@{10}: checkout: moving from updateBookAppointment to createRecordByDoctor
+[33m60f3b5c[m[33m ([m[1;31morigin/updateBookAppointment[m[33m, [m[1;32mupdateBookAppointment[m[33m)[m HEAD@{11}: checkout: moving from createRecordByDoctor to updateBookAppointment
+[33m5a67dc8[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mcreateRecordByDoctor[m[33m, [m[1;31morigin/createRecordByDoctor[m[33m)[m HEAD@{12}: checkout: moving from main to createRecordByDoctor
+[33made9ad4[m HEAD@{13}: checkout: moving from createRecordByDoctor to main
+[33m5a67dc8[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mcreateRecordByDoctor[m[33m, [m[1;31morigin/createRecordByDoctor[m[33m)[m HEAD@{14}: commit: feat(record): creat medical record by doctor
+[33made9ad4[m HEAD@{15}: checkout: moving from createRecordByDoctor to createRecordByDoctor
+[33made9ad4[m HEAD@{16}: checkout: moving from main to createRecordByDoctor
+[33made9ad4[m HEAD@{17}: pull: Fast-forward
+[33m88ab394[m HEAD@{18}: pull: Fast-forward
+[33me545820[m HEAD@{19}: checkout: moving from updateBookAppointment to main
+[33m60f3b5c[m[33m ([m[1;31morigin/updateBookAppointment[m[33m, [m[1;32mupdateBookAppointment[m[33m)[m HEAD@{20}: commit: update book appointment
+[33mcfab2c4[m[33m ([m[1;31morigin/updateReceptionist[m[33m, [m[1;32mupdateReceptionist[m[33m)[m HEAD@{21}: checkout: moving from updateBookAppointment to updateBookAppointment
+[33mcfab2c4[m[33m ([m[1;31morigin/updateReceptionist[m[33m, [m[1;32mupdateReceptionist[m[33m)[m HEAD@{22}: checkout: moving from updateReceptionist to updateBookAppointment
+[33mcfab2c4[m[33m ([m[1;31morigin/updateReceptionist[m[33m, [m[1;32mupdateReceptionist[m[33m)[m HEAD@{23}: commit: feat(funcOfRecep): update all functions of the reception
+[33me545820[m HEAD@{24}: checkout: moving from updateReceptionist to updateReceptionist
+[33me545820[m HEAD@{25}: checkout: moving from main to updateReceptionist
+[33me545820[m HEAD@{26}: checkout: moving from creatAppointmentByReceptionist to main
+[33m54446ff[m[33m ([m[1;31morigin/creatAppointmentByReceptionist[m[33m, [m[1;32mcreatAppointmentByReceptionist[m[33m)[m HEAD@{27}: checkout: moving from receptionist to creatAppointmentByReceptionist
+[33m3f195c3[m[33m ([m[1;31morigin/receptionist[m[33m, [m[1;32mreceptionist[m[33m)[m HEAD@{28}: checkout: moving from main to receptionist
+[33me545820[m HEAD@{29}: pull: Fast-forward
+[33m758df29[m HEAD@{30}: checkout: moving from receptionist to main
+[33m3f195c3[m[33m ([m[1;31morigin/receptionist[m[33m, [m[1;32mreceptionist[m[33m)[m HEAD@{31}: checkout: moving from creatAppointmentByReceptionist to receptionist
+[33m54446ff[m[33m ([m[1;31morigin/creatAppointmentByReceptionist[m[33m, [m[1;32mcreatAppointmentByReceptionist[m[33m)[m HEAD@{32}: checkout: moving from receptionist to creatAppointmentByReceptionist
+[33m3f195c3[m[33m ([m[1;31morigin/receptionist[m[33m, [m[1;32mreceptionist[m[33m)[m HEAD@{33}: checkout: moving from creatAppointmentByReceptionist to receptionist
+[33m54446ff[m[33m ([m[1;31morigin/creatAppointmentByReceptionist[m[33m, [m[1;32mcreatAppointmentByReceptionist[m[33m)[m HEAD@{34}: checkout: moving from receptionist to creatAppointmentByReceptionist
+[33m3f195c3[m[33m ([m[1;31morigin/receptionist[m[33m, [m[1;32mreceptionist[m[33m)[m HEAD@{35}: checkout: moving from creatAppointmentByReceptionist to receptionist
+[33m54446ff[m[33m ([m[1;31morigin/creatAppointmentByReceptionist[m[33m, [m[1;32mcreatAppointmentByReceptionist[m[33m)[m HEAD@{36}: checkout: moving from main to creatAppointmentByReceptionist
+[33m758df29[m HEAD@{37}: checkout: moving from receptionist to main
+[33m3f195c3[m[33m ([m[1;31morigin/receptionist[m[33m, [m[1;32mreceptionist[m[33m)[m HEAD@{38}: commit: update dashboard receptionist
+[33m758df29[m HEAD@{39}: checkout: moving from receptionist to receptionist
+[33m758df29[m HEAD@{40}: checkout: moving from main to receptionist
+[33m758df29[m HEAD@{41}: checkout: moving from creatAppointmentByReceptionist to main
+[33m54446ff[m[33m ([m[1;31morigin/creatAppointmentByReceptionist[m[33m, [m[1;32mcreatAppointmentByReceptionist[m[33m)[m HEAD@{42}: commit: feat(appointment): create appoiment by receptionist
+[33m758df29[m HEAD@{43}: checkout: moving from creatAppointmentByReceptionist to creatAppointmentByReceptionist
+[33m758df29[m HEAD@{44}: checkout: moving from main to creatAppointmentByReceptionist
+[33m758df29[m HEAD@{45}: pull: Fast-forward
+[33m7390f63[m HEAD@{46}: pull: Fast-forward
+[33m1c90626[m HEAD@{47}: pull: Fast-forward
+[33m90b8f9d[m HEAD@{48}: checkout: moving from updateDashboardPatient to main
+[33m87f6201[m[33m ([m[1;31morigin/updateDashboardPatient[m[33m, [m[1;32mupdateDashboardPatient[m[33m)[m HEAD@{49}: commit: update dashboard patient
+[33mec48259[m[33m ([m[1;31morigin/updateSidebar[m[33m, [m[1;32mupdateSidebar[m[33m)[m HEAD@{50}: checkout: moving from updateDashboardPatient to updateDashboardPatient
+[33mec48259[m[33m ([m[1;31morigin/updateSidebar[m[33m, [m[1;32mupdateSidebar[m[33m)[m HEAD@{51}: checkout: moving from updateSidebar to updateDashboardPatient
+[33mec48259[m[33m ([m[1;31morigin/updateSidebar[m[33m, [m[1;32mupdateSidebar[m[33m)[m HEAD@{52}: commit: update sidebar
+[33m90b8f9d[m HEAD@{53}: checkout: moving from updateSidebar to updateSidebar
+[33m90b8f9d[m HEAD@{54}: checkout: moving from main to updateSidebar
+[33m90b8f9d[m HEAD@{55}: pull: Fast-forward
+[33md24b497[m HEAD@{56}: pull: Fast-forward
+[33mfc70b71[m HEAD@{57}: reset: moving to HEAD
+[33mfc70b71[m HEAD@{58}: pull: Fast-forward
+[33md5424b4[m HEAD@{59}: reset: moving to HEAD
+[33md5424b4[m HEAD@{60}: pull: Fast-forward
+[33m7b0f4b0[m HEAD@{61}: pull: Fast-forward
+[33m4241080[m HEAD@{62}: checkout: moving from dashboardDoctor to main
+[33m90fc4d6[m[33m ([m[1;31morigin/dashboardDoctor[m[33m, [m[1;32mdashboardDoctor[m[33m)[m HEAD@{63}: commit: feat(dashboard): create full dashboard for doctor
+[33m4241080[m HEAD@{64}: checkout: moving from dashboardDoctor to dashboardDoctor
+[33m4241080[m HEAD@{65}: checkout: moving from main to dashboardDoctor
+[33m4241080[m HEAD@{66}: pull: Fast-forward
+[33m4e212f6[m HEAD@{67}: checkout: moving from doctorDashboard to main
+[33mf4e11ef[m[33m ([m[1;31morigin/doctorDashboard[m[33m, [m[1;32mdoctorDashboard[m[33m)[m HEAD@{68}: commit: create doctor dashboard
+[33m4e212f6[m HEAD@{69}: checkout: moving from doctorDashboard to doctorDashboard
+[33m4e212f6[m HEAD@{70}: checkout: moving from main to doctorDashboard
+[33m4e212f6[m HEAD@{71}: pull: Fast-forward
+[33m2c35c46[m HEAD@{72}: pull: Fast-forward
+[33m2191192[m HEAD@{73}: pull: Fast-forward
+[33m7f947a9[m[33m ([m[1;32mfear/signup/2nd[m[33m)[m HEAD@{74}: checkout: moving from feat/signup/2nd to main
+[33me4991fc[m[33m ([m[1;31morigin/feat/signup/2nd[m[33m, [m[1;32mfeat/signup/2nd[m[33m)[m HEAD@{75}: commit: feat(sign): 2nd signup with verify gmail and code cryption
+[33m7f947a9[m[33m ([m[1;32mfear/signup/2nd[m[33m)[m HEAD@{76}: checkout: moving from feat/signup/2nd to feat/signup/2nd
+[33m7f947a9[m[33m ([m[1;32mfear/signup/2nd[m[33m)[m HEAD@{77}: checkout: moving from fear/signup/2nd to feat/signup/2nd
+[33m7f947a9[m[33m ([m[1;32mfear/signup/2nd[m[33m)[m HEAD@{78}: checkout: moving from main to fear/signup/2nd
+[33m7f947a9[m[33m ([m[1;32mfear/signup/2nd[m[33m)[m HEAD@{79}: pull: Fast-forward
+[33m68dc97b[m HEAD@{80}: checkout: moving from feat-signup to main
+[33m45272a2[m[33m ([m[1;31morigin/feat-signup[m[33m, [m[1;32mfeat-signup[m[33m)[m HEAD@{81}: commit: feat(signup): signup with verify mail and password encryption
+[33mb307dc6[m HEAD@{82}: checkout: moving from feat-signup to feat-signup
+[33mb307dc6[m HEAD@{83}: commit: feat(signup): signup with verify gmail
+[33m68dc97b[m HEAD@{84}: checkout: moving from feat-signup to feat-signup
+[33m68dc97b[m HEAD@{85}: checkout: moving from main to feat-signup
+[33m68dc97b[m HEAD@{86}: pull: Fast-forward
+[33mb75eab0[m HEAD@{87}: checkout: moving from auth/signup to main
+[33m4c1b3f2[m[33m ([m[1;31morigin/auth/signup[m[33m, [m[1;32mauth/signup[m[33m)[m HEAD@{88}: commit: fet(signup): signup form and set password form
+[33mb75eab0[m HEAD@{89}: checkout: moving from auth/signup to auth/signup
+[33mb75eab0[m HEAD@{90}: checkout: moving from main to auth/signup
+[33mb75eab0[m HEAD@{91}: clone: from https://github.com/Eyespire-Website/eyespire-front-end.git

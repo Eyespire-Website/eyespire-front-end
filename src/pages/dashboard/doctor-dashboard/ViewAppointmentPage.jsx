@@ -5,10 +5,8 @@ import { useLocation, useNavigate } from "react-router-dom"
 import { User, Calendar, Clock, FileText, ArrowLeft } from "lucide-react"
 import axios from "axios"
 import "./view-appointment.css"
-import appointmentService from "../../../services/appointmentService"
 import medicalRecordService from "../../../services/medicalRecordService"
 
-// Format ngày giờ cho dễ đọc
 const formatDateTime = (dateTime) => {
     if (!dateTime) return "N/A"
     try {
@@ -38,7 +36,9 @@ const formatDate = (date) => {
 
 const statusConfig = {
     CONFIRMED: { label: "Đã xác nhận", className: "status-confirmed" },
+    PENDING: { label: "Chờ xác nhận", className: "status-pending" },
     COMPLETED: { label: "Hoàn thành", className: "status-completed" },
+    CANCELLED: { label: "Đã hủy", className: "status-cancelled" },
 }
 
 export default function ViewAppointmentPage() {
@@ -50,10 +50,8 @@ export default function ViewAppointmentPage() {
     const [hasMedicalRecord, setHasMedicalRecord] = useState(false)
     const [address, setAddress] = useState("N/A")
 
-    // Fetch address names from API
     const fetchAddressNames = async (provinceCode, districtCode, wardCode, addressDetail) => {
         try {
-            // Fetch provinces
             const provincesResponse = await axios.get("https://provinces.open-api.vn/api/p/")
             const provinces = provincesResponse.data
             const province = provinces.find(p => p.code === parseInt(provinceCode))?.name || provinceCode || ""
@@ -61,23 +59,20 @@ export default function ViewAppointmentPage() {
             let district = districtCode || ""
             let ward = wardCode || ""
 
-            // Fetch districts if provinceCode exists
             if (provinceCode) {
                 const districtsResponse = await axios.get(`https://provinces.open-api.vn/api/p/${provinceCode}?depth=2`)
                 const districts = districtsResponse.data.districts
                 district = districts.find(d => d.code === parseInt(districtCode))?.name || districtCode || ""
             }
 
-            // Fetch wards if districtCode exists
             if (districtCode && provinceCode) {
                 const wardsResponse = await axios.get(`https://provinces.open-api.vn/api/d/${districtCode}?depth=2`)
                 const wards = wardsResponse.data.wards
                 ward = wards.find(w => w.code === parseInt(wardCode))?.name || wardCode || ""
             }
 
-            // Construct address
             const addressParts = [
-                addressDetail,
+                addressDetail || "N/A",
                 ward ? `Xã ${ward}` : null,
                 district ? `Huyện ${district}` : null,
                 province ? `Tỉnh ${province}` : null,
@@ -86,9 +81,8 @@ export default function ViewAppointmentPage() {
             return addressParts
         } catch (err) {
             console.error("Failed to fetch address names:", err)
-            // Fallback to raw codes if API fails
             return [
-                addressDetail,
+                addressDetail || "N/A",
                 wardCode ? `Xã ${wardCode}` : null,
                 districtCode ? `Huyện ${districtCode}` : null,
                 provinceCode ? `Tỉnh ${provinceCode}` : null,
@@ -96,7 +90,6 @@ export default function ViewAppointmentPage() {
         }
     }
 
-    // Lấy dữ liệu từ state và kiểm tra hồ sơ bệnh án
     useEffect(() => {
         if (!state?.appointmentData) {
             setError("Không tìm thấy thông tin cuộc hẹn.")
@@ -109,15 +102,43 @@ export default function ViewAppointmentPage() {
                 setLoading(true)
                 const exists = await medicalRecordService.checkMedicalRecordExistsByAppointmentId(state.appointmentData.id)
                 setHasMedicalRecord(exists)
-                setAppointment(state.appointmentData)
+                setAppointment({
+                    id: state.appointmentData.id,
+                    appointmentDate: state.appointmentData.appointmentDate || "N/A",
+                    timeSlot: state.appointmentData.timeSlot || "N/A",
+                    patient: {
+                        id: state.appointmentData.patient?.id || state.appointmentData.patientId || "N/A",
+                        name: state.appointmentData.patient?.name || state.appointmentData.patientName || "N/A",
+                        email: state.appointmentData.patient?.email || "N/A",
+                        phone: state.appointmentData.patient?.phone || "N/A",
+                        gender: state.appointmentData.patient?.gender === "MALE" ? "Nam" :
+                            state.appointmentData.patient?.gender === "FEMALE" ? "Nữ" :
+                                state.appointmentData.patient?.gender || "N/A",
+                        dateOfBirth: state.appointmentData.patient?.dateOfBirth || "N/A",
+                        province: state.appointmentData.patient?.province || null,
+                        district: state.appointmentData.patient?.district || null,
+                        ward: state.appointmentData.patient?.ward || null,
+                        addressDetail: state.appointmentData.patient?.addressDetail || "N/A",
+                    },
+                    doctor: {
+                        id: state.appointmentData.doctor?.id || state.appointmentData.doctorId || "N/A",
+                    },
+                    service: {
+                        id: state.appointmentData.service?.id || null, // Thêm service.id
+                        name: state.appointmentData.service?.name || state.appointmentData.service || "Khám tổng quát",
+                        description: state.appointmentData.service?.description || "N/A",
+                    },
+                    notes: state.appointmentData.notes || "Không có ghi chú",
+                    status: state.appointmentData.status || "CONFIRMED",
+                    createdAt: state.appointmentData.createdAt || new Date().toISOString(),
+                    updatedAt: state.appointmentData.updatedAt || new Date().toISOString(),
+                })
 
-                // Fetch address names
-                const patient = state.appointmentData.patient || {}
                 const resolvedAddress = await fetchAddressNames(
-                    patient.province,
-                    patient.district,
-                    patient.ward,
-                    patient.addressDetail
+                    state.appointmentData.patient?.province,
+                    state.appointmentData.patient?.district,
+                    state.appointmentData.patient?.ward,
+                    state.appointmentData.patient?.addressDetail
                 )
                 setAddress(resolvedAddress)
             } catch (err) {
@@ -131,23 +152,22 @@ export default function ViewAppointmentPage() {
         fetchMedicalRecordStatus()
     }, [state])
 
-    // Xử lý quay lại
     const handleBack = () => {
-        navigate("/dashboard/doctor/appointments")
+        const returnPath = state?.returnPath || "/dashboard/doctor/appointments"
+        console.log("Navigating back to:", returnPath)
+        navigate(returnPath)
     }
 
-    // Xử lý tạo hồ sơ bệnh án
     const handleCreateMedicalRecord = () => {
-        if (appointment.status !== "CONFIRMED") {
-            alert("Chỉ có thể tạo hồ sơ bệnh án cho cuộc hẹn đã xác nhận!")
-            return
-        }
         navigate("/dashboard/doctor/create-medical-record", {
             state: {
                 appointmentId: appointment.id,
-                patientId: appointment.patientId,
+                patientId: appointment.patient?.id,
                 patientName: appointment.patient?.name,
-                doctorId: appointment.doctorId
+                doctorId: appointment.doctor?.id,
+                serviceId: appointment.service?.id || null, // Truyền serviceId
+                returnPath: "/dashboard/doctor/view-appointment", // Giữ đường dẫn quay lại
+                appointmentData: appointment, // Truyền lại appointment để quay lại ViewAppointmentPage
             },
         })
     }
@@ -225,7 +245,7 @@ export default function ViewAppointmentPage() {
                                 <FileText size={18} className="view-appointment__icon" />
                                 <div>
                                     <span className="view-appointment__label">Giới tính</span>
-                                    <p className="view-appointment__value">{patient.gender === "MALE" ? "Nam" : patient.gender === "FEMALE" ? "Nữ" : "N/A"}</p>
+                                    <p className="view-appointment__value">{patient.gender || "N/A"}</p>
                                 </div>
                             </div>
                             <div className="view-appointment__info-item">
@@ -320,7 +340,6 @@ export default function ViewAppointmentPage() {
                             <ArrowLeft size={16} className="view-appointment__icon" />
                             Quay lại
                         </button>
-
                         {appointment.status === "CONFIRMED" && !hasMedicalRecord && (
                             <button
                                 className="view-appointment__create-record-button"

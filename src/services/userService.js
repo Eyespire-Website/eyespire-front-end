@@ -1,186 +1,256 @@
-import axios from "axios"
-import authService from "./authService"
+import axios from "axios";
+import authService from "./authService";
 
-const API_URL = "http://localhost:8080/api"
+const API_URL = "http://localhost:8080/api";
 
-// Tạo instance axios với cấu hình mặc định
 const axiosInstance = axios.create({
   baseURL: API_URL,
   withCredentials: true,
-})
+});
 
-// Thêm interceptor để tự động thêm token vào header
 axiosInstance.interceptors.request.use(
     (config) => {
-      const user = authService.getCurrentUser()
+      const user = authService.getCurrentUser();
       if (user) {
-        // Thêm userId vào header để backend có thể xác thực
-        config.headers["User-Id"] = user.id
+        config.headers["User-Id"] = user.id;
       }
-      return config
+      return config;
     },
     (error) => {
-      return Promise.reject(error)
+      return Promise.reject(error);
     },
-)
+);
 
 const userService = {
-  // Lấy thông tin người dùng hiện tại
   getCurrentUserInfo: async () => {
     try {
-      const currentUser = authService.getCurrentUser()
+      const currentUser = authService.getCurrentUser();
       if (!currentUser) {
-        throw new Error("Không tìm thấy thông tin người dùng")
+        throw new Error("Không tìm thấy thông tin người dùng");
       }
-
-      const response = await axiosInstance.get(`/users/${currentUser.id}`)
-
-      // Cập nhật thông tin người dùng trong localStorage
+      const response = await axiosInstance.get(`/users/${currentUser.id}`);
       if (response.data) {
         const updatedUser = {
           ...currentUser,
           ...response.data,
-          // Đảm bảo giữ nguyên trạng thái isGoogleAccount từ localStorage
           isGoogleAccount:
-              response.data.isGoogleAccount !== undefined ? response.data.isGoogleAccount : currentUser.isGoogleAccount,
-        }
-        console.log("Cập nhật user trong localStorage:", updatedUser)
-        localStorage.setItem("user", JSON.stringify(updatedUser))
+              response.data.isGoogleAccount !== undefined
+                  ? response.data.isGoogleAccount
+                  : currentUser.isGoogleAccount,
+        };
+        console.log("Cập nhật user trong localStorage:", updatedUser);
+        localStorage.setItem("user", JSON.stringify(updatedUser));
       }
-
-      return response.data
+      return response.data;
     } catch (error) {
-      console.error("Lỗi khi lấy thông tin người dùng:", error)
-      throw error
+      console.error("Lỗi khi lấy thông tin người dùng:", error);
+      throw error;
     }
   },
 
-  // Cập nhật thông tin người dùng
+  getDoctorByUserId: async () => {
+    try {
+      const currentUser = authService.getCurrentUser();
+      if (!currentUser) {
+        throw new Error("Không tìm thấy thông tin người dùng");
+      }
+      const response = await axiosInstance.get(`/doctors/by-user/${currentUser.id}`);
+      return response.data;
+    } catch (error) {
+      console.error("Lỗi khi lấy thông tin bác sĩ:", error);
+      if (error.response?.status === 404) {
+        return null; // Doctor not found
+      }
+      throw error;
+    }
+  },
+
+  getSpecialties: async () => {
+    try {
+      const response = await axiosInstance.get("/specialties");
+      console.log("Danh sách chuyên khoa:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Lỗi khi lấy danh sách chuyên khoa:", error);
+      throw error;
+    }
+  },
+
   updateProfile: async (userData) => {
     try {
-      const currentUser = authService.getCurrentUser()
+      const currentUser = authService.getCurrentUser();
       if (!currentUser) {
-        throw new Error("Không tìm thấy thông tin người dùng")
+        throw new Error("Không tìm thấy thông tin người dùng");
       }
-
-      const response = await axiosInstance.put(`/users/${currentUser.id}`, userData)
-
-      // Cập nhật thông tin người dùng trong localStorage
+      const response = await axiosInstance.put(`/users/${currentUser.id}`, userData);
       if (response.data) {
         const updatedUser = {
           ...currentUser,
           ...response.data,
-        }
-        localStorage.setItem("user", JSON.stringify(updatedUser))
+        };
+        localStorage.setItem("user", JSON.stringify(updatedUser));
       }
-
-      return response.data
+      return response.data;
     } catch (error) {
-      console.error("Lỗi khi cập nhật thông tin:", error)
-      throw error
+      console.error("Lỗi khi cập nhật thông tin:", error);
+      throw error;
     }
   },
 
-  // Đổi mật khẩu
+  updateDoctorProfile: async (doctorData) => {
+    try {
+      const currentUser = authService.getCurrentUser();
+      if (!currentUser) {
+        throw new Error("Không tìm thấy thông tin người dùng");
+      }
+
+      const userData = {
+        name: doctorData.fullname || currentUser.name,
+        phone: doctorData.phone || "",
+        gender: doctorData.gender?.toUpperCase() || "MALE",
+        username: doctorData.username || currentUser.username,
+        dateOfBirth: doctorData.birthdate || null,
+        province: doctorData.provinceCode || "",
+        district: doctorData.districtCode || "",
+        ward: doctorData.wardCode || "",
+        addressDetail: doctorData.address || "",
+      };
+
+      const doctorEntityData = {
+        id: currentUser.id, // Will be updated if existing doctor is found
+        userId: currentUser.id,
+        name: doctorData.fullname || currentUser.name,
+        specialization: doctorData.specialization || "",
+        qualification: doctorData.licenseNumber || "",
+        experience: doctorData.experience || "",
+        description: doctorData.bio || "",
+        specialtyId: parseInt(doctorData.specialtyId) || null,
+        imageUrl: doctorData.imageUrl || null,
+      };
+
+      console.log("Updating doctor profile with userId:", currentUser.id);
+      console.log("User payload:", userData);
+      console.log("Doctor payload:", doctorEntityData);
+
+      const userResponse = await axiosInstance.put(`/users/${currentUser.id}`, userData);
+
+      let doctorResponse;
+      const existingDoctor = await userService.getDoctorByUserId();
+      if (existingDoctor) {
+        console.log("Updating existing doctor record with id:", existingDoctor.id);
+        doctorEntityData.id = existingDoctor.id; // Use the correct doctor id
+        doctorResponse = await axiosInstance.put(`/doctors/${existingDoctor.id}`, doctorEntityData);
+      } else {
+        console.log("Creating new doctor record...");
+        doctorResponse = await axiosInstance.post(`/doctors`, doctorEntityData);
+      }
+
+      if (userResponse.data && doctorResponse.data) {
+        const updatedUser = {
+          ...currentUser,
+          ...userResponse.data,
+          specialization: doctorResponse.data.specialization,
+          licenseNumber: doctorResponse.data.qualification,
+          experience: doctorResponse.data.experience,
+          bio: doctorResponse.data.description,
+          specialtyId: doctorResponse.data.specialtyId,
+        };
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+      }
+
+      return { user: userResponse.data, doctor: doctorResponse.data };
+    } catch (error) {
+      console.error("Lỗi khi cập nhật thông tin bác sĩ:", error);
+      console.error("Response data:", error.response?.data);
+      throw new Error(error.response?.data || "Lỗi khi cập nhật hoặc tạo thông tin bác sĩ");
+    }
+  },
+
   changePassword: async (passwordData) => {
     try {
-      const currentUser = authService.getCurrentUser()
+      const currentUser = authService.getCurrentUser();
       if (!currentUser) {
-        throw new Error("Không tìm thấy thông tin người dùng")
+        throw new Error("Không tìm thấy thông tin người dùng");
       }
-
-      const response = await axiosInstance.put(`/users/${currentUser.id}/change-password`, passwordData)
-
-      return response.data
+      const response = await axiosInstance.put(`/users/${currentUser.id}/change-password`, passwordData);
+      return response.data;
     } catch (error) {
-      console.error("Lỗi khi đổi mật khẩu:", error)
-      throw error
+      console.error("Lỗi khi đổi mật khẩu:", error);
+      throw error;
     }
   },
 
-  // Cập nhật ảnh đại diện
   updateAvatar: async (formData) => {
     try {
-      const currentUser = authService.getCurrentUser()
+      const currentUser = authService.getCurrentUser();
       if (!currentUser) {
-        throw new Error("Không tìm thấy thông tin người dùng")
+        throw new Error("Không tìm thấy thông tin người dùng");
       }
-
       const response = await axiosInstance.put(`/users/${currentUser.id}/avatar`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
-      })
-
-      // Cập nhật avatarUrl trong localStorage
+      });
       if (response.data) {
         const updatedUser = {
           ...currentUser,
           avatarUrl: response.data,
-        }
-        localStorage.setItem("user", JSON.stringify(updatedUser))
-
-        // Lấy thông tin người dùng mới nhất từ server
-        await userService.getCurrentUserInfo()
+        };
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+        await userService.getCurrentUserInfo();
       }
-
-      return response.data
+      return response.data;
     } catch (error) {
-      console.error("Lỗi khi cập nhật ảnh đại diện:", error)
-      throw error
+      console.error("Lỗi khi cập nhật ảnh đại diện:", error);
+      throw error;
     }
   },
 
-  // NEW: Lấy tất cả bệnh nhân - đơn giản
   getAllPatients: async () => {
     try {
-      const response = await axiosInstance.get("/users/patients")
-      return response.data
+      const response = await axiosInstance.get("/users/patients");
+      return response.data;
     } catch (error) {
-      console.error("Lỗi khi lấy danh sách bệnh nhân:", error)
-      throw error
+      console.error("Lỗi khi lấy danh sách bệnh nhân:", error);
+      throw error;
     }
   },
 
-  // NEW: Lấy thông tin bệnh nhân theo ID
   getPatientById: async (id) => {
     try {
-      const response = await axiosInstance.get(`/users/${id}`)
-      return response.data
+      const response = await axiosInstance.get(`/users/${id}`);
+      return response.data;
     } catch (error) {
-      console.error("Lỗi khi lấy thông tin bệnh nhân:", error)
-      throw error
+      console.error("Lỗi khi lấy thông tin bệnh nhân:", error);
+      throw error;
     }
   },
 
-  // NEW: Cập nhật thông tin bệnh nhân
   updatePatient: async (id, patientData) => {
     try {
-      const response = await axiosInstance.put(`/users/${id}`, patientData)
-      return response.data
+      const response = await axiosInstance.put(`/users/${id}`, patientData);
+      return response.data;
     } catch (error) {
-      console.error("Lỗi khi cập nhật thông tin bệnh nhân:", error)
-      throw error
+      console.error("Lỗi khi cập nhật thông tin bệnh nhân:", error);
+      throw error;
     }
   },
 
-  // NEW: Cập nhật avatar bệnh nhân
   updatePatientAvatar: async (id, avatarFile) => {
     try {
-      const formData = new FormData()
-      formData.append("avatar", avatarFile)
-
+      const formData = new FormData();
+      formData.append("avatar", avatarFile);
       const response = await axiosInstance.put(`/users/${id}/avatar`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
-      })
-      return response.data
+      });
+      return response.data;
     } catch (error) {
-      console.error("Lỗi khi cập nhật avatar bệnh nhân:", error)
-      throw error
+      console.error("Lỗi khi cập nhật avatar bệnh nhân:", error);
+      throw error;
     }
   },
-}
+};
 
-export default userService
+export default userService;

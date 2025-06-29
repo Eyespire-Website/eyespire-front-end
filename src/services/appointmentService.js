@@ -133,6 +133,18 @@ const appointmentService = {
     }
   },
 
+  updateAppointmentService: async (appointmentId, serviceId) => {
+    try {
+      console.log(`Updating service for appointmentId: ${appointmentId} to serviceId: ${serviceId}`);
+      const response = await axiosInstance.put(`/appointments/${appointmentId}/service`, { serviceId });
+      console.log("Update Appointment Service Response:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Lỗi khi cập nhật dịch vụ cuộc hẹn:', error.response?.data || error.message);
+      throw new Error(error.response?.data?.message || 'Không thể cập nhật dịch vụ cuộc hẹn');
+    }
+  },
+
   getAllAppointments: async () => {
     try {
       const response = await axiosInstance.get("/appointments")
