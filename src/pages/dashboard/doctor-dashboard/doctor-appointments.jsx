@@ -26,7 +26,6 @@ const formatAppointmentTime = (appointmentTime) => {
 
 const statusConfig = {
     CONFIRMED: { label: "Đã xác nhận", className: "appointments-status-confirmed" },
-    COMPLETED: { label: "Hoàn thành", className: "appointments-status-completed" },
 }
 
 export default function DoctorAppointmentsPage() {
@@ -39,11 +38,9 @@ export default function DoctorAppointmentsPage() {
     const location = useLocation()
     const itemsPerPage = 5
 
-    // Lấy userId từ người dùng hiện tại
     const currentUser = authService.getCurrentUser()
     const userId = currentUser?.id || null
 
-    // Fetch confirmed and completed appointments for the logged-in doctor
     const fetchAppointments = async () => {
         if (!userId) {
             setError("Không tìm thấy thông tin bác sĩ. Vui lòng đăng nhập lại.")
@@ -56,18 +53,16 @@ export default function DoctorAppointmentsPage() {
             const data = await appointmentService.getDoctorAppointmentsByUserId(userId)
             console.log("API Response:", JSON.stringify(data, null, 2))
 
-            // Xử lý và format dữ liệu
             const formattedAppointments = await Promise.all(data.map(async (appointment) => {
                 const { date, time } = appointment.appointmentTime
                     ? formatAppointmentTime(appointment.appointmentTime)
                     : { date: appointment.appointmentDate || "N/A", time: appointment.timeSlot || "N/A" }
 
-                const isConfirmedOrCompleted = ["CONFIRMED", "COMPLETED"].includes(appointment.status)
-                // Kiểm tra sự tồn tại của hồ sơ bệnh án
+                const isConfirmed = appointment.status === "CONFIRMED"
                 const hasMedicalRecord = await medicalRecordService.checkMedicalRecordExistsByAppointmentId(appointment.id)
 
                 console.log(`Appointment ID ${appointment.id}:`, {
-                    isConfirmedOrCompleted,
+                    isConfirmed,
                     status: appointment.status,
                     appointmentTime: appointment.appointmentTime,
                     appointmentDate: appointment.appointmentDate,
@@ -75,25 +70,42 @@ export default function DoctorAppointmentsPage() {
                     patientId: appointment.patient?.id,
                     patientName: appointment.patient?.name,
                     doctorId: appointment.doctor?.id,
+                    service: appointment.service,
                     formattedDate: date,
                     formattedTime: time,
                     hasMedicalRecord
                 })
 
                 return {
-                    ...appointment,
+                    id: appointment.id,
                     appointmentDate: date,
                     timeSlot: time,
-                    patientId: appointment.patient?.id,
-                    patientName: appointment.patient?.name || appointment.patientName,
-                    doctorId: appointment.doctor?.id,
-                    hasMedicalRecord // Thêm thuộc tính hasMedicalRecord
+                    patient: {
+                        id: appointment.patient?.id || appointment.patientId || "N/A",
+                        name: appointment.patient?.name || appointment.patientName || "N/A",
+                        email: appointment.patient?.email || "N/A",
+                        phone: appointment.patient?.phone || "N/A",
+                        gender: appointment.patient?.gender || "N/A",
+                        dateOfBirth: appointment.patient?.dateOfBirth || "N/A",
+                        province: appointment.patient?.province || null,
+                        district: appointment.patient?.district || null,
+                        ward: appointment.patient?.ward || null,
+                        addressDetail: appointment.patient?.addressDetail || "N/A",
+                    },
+                    doctor: appointment.doctor || { id: appointment.doctorId || userId },
+                    service: appointment.service && appointment.service.id
+                        ? { id: appointment.service.id, name: appointment.service.name || "Chưa chọn dịch vụ", description: appointment.service.description || "N/A" }
+                        : { id: null, name: "Chưa chọn dịch vụ", description: "N/A" },
+                    notes: appointment.notes || "Không có ghi chú",
+                    status: appointment.status,
+                    createdAt: appointment.createdAt || new Date().toISOString(),
+                    updatedAt: appointment.updatedAt || new Date().toISOString(),
+                    hasMedicalRecord
                 }
             }))
 
-            // Lọc các cuộc hẹn có trạng thái CONFIRMED hoặc COMPLETED
             const filteredAppointments = formattedAppointments.filter(
-                appointment => ["CONFIRMED", "COMPLETED"].includes(appointment.status)
+                appointment => appointment.status === "CONFIRMED"
             )
 
             console.log("Filtered Appointments:", JSON.stringify(filteredAppointments, null, 2))
@@ -116,7 +128,6 @@ export default function DoctorAppointmentsPage() {
         fetchAppointments()
     }, [userId])
 
-    // Làm mới danh sách nếu nhận được tín hiệu từ state
     useEffect(() => {
         if (location.state?.refresh) {
             fetchAppointments()
@@ -127,35 +138,27 @@ export default function DoctorAppointmentsPage() {
         setCurrentPage(1)
     }, [searchQuery])
 
-    // Handle view appointment details
     const handleViewAppointment = (appointment) => {
         navigate("/dashboard/doctor/view-appointment", {
             state: {
                 appointmentData: appointment,
-                mode: "view",
+                returnPath: "/dashboard/doctor/appointments",
             },
         })
     }
 
-
-
-    // Handle create medical record
     const handleCreateMedicalRecord = (appointment) => {
-        if (appointment.status !== "CONFIRMED") {
-            alert("Chỉ có thể tạo hồ sơ bệnh án cho cuộc hẹn đã xác nhận!")
-            return
-        }
         navigate("/dashboard/doctor/create-medical-record", {
             state: {
                 appointmentId: appointment.id,
-                patientId: appointment.patientId,
-                patientName: appointment.patientName,
-                doctorId: appointment.doctorId
+                patientId: appointment.patient?.id,
+                patientName: appointment.patient?.name,
+                doctorId: appointment.doctor?.id,
+                serviceId: appointment.service?.id || null,
             },
         })
     }
 
-    // Filter appointments based on search query
     const filteredAppointments = useMemo(() => {
         if (!searchQuery.trim()) {
             return allAppointments
@@ -164,15 +167,15 @@ export default function DoctorAppointmentsPage() {
         const query = searchQuery.toLowerCase().trim()
         return allAppointments.filter((appointment) => {
             return (
-                (appointment.patientName?.toLowerCase() || "").includes(query) ||
+                (appointment.patient?.name?.toLowerCase() || "").includes(query) ||
                 (appointment.appointmentDate || "").includes(query) ||
                 (appointment.timeSlot?.toLowerCase() || "").includes(query) ||
+                (appointment.service?.name?.toLowerCase() || "").includes(query) ||
                 (appointment.notes?.toLowerCase() || "").includes(query)
             )
         })
     }, [allAppointments, searchQuery])
 
-    // Pagination logic
     const totalPages = Math.ceil(filteredAppointments.length / itemsPerPage)
     const paginatedAppointments = useMemo(() => {
         const startIndex = (currentPage - 1) * itemsPerPage
@@ -256,7 +259,7 @@ export default function DoctorAppointmentsPage() {
                         <Search className="appointments__search-icon" />
                         <input
                             type="text"
-                            placeholder="Tìm cuộc hẹn (Tên bệnh nhân, ngày hẹn...)"
+                            placeholder="Tìm cuộc hẹn (Tên bệnh nhân, ngày hẹn, dịch vụ...)"
                             value={searchQuery}
                             onChange={handleSearch}
                             className="appointments__search-input"
@@ -283,15 +286,15 @@ export default function DoctorAppointmentsPage() {
                             <th className="appointments__table-head">Bệnh nhân</th>
                             <th className="appointments__table-head">Ngày hẹn</th>
                             <th className="appointments__table-head">Giờ hẹn</th>
+                            <th className="appointments__table-head">Dịch vụ</th>
                             <th className="appointments__table-head">Trạng thái</th>
-                            <th className="appointments__table-head">Lý do khám</th>
                             <th className="appointments__table-head">Thao tác</th>
                         </tr>
                         </thead>
                         <tbody>
                         {filteredAppointments.length === 0 ? (
                             <tr>
-                                <td colSpan="7" className="appointments__no-results">
+                                <td colSpan="8" className="appointments__no-results">
                                     {searchQuery ? "Không tìm thấy cuộc hẹn nào phù hợp" : "Chưa có cuộc hẹn"}
                                 </td>
                             </tr>
@@ -304,7 +307,7 @@ export default function DoctorAppointmentsPage() {
                                         <td className="appointments__table-cell">
                                             <div className="appointments__icon-text">
                                                 <User className="appointments__icon" />
-                                                <span>{appointment.patientName || "Không xác định"}</span>
+                                                <span>{appointment.patient?.name || "Không xác định"}</span>
                                             </div>
                                         </td>
                                         <td className="appointments__table-cell">
@@ -320,10 +323,12 @@ export default function DoctorAppointmentsPage() {
                                             </div>
                                         </td>
                                         <td className="appointments__table-cell">
-                                            <span className={`appointments__status-badge ${status.className}`}>{status.label}</span>
+                                            <div className="appointments__icon-text">
+                                                <span>{appointment.service?.name || "Chưa chọn dịch vụ"}</span>
+                                            </div>
                                         </td>
                                         <td className="appointments__table-cell">
-                                            <div className="appointments__reason-text">{appointment.notes || "Không có ghi chú"}</div>
+                                            <span className={`appointments__status-badge ${status.className}`}>{status.label}</span>
                                         </td>
                                         <td className="appointments__table-cell">
                                             <div className="appointments__actions">
@@ -333,7 +338,6 @@ export default function DoctorAppointmentsPage() {
                                                 >
                                                     Xem chi tiết
                                                 </button>
-
                                                 {appointment.status === "CONFIRMED" && !appointment.hasMedicalRecord && (
                                                     <button
                                                         className="appointments__create-record-button"

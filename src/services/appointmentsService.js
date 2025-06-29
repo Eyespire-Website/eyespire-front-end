@@ -51,6 +51,7 @@ export const updateAppointment = async (id, appointmentData) => {
     }
 }
 
+
 // Separate function for status-only updates
 export const updateAppointmentStatus = async (id, status) => {
     try {

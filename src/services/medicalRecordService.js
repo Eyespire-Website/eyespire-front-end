@@ -12,27 +12,25 @@ axiosInstance.interceptors.request.use(
     (config) => {
         const user = authService.getCurrentUser();
         let token = null;
-        
-        // Lấy token từ đối tượng user nếu có
+
         if (user && user.token) {
             token = user.token;
         } else if (user && user.accessToken) {
             token = user.accessToken;
         } else {
-            // Kiểm tra token riêng biệt (phòng trường hợp lưu riêng)
             token = localStorage.getItem("token");
         }
-        
+
         console.log("Request Interceptor:", {
             user: user ? { id: user.id, role: user.role } : null,
             token: token ? `${token.substring(0, 10)}...` : null,
             url: config.url
         });
-        
+
         if (user) {
             config.headers['User-Id'] = user.id;
         }
-        
+
         if (token) {
             config.headers['Authorization'] = `Bearer ${token}`;
         } else {
@@ -41,6 +39,7 @@ axiosInstance.interceptors.request.use(
         return config;
     },
     (error) => {
+        console.error("Request Interceptor Error:", error);
         return Promise.reject(error);
     }
 );
@@ -49,9 +48,14 @@ const medicalRecordService = {
     getProductsMedicine: async () => {
         try {
             const response = await axiosInstance.get('/medical-records/products-medicine');
+            console.log("Products Medicine Response:", JSON.stringify(response.data, null, 2));
             return response.data;
         } catch (error) {
-            console.error('Lỗi khi lấy danh sách thuốc:', error.response?.data || error.message);
+            console.error('Lỗi khi lấy danh sách thuốc:', {
+                status: error.response?.status,
+                data: error.response?.data,
+                message: error.message
+            });
             throw error;
         }
     },
@@ -60,10 +64,14 @@ const medicalRecordService = {
         try {
             console.log(`Fetching patients for userId: ${userId}`);
             const response = await axiosInstance.get(`/doctors/by-user/${userId}/patients`);
-            console.log("Patients API Response:", response.data);
+            console.log("Patients API Response:", JSON.stringify(response.data, null, 2));
             return response.data;
         } catch (error) {
-            console.error('Lỗi khi lấy danh sách bệnh nhân:', error.response?.data || error.message);
+            console.error('Lỗi khi lấy danh sách bệnh nhân:', {
+                status: error.response?.status,
+                data: error.response?.data,
+                message: error.message
+            });
             throw error;
         }
     },
@@ -72,28 +80,41 @@ const medicalRecordService = {
         try {
             console.log(`Fetching status for appointmentId: ${appointmentId}`);
             const response = await axiosInstance.get(`/appointments/${appointmentId}/status`);
-            console.log("Appointment Status Response:", response.data);
+            console.log("Appointment Status Response:", JSON.stringify(response.data, null, 2));
             return response.data.status;
         } catch (error) {
-            console.error('Lỗi khi lấy trạng thái cuộc hẹn:', error.response?.data || error.message);
+            console.error('Lỗi khi lấy trạng thái cuộc hẹn:', {
+                status: error.response?.status,
+                data: error.response?.data,
+                message: error.message
+            });
             throw new Error(error.response?.data?.message || 'Không thể lấy trạng thái cuộc hẹn');
         }
     },
 
     createMedicalRecord: async (recordData, files) => {
         try {
+            console.log("Creating Medical Record with data:", JSON.stringify(recordData, null, 2));
             const formData = new FormData();
             formData.append('patientId', Number(recordData.patientId));
             formData.append('doctorId', Number(recordData.doctorId));
-            formData.append('diagnosis', recordData.diagnosis.trim());
+            formData.append('diagnosis', recordData.diagnosis?.trim() || 'Chưa cập nhật');
             formData.append('notes', recordData.notes || '');
             if (recordData.appointmentId && !isNaN(recordData.appointmentId)) {
                 formData.append('appointmentId', Number(recordData.appointmentId));
             }
+            if (recordData.serviceId && !isNaN(recordData.serviceId)) {
+                formData.append('serviceId', Number(recordData.serviceId));
+            }
             if (recordData.productQuantities && recordData.productQuantities.length > 0) {
-                const validProductQuantities = recordData.productQuantities.filter(pq => pq.productId > 0 && pq.quantity > 0);
+                const validProductQuantities = recordData.productQuantities.filter(pq =>
+                    pq.productId > 0 && pq.quantity > 0 && Number.isInteger(pq.productId) && Number.isInteger(pq.quantity)
+                );
+                console.log("Valid Product Quantities:", JSON.stringify(validProductQuantities, null, 2));
                 if (validProductQuantities.length > 0) {
                     formData.append('productQuantities', JSON.stringify(validProductQuantities));
+                } else {
+                    console.warn("No valid product quantities after filtering");
                 }
             }
             if (files && files.length > 0) {
@@ -108,7 +129,7 @@ const medicalRecordService = {
 
             console.log('FormData entries:');
             for (let [key, value] of formData.entries()) {
-                console.log(`${key}: ${value}`);
+                console.log(`${key}: ${value instanceof File ? value.name : value}`);
             }
 
             const response = await axiosInstance.post('/medical-records', formData, {
@@ -116,12 +137,15 @@ const medicalRecordService = {
                     'Content-Type': 'multipart/form-data'
                 }
             });
-            console.log("Create Medical Record Response:", response.data);
+            console.log("Create Medical Record Response:", JSON.stringify(response.data, null, 2));
             return response.data;
         } catch (error) {
-            console.error('Lỗi khi tạo hồ sơ bệnh án:', error.response?.data || error.message);
-            const errorMessage = error.response?.data?.message || error.message || 'Lỗi không xác định';
-            throw new Error(errorMessage);
+            console.error('Lỗi khi tạo hồ sơ bệnh án:', {
+                status: error.response?.status,
+                data: error.response?.data,
+                message: error.message
+            });
+            throw new Error(error.response?.data?.message || 'Lỗi không xác định');
         }
     },
 
@@ -173,12 +197,11 @@ const medicalRecordService = {
         }
     },
 
-
     checkMedicalRecordExistsByAppointmentId: async (appointmentId) => {
         try {
             console.log(`Checking medical record for appointmentId: ${appointmentId}`);
             const response = await axiosInstance.get(`/medical-records/by-appointment/${appointmentId}`);
-            console.log(`Response for appointmentId ${appointmentId}:`, response.data);
+            console.log(`Response for appointmentId ${appointmentId}:`, JSON.stringify(response.data, null, 2));
             return response.data.exists;
         } catch (error) {
             console.error(`Error checking medical record for appointmentId ${appointmentId}:`, {
@@ -189,28 +212,119 @@ const medicalRecordService = {
             if (error.response?.status === 404) {
                 console.log(`No medical record found for appointmentId ${appointmentId}`);
                 return false;
-            } else if (error.response?.status === 401) {
-                console.error("Unauthorized, redirecting to login");
-                window.location.href = "/login";
-                return false;
-            } else if (error.response?.status === 403) {
-                console.error("Forbidden: User lacks DOCTOR role");
-                alert("Bạn không có quyền truy cập. Vui lòng đăng nhập với tài khoản bác sĩ.");
-                return false;
             }
             throw error;
         }
     },
-    
-    /**
-     * Lấy thông tin chi tiết về thuốc từ hồ sơ y tế theo ID cuộc hẹn
-     * Bao gồm thông tin về sản phẩm, số lượng và giá tiền
-     */
+
+    getMedicalRecordByAppointmentId: async (appointmentId) => {
+        try {
+            console.log(`Fetching medical record for appointmentId: ${appointmentId}`);
+            const response = await axiosInstance.get(`/medical-records/by-appointment/${appointmentId}/record`);
+            console.log("Medical Record by Appointment API Response:", JSON.stringify(response.data, null, 2));
+            return response.data;
+        } catch (error) {
+            console.error('Lỗi khi lấy hồ sơ bệnh án theo appointmentId:', {
+                status: error.response?.status,
+                data: error.response?.data,
+                message: error.message
+            });
+            throw error;
+        }
+    },
+
+    updateMedicalRecord: async (recordId, updatedData) => {
+        try {
+            if (!recordId || !updatedData) {
+                throw new Error("Thiếu recordId hoặc updatedData");
+            }
+
+            console.log(`Updating medical record with ID: ${recordId}`, JSON.stringify(updatedData, null, 2));
+
+            // Construct FormData
+            const formData = new FormData();
+
+            // Append diagnosis (ensure it's never null or empty)
+            if (!updatedData.diagnosis?.trim()) {
+                throw new Error("Chẩn đoán không được để trống");
+            }
+            formData.append("diagnosis", updatedData.diagnosis.trim());
+
+            // Append notes (ensure it's never null)
+            formData.append("notes", updatedData.notes?.trim() || "");
+
+            // Append serviceId if provided and valid
+            if (updatedData.serviceId && !isNaN(updatedData.serviceId) && Number(updatedData.serviceId) > 0) {
+                formData.append("serviceId", Number(updatedData.serviceId));
+            }
+
+            // Append productQuantities if provided and not empty
+            if (updatedData.recommendedProducts && updatedData.recommendedProducts.length > 0) {
+                const validProductQuantities = updatedData.recommendedProducts
+                    .filter(pq =>
+                        pq.productId > 0 &&
+                        pq.quantity > 0 &&
+                        Number.isInteger(Number(pq.productId)) &&
+                        Number.isInteger(Number(pq.quantity))
+                    )
+                    .map(pq => ({
+                        productId: Number(pq.productId),
+                        quantity: Number(pq.quantity),
+                    }));
+                console.log("Valid Product Quantities for update:", JSON.stringify(validProductQuantities, null, 2));
+                if (validProductQuantities.length > 0) {
+                    formData.append("productQuantities", JSON.stringify(validProductQuantities));
+                } else {
+                    console.warn("No valid product quantities for update after filtering");
+                }
+            }
+
+            // Append files if provided
+            if (updatedData.files && updatedData.files.length > 0) {
+                updatedData.files.forEach((file, index) => {
+                    if (file && file.size > 0) {
+                        formData.append("files", file);
+                    } else {
+                        console.warn(`File at index ${index} is invalid or empty`);
+                    }
+                });
+            }
+
+            // Append filesToDelete if provided
+            if (updatedData.filesToDelete && updatedData.filesToDelete.length > 0) {
+                console.log("Files to Delete:", JSON.stringify(updatedData.filesToDelete, null, 2));
+                formData.append("filesToDelete", JSON.stringify(updatedData.filesToDelete));
+            }
+
+            // Log FormData entries
+            console.log("FormData entries:");
+            for (let [key, value] of formData.entries()) {
+                console.log(`${key}: ${value instanceof File ? value.name : value}`);
+            }
+
+            // Send request
+            const response = await axiosInstance.put(`/medical-records/${recordId}`, formData, {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                },
+            });
+            console.log("Update Medical Record Response:", JSON.stringify(response.data, null, 2));
+            return response.data;
+        } catch (error) {
+            console.error("Lỗi khi cập nhật hồ sơ bệnh án:", {
+                status: error.response?.status,
+                data: error.response?.data,
+                message: error.message,
+            });
+            throw new Error(error.response?.data?.message || error.message || 'Lỗi không xác định');
+        }
+    },
+
     getMedicationsByAppointmentId: async (appointmentId) => {
         try {
             console.log(`Fetching medications for appointmentId: ${appointmentId}`);
             const response = await axiosInstance.get(`/medical-records/by-appointment/${appointmentId}/medications`);
-            console.log("Medications API Response:", response.data);
+            console.log("Medications API Response:", JSON.stringify(response.data, null, 2));
             return response.data;
         } catch (error) {
             console.error('Lỗi khi lấy thông tin thuốc:', {
@@ -222,7 +336,7 @@ const medicalRecordService = {
                 console.log(`No medications found for appointmentId ${appointmentId}`);
                 return { products: [], totalAmount: 0 };
             }
-            return { products: [], totalAmount: 0 };
+            throw error;
         }
     }
 };

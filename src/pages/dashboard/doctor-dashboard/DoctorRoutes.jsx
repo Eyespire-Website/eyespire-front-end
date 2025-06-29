@@ -7,10 +7,10 @@ import DoctorSchedule from "./doctor-schedule";
 import CreateRecords from "./doctor-records";
 import DoctorFeedback from "./doctor-feedback";
 import DoctorAppointments from "./doctor-appointments";
-import DoctorCustomers from "./doctor-customer";
+import DoctorPatients from "./doctor-patient";
 import ViewAppointmentPage from "./ViewAppointmentPage";
 import ViewRecordPage from "./ViewMedicalRecordPage";
-import DoctorRecords from "./DoctorMedicalRecordsPage";
+import EditRecordPage from "./EditMedicalRecord";
 
 export default function DoctorRoutes() {
     return (
@@ -20,11 +20,11 @@ export default function DoctorRoutes() {
                 <Route path="profile" element={<DoctorDashboard />} />
                 <Route path="schedule" element={<DoctorSchedule />} />
                 <Route path="create-medical-record" element={<CreateRecords />} />
-                <Route path="records" element={<DoctorRecords />} />
                 <Route path="feedback" element={<DoctorFeedback />} />
                 <Route path="appointments" element={<DoctorAppointments />} />
+                <Route path="edit-medical-record" element={<EditRecordPage />} />
                 <Route path="view-medical-record" element={<ViewRecordPage />} />
-                <Route path="customers" element={<DoctorCustomers />} />
+                <Route path="patients" element={<DoctorPatients />} />
                 <Route path="view-appointment" element={<ViewAppointmentPage />} />
             </Route>
         </Routes>

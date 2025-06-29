@@ -39,9 +39,8 @@ export default function Sidebar({ activeTab, setActiveTab }) {
         { id: "profile", label: "Hồ sơ cá nhân", icon: <User size={18} /> },
         { id: "schedule", label: "Lịch làm việc", icon: <Calendar size={18} /> },
         { id: "appointments", label: "Cuộc hẹn", icon: <Calendar size={18} /> },
-        { id: "records", label: "Hồ sơ bệnh án", icon: <ClipboardCheck size={18} /> },
+        { id: "patients", label: "Hồ sơ bệnh nhân", icon: <UserGroup size={18} /> },
         { id: "feedback", label: "Phản hồi", icon: <Chat size={18} /> },
-        { id: "customers", label: "Khách hàng", icon: <UserGroup size={18} /> },
     ]
 
     const toggleSidebar = () => {

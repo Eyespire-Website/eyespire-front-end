@@ -204,37 +204,31 @@ export default function DoctorMedicalRecordsPage() {
                 </div>
             )}
 
-            <div className="appointments__table-container">
-                <div className="appointments__table-header">
-                    <div className="appointments__table-header-content">
-                        <FileText className="appointments__table-header-icon" />
-                        <span className="appointments__table-header-text">
-                            Danh sách hồ sơ bệnh án ({filteredRecords.length} hồ sơ)
-                        </span>
+            {filteredRecords.length > 0 && (
+                <div className="appointments__table-container">
+                    <div className="appointments__table-header">
+                        <div className="appointments__table-header-content">
+                            <FileText className="appointments__table-header-icon" />
+                            <span className="appointments__table-header-text">
+                                Danh sách hồ sơ bệnh án ({filteredRecords.length} hồ sơ)
+                            </span>
+                        </div>
                     </div>
-                </div>
 
-                <div className="appointments__table-wrapper">
-                    <table className="appointments__table">
-                        <thead>
-                        <tr>
-                            <th className="appointments__table-head appointments__table-head--number">#</th>
-                            <th className="appointments__table-head">Bệnh nhân</th>
-                            <th className="appointments__table-head">Ngày tạo</th>
-                            <th className="appointments__table-head">Chẩn đoán</th>
-                            <th className="appointments__table-head">Ghi chú</th>
-                            <th className="appointments__table-head">Thao tác</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {filteredRecords.length === 0 ? (
+                    <div className="appointments__table-wrapper">
+                        <table className="appointments__table">
+                            <thead>
                             <tr>
-                                <td colSpan="7" className="appointments__no-results">
-                                    {searchQuery ? "Không tìm thấy hồ sơ bệnh án nào phù hợp" : "Chưa có hồ sơ bệnh án. Vui lòng tạo hồ sơ mới."}
-                                </td>
+                                <th className="appointments__table-head appointments__table-head--number">#</th>
+                                <th className="appointments__table-head">Bệnh nhân</th>
+                                <th className="appointments__table-head">Ngày tạo</th>
+                                <th className="appointments__table-head">Chẩn đoán</th>
+                                <th className="appointments__table-head">Ghi chú</th>
+                                <th className="appointments__table-head">Thao tác</th>
                             </tr>
-                        ) : (
-                            paginatedRecords.map((record, index) => (
+                            </thead>
+                            <tbody>
+                            {paginatedRecords.map((record, index) => (
                                 <tr key={record.id} className="appointments__table-row">
                                     <td className="appointments__table-cell">{(currentPage - 1) * itemsPerPage + index + 1}</td>
                                     <td className="appointments__table-cell">
@@ -266,49 +260,49 @@ export default function DoctorMedicalRecordsPage() {
                                         </div>
                                     </td>
                                 </tr>
-                            ))
-                        )}
-                        </tbody>
-                    </table>
-                </div>
-
-                {totalPages > 1 && (
-                    <div className="appointments__pagination">
-                        <div className="appointments__pagination-info">
-                            Hiển thị {Math.min((currentPage - 1) * itemsPerPage + 1, filteredRecords.length)} -{" "}
-                            {Math.min(currentPage * itemsPerPage, filteredRecords.length)} trong tổng số{" "}
-                            {filteredRecords.length} hồ sơ
-                        </div>
-                        <div className="appointments__pagination-controls">
-                            <button
-                                onClick={() => handlePageChange(currentPage - 1)}
-                                disabled={currentPage === 1}
-                                className="appointments__pagination-button"
-                            >
-                                Trước
-                            </button>
-                            {getPageNumbers().map((pageNum) => (
-                                <button
-                                    key={pageNum}
-                                    onClick={() => handlePageChange(pageNum)}
-                                    className={`appointments__pagination-button ${
-                                        currentPage === pageNum ? "appointments__pagination-button--active" : ""
-                                    }`}
-                                >
-                                    {pageNum}
-                                </button>
                             ))}
-                            <button
-                                onClick={() => handlePageChange(currentPage + 1)}
-                                disabled={currentPage === totalPages}
-                                className="appointments__pagination-button"
-                            >
-                                Sau
-                            </button>
-                        </div>
+                            </tbody>
+                        </table>
                     </div>
-                )}
-            </div>
+
+                    {totalPages > 1 && (
+                        <div className="appointments__pagination">
+                            <div className="appointments__pagination-info">
+                                Hiển thị {Math.min((currentPage - 1) * itemsPerPage + 1, filteredRecords.length)} -{" "}
+                                {Math.min(currentPage * itemsPerPage, filteredRecords.length)} trong tổng số{" "}
+                                {filteredRecords.length} hồ sơ
+                            </div>
+                            <div className="appointments__pagination-controls">
+                                <button
+                                    onClick={() => handlePageChange(currentPage - 1)}
+                                    disabled={currentPage === 1}
+                                    className="appointments__pagination-button"
+                                >
+                                    Trước
+                                </button>
+                                {getPageNumbers().map((pageNum) => (
+                                    <button
+                                        key={pageNum}
+                                        onClick={() => handlePageChange(pageNum)}
+                                        className={`appointments__pagination-button ${
+                                            currentPage === pageNum ? "appointments__pagination-button--active" : ""
+                                        }`}
+                                    >
+                                        {pageNum}
+                                    </button>
+                                ))}
+                                <button
+                                    onClick={() => handlePageChange(currentPage + 1)}
+                                    disabled={currentPage === totalPages}
+                                    className="appointments__pagination-button"
+                                >
+                                    Sau
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
     )
 }
