@@ -1,0 +1,38 @@
+.od-status-update-section {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.od-status-update-section .od-form-select {
+  min-width: 150px;
+  margin: 0;
+}
+
+.od-modal-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.od-modal-footer .od-btn {
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .od-modal-footer {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .od-status-update-section {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .od-status-update-section .od-form-select {
+    flex: 1;
+  }
+}

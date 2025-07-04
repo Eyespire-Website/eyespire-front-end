@@ -1,54 +1,54 @@
-.product-info {
+.pi-product-info {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
 }
 
-.rating-section {
+.pi-rating-section {
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
-.stars {
+.pi-stars {
   display: flex;
   gap: 0.125rem;
 }
 
-.star {
+.pi-star {
   color: #d1d5db;
   font-size: 1.25rem;
 }
 
-.star.filled {
+.pi-star.pi-filled {
   color: #fbbf24;
 }
 
-.review-count {
+.pi-review-count {
   color: #6b7280;
   font-size: 0.875rem;
 }
 
-.product-name {
+.pi-product-name {
   font-size: 2rem;
   font-weight: 700;
   color: #1f2937;
   margin: 0;
 }
 
-.color-section h3 {
+.pi-color-section h3 {
   font-size: 0.875rem;
   font-weight: 600;
   color: #374151;
   margin: 0 0 0.75rem 0;
 }
 
-.color-options {
+.pi-color-options {
   display: flex;
   gap: 0.5rem;
 }
 
-.color-option {
+.pi-color-option {
   width: 2rem;
   height: 2rem;
   border-radius: 50%;
@@ -57,46 +57,46 @@
   transition: all 0.2s ease;
 }
 
-.color-option:hover {
+.pi-color-option:hover {
   border-color: #3b82f6;
   transform: scale(1.1);
 }
 
-.color-option.selected {
+.pi-color-option.pi-selected {
   border-color: #3b82f6;
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
 }
 
-.price-section {
+.pi-price-section {
   display: flex;
   align-items: center;
   gap: 1rem;
 }
 
-.original-price {
+.pi-original-price {
   font-size: 1.125rem;
   color: #9ca3af;
   text-decoration: line-through;
 }
 
-.current-price {
+.pi-current-price {
   font-size: 1.5rem;
   font-weight: 700;
   color: #3b82f6;
 }
 
-.quantity-section {
+.pi-quantity-section {
   display: flex;
   align-items: center;
   gap: 1rem;
 }
 
-.quantity-section label {
+.pi-quantity-section label {
   font-weight: 500;
   color: #374151;
 }
 
-.quantity-controls {
+.pi-quantity-controls {
   display: flex;
   align-items: center;
   border: 1px solid #d1d5db;
@@ -104,7 +104,7 @@
   overflow: hidden;
 }
 
-.quantity-controls button {
+.pi-quantity-controls button {
   width: 2.5rem;
   height: 2.5rem;
   border: none;
@@ -114,11 +114,11 @@
   transition: background-color 0.2s;
 }
 
-.quantity-controls button:hover {
+.pi-quantity-controls button:hover {
   background-color: #e5e7eb;
 }
 
-.quantity-controls input {
+.pi-quantity-controls input {
   width: 3rem;
   height: 2.5rem;
   border: none;
@@ -126,11 +126,11 @@
   font-weight: 500;
 }
 
-.quantity-controls input:focus {
+.pi-quantity-controls input:focus {
   outline: none;
 }
 
-.add-to-cart-btn {
+.pi-add-to-cart-btn {
   background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
   color: white;
   border: none;
@@ -144,7 +144,7 @@
   letter-spacing: 0.025em;
 }
 
-.add-to-cart-btn:hover {
+.pi-add-to-cart-btn:hover {
   background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
   transform: translateY(-1px);
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);

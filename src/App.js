@@ -13,6 +13,7 @@ import ProfilePage from "./pages/dashboard/patient-dashboard/pages/profile";
 import ReceptionistRoutes from './pages/dashboard/receptionist-dashboard/ReceptionistRoutes';
 import DoctorRoutes from './pages/dashboard/doctor-dashboard/DoctorRoutes';
 import AdminRoutes from './pages/dashboard/admin-dashboard/AdminRoutes';
+import StoreManagementRoutes from "./pages/dashboard/storeManagementPage/StoreManagerDashboard";
 import PatientRoutes from './pages/dashboard/patient-dashboard/PatientRoutes';
 import EyeServices from "./pages/servicepage/EyeServices";
 import AboutPage from "./pages/aboutPage/about";
@@ -50,11 +51,11 @@ function App() {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/dashboard/profile" element={<ProfilePage />} />
           <Route path="/product/:id" element={<ProductDetail />} />
-          
           {/* Route xử lý kết quả thanh toán PayOS */}
           <Route path="/payment/payos-return" element={<PayOSReturn />} />
           
           {/* Sử dụng các route components mới */}
+          <Route path="/dashboard/storeManagement" element={<StoreManagementRoutes />} />
           <Route path="/dashboard/receptionist/*" element={<ReceptionistRoutes />} />
           <Route path="/dashboard/doctor/*" element={<DoctorRoutes />} />
           <Route path="/dashboard/admin/*" element={<AdminRoutes />} />
