@@ -12,31 +12,31 @@ export default function ProductInfo({
 }) {
   const renderStars = (rating) => {
     return Array.from({ length: 5 }, (_, i) => (
-      <span key={i} className={`star ${i < rating ? "filled" : ""}`}>
+      <span key={i} className={`pi-star ${i < rating ? "pi-filled" : ""}`}>
         ★
       </span>
     ))
   }
 
   return (
-    <div className="product-info">
+    <div className="pi-product-info">
       {/* Rating */}
-      <div className="rating-section">
-        <div className="stars">{renderStars(product.rating)}</div>
-        <span className="review-count">({product.reviewCount} review)</span>
+      <div className="pi-rating-section">
+        <div className="pi-stars">{renderStars(product.rating)}</div>
+        <span className="pi-review-count">({product.reviewCount} review)</span>
       </div>
 
       {/* Product Name */}
-      <h1 className="product-name">{product.name}</h1>
+      <h1 className="pi-product-name">{product.name}</h1>
 
       {/* Color Selection */}
-      <div className="color-section">
+      <div className="pi-color-section">
         <h3>Choose color</h3>
-        <div className="color-options">
+        <div className="pi-color-options">
           {product.colors.map((color) => (
             <button
               key={color.id}
-              className={`color-option ${selectedColor.id === color.id ? "selected" : ""}`}
+              className={`pi-color-option ${selectedColor.id === color.id ? "pi-selected" : ""}`}
               onClick={() => onColorSelect(color)}
               style={{ backgroundColor: color.color }}
               title={color.name}
@@ -46,15 +46,15 @@ export default function ProductInfo({
       </div>
 
       {/* Price */}
-      <div className="price-section">
-        {product.originalPrice && <span className="original-price">${product.originalPrice}</span>}
-        <span className="current-price">${product.price}</span>
+      <div className="pi-price-section">
+        {product.originalPrice && <span className="pi-original-price">${product.originalPrice}</span>}
+        <span className="pi-current-price">${product.price}</span>
       </div>
 
       {/* Quantity */}
-      <div className="quantity-section">
+      <div className="pi-quantity-section">
         <label htmlFor="quantity">Quantity:</label>
-        <div className="quantity-controls">
+        <div className="pi-quantity-controls">
           <button onClick={() => onQuantityChange(Math.max(1, quantity - 1))}>-</button>
           <input
             id="quantity"
@@ -68,7 +68,7 @@ export default function ProductInfo({
       </div>
 
       {/* Add to Cart Button */}
-      <button className="add-to-cart-btn" onClick={onAddToCart}>
+      <button className="pi-add-to-cart-btn" onClick={onAddToCart}>
         Select Glasses
       </button>
     </div>
