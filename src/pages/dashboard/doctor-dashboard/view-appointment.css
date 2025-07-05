@@ -124,6 +124,24 @@
     border: 1px solid #a7f3d0;
 }
 
+.view-appointment__services-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.view-appointment__service-item {
+    font-size: 14px;
+    color: #333;
+    padding: 2px 0;
+}
+
+.view-appointment__service-description {
+    font-size: 12px;
+    color: #666;
+    margin-left: 4px;
+}
+
 .view-appointment__actions {
     display: flex;
     justify-content: flex-end;
@@ -154,29 +172,6 @@
 }
 
 .view-appointment__back-button:active {
-    transform: translateY(0);
-}
-
-.view-appointment__complete-button {
-    background: linear-gradient(135deg, #4caf50 0%, #2e7d32 100%);
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 12px;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    box-shadow: 0 3px 6px rgba(46, 125, 50, 0.25);
-}
-
-.view-appointment__complete-button:hover {
-    background: linear-gradient(135deg, #45a049 0%, #2c6b2f 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(46, 125, 50, 0.35);
-}
-
-.view-appointment__complete-button:active {
     transform: translateY(0);
 }
 
@@ -294,7 +289,6 @@
     }
 
     .view-appointment__back-button,
-    .view-appointment__complete-button,
     .view-appointment__create-record-button {
         padding: 8px 16px;
         font-size: 11px;
@@ -322,6 +316,14 @@
     .view-appointment__value {
         font-size: 13px;
     }
+
+    .view-appointment__service-item {
+        font-size: 13px;
+    }
+
+    .view-appointment__service-description {
+        font-size: 11px;
+    }
 }
 
 /* Hiệu ứng hover và focus */
@@ -331,11 +333,6 @@
 
 .view-appointment__back-button:focus {
     outline: 3px solid #6b7280;
-    outline-offset: 3px;
-}
-
-.view-appointment__complete-button:focus {
-    outline: 3px solid #4caf50;
     outline-offset: 3px;
 }
 

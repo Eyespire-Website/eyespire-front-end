@@ -10,20 +10,20 @@ import medicalRecordService from "../../../services/medicalRecordService";
 import authService from "../../../services/authService";
 import userService from "../../../services/userService";
 
-const formatAppointmentTime = (appointmentTime) => {
-    if (!appointmentTime) {
+const formatAppointmentTime = (dateTime) => {
+    if (!dateTime) {
         return { date: "Chưa xác định", time: "Chưa xác định" };
     }
     try {
-        const dateTime = new Date(appointmentTime);
-        if (isNaN(dateTime.getTime())) {
+        const dateTimeObj = new Date(dateTime);
+        if (isNaN(dateTimeObj.getTime())) {
             return { date: "Chưa xác định", time: "Chưa xác định" };
         }
-        const date = dateTime.toLocaleDateString("vi-VN", { year: "numeric", month: "2-digit", day: "2-digit" });
-        const time = dateTime.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit", hour12: false });
+        const date = dateTimeObj.toLocaleDateString("vi-VN", { year: "numeric", month: "2-digit", day: "2-digit" });
+        const time = dateTimeObj.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit", hour12: false });
         return { date, time };
     } catch (error) {
-        console.error("Lỗi khi format appointmentTime:", appointmentTime, error);
+        console.error("Lỗi khi format appointmentTime:", dateTime, error);
         return { date: "Chưa xác định", time: "Chưa xác định" };
     }
 };
@@ -116,7 +116,6 @@ export default function PatientProfile() {
                 const appointments = await appointmentService.getDoctorAppointmentsByUserId(userId);
                 console.log("Appointments fetched:", JSON.stringify(appointments, null, 2));
 
-                // Include COMPLETED and WAITING_PAYMENT appointments
                 const relevantAppointments = appointments.filter(
                     appointment => appointment.status === "COMPLETED" || appointment.status === "WAITING_PAYMENT"
                 );
@@ -135,14 +134,25 @@ export default function PatientProfile() {
                 await Promise.all(
                     relevantAppointments.map(async appointment => {
                         const { date, time } = formatAppointmentTime(appointment.appointmentTime);
+                        const services = Array.isArray(appointment.services)
+                            ? appointment.services.map(s => ({
+                                id: s.id || null,
+                                name: s.name || "Khám tổng quát",
+                                description: s.description || "N/A",
+                            }))
+                            : [
+                                {
+                                    id: appointment.service?.id || null,
+                                    name: appointment.service?.name || appointment.service || "Khám tổng quát",
+                                    description: appointment.service?.description || appointment.serviceDescription || "N/A",
+                                },
+                            ];
                         const appointmentData = {
                             id: appointment.id,
-                            appointmentTime: appointment.appointmentTime, // Store original appointmentTime
+                            appointmentTime: appointment.appointmentTime,
                             appointmentDate: date,
                             timeSlot: time,
-                            service: typeof appointment.service === 'object' && appointment.service?.id
-                                ? { id: appointment.service.id, name: appointment.service.name || "Khám tổng quát", description: appointment.service.description || "N/A" }
-                                : { id: null, name: appointment.service || "Khám tổng quát", description: appointment.serviceDescription || "N/A" },
+                            services,
                             status: appointment.status,
                             notes: appointment.notes || "Không có ghi chú",
                             patient: appointment.patient || {
@@ -199,18 +209,18 @@ export default function PatientProfile() {
                                     ...(patientMap.get(appointment.patient.id)?.appointments || []),
                                     {
                                         id: appointment.id,
-                                        appointmentTime: appointment.appointmentTime, // Include original appointmentTime
+                                        appointmentTime: appointment.appointmentTime,
                                         date,
                                         time,
                                         location: appointment.location || "Chưa xác định",
-                                        service: appointmentData.service.name,
+                                        service: services.map(s => s.name).join(", "), // For display in appointments table
                                         status: appointment.status,
                                         notes: appointment.notes || "Không có ghi chú",
                                         hasMedicalRecord: !!medicalRecord,
                                         createdAt: appointment.createdAt || new Date().toISOString(),
                                         updatedAt: appointment.updatedAt || new Date().toISOString(),
                                     },
-                                ],
+                                ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)),
                                 healthRecords: medicalRecord
                                     ? [
                                         ...(patientMap.get(appointment.patient.id)?.healthRecords || []),
@@ -220,7 +230,7 @@ export default function PatientProfile() {
                                             date: medicalRecord.date || date,
                                             time: medicalRecord.time || time,
                                             diagnosis: medicalRecord.diagnosis || "Chưa cập nhật",
-                                            service: medicalRecord.service || appointmentData.service.name || "Chưa cập nhật",
+                                            services: services, // Pass full services array
                                             notes: medicalRecord.notes || "Không có ghi chú",
                                             patient: {
                                                 id: appointment.patient.id,
@@ -243,15 +253,15 @@ export default function PatientProfile() {
                                             },
                                             appointment: {
                                                 id: appointment.id,
-                                                appointmentTime: appointment.appointmentTime, // Include full appointmentTime
-                                                service: appointmentData.service,
+                                                appointmentTime: appointment.appointmentTime,
+                                                services,
                                             },
                                             createdAt: medicalRecord.createdAt || new Date().toISOString(),
                                             updatedAt: medicalRecord.updatedAt || new Date().toISOString(),
                                             recordFileUrl: medicalRecord.recordFileUrl || "",
                                             recommendedProducts: medicalRecord.recommendedProducts || [],
                                         },
-                                    ]
+                                    ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
                                     : patientMap.get(appointment.patient.id)?.healthRecords || [],
                             };
                             patientMap.set(appointment.patient.id, patientData);
@@ -341,7 +351,7 @@ export default function PatientProfile() {
             state: {
                 appointmentData: {
                     id: appointment.id,
-                    appointmentTime: appointment.appointmentTime, // Pass original appointmentTime
+                    appointmentTime: appointment.appointmentTime,
                     appointmentDate: appointment.date,
                     timeSlot: appointment.time,
                     patient: {
@@ -357,11 +367,13 @@ export default function PatientProfile() {
                         addressDetail: selectedPatient.address.split(", ")[0] || "Chưa cập nhật",
                     },
                     doctor: { id: userId },
-                    service: {
-                        id: cachedAppointment.service?.id || null,
-                        name: appointment.service || "Khám tổng quát",
-                        description: cachedAppointment.service?.description || "N/A",
-                    },
+                    services: cachedAppointment.services || [
+                        {
+                            id: null,
+                            name: appointment.service || "Khám tổng quát",
+                            description: "N/A",
+                        },
+                    ],
                     notes: appointment.notes || "Không có ghi chú",
                     status: appointment.status || "COMPLETED",
                     createdAt: appointment.createdAt || new Date().toISOString(),
@@ -396,7 +408,7 @@ export default function PatientProfile() {
                     ...record,
                     appointment: {
                         ...record.appointment,
-                        appointmentTime: record.appointment?.appointmentTime || record.date + "T" + record.time, // Fallback to date + time
+                        appointmentTime: record.appointment?.appointmentTime || record.date + "T" + record.time,
                     },
                 },
                 returnPath: "/dashboard/doctor/patients",
@@ -411,8 +423,8 @@ export default function PatientProfile() {
                 patientId: selectedPatient.id,
                 patientName: selectedPatient.name,
                 doctorId: userId,
-                serviceId: appointmentCache.get(appointment.id)?.service?.id || null,
-                appointmentTime: appointment.appointmentTime, // Pass appointmentTime
+                serviceIds: appointmentCache.get(appointment.id)?.services.map(s => s.id).filter(id => id) || [],
+                appointmentTime: appointment.appointmentTime,
                 returnPath: "/dashboard/doctor/patients",
             },
         });
@@ -582,15 +594,23 @@ export default function PatientProfile() {
                                                             <tr key={appointment.id}>
                                                                 <td>{appointment.date}</td>
                                                                 <td>{appointment.time}</td>
-                                                                <td>{appointment.service}</td>
                                                                 <td>
-                                                                        <span
-                                                                            className={`d-status-badge ${
-                                                                                statusConfig[appointment.status]?.className
-                                                                            }`}
-                                                                        >
-                                                                            {statusConfig[appointment.status]?.label || "Chưa xác định"}
-                                                                        </span>
+                                                                    <ul className="d-services-list">
+                                                                        {(cachedAppointment.services || []).map((service, index) => (
+                                                                            <li key={index} className="d-service-item">
+                                                                                {service.name || `Dịch vụ ID: ${service.id || "N/A"}`}
+                                                                            </li>
+                                                                        ))}
+                                                                    </ul>
+                                                                </td>
+                                                                <td>
+                                                                    <span
+                                                                        className={`d-status-badge ${
+                                                                            statusConfig[appointment.status]?.className
+                                                                        }`}
+                                                                    >
+                                                                        {statusConfig[appointment.status]?.label || "Chưa xác định"}
+                                                                    </span>
                                                                 </td>
                                                                 <td className="d-notes-cell">{appointment.notes}</td>
                                                                 <td>
@@ -602,6 +622,15 @@ export default function PatientProfile() {
                                                                         >
                                                                             <Eye size={14} />
                                                                         </button>
+                                                                        {!appointment.hasMedicalRecord && (
+                                                                            <button
+                                                                                className="d-table-action-btn d-create-record-btn"
+                                                                                onClick={() => handleCreateMedicalRecord(appointment)}
+                                                                                title="Tạo hồ sơ bệnh án"
+                                                                            >
+                                                                                <Plus size={14} />
+                                                                            </button>
+                                                                        )}
                                                                     </div>
                                                                 </td>
                                                             </tr>

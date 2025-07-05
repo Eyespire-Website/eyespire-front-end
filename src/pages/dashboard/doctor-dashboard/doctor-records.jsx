@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
-import { Upload, Trash2, FileText, Stethoscope, Pill, StickyNote, Minus, Plus, ChevronDown, Clipboard, ZoomIn, ZoomOut, X } from "lucide-react"
+import { Upload, Trash2, FileText, Stethoscope, Pill, StickyNote, Minus, Plus, ChevronDown, Clipboard, Search } from "lucide-react"
 import medicalRecordService from '../../../services/medicalRecordService'
 import appointmentService from '../../../services/appointmentService'
 import "./doctor-records.css"
@@ -16,35 +16,54 @@ export default function CreateMedicalRecord() {
     const [services, setServices] = useState([])
     const [selectedFiles, setSelectedFiles] = useState([])
     const [recommendedMedicines, setRecommendedMedicines] = useState([])
-    const [selectedServiceId, setSelectedServiceId] = useState("")
+    const [selectedServiceIds, setSelectedServiceIds] = useState([])
     const [showServiceDropdown, setShowServiceDropdown] = useState(false)
+    const [serviceSearchQuery, setServiceSearchQuery] = useState("")
     const [searchQuery, setSearchQuery] = useState("")
     const [editingQuantityId, setEditingQuantityId] = useState(null)
     const [tempQuantity, setTempQuantity] = useState("")
-    const [selectedImage, setSelectedImage] = useState(null)
-    const [zoomLevel, setZoomLevel] = useState(1)
-    const imageContainerRef = useRef(null)
+    const dropdownRef = useRef(null)
 
     const appointmentId = state?.appointmentId
     const initialPatientId = state?.patientId
     const initialPatientName = state?.patientName
     const doctorId = state?.doctorId
-    const initialServiceId = state?.serviceId || null
+    const initialServiceIds = state?.serviceIds || []
 
     const [recordData, setRecordData] = useState({
         patientId: "",
         diagnosis: "",
-        serviceId: initialServiceId || "",
+        serviceIds: initialServiceIds,
         notes: "",
     })
+
+    // Filter products for medicine search
+    const filteredProducts = products.filter(product =>
+        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (product.description && product.description.toLowerCase().includes(searchQuery.toLowerCase()))
+    )
+
+    // Filter services for service search
+    const filteredServices = services.filter(service =>
+        service.name.toLowerCase().includes(serviceSearchQuery.toLowerCase())
+    )
 
     useEffect(() => {
         const fetchData = async () => {
             try {
                 setLoading(true)
+
+                // Validate navigation state
+                if (!appointmentId || isNaN(Number(appointmentId))) {
+                    setError("ID cuộc hẹn không hợp lệ!")
+                    return
+                }
                 if (!doctorId || isNaN(Number(doctorId))) {
                     setError("ID bác sĩ không hợp lệ!")
-                    navigate("/dashboard/doctor/appointments")
+                    return
+                }
+                if (!initialPatientId || isNaN(Number(initialPatientId))) {
+                    setError("ID bệnh nhân không hợp lệ!")
                     return
                 }
 
@@ -57,81 +76,51 @@ export default function CreateMedicalRecord() {
                 setProducts(productsData)
                 setServices(servicesData)
 
-                if (initialServiceId && servicesData.some(service => service.id === initialServiceId)) {
-                    setSelectedServiceId(initialServiceId)
+                if (initialServiceIds && initialServiceIds.length > 0) {
+                    const validServiceIds = initialServiceIds.filter(id => servicesData.some(service => service.id === id))
+                    setSelectedServiceIds(validServiceIds)
                     setRecordData(prev => ({
                         ...prev,
-                        serviceId: initialServiceId
+                        serviceIds: validServiceIds
                     }))
-                } else {
-                    setSelectedServiceId("")
-                    setRecordData(prev => ({
-                        ...prev,
-                        serviceId: ""
-                    }))
-                    console.warn(`Invalid or missing initialServiceId: ${initialServiceId}`)
                 }
 
-                if (initialPatientId && !isNaN(initialPatientId)) {
-                    setRecordData(prev => ({
-                        ...prev,
-                        patientId: Number(initialPatientId)
-                    }))
-                } else {
-                    setError("ID bệnh nhân không hợp lệ!")
-                    navigate("/dashboard/doctor/appointments")
-                }
+                setRecordData(prev => ({
+                    ...prev,
+                    patientId: Number(initialPatientId)
+                }))
 
-                if (appointmentId && !isNaN(appointmentId)) {
-                    const appointmentStatus = await medicalRecordService.getAppointmentStatus(appointmentId)
-                    console.log("Appointment status:", appointmentStatus)
-                    if (appointmentStatus !== "CONFIRMED") {
-                        setError("Cuộc hẹn không ở trạng thái Đã xác nhận, không thể tạo hồ sơ!")
-                        navigate("/dashboard/doctor/appointments")
-                    }
-                } else {
-                    setError("ID cuộc hẹn không hợp lệ!")
-                    navigate("/dashboard/doctor/appointments")
+                const appointmentStatus = await medicalRecordService.getAppointmentStatus(appointmentId)
+                console.log("Appointment status:", appointmentStatus)
+                if (appointmentStatus !== "CONFIRMED") {
+                    setError("Cuộc hẹn không ở trạng thái Đã xác nhận, không thể tạo hồ sơ!")
+                    return
                 }
             } catch (error) {
                 console.error("Error fetching data:", error)
-                setError("Không thể tải dữ liệu: " + (error.response?.data?.message || error.message))
-                navigate("/dashboard/doctor/appointments")
+                if (error.response?.status === 401) {
+                    setError("Không thể xác thực. Vui lòng kiểm tra phiên đăng nhập.")
+                } else {
+                    setError("Không thể tải dữ liệu: " + (error.response?.data?.message || error.message))
+                }
             } finally {
                 setLoading(false)
             }
         }
         fetchData()
-    }, [initialPatientId, appointmentId, doctorId, navigate, initialServiceId])
+    }, [initialPatientId, appointmentId, doctorId, initialServiceIds])
 
+    // Close dropdown when clicking outside
     useEffect(() => {
-        const handleWheel = (e) => {
-            e.preventDefault()
-            const delta = e.deltaY > 0 ? -0.1 : 0.1
-            setZoomLevel(prev => Math.min(Math.max(prev + delta, 0.5), 3))
-        }
-
-        const imageContainer = imageContainerRef.current
-        if (selectedImage && imageContainer) {
-            imageContainer.addEventListener("wheel", handleWheel, { passive: false })
-        }
-
-        return () => {
-            if (imageContainer) {
-                imageContainer.removeEventListener("wheel", handleWheel)
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setShowServiceDropdown(false)
+                setServiceSearchQuery("")
             }
         }
-    }, [selectedImage])
-
-    useEffect(() => {
-        const handleKeyDown = (e) => {
-            if (e.key === "Escape") handleCloseModal()
-        }
-        if (selectedImage) {
-            window.addEventListener("keydown", handleKeyDown)
-        }
-        return () => window.removeEventListener("keydown", handleKeyDown)
-    }, [selectedImage])
+        document.addEventListener("mousedown", handleClickOutside)
+        return () => document.removeEventListener("mousedown", handleClickOutside)
+    }, [])
 
     const handleInputChange = (e) => {
         const { name, value } = e.target
@@ -163,7 +152,7 @@ export default function CreateMedicalRecord() {
 
         const newFiles = validFiles.map((file) => ({
             file,
-            preview: file.type.startsWith("image/") ? URL.createObjectURL(file) : null,
+            preview: URL.createObjectURL(file),
             name: file.name,
         }))
         setSelectedFiles((prev) => [...prev, ...newFiles])
@@ -249,37 +238,18 @@ export default function CreateMedicalRecord() {
         setSearchQuery("")
     }
 
-    const handleServiceSelect = (serviceId) => {
-        setSelectedServiceId(serviceId)
-        setRecordData((prev) => ({
-            ...prev,
-            serviceId: serviceId
-        }))
-        console.log("Selected serviceId:", serviceId)
-        setShowServiceDropdown(false)
-    }
-
-    const getSelectedServiceName = () => {
-        const service = services.find(s => s.id === selectedServiceId)
-        return service ? service.name : "Chọn dịch vụ"
-    }
-
-    const handleImageClick = (url) => {
-        setSelectedImage(url)
-        setZoomLevel(1)
-    }
-
-    const handleCloseModal = () => {
-        setSelectedImage(null)
-        setZoomLevel(1)
-    }
-
-    const handleZoomIn = () => {
-        setZoomLevel(prev => Math.min(prev + 0.2, 3))
-    }
-
-    const handleZoomOut = () => {
-        setZoomLevel(prev => Math.max(prev - 0.2, 0.5))
+    const handleServiceToggle = (serviceId) => {
+        setSelectedServiceIds((prev) => {
+            const updated = prev.includes(serviceId)
+                ? prev.filter(id => id !== serviceId)
+                : [...prev, serviceId]
+            setRecordData((prevData) => ({
+                ...prevData,
+                serviceIds: updated
+            }))
+            console.log("Selected serviceIds:", updated)
+            return updated
+        })
     }
 
     const handleSubmit = async (e) => {
@@ -289,6 +259,11 @@ export default function CreateMedicalRecord() {
             const confirm = window.confirm(
                 "Bạn đã chọn các thuốc sau:\n" +
                 recommendedMedicines.map(m => `${m.name}: ${m.quantity}`).join("\n") +
+                "\nDịch vụ đã chọn:\n" +
+                selectedServiceIds
+                    .map(id => services.find(s => s.id === id)?.name)
+                    .filter(name => name)
+                    .join("\n") +
                 "\nXác nhận tạo hồ sơ bệnh án?"
             )
             if (!confirm) return
@@ -297,8 +272,8 @@ export default function CreateMedicalRecord() {
         const patientId = Number(recordData.patientId)
         if (!patientId || isNaN(patientId) || patientId <= 0 ||
             !recordData.diagnosis || typeof recordData.diagnosis !== 'string' ||
-            !recordData.diagnosis.trim() || !recordData.serviceId) {
-            setError("Vui lòng điền đầy đủ thông tin bắt buộc (chẩn đoán, dịch vụ) và đảm bảo ID bệnh nhân hợp lệ!")
+            !recordData.diagnosis.trim() || selectedServiceIds.length === 0) {
+            setError("Vui lòng điền đầy đủ thông tin bắt buộc (chẩn đoán, ít nhất một dịch vụ) và đảm bảo ID bệnh nhân hợp lệ!")
             return
         }
         if (!appointmentId || isNaN(Number(appointmentId))) {
@@ -314,9 +289,9 @@ export default function CreateMedicalRecord() {
             setLoading(true)
             setError(null)
 
-            if (recordData.serviceId !== initialServiceId) {
-                await appointmentService.updateAppointmentService(appointmentId, recordData.serviceId)
-                console.log(`Updated appointment ${appointmentId} with new serviceId: ${recordData.serviceId}`)
+            if (JSON.stringify(selectedServiceIds) !== JSON.stringify(initialServiceIds)) {
+                await appointmentService.updateAppointmentServices(appointmentId, selectedServiceIds)
+                console.log(`Updated appointment ${appointmentId} with serviceIds: ${JSON.stringify(selectedServiceIds)}`)
             }
 
             const productQuantities = recommendedMedicines.map(med => ({
@@ -329,7 +304,7 @@ export default function CreateMedicalRecord() {
                 patientId,
                 doctorId: Number(doctorId),
                 diagnosis: recordData.diagnosis || '',
-                serviceId: recordData.serviceId,
+                serviceIds: selectedServiceIds,
                 notes: recordData.notes || '',
                 appointmentId: Number(appointmentId),
                 productQuantities: productQuantities.length > 0 ? productQuantities : undefined,
@@ -341,13 +316,18 @@ export default function CreateMedicalRecord() {
             console.log("Create Medical Record Response:", JSON.stringify(response, null, 2))
             await appointmentService.updateAppointmentStatus(appointmentId, "WAITING_PAYMENT")
             alert("Hồ sơ bệnh án đã được tạo thành công và cuộc hẹn đang chờ thanh toán!")
-            setRecordData({ patientId: "", diagnosis: "", serviceId: "", notes: "" })
+            setRecordData({ patientId: "", diagnosis: "", serviceIds: [], notes: "" })
             setSelectedFiles([])
+            setSelectedServiceIds([])
             setRecommendedMedicines([])
             navigate("/dashboard/doctor/appointments", { state: { refresh: true } })
         } catch (error) {
             console.error("Error creating medical record:", error.response?.data, error.message)
-            setError("Có lỗi xảy ra khi tạo hồ sơ bệnh án: " + (error.response?.data?.message || error.message))
+            if (error.response?.status === 401) {
+                setError("Không thể xác thực. Vui lòng kiểm tra phiên đăng nhập.")
+            } else {
+                setError("Có lỗi xảy ra khi tạo hồ sơ bệnh án: " + (error.response?.data?.message || error.message))
+            }
         } finally {
             setLoading(false)
         }
@@ -369,10 +349,32 @@ export default function CreateMedicalRecord() {
         )
     }
 
-    const filteredProducts = products.filter(product =>
-        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (product.description && product.description.toLowerCase().includes(searchQuery.toLowerCase()))
-    )
+    if (error) {
+        return (
+            <div className="records-container">
+                <div className="records-content">
+                    <div className="records-header">
+                        <h1 className="records-title">Tạo hồ sơ bệnh án</h1>
+                        {initialPatientName && (
+                            <p className="records-subtitle">
+                                Đối với: {initialPatientName} (Cuộc hẹn ID: {appointmentId})
+                            </p>
+                        )}
+                    </div>
+                    <div className="error-message">{error}</div>
+                    <div className="form-actions">
+                        <button
+                            type="button"
+                            className="cancel-button"
+                            onClick={() => navigate("/dashboard/doctor/appointments")}
+                        >
+                            Quay lại
+                        </button>
+                    </div>
+                </div>
+            </div>
+        )
+    }
 
     return (
         <div className="records-container">
@@ -384,7 +386,6 @@ export default function CreateMedicalRecord() {
                             Đối với: {initialPatientName} (Cuộc hẹn ID: {appointmentId})
                         </p>
                     )}
-                    {error && <p className="error-message">{error}</p>}
                 </div>
 
                 <div className="records-card">
@@ -415,34 +416,6 @@ export default function CreateMedicalRecord() {
                                 </div>
                                 <div className="form-group">
                                     <label>
-                                        <span className="required">*</span> Dịch vụ
-                                    </label>
-                                    <div className="dropdown-container">
-                                        <div
-                                            className="dropdown"
-                                            onClick={() => setShowServiceDropdown(!showServiceDropdown)}
-                                        >
-                                            <Clipboard size={16} style={{ marginRight: "8px" }} />
-                                            <span>{getSelectedServiceName()}</span>
-                                            <ChevronDown size={16} className={showServiceDropdown ? "rotated" : ""} />
-                                        </div>
-                                        {showServiceDropdown && (
-                                            <div className="dropdown-menu">
-                                                {services.map((service) => (
-                                                    <div
-                                                        key={service.id}
-                                                        className="dropdown-item"
-                                                        onClick={() => handleServiceSelect(service.id)}
-                                                    >
-                                                        {service.name}
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                                <div className="form-group">
-                                    <label>
                                         <StickyNote size={16} style={{ marginRight: "8px" }} />
                                         Ghi chú
                                     </label>
@@ -463,12 +436,14 @@ export default function CreateMedicalRecord() {
                                 </div>
                                 <div className="form-group">
                                     <div className="search-container">
+                                        <Search size={16} style={{ marginRight: "8px", position: "absolute", left: "8px", top: "50%", transform: "translateY(-50%)" }} />
                                         <input
                                             type="text"
                                             value={searchQuery}
                                             onChange={(e) => setSearchQuery(e.target.value)}
                                             className="form-control search-input"
                                             placeholder="Tìm kiếm thuốc..."
+                                            style={{ paddingLeft: "32px" }}
                                         />
                                         {searchQuery && filteredProducts.length > 0 && (
                                             <div className="medication-dropdown-menu">
@@ -494,53 +469,54 @@ export default function CreateMedicalRecord() {
                                     </div>
                                 </div>
                                 <div className="medications-list-container">
-                                    {recommendedMedicines.map((med) => (
-                                        <div key={med.id} className="medication-card simplified">
-                                            <div className="medication-name">{med.name}</div>
-                                            <div className="medication-controls">
-                                                <button
-                                                    type="button"
-                                                    className="quantity-btn minus"
-                                                    onClick={() => handleMedicineQuantity(med.id, -1)}
-                                                >
-                                                    <Minus size={14} />
-                                                </button>
-                                                {editingQuantityId === med.id ? (
-                                                    <input
-                                                        type="number"
-                                                        value={tempQuantity}
-                                                        onChange={(e) => handleQuantityInputChange(med.id, e.target.value)}
-                                                        onBlur={() => handleQuantityInputBlur(med.id)}
-                                                        className="quantity-input"
-                                                        min="0"
-                                                        autoFocus
-                                                    />
-                                                ) : (
-                                                    <span
-                                                        className="medication-quantity"
-                                                        onClick={() => handleQuantityClick(med.id, med.quantity)}
+                                    {recommendedMedicines.length > 0 ? (
+                                        recommendedMedicines.map((med) => (
+                                            <div key={med.id} className="medication-card simplified">
+                                                <div className="medication-name">{med.name}</div>
+                                                <div className="medication-controls">
+                                                    <button
+                                                        type="button"
+                                                        className="quantity-btn minus"
+                                                        onClick={() => handleMedicineQuantity(med.id, -1)}
                                                     >
-                                                        {med.quantity}
-                                                    </span>
-                                                )}
-                                                <button
-                                                    type="button"
-                                                    className="quantity-btn plus"
-                                                    onClick={() => handleMedicineQuantity(med.id, 1)}
-                                                >
-                                                    <Plus size={14} />
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    className="remove-medicine-button"
-                                                    onClick={() => removeMedicine(med.id)}
-                                                >
-                                                    <Trash2 size={14} />
-                                                </button>
+                                                        <Minus size={14} />
+                                                    </button>
+                                                    {editingQuantityId === med.id ? (
+                                                        <input
+                                                            type="number"
+                                                            value={tempQuantity}
+                                                            onChange={(e) => handleQuantityInputChange(med.id, e.target.value)}
+                                                            onBlur={() => handleQuantityInputBlur(med.id)}
+                                                            className="quantity-input"
+                                                            min="0"
+                                                            autoFocus
+                                                        />
+                                                    ) : (
+                                                        <span
+                                                            className="medication-quantity"
+                                                            onClick={() => handleQuantityClick(med.id, med.quantity)}
+                                                        >
+                                                            {med.quantity}
+                                                        </span>
+                                                    )}
+                                                    <button
+                                                        type="button"
+                                                        className="quantity-btn plus"
+                                                        onClick={() => handleMedicineQuantity(med.id, 1)}
+                                                    >
+                                                        <Plus size={14} />
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        className="remove-medicine-button"
+                                                        onClick={() => removeMedicine(med.id)}
+                                                    >
+                                                        <Trash2 size={14} />
+                                                    </button>
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))}
-                                    {recommendedMedicines.length === 0 && (
+                                        ))
+                                    ) : (
                                         <div className="empty-message">Chưa có thuốc được chọn</div>
                                     )}
                                 </div>
@@ -571,12 +547,7 @@ export default function CreateMedicalRecord() {
                                                 {selectedFiles.map((fileObj, index) => (
                                                     <div key={index} className="file-preview-item">
                                                         {fileObj.file.type.startsWith("image/") ? (
-                                                            <img
-                                                                src={fileObj.preview}
-                                                                alt={`Preview ${index}`}
-                                                                className="file-preview-image"
-                                                                onClick={() => handleImageClick(fileObj.preview)}
-                                                            />
+                                                            <img src={fileObj.preview} alt={`Preview ${index}`} className="file-preview-image" />
                                                         ) : (
                                                             <div className="file-icon">
                                                                 <FileText size={32} />
@@ -593,32 +564,86 @@ export default function CreateMedicalRecord() {
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        {selectedImage && (
-                            <div className="image-modal-overlay" onClick={handleCloseModal}>
-                                <div className="image-modal" onClick={e => e.stopPropagation()}>
-                                    <button className="image-modal-close" onClick={handleCloseModal}>
-                                        <X size={24} />
-                                    </button>
-                                    <div className="image-modal-content" ref={imageContainerRef}>
-                                        <img
-                                            src={selectedImage}
-                                            alt="Zoomed"
-                                            style={{ transform: `scale(${zoomLevel})`, transition: "transform 0.2s" }}
-                                        />
-                                    </div>
-                                    <div className="image-modal-controls">
-                                        <button onClick={handleZoomIn} disabled={zoomLevel >= 3}>
-                                            <ZoomIn size={20} />
-                                        </button>
-                                        <button onClick={handleZoomOut} disabled={zoomLevel <= 0.5}>
-                                            <ZoomOut size={20} />
-                                        </button>
+                            <div className="form-section">
+                                <div className="section-header">
+                                    <Clipboard size={20} />
+                                    <h3>Dịch vụ đã chọn</h3>
+                                </div>
+                                <div className="form-group">
+                                    <label>
+                                        <span className="required">*</span> Dịch vụ
+                                    </label>
+                                    <div className="dropdown-container" ref={dropdownRef}>
+                                        <div
+                                            className="dropdown"
+                                            onClick={() => setShowServiceDropdown(!showServiceDropdown)}
+                                        >
+                                            <Clipboard size={16} style={{ marginRight: "8px" }} />
+                                            <span>Chọn dịch vụ</span>
+                                            <ChevronDown size={16} className={showServiceDropdown ? "rotated" : ""} />
+                                        </div>
+                                        {showServiceDropdown && (
+                                            <div className="dropdown-menu">
+                                                <div className="dropdown-search">
+                                                    <Search size={16} style={{ marginRight: "8px" }} />
+                                                    <input
+                                                        type="text"
+                                                        value={serviceSearchQuery}
+                                                        onChange={(e) => setServiceSearchQuery(e.target.value)}
+                                                        placeholder="Tìm kiếm dịch vụ..."
+                                                        className="dropdown-search-input"
+                                                    />
+                                                </div>
+                                                {filteredServices.length > 0 ? (
+                                                    filteredServices.map((service) => (
+                                                        <div
+                                                            key={service.id}
+                                                            className="dropdown-item"
+                                                            onClick={() => handleServiceToggle(service.id)}
+                                                        >
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={selectedServiceIds.includes(service.id)}
+                                                                readOnly
+                                                            />
+                                                            {service.name}
+                                                        </div>
+                                                    ))
+                                                ) : (
+                                                    <div className="dropdown-item empty">
+                                                        Không tìm thấy dịch vụ phù hợp
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
+                                <div className="services-list-container">
+                                    {selectedServiceIds.length > 0 ? (
+                                        <ul className="services-list">
+                                            {selectedServiceIds.map((serviceId) => {
+                                                const service = services.find(s => s.id === serviceId)
+                                                return (
+                                                    <li key={serviceId} className="service-item">
+                                                        {service?.name || `Dịch vụ ID: ${serviceId}`}
+                                                        <button
+                                                            type="button"
+                                                            className="remove-service-button"
+                                                            onClick={() => handleServiceToggle(serviceId)}
+                                                        >
+                                                            <Trash2 size={14} />
+                                                        </button>
+                                                    </li>
+                                                )
+                                            })}
+                                        </ul>
+                                    ) : (
+                                        <div className="empty-message">Chưa có dịch vụ được chọn</div>
+                                    )}
+                                </div>
                             </div>
-                        )}
+                        </div>
 
                         <div className="form-actions">
                             <button

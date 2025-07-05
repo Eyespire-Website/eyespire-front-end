@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { ArrowLeft, Save, Clipboard, User, Calendar, Clock, Stethoscope, FileText, Pill, Upload, Trash2, ChevronDown, Plus, Minus, ZoomIn, ZoomOut, X } from "lucide-react";
+import { ArrowLeft, Save, Clipboard, User, Calendar, Clock, Stethoscope, FileText, Pill, Upload, Trash2, ChevronDown, Plus, Minus, ZoomIn, ZoomOut, X, Search } from "lucide-react";
 import medicalRecordService from "../../../services/medicalRecordService";
 import appointmentService from "../../../services/appointmentService";
 import "./EditMedicalRecord.css";
@@ -11,7 +11,7 @@ const formatDateTime = (dateTime, fallbackDate, fallbackTime) => {
     if (!dateTime) {
         if (fallbackDate && fallbackTime) {
             try {
-                const combinedDateTime = new Date(`${fallbackDate}T${fallbackTime}`);
+                const combinedDateTime = new Date(fallbackDate + 'T' + fallbackTime);
                 if (!isNaN(combinedDateTime.getTime())) {
                     return combinedDateTime.toLocaleString("vi-VN", {
                         year: "numeric",
@@ -53,7 +53,7 @@ const formatDate = date => {
             year: "numeric",
             month: "2-digit",
             day: "2-digit",
-        }); // Outputs DD/MM/YYYY
+        });
     } catch {
         return "N/A";
     }
@@ -65,7 +65,6 @@ export default function EditMedicalRecord() {
     const [medicalRecord, setMedicalRecord] = useState(null);
     const [formData, setFormData] = useState({
         diagnosis: "",
-        serviceId: "",
         notes: "",
     });
     const [selectedFiles, setSelectedFiles] = useState([]);
@@ -73,15 +72,24 @@ export default function EditMedicalRecord() {
     const [products, setProducts] = useState([]);
     const [services, setServices] = useState([]);
     const [recommendedMedicines, setRecommendedMedicines] = useState([]);
+    const [selectedServiceIds, setSelectedServiceIds] = useState([]);
+    const [showServiceDropdown, setShowServiceDropdown] = useState(false);
+    const [serviceSearchQuery, setServiceSearchQuery] = useState("");
     const [searchQuery, setSearchQuery] = useState("");
     const [editingQuantityId, setEditingQuantityId] = useState(null);
     const [tempQuantity, setTempQuantity] = useState("");
-    const [showServiceDropdown, setShowServiceDropdown] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [serviceError, setServiceError] = useState(null);
     const [selectedImage, setSelectedImage] = useState(null);
     const [zoomLevel, setZoomLevel] = useState(1);
+    const dropdownRef = useRef(null);
     const imageContainerRef = useRef(null);
+
+    // Filter services for service search
+    const filteredServices = services.filter(service =>
+        service.name.toLowerCase().includes(serviceSearchQuery.toLowerCase())
+    );
 
     useEffect(() => {
         if (!state?.medicalRecordData) {
@@ -97,12 +105,12 @@ export default function EditMedicalRecord() {
                 const record = state.medicalRecordData;
                 console.log("Medical Record Data:", JSON.stringify(record, null, 2));
                 console.log("Patient Date of Birth:", record.patient?.dateOfBirth);
-
-                if (!record.appointment) {
-                    console.warn("No appointment data found in medicalRecordData");
-                } else if (!record.appointment.appointmentTime) {
-                    console.warn("appointmentTime is missing or null in medicalRecordData.appointment");
-                }
+                console.log("Service Data:", {
+                    appointmentServiceId: record.appointment?.service?.id,
+                    serviceId: record.serviceId,
+                    serviceName: record.service,
+                    services: record.appointment?.services,
+                });
 
                 setMedicalRecord(record);
 
@@ -110,14 +118,13 @@ export default function EditMedicalRecord() {
                 const imageUrls = fileUrls.filter(url => url.match(/\.(jpg|jpeg|png)$/i));
                 setExistingFiles(
                     fileUrls.map(url => ({
-                        url: url.startsWith("/uploads/") ? url : `/uploads/${url}`,
+                        url: url.startsWith("/uploads/") ? url : "/uploads/" + url,
                         isImage: imageUrls.includes(url),
                     }))
                 );
 
                 setFormData({
                     diagnosis: record.diagnosis || "",
-                    serviceId: record.appointment?.service?.id?.toString() || record.serviceId?.toString() || "",
                     notes: record.notes || "",
                 });
 
@@ -141,18 +148,38 @@ export default function EditMedicalRecord() {
                     }),
                     appointmentService.getMedicalServices().catch(err => {
                         console.error("Failed to fetch services:", err);
-                        setError("Không thể tải danh sách dịch vụ: " + (err.response?.data?.message || err.message));
+                        setServiceError("Không thể tải danh sách dịch vụ: " + (err.response?.data?.message || err.message));
                         return [];
                     }),
                 ]);
                 setProducts(productsData);
                 setServices(servicesData);
+                console.log("Services fetched:", JSON.stringify(servicesData, null, 2));
 
-                if (!record.appointment?.service?.id && record.service) {
-                    const matchedService = servicesData.find(s => s.name.toLowerCase() === record.service.toLowerCase());
-                    if (matchedService) {
-                        setFormData(prev => ({ ...prev, serviceId: matchedService.id.toString() }));
+                if (servicesData.length === 0) {
+                    setServiceError("Danh sách dịch vụ trống. Vui lòng kiểm tra API.");
+                } else {
+                    let initialServiceIds = [];
+                    if (record.appointment?.services?.length > 0) {
+                        initialServiceIds = record.appointment.services
+                            .map(s => s.id)
+                            .filter(id => servicesData.some(service => service.id === id));
+                    } else if (record.serviceId) {
+                        if (servicesData.some(s => s.id === record.serviceId)) {
+                            initialServiceIds = [record.serviceId];
+                        }
+                    } else if (record.service) {
+                        const matchedService = servicesData.find(s => s.name.toLowerCase() === record.service.toLowerCase());
+                        if (matchedService) {
+                            initialServiceIds = [matchedService.id];
+                            console.log("Matched service:", matchedService);
+                        } else {
+                            console.warn("No matching service found for:", record.service);
+                            setServiceError("Không tìm thấy dịch vụ phù hợp với: " + record.service);
+                        }
                     }
+                    setSelectedServiceIds(initialServiceIds);
+                    console.log("Initial selectedServiceIds:", initialServiceIds);
                 }
             } catch (err) {
                 console.error("Failed to fetch data:", err);
@@ -165,9 +192,9 @@ export default function EditMedicalRecord() {
     }, [state]);
 
     useEffect(() => {
-        const handleWheel = (e) => {
+        const handleWheel = e => {
             e.preventDefault();
-            const delta = e.deltaY > 0 ? -0.1 : 0.1; // Scroll down: zoom out, scroll up: zoom in
+            const delta = e.deltaY > 0 ? -0.1 : 0.1;
             setZoomLevel(prev => Math.min(Math.max(prev + delta, 0.5), 3));
         };
 
@@ -184,7 +211,7 @@ export default function EditMedicalRecord() {
     }, [selectedImage]);
 
     useEffect(() => {
-        const handleKeyDown = (e) => {
+        const handleKeyDown = e => {
             if (e.key === "Escape") handleCloseModal();
         };
         if (selectedImage) {
@@ -192,6 +219,17 @@ export default function EditMedicalRecord() {
         }
         return () => window.removeEventListener("keydown", handleKeyDown);
     }, [selectedImage]);
+
+    useEffect(() => {
+        const handleClickOutside = event => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setShowServiceDropdown(false);
+                setServiceSearchQuery("");
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
 
     const handleInputChange = e => {
         const { name, value } = e.target;
@@ -205,16 +243,16 @@ export default function EditMedicalRecord() {
         const files = Array.from(e.target.files);
         if (files.length === 0) return;
 
-        const maxFileSize = 5 * 1024 * 1024; // 5MB
+        const maxFileSize = 5 * 1024 * 1024;
         const allowedTypes = ["image/jpeg", "image/png", "application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
 
         const validFiles = files.filter(file => {
             if (file.size > maxFileSize) {
-                setError(`File ${file.name} quá lớn! Kích thước tối đa là 5MB.`);
+                setError("File " + file.name + " quá lớn! Kích thước tối đa là 5MB.");
                 return false;
             }
             if (!allowedTypes.includes(file.type)) {
-                setError(`File ${file.name} có định dạng không được hỗ trợ!`);
+                setError("File " + file.name + " có định dạng không được hỗ trợ!");
                 return false;
             }
             return true;
@@ -273,7 +311,7 @@ export default function EditMedicalRecord() {
     const addMedicine = productName => {
         const product = products.find(p => p.name.toLowerCase() === productName.toLowerCase());
         if (!product) {
-            setError(`Không tìm thấy thuốc: ${productName}`);
+            setError("Không tìm thấy thuốc: " + productName);
             return;
         }
         setRecommendedMedicines(prev => {
@@ -293,17 +331,18 @@ export default function EditMedicalRecord() {
         setSearchQuery("");
     };
 
-    const handleServiceSelect = serviceId => {
-        setFormData(prev => ({ ...prev, serviceId: serviceId.toString() }));
-        setShowServiceDropdown(false);
+    const handleServiceToggle = serviceId => {
+        setSelectedServiceIds(prev => {
+            const updated = prev.includes(serviceId)
+                ? prev.filter(id => id !== serviceId)
+                : [...prev, serviceId];
+            console.log("Selected serviceIds:", updated);
+            return updated;
+        });
+        setServiceError(null);
     };
 
-    const getSelectedServiceName = () => {
-        const service = services.find(s => s.id.toString() === formData.serviceId);
-        return service ? service.name : medicalRecord?.appointment?.service?.name || medicalRecord?.service || "Chọn dịch vụ";
-    };
-
-    const handleImageClick = (url) => {
+    const handleImageClick = url => {
         setSelectedImage(url);
         setZoomLevel(1);
     };
@@ -323,16 +362,21 @@ export default function EditMedicalRecord() {
 
     const handleSave = async () => {
         try {
-            console.log("User-Entered Data:");
-            console.log("Diagnosis:", formData.diagnosis || "Không nhập");
-            console.log("Service ID:", formData.serviceId || "Không chọn");
-            console.log("Notes:", formData.notes || "Không nhập");
-            console.log("Recommended Medicines:", JSON.stringify(recommendedMedicines, null, 2));
-            console.log("New Files:", selectedFiles.map(f => f.name));
-            console.log("Existing Files:", existingFiles.map(f => f.url));
+            console.log("Saving data:", {
+                diagnosis: formData.diagnosis,
+                serviceIds: selectedServiceIds,
+                notes: formData.notes,
+                recommendedMedicines,
+                newFiles: selectedFiles.map(f => f.name),
+                existingFiles: existingFiles.map(f => f.url),
+            });
 
             if (!formData.diagnosis?.trim()) {
                 setError("Chẩn đoán không được để trống!");
+                return;
+            }
+            if (selectedServiceIds.length === 0) {
+                setServiceError("Vui lòng chọn ít nhất một dịch vụ!");
                 return;
             }
 
@@ -353,10 +397,11 @@ export default function EditMedicalRecord() {
 
             setLoading(true);
             setError(null);
+            setServiceError(null);
 
             const updatedData = {
                 diagnosis: formData.diagnosis.trim(),
-                serviceId: formData.serviceId && !isNaN(formData.serviceId) ? Number(formData.serviceId) : undefined,
+                serviceIds: selectedServiceIds.map(Number),
                 notes: formData.notes.trim() || "",
                 recommendedProducts: recommendedMedicines
                     .filter(med => med.id && med.quantity > 0)
@@ -369,8 +414,8 @@ export default function EditMedicalRecord() {
                     ? medicalRecord.recordFileUrl
                         .split(";")
                         .filter(url => url.trim())
-                        .filter(url => !existingFiles.some(f => f.url === `/uploads/${url}` || f.url === url))
-                        .map(url => (url.startsWith("/uploads/") ? url : `/uploads/${url}`))
+                        .filter(url => !existingFiles.some(f => f.url === "/uploads/" + url || f.url === url))
+                        .map(url => (url.startsWith("/uploads/") ? url : "/uploads/" + url))
                     : [],
             };
 
@@ -380,23 +425,18 @@ export default function EditMedicalRecord() {
             console.log("Update response:", JSON.stringify(response, null, 2));
 
             if (
-                formData.serviceId &&
                 medicalRecord.appointment &&
-                Number(formData.serviceId) !== medicalRecord.appointment?.service?.id
+                JSON.stringify(selectedServiceIds) !== JSON.stringify(
+                    medicalRecord.appointment.services?.map(s => s.id) || [medicalRecord.appointment.service?.id]
+                )
             ) {
                 try {
-                    await appointmentService.updateAppointmentService(medicalRecord.appointment.id, Number(formData.serviceId));
-                    console.log("Appointment service updated successfully");
+                    await appointmentService.updateAppointmentServices(medicalRecord.appointment.id, selectedServiceIds);
+                    console.log("Appointment services updated successfully");
                 } catch (err) {
-                    console.warn("Failed to update appointment service:", err);
+                    console.warn("Failed to update appointment services:", err);
                     setError("Cập nhật hồ sơ thành công nhưng không thể cập nhật dịch vụ cuộc hẹn.");
                 }
-            } else {
-                console.log("Skipping appointment service update:", {
-                    hasAppointment: !!medicalRecord.appointment,
-                    serviceId: formData.serviceId,
-                    currentServiceId: medicalRecord.appointment?.service?.id,
-                });
             }
 
             navigate(state?.returnPath || "/dashboard/doctor/patients", {
@@ -424,9 +464,9 @@ export default function EditMedicalRecord() {
 
     if (loading) {
         return (
-            <div className="edit-medical-record">
-                <div className="edit-medical-record__loading">
-                    <div className="edit-medical-record__spinner"></div>
+            <div className="d-edit-medical-record">
+                <div className="d-edit-medical-record__loading">
+                    <div className="d-edit-medical-record__spinner"></div>
                     <p>Đang tải thông tin hồ sơ bệnh án...</p>
                 </div>
             </div>
@@ -435,11 +475,11 @@ export default function EditMedicalRecord() {
 
     if (error || !medicalRecord) {
         return (
-            <div className="edit-medical-record">
-                <div className="edit-medical-record__error">
+            <div className="d-edit-medical-record">
+                <div className="d-edit-medical-record__error">
                     <p>{error || "Không tìm thấy thông tin hồ sơ bệnh án."}</p>
-                    <button onClick={handleBack} className="edit-medical-record__back-button">
-                        <ArrowLeft size={16} className="edit-medical-record__icon" />
+                    <button onClick={handleBack} className="d-edit-medical-record__back-button">
+                        <ArrowLeft size={16} className="d-edit-medical-record__icon" />
                         Quay lại
                     </button>
                 </div>
@@ -450,66 +490,66 @@ export default function EditMedicalRecord() {
     const patient = medicalRecord.patient || {};
     const doctor = medicalRecord.doctor || {};
     const baseUrl = process.env.REACT_APP_API_BASE_URL || "http://localhost:8080";
-    const getFullUrl = url => (url.startsWith("http") ? url : `${baseUrl}${url.startsWith("/uploads/") ? url : `/uploads/${url}`}`);
+    const getFullUrl = url => (url.startsWith("http") ? url : baseUrl + (url.startsWith("/uploads/") ? url : "/uploads/" + url));
 
     return (
-        <div className="edit-medical-record">
-            <div className="edit-medical-record__container">
-                <div className="edit-medical-record__header">
-                    <h1 className="edit-medical-record__title">Chỉnh sửa hồ sơ bệnh án</h1>
+        <div className="d-edit-medical-record">
+            <div className="d-edit-medical-record__container">
+                <div className="d-edit-medical-record__header">
+                    <h1 className="d-edit-medical-record__title">Chỉnh sửa hồ sơ bệnh án</h1>
                 </div>
 
-                <div className="edit-medical-record__card">
-                    <div className="edit-medical-record__card-header">
-                        <div className="edit-medical-record__card-header-content">
-                            <Clipboard className="edit-medical-record__card-header-icon" />
-                            <span className="edit-medical-record__card-header-text">Thông tin hồ sơ bệnh án</span>
+                <div className="d-edit-medical-record__card">
+                    <div className="d-edit-medical-record__card-header">
+                        <div className="d-edit-medical-record__card-header-content">
+                            <Clipboard className="d-edit-medical-record__card-header-icon" />
+                            <span className="d-edit-medical-record__card-header-text">Thông tin hồ sơ bệnh án</span>
                         </div>
                     </div>
 
-                    <div className="edit-medical-record__section">
-                        <h2 className="edit-medical-record__section-title">Thông tin bệnh nhân</h2>
-                        <div className="edit-medical-record__info-group">
-                            <div className="edit-medical-record__info-item">
-                                <User size={18} className="edit-medical-record__icon" />
+                    <div className="d-edit-medical-record__section">
+                        <h2 className="d-edit-medical-record__section-title">Thông tin bệnh nhân</h2>
+                        <div className="d-edit-medical-record__info-group">
+                            <div className="d-edit-medical-record__info-item">
+                                <User size={18} className="d-edit-medical-record__icon" />
                                 <div>
-                                    <span className="edit-medical-record__label">Tên</span>
-                                    <p className="edit-medical-record__value">{patient.name || "Withheld"}</p>
+                                    <span className="d-edit-medical-record__label">Tên</span>
+                                    <p className="d-edit-medical-record__value">{patient.name || "Withheld"}</p>
                                 </div>
                             </div>
-                            <div className="edit-medical-record__info-item">
-                                <User size={18} className="edit-medical-record__icon" />
+                            <div className="d-edit-medical-record__info-item">
+                                <User size={18} className="d-edit-medical-record__icon" />
                                 <div>
-                                    <span className="edit-medical-record__label">Giới tính</span>
-                                    <p className="edit-medical-record__value">{patient.gender || "Withheld"}</p>
+                                    <span className="d-edit-medical-record__label">Giới tính</span>
+                                    <p className="d-edit-medical-record__value">{patient.gender || "Withheld"}</p>
                                 </div>
                             </div>
-                            <div className="edit-medical-record__info-item">
-                                <Calendar size={18} className="edit-medical-record__icon" />
+                            <div className="d-edit-medical-record__info-item">
+                                <Calendar size={18} className="d-edit-medical-record__icon" />
                                 <div>
-                                    <span className="edit-medical-record__label">Ngày sinh</span>
-                                    <p className="edit-medical-record__value">{formatDate(patient.dateOfBirth)}</p>
+                                    <span className="d-edit-medical-record__label">Ngày sinh</span>
+                                    <p className="d-edit-medical-record__value">{formatDate(patient.dateOfBirth)}</p>
                                 </div>
                             </div>
-                            <div className="edit-medical-record__info-item">
-                                <Stethoscope size={18} className="edit-medical-record__icon" />
+                            <div className="d-edit-medical-record__info-item">
+                                <Stethoscope size={18} className="d-edit-medical-record__icon" />
                                 <div>
-                                    <span className="edit-medical-record__label">Bác sĩ</span>
-                                    <p className="edit-medical-record__value">{doctor.name || "Withheld"}</p>
+                                    <span className="d-edit-medical-record__label">Bác sĩ</span>
+                                    <p className="d-edit-medical-record__value">{doctor.name || "Withheld"}</p>
                                 </div>
                             </div>
-                            <div className="edit-medical-record__info-item">
-                                <Calendar size={18} className="edit-medical-record__icon" />
+                            <div className="d-edit-medical-record__info-item">
+                                <Calendar size={18} className="d-edit-medical-record__icon" />
                                 <div>
-                                    <span className="edit-medical-record__label">Ngày tạo hồ sơ</span>
-                                    <p className="edit-medical-record__value">{formatDate(medicalRecord.createdAt || medicalRecord.date)}</p>
+                                    <span className="d-edit-medical-record__label">Ngày tạo hồ sơ</span>
+                                    <p className="d-edit-medical-record__value">{formatDate(medicalRecord.createdAt || medicalRecord.date)}</p>
                                 </div>
                             </div>
-                            <div className="edit-medical-record__info-item">
-                                <Clock size={18} className="edit-medical-record__icon" />
+                            <div className="d-edit-medical-record__info-item">
+                                <Clock size={18} className="d-edit-medical-record__icon" />
                                 <div>
-                                    <span className="edit-medical-record__label">Ngày giờ khám</span>
-                                    <p className="edit-medical-record__value">
+                                    <span className="d-edit-medical-record__label">Ngày giờ khám</span>
+                                    <p className="d-edit-medical-record__value">
                                         {formatDateTime(medicalRecord.appointment?.appointmentTime, medicalRecord.date, medicalRecord.time)}
                                     </p>
                                 </div>
@@ -517,12 +557,13 @@ export default function EditMedicalRecord() {
                         </div>
                     </div>
 
-                    <div className="edit-medical-record__section">
-                        <h2 className="edit-medical-record__section-title">Thông tin bệnh án</h2>
-                        {error && <div className="edit-medical-record__error-message">{error}</div>}
-                        <div className="edit-medical-record__form-group">
-                            <label className="edit-medical-record__label">
-                                <Stethoscope size={18} className="edit-medical-record__icon" />
+                    <div className="d-edit-medical-record__section">
+                        <h2 className="d-edit-medical-record__section-title">Thông tin bệnh án</h2>
+                        {error && <div className="d-edit-medical-record__error-message">{error}</div>}
+                        {serviceError && <div className="d-edit-medical-record__error-message">{serviceError}</div>}
+                        <div className="d-edit-medical-record__form-group">
+                            <label className="d-edit-medical-record__label">
+                                <Stethoscope size={18} className="d-edit-medical-record__icon" />
                                 Chẩn đoán
                             </label>
                             <input
@@ -530,60 +571,98 @@ export default function EditMedicalRecord() {
                                 name="diagnosis"
                                 value={formData.diagnosis}
                                 onChange={handleInputChange}
-                                className="edit-medical-record__input"
+                                className="d-edit-medical-record__input"
                                 placeholder="Nhập chẩn đoán"
                                 required
                             />
                         </div>
-                        <div className="edit-medical-record__form-group">
-                            <label className="edit-medical-record__label">
-                                <Clipboard size={18} className="edit-medical-record__icon" />
+                        <div className="d-edit-medical-record__form-group">
+                            <label className="d-edit-medical-record__label">
+                                <Clipboard size={18} className="d-edit-medical-record__icon" />
                                 Dịch vụ
                             </label>
-                            <div className="dropdown-container">
+                            <div className="dropdown-container" ref={dropdownRef}>
                                 <div
                                     className="dropdown"
                                     onClick={() => setShowServiceDropdown(!showServiceDropdown)}
                                 >
                                     <Clipboard size={16} style={{ marginRight: "8px" }} />
-                                    <span>{getSelectedServiceName()}</span>
+                                    <span>Chọn dịch vụ</span>
                                     <ChevronDown size={16} className={showServiceDropdown ? "rotated" : ""} />
                                 </div>
                                 {showServiceDropdown && (
                                     <div className="dropdown-menu">
-                                        {services.length > 0 ? (
-                                            services.map(service => (
+                                        <div className="dropdown-search">
+                                            <Search size={16} style={{ marginRight: "8px" }} />
+                                            <input
+                                                type="text"
+                                                value={serviceSearchQuery}
+                                                onChange={e => setServiceSearchQuery(e.target.value)}
+                                                placeholder="Tìm kiếm dịch vụ..."
+                                                className="dropdown-search-input"
+                                            />
+                                        </div>
+                                        {filteredServices.length > 0 ? (
+                                            filteredServices.map(service => (
                                                 <div
-                                                    key={service.id}
-                                                    className={`dropdown-item ${formData.serviceId === service.id.toString() ? "selected" : ""}`}
-                                                    onClick={() => handleServiceSelect(service.id)}
+                                                    key={'service-' + service.id}
+                                                    className="dropdown-item"
+                                                    onClick={() => handleServiceToggle(service.id)}
                                                 >
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={selectedServiceIds.includes(service.id)}
+                                                        readOnly
+                                                    />
                                                     {service.name}
                                                 </div>
                                             ))
                                         ) : (
-                                            <div className="dropdown-item disabled">Không có dịch vụ nào</div>
+                                            <div className="dropdown-item empty">Không tìm thấy dịch vụ phù hợp</div>
                                         )}
                                     </div>
                                 )}
                             </div>
+                            <div className="services-list-container">
+                                {selectedServiceIds.length > 0 ? (
+                                    <ul className="services-list">
+                                        {selectedServiceIds.map(serviceId => {
+                                            const service = services.find(s => s.id === serviceId);
+                                            return (
+                                                <li key={'service-' + serviceId} className="service-item">
+                                                    {service?.name || `Dịch vụ ID: ${serviceId}`}
+                                                    <button
+                                                        type="button"
+                                                        className="remove-service-button"
+                                                        onClick={() => handleServiceToggle(serviceId)}
+                                                    >
+                                                        <Trash2 size={14} />
+                                                    </button>
+                                                </li>
+                                            );
+                                        })}
+                                    </ul>
+                                ) : (
+                                    <div className="empty-message">Chưa có dịch vụ được chọn</div>
+                                )}
+                            </div>
                         </div>
-                        <div className="edit-medical-record__form-group">
-                            <label className="edit-medical-record__label">
-                                <FileText size={18} className="edit-medical-record__icon" />
+                        <div className="d-edit-medical-record__form-group">
+                            <label className="d-edit-medical-record__label">
+                                <FileText size={18} className="d-edit-medical-record__icon" />
                                 Ghi chú
                             </label>
                             <textarea
                                 name="notes"
                                 value={formData.notes}
                                 onChange={handleInputChange}
-                                className="edit-medical-record__textarea"
+                                className="d-edit-medical-record__textarea"
                                 placeholder="Nhập ghi chú"
                             />
                         </div>
-                        <div className="edit-medical-record__form-group">
-                            <label className="edit-medical-record__label">
-                                <Pill size={18} className="edit-medical-record__icon" />
+                        <div className="d-edit-medical-record__form-group">
+                            <label className="d-edit-medical-record__label">
+                                <Pill size={18} className="d-edit-medical-record__icon" />
                                 Sản phẩm đề xuất
                             </label>
                             <div className="search-container">
@@ -591,7 +670,7 @@ export default function EditMedicalRecord() {
                                     type="text"
                                     value={searchQuery}
                                     onChange={e => setSearchQuery(e.target.value)}
-                                    className="edit-medical-record__input"
+                                    className="d-edit-medical-record__input"
                                     placeholder="Tìm kiếm thuốc..."
                                 />
                                 {searchQuery && (
@@ -605,7 +684,7 @@ export default function EditMedicalRecord() {
                                             )
                                             .map(product => (
                                                 <div
-                                                    key={product.id}
+                                                    key={'product-' + product.id}
                                                     className="medication-dropdown-item"
                                                     onClick={() => addMedicine(product.name)}
                                                 >
@@ -631,7 +710,7 @@ export default function EditMedicalRecord() {
                             </div>
                             <div className="medications-list-container">
                                 {recommendedMedicines.map(med => (
-                                    <div key={med.id} className="medication-card simplified">
+                                    <div key={'med-' + med.id} className="medication-card simplified">
                                         <div className="medication-name">{med.name}</div>
                                         <div className="medication-controls">
                                             <button
@@ -681,20 +760,20 @@ export default function EditMedicalRecord() {
                                 )}
                             </div>
                         </div>
-                        <div className="edit-medical-record__form-group">
-                            <label className="edit-medical-record__label">
-                                <FileText size={18} className="edit-medical-record__icon" />
+                        <div className="d-edit-medical-record__form-group">
+                            <label className="d-edit-medical-record__label">
+                                <FileText size={18} className="d-edit-medical-record__icon" />
                                 Hình ảnh / Tài liệu
                             </label>
                             <div className="file-upload-container">
                                 {existingFiles.length > 0 && (
                                     <div className="file-preview-container">
                                         {existingFiles.map((fileObj, index) => (
-                                            <div key={`existing-${index}`} className="file-preview-item">
+                                            <div key={'existing-' + index} className="file-preview-item">
                                                 {fileObj.isImage ? (
                                                     <img
                                                         src={getFullUrl(fileObj.url)}
-                                                        alt={`Existing ${index}`}
+                                                        alt={'Existing-' + index}
                                                         className="file-preview-image"
                                                         onClick={() => handleImageClick(getFullUrl(fileObj.url))}
                                                     />
@@ -730,11 +809,11 @@ export default function EditMedicalRecord() {
                                 {selectedFiles.length > 0 && (
                                     <div className="file-preview-container">
                                         {selectedFiles.map((fileObj, index) => (
-                                            <div key={`new-${index}`} className="file-preview-item">
+                                            <div key={'new-' + index} className="file-preview-item">
                                                 {fileObj.file.type.startsWith("image/") ? (
                                                     <img
                                                         src={fileObj.preview}
-                                                        alt={`Preview ${index}`}
+                                                        alt={'Preview-' + index}
                                                         className="file-preview-image"
                                                         onClick={() => handleImageClick(fileObj.preview)}
                                                     />
@@ -769,7 +848,7 @@ export default function EditMedicalRecord() {
                                     <img
                                         src={selectedImage}
                                         alt="Zoomed"
-                                        style={{ transform: `scale(${zoomLevel})`, transition: "transform 0.2s" }}
+                                        style={{ transform: 'scale(' + zoomLevel + ')', transition: "transform 0.2s" }}
                                     />
                                 </div>
                                 <div className="image-modal-controls">
@@ -784,17 +863,17 @@ export default function EditMedicalRecord() {
                         </div>
                     )}
 
-                    <div className="edit-medical-record__actions">
-                        <button onClick={handleBack} className="edit-medical-record__back-button">
-                            <ArrowLeft size={16} className="edit-medical-record__icon" />
+                    <div className="d-edit-medical-record__actions">
+                        <button onClick={handleBack} className="d-edit-medical-record__back-button">
+                            <ArrowLeft size={16} className="d-edit-medical-record__icon" />
                             Quay lại
                         </button>
                         <button
                             onClick={handleSave}
-                            className="edit-medical-record__save-button"
+                            className="d-edit-medical-record__save-button"
                             disabled={loading}
                         >
-                            <Save size={16} className="edit-medical-record__icon" />
+                            <Save size={16} className="d-edit-medical-record__icon" />
                             {loading ? "Đang lưu..." : "Lưu"}
                         </button>
                     </div>
