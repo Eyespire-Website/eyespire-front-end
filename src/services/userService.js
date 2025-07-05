@@ -251,6 +251,152 @@ const userService = {
       throw error;
     }
   },
+
+  // === ADMIN USER MANAGEMENT FUNCTIONS ===
+
+  // Lấy danh sách người dùng với phân trang và sắp xếp
+  getAllUsersAdmin: async (page = 0, size = 10, sortBy = 'name', sortDir = 'asc') => {
+    try {
+      const response = await axiosInstance.get(
+        `/admin/users?page=${page}&size=${size}&sortBy=${sortBy}&sortDir=${sortDir}`
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Lỗi khi lấy danh sách người dùng:', error);
+      throw error;
+    }
+  },
+
+  // Hàm tương thích với UsersContent.jsx
+  getUsersWithPagination: async (params) => {
+    try {
+      const { page = 0, size = 10, sortBy = 'name', sortDir = 'asc', status, role, keyword } = params;
+      
+      let url = `/admin/users?page=${page}&size=${size}&sortBy=${sortBy}&sortDir=${sortDir}`;
+      
+      // Thêm các tham số tìm kiếm và lọc nếu có
+      if (status) {
+        url += `&status=${status}`;
+      }
+      if (role) {
+        url += `&role=${role}`;
+      }
+      if (keyword) {
+        url += `&keyword=${encodeURIComponent(keyword)}`;
+      }
+      
+      const response = await axiosInstance.get(url);
+      return response.data;
+    } catch (error) {
+      console.error('Lỗi khi lấy danh sách người dùng:', error);
+      throw error;
+    }
+  },
+
+  // Tìm kiếm người dùng theo từ khóa
+  searchUsersAdmin: async (keyword, page = 0, size = 10) => {
+    try {
+      const response = await axiosInstance.get(
+        `/admin/users/search?keyword=${encodeURIComponent(keyword)}&page=${page}&size=${size}`
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Lỗi khi tìm kiếm người dùng:', error);
+      throw error;
+    }
+  },
+
+  // Lọc người dùng theo vai trò
+  filterUsersByRoleAdmin: async (role, page = 0, size = 10) => {
+    try {
+      const response = await axiosInstance.get(
+        `/admin/users/filter/role/${role}?page=${page}&size=${size}`
+      );
+      return response.data;
+    } catch (error) {
+      console.error(`Lỗi khi lọc người dùng theo vai trò ${role}:`, error);
+      throw error;
+    }
+  },
+
+  // Lọc người dùng theo trạng thái
+  filterUsersByStatusAdmin: async (status, page = 0, size = 10) => {
+    try {
+      const response = await axiosInstance.get(
+        `/admin/users/filter/status/${status}?page=${page}&size=${size}`
+      );
+      return response.data;
+    } catch (error) {
+      console.error(`Lỗi khi lọc người dùng theo trạng thái ${status}:`, error);
+      throw error;
+    }
+  },
+
+  // Thêm người dùng mới
+  createUserAdmin: async (userData) => {
+    try {
+      const response = await axiosInstance.post('/admin/users', userData);
+      return response.data;
+    } catch (error) {
+      console.error('Lỗi khi tạo người dùng mới:', error);
+      throw error;
+    }
+  },
+
+  // Hàm tương thích với UsersContent.jsx
+  createUser: async (userData) => {
+    try {
+      const response = await axiosInstance.post('/admin/users', userData);
+      return response.data;
+    } catch (error) {
+      console.error('Lỗi khi tạo người dùng mới:', error);
+      throw error;
+    }
+  },
+
+  // Cập nhật thông tin người dùng
+  updateUserAdmin: async (id, userData) => {
+    try {
+      const response = await axiosInstance.put(`/admin/users/${id}`, userData);
+      return response.data;
+    } catch (error) {
+      console.error(`Lỗi khi cập nhật người dùng ${id}:`, error);
+      throw error;
+    }
+  },
+
+  // Hàm tương thích với UsersContent.jsx
+  updateUser: async (id, userData) => {
+    try {
+      const response = await axiosInstance.put(`/admin/users/${id}`, userData);
+      return response.data;
+    } catch (error) {
+      console.error(`Lỗi khi cập nhật người dùng ${id}:`, error);
+      throw error;
+    }
+  },
+
+  // Khóa/mở khóa người dùng
+  toggleUserStatusAdmin: async (id, status) => {
+    try {
+      const response = await axiosInstance.put(`/admin/users/${id}/toggle-status?status=${status}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Lỗi khi thay đổi trạng thái người dùng ${id}:`, error);
+      throw error;
+    }
+  },
+
+  // Hàm tương thích với UsersContent.jsx
+  toggleUserStatus: async (id, status) => {
+    try {
+      const response = await axiosInstance.put(`/admin/users/${id}/toggle-status?status=${status}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Lỗi khi thay đổi trạng thái người dùng ${id}:`, error);
+      throw error;
+    }
+  }
 };
 
 export default userService;

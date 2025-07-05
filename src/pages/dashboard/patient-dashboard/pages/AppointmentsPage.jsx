@@ -408,9 +408,9 @@ export default function AppointmentsPage() {
             const formattedDetails = {
                 ...details,
                 id: details.id,
-                patientName: details.patient?.fullName || "Không có thông tin",
-                patientEmail: details.patient?.email || "Không có thông tin",
-                patientPhone: details.patient?.phoneNumber || "Không có thông tin",
+                patientName: user?.name || "Không có thông tin",
+                patientEmail: user?.email || "Không có thông tin",
+                patientPhone: user?.phone || "Không có thông tin",
                 doctorName: details.doctor?.fullName || "Không có thông tin",
                 serviceName: details.service?.name || "Không có thông tin",
                 servicePrice: Number(details.service?.price || 0),
@@ -752,7 +752,7 @@ export default function AppointmentsPage() {
                                         <div className="details-row">
                                             <span className="details-label">Trạng thái:</span>
                                             <span className="details-value status-container">
-                                                {getStatusBadge(appointmentDetails.status)}
+                                                {getStatusBadge(mapAppointmentStatus(appointmentDetails.status))}
                                             </span>
                                         </div>
                                         <div className="details-row full-width">
@@ -773,15 +773,15 @@ export default function AppointmentsPage() {
                                     <div className="details-grid">
                                         <div className="details-row">
                                             <span className="details-label">Họ tên:</span>
-                                            <span className="details-value">{appointmentDetails.patientName}</span>
+                                            <span className="details-value">{user?.name || appointmentDetails.patientName}</span>
                                         </div>
                                         <div className="details-row">
                                             <span className="details-label">Email:</span>
-                                            <span className="details-value">{appointmentDetails.patientEmail}</span>
+                                            <span className="details-value">{user?.email || appointmentDetails.patientEmail}</span>
                                         </div>
                                         <div className="details-row">
                                             <span className="details-label">Số điện thoại:</span>
-                                            <span className="details-value">{appointmentDetails.patientPhone}</span>
+                                            <span className="details-value">{user?.phone || appointmentDetails.patientPhone}</span>
                                         </div>
                                     </div>
                                 </div>

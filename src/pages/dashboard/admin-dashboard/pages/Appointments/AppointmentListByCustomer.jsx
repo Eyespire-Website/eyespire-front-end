@@ -260,12 +260,16 @@ export default function AppointmentListByCustomer() {
                                         <td className="customer-appointments-detail__table-cell">
                                             <div className="customer-appointments-detail__service-info">
                                                 <div className="customer-appointments-detail__service-name">
-                                                    {appointment.service?.name || "Chưa xác định"}
+                                                    {typeof appointment.service === 'string' 
+                                                        ? appointment.service 
+                                                        : appointment.service?.name || "Chưa xác định"}
                                                 </div>
                                                 <div className="customer-appointments-detail__service-price">
-                                                    {appointment.service?.price
-                                                        ? ``
-                                                        : ""}
+                                                    {typeof appointment.service === 'string'
+                                                        ? ""
+                                                        : appointment.service?.price
+                                                            ? `${appointment.service.price.toLocaleString('vi-VN')} VNĐ`
+                                                            : ""}
                                                 </div>
                                             </div>
                                         </td>

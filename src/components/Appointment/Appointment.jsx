@@ -7,7 +7,7 @@ import authService from "../../services/authService";
 import paymentService from '../../services/paymentService';
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faLock, faCalendarAlt, faClock, faCheckCircle } from "@fortawesome/free-solid-svg-icons";
+import { faLock, faCalendarAlt, faClock, faCheckCircle, faTimes } from "@fortawesome/free-solid-svg-icons";
 
 const Appointment = () => {
   const navigate = useNavigate();
@@ -20,6 +20,8 @@ const Appointment = () => {
   const [payosUrl, setPayosUrl] = useState('');
   const [currentUser, setCurrentUser] = useState(null);
   const [isPatient, setIsPatient] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   // Form data state
   const [formData, setFormData] = useState({
@@ -97,10 +99,22 @@ const Appointment = () => {
             slots = await appointmentService.getAvailableTimeSlotsForDate(formData.appointmentDate);
           }
 
-          setAvailableTimeSlots(slots);
+          // Kiểm tra nếu không có slot nào
+          if (!slots || slots.length === 0) {
+            toast.info("Không thể tải thông tin khung giờ. Vui lòng thử lại sau.");
+            setAvailableTimeSlots([]);
+          } else {
+            // Hiển thị tất cả các slot, bất kể trạng thái
+            setAvailableTimeSlots(slots);
+            
+            // Chỉ hiển thị thông báo nếu không có slot nào có trạng thái AVAILABLE
+            if (!slots.some(slot => slot.status === "AVAILABLE")) {
+              toast.info("Không có lịch khám trống trong ngày này. Các khung giờ hiển thị không thể đặt lịch.");
+            }
+          }
         } catch (error) {
           console.error("Lỗi khi lấy khung giờ trống:", error);
-          toast.error("Không thể tải khung giờ trống");
+          toast.error("Không thể tải khung giờ trống. Vui lòng chọn ngày khác.");
           setAvailableTimeSlots([]);
         } finally {
           setLoading(false);
@@ -150,41 +164,69 @@ const Appointment = () => {
   };
 
   // Handle form submission
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-
-    if (!validateForm()) {
-      toast.error('Vui lòng điền đầy đủ thông tin');
+    
+    // Validate form
+    const newErrors = validateForm();
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
-
+    
+    // Show confirmation modal instead of submitting directly
+    setShowConfirmModal(true);
+  };
+  
+  // Handle actual submission after confirmation
+  const handleConfirmedSubmit = async () => {
+    if (!agreedToTerms) {
+      toast.error("Vui lòng đồng ý với điều khoản của công ty để tiếp tục.");
+      return;
+    }
+    
+    setShowConfirmModal(false);
+    setIsSubmitting(true);
+    
     try {
-      setIsSubmitting(true);
-
-      // Set default serviceId to "1" (Khám tổng quát) if not selected
-      const submissionData = {
-        ...formData,
-        serviceId: formData.serviceId || "1"
+      // Prepare appointment data
+      const appointmentData = {
+        patientId: currentUser.id,
+        doctorId: formData.doctorId || null,
+        serviceId: formData.serviceId || "1", // Mặc định là "Khám tổng quát" nếu không chọn
+        appointmentDate: formData.appointmentDate,
+        hourSlot: formData.hourSlot,
+        fullName: formData.fullName,
+        email: formData.email,
+        phone: formData.phone,
+        notes: formData.notes || "",
+        userId: currentUser.id
       };
 
-      // Create deposit payment via PayOS
-      const paymentResponse = await paymentService.createPayOSDeposit(submissionData);
-
-      if (paymentResponse && paymentResponse.paymentUrl) {
-        setPayosUrl(paymentResponse.paymentUrl);
+      // Create appointment and get payment URL
+      const response = await paymentService.createPayOSDeposit(appointmentData);
+      
+      if (response && response.paymentUrl) {
+        setPayosUrl(response.paymentUrl);
         setRedirectToPayOS(true);
-
+        
         // Redirect to PayOS payment page
-        window.location.href = paymentResponse.paymentUrl;
+        window.location.href = response.paymentUrl;
       } else {
-        toast.error('Không thể tạo thanh toán. Vui lòng thử lại sau.');
+        toast.error("Không thể tạo link thanh toán. Vui lòng thử lại sau.");
+        setIsSubmitting(false);
       }
     } catch (error) {
-      console.error('Lỗi khi đặt lịch:', error);
-      toast.error('Đã xảy ra lỗi khi đặt lịch. Vui lòng thử lại sau.');
-    } finally {
+      console.error("Lỗi khi đặt lịch:", error);
+      toast.error("Đã xảy ra lỗi khi đặt lịch. Vui lòng thử lại sau.");
       setIsSubmitting(false);
     }
+  };
+  
+  // Close confirmation modal
+  const closeConfirmModal = () => {
+    setShowConfirmModal(false);
+    setAgreedToTerms(false);
   };
 
   // Check if time slot is available
@@ -194,6 +236,21 @@ const Appointment = () => {
     return availableTimeSlots.some(slot => {
       return slot.time === hourString && slot.status === "AVAILABLE";
     });
+  };
+
+  // Check if time slot is unavailable (not working or booked)
+  const isTimeSlotUnavailable = (hourSlot) => {
+    const hourString = hourSlot < 10 ? `0${hourSlot}:00` : `${hourSlot}:00`;
+    return availableTimeSlots.some(slot => {
+      return slot.time === hourString && (slot.status === "UNAVAILABLE" || slot.status === "BOOKED");
+    });
+  };
+
+  // Get slot status for styling
+  const getSlotStatus = (hourSlot) => {
+    const hourString = hourSlot < 10 ? `0${hourSlot}:00` : `${hourSlot}:00`;
+    const slot = availableTimeSlots.find(slot => slot.time === hourString);
+    return slot ? slot.status : "UNKNOWN";
   };
 
   // Render time slot options
@@ -254,12 +311,14 @@ const Appointment = () => {
           <div className="time-slot-grid">
             {allTimeSlots.map(slot => {
               const isAvailable = isTimeSlotAvailable(slot.value);
+              const isUnavailable = isTimeSlotUnavailable(slot.value);
+              const slotStatus = getSlotStatus(slot.value);
               const isSelected = formData.hourSlot === slot.value.toString();
 
               return (
                   <div
                       key={slot.value}
-                      className={`time-slot-item ${isSelected ? 'selected' : ''} ${!isAvailable ? 'unavailable' : ''}`}
+                      className={`time-slot-item ${isSelected ? 'selected' : ''} ${isAvailable ? "available" : ""} ${isUnavailable ? "unavailable" : ""} ${slotStatus.toLowerCase()}`}
                       onClick={() => {
                         if (isAvailable) {
                           setFormData({
@@ -279,7 +338,9 @@ const Appointment = () => {
                   >
                     {slot.label}
                     {isSelected && <FontAwesomeIcon icon={faCheckCircle} style={{ marginLeft: '5px' }} />}
-                    {!isAvailable && formData.appointmentDate && <div className="unavailable-text">Đã đặt</div>}
+                    {isUnavailable && <div className="unavailable-text">
+                      {slotStatus === "BOOKED" ? "Đã đặt" : "Không khả dụng"}
+                    </div>}
                   </div>
               );
             })}
@@ -294,6 +355,62 @@ const Appointment = () => {
   return (
       <div className="appointment-container" id="appointment-section">
         <ToastContainer position="top-right" autoClose={5000} />
+
+        {/* Modal xác nhận thanh toán */}
+        {showConfirmModal && (
+          <div className="modal-overlay">
+            <div className="confirm-modal">
+              <div className="confirm-modal-header">
+                <h3>Xác nhận thanh toán</h3>
+                <button className="close-button" onClick={closeConfirmModal}>
+                  <FontAwesomeIcon icon={faTimes} />
+                </button>
+              </div>
+              
+              <div className="confirm-modal-content">
+                <p>Quý khách vui lòng tham khảo trước các <a href="#" onClick={(e) => e.preventDefault()}>điều khoản của công ty</a>.</p>
+                
+                <ol className="terms-list">
+                  <li>
+                    <strong>Đặt lịch:</strong> Khách hàng có thể đặt lịch hẹn thông qua website.
+                  </li>
+                  <li>
+                    <strong>Hủy lịch hẹn:</strong> Việc hủy hoặc thay đổi lịch hẹn phải được thực hiện ít nhất 1 ngày trước ngày hẹn.
+                  </li>
+                  <li>
+                    <strong>Chính sách hoàn tiền:</strong>
+                    <ul>
+                      <li><strong>Hủy lịch trước 24 giờ kể từ lịch hẹn:</strong> Hoàn tiền 100%.</li>
+                      <li><strong>Hủy lịch ít hơn 24 giờ kể từ lịch hẹn:</strong> Không hoàn tiền.</li>
+                      <li><strong>Không đến mà không báo trước:</strong> Không hoàn tiền.</li>
+                    </ul>
+                  </li>
+                </ol>
+                
+                <div className="terms-agreement">
+                  <input 
+                    type="checkbox" 
+                    id="agree-terms" 
+                    checked={agreedToTerms}
+                    onChange={() => setAgreedToTerms(!agreedToTerms)}
+                  />
+                  <label htmlFor="agree-terms">Tôi đã đọc và đồng ý với điều khoản của công ty</label>
+                </div>
+              </div>
+              
+              <div className="confirm-modal-footer">
+                <button className="cancel-button" onClick={closeConfirmModal}>Thoát</button>
+                <button 
+                  className={`confirm-button ${!agreedToTerms ? 'disabled' : ''}`}
+                  onClick={handleConfirmedSubmit}
+                  disabled={!agreedToTerms}
+                >
+                  Đồng ý
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="appointment-content">
           <div className="appointment-left">

@@ -375,8 +375,8 @@ export default function VirtualGlasses() {
             console.log("Model scale:", model.scale); // Debug kích thước
 
             // Đảm bảo kính hướng về phía người dùng
-            model.rotation.y = Math.PI;
-            model.rotation.x = Math.PI;
+            model.rotation.y = 2 * Math.PI;
+            model.rotation.x = 2 * Math.PI;
             model.rotation.z = 0;
             console.log("Model rotation:", model.rotation); // Debug góc xoay
 

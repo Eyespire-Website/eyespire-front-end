@@ -104,6 +104,7 @@ body {
 
 .card-content {
     padding: 24px;
+    overflow: visible; /* Đảm bảo không có scrollbar riêng */
 }
 
 /* Stats grid */

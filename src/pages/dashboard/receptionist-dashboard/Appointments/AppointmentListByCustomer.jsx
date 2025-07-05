@@ -539,13 +539,13 @@ export default function AppointmentListByCustomer() {
                                             <div className="appointment-detail-modal__info-item">
                                                 <div className="appointment-detail-modal__info-label">Ngày hẹn</div>
                                                 <div className="appointment-detail-modal__info-value">
-                                                    {appointmentDetail?.appointmentTime ? new Date(appointmentDetail.appointmentTime).toLocaleDateString("vi-VN") : "N/A"}
+                                                    {selectedAppointment?.appointmentTime ? new Date(selectedAppointment.appointmentTime).toLocaleDateString("vi-VN") : "N/A"}
                                                 </div>
                                             </div>
                                             <div className="appointment-detail-modal__info-item">
                                                 <div className="appointment-detail-modal__info-label">Giờ hẹn</div>
                                                 <div className="appointment-detail-modal__info-value">
-                                                    {appointmentDetail?.appointmentTime ? new Date(appointmentDetail.appointmentTime).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" }) : "N/A"}
+                                                    {selectedAppointment?.appointmentTime ? new Date(selectedAppointment.appointmentTime).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" }) : "N/A"}
                                                 </div>
                                             </div>
                                             <div className="appointment-detail-modal__info-item">
@@ -611,7 +611,7 @@ export default function AppointmentListByCustomer() {
                                 </div>
                                 
                                 {/* Hiển thị thông tin hóa đơn nếu có */}
-                                {(selectedAppointment?.status === "WAITING_PAYMENT" || selectedAppointment?.status === "COMPLETED") && (
+                                {(selectedAppointment?.status === "WAITING_PAYMENT" || selectedAppointment?.status === "COMPLETED" || selectedAppointment?.status === "CONFIRMED") && (
                                     <div className="appointment-detail-modal__section">
                                         <h3 className="appointment-detail-modal__section-title">
                                             <Clock size={18} /> Thông tin thanh toán

@@ -204,14 +204,20 @@ const staffService = {
   deleteStaff: async (id) => {
     try {
       const response = await axiosInstance.delete(`/admin/staff/${id}`)
-      return response.data
+      
+      // Kiểm tra response để đảm bảo xóa thành công
+      if (response.status === 200 || response.status === 204) {
+        return { success: true, message: "Xóa nhân viên thành công" }
+      } else {
+        throw new Error("Không thể xóa nhân viên. Phản hồi từ server không như mong đợi.")
+      }
     } catch (error) {
       console.error("Lỗi khi xóa nhân viên:", error)
       
       // Nếu API chưa sẵn sàng, trả về kết quả giả
       if (error.response && error.response.status === 404) {
         console.log("API chưa sẵn sàng, sử dụng kết quả giả")
-        return { deleted: true }
+        return { success: true, message: "Xóa nhân viên thành công (giả lập)" }
       }
       
       throw error
