@@ -1,16 +1,16 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useRef } from "react"
-import { useLocation, useNavigate } from "react-router-dom"
-import { User, Calendar, FileText, ArrowLeft, File, ZoomIn, ZoomOut, X } from "lucide-react"
-import axios from "axios"
-import "./view-medical-record.css"
+import { useState, useEffect, useRef } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { User, Calendar, FileText, ArrowLeft, File, ZoomIn, ZoomOut, X } from "lucide-react";
+import axios from "axios";
+import "./view-medical-record.css";
 
-// Format ngày giờ cho dễ đọc
 const formatDateTime = (dateTime) => {
-    if (!dateTime) return "N/A"
+    if (!dateTime) return "N/A";
     try {
-        const date = new Date(dateTime)
+        const date = new Date(dateTime);
+        if (isNaN(date.getTime())) return "N/A";
         return date.toLocaleString("vi-VN", {
             year: "numeric",
             month: "2-digit",
@@ -18,53 +18,53 @@ const formatDateTime = (dateTime) => {
             hour: "2-digit",
             minute: "2-digit",
             hour12: false,
-        })
+        });
     } catch {
-        return "N/A"
+        return "N/A";
     }
-}
+};
 
 const formatDate = (date) => {
-    if (!date) return "N/A"
+    if (!date) return "N/A";
     try {
-        const d = new Date(date)
-        return d.toLocaleDateString("vi-VN", { year: "numeric", month: "2-digit", day: "2-digit" })
+        const d = new Date(date);
+        if (isNaN(d.getTime())) return "N/A";
+        return d.toLocaleDateString("vi-VN", { year: "numeric", month: "2-digit", day: "2-digit" });
     } catch {
-        return "N/A"
+        return "N/A";
     }
-}
+};
 
 export default function ViewMedicalRecordPage() {
-    const { state } = useLocation()
-    const navigate = useNavigate()
-    const [medicalRecord, setMedicalRecord] = useState(null)
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState(null)
-    const [address, setAddress] = useState("N/A")
-    const [selectedImage, setSelectedImage] = useState(null)
-    const [zoomLevel, setZoomLevel] = useState(1)
-    const imageContainerRef = useRef(null)
+    const { state } = useLocation();
+    const navigate = useNavigate();
+    const [medicalRecord, setMedicalRecord] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [address, setAddress] = useState("N/A");
+    const [selectedImage, setSelectedImage] = useState(null);
+    const [zoomLevel, setZoomLevel] = useState(1);
+    const imageContainerRef = useRef(null);
 
-    // Fetch address names from API
     const fetchAddressNames = async (provinceCode, districtCode, wardCode, addressDetail) => {
         try {
-            const provincesResponse = await axios.get("https://provinces.open-api.vn/api/p/")
-            const provinces = provincesResponse.data
-            const province = provinces.find(p => p.code === parseInt(provinceCode))?.name || provinceCode || ""
+            const provincesResponse = await axios.get("https://provinces.open-api.vn/api/p/");
+            const provinces = provincesResponse.data;
+            const province = provinces.find(p => p.code === parseInt(provinceCode))?.name || provinceCode || "";
 
-            let district = districtCode || ""
-            let ward = wardCode || ""
+            let district = districtCode || "";
+            let ward = wardCode || "";
 
             if (provinceCode) {
-                const districtsResponse = await axios.get(`https://provinces.open-api.vn/api/p/${provinceCode}?depth=2`)
-                const districts = districtsResponse.data.districts
-                district = districts.find(d => d.code === parseInt(districtCode))?.name || districtCode || ""
+                const districtsResponse = await axios.get(`https://provinces.open-api.vn/api/p/${provinceCode}?depth=2`);
+                const districts = districtsResponse.data.districts;
+                district = districts.find(d => d.code === parseInt(districtCode))?.name || districtCode || "";
             }
 
             if (districtCode && provinceCode) {
-                const wardsResponse = await axios.get(`https://provinces.open-api.vn/api/d/${districtCode}?depth=2`)
-                const wards = wardsResponse.data.wards
-                ward = wards.find(w => w.code === parseInt(wardCode))?.name || wardCode || ""
+                const wardsResponse = await axios.get(`https://provinces.open-api.vn/api/d/${districtCode}?depth=2`);
+                const wards = wardsResponse.data.wards;
+                ward = wards.find(w => w.code === parseInt(wardCode))?.name || wardCode || "";
             }
 
             const addressParts = [
@@ -72,45 +72,46 @@ export default function ViewMedicalRecordPage() {
                 ward ? `Xã ${ward}` : null,
                 district ? `Huyện ${district}` : null,
                 province ? `Tỉnh ${province}` : null,
-            ].filter(Boolean).join(", ") || "N/A"
+            ].filter(Boolean).join(", ") || "N/A";
 
-            return addressParts
+            return addressParts;
         } catch (err) {
-            console.error("Failed to fetch address names:", err)
+            console.error("Failed to fetch address names:", err);
             return [
                 addressDetail && addressDetail !== "N/A" ? addressDetail : "Chưa xác định",
                 wardCode ? `Xã ${wardCode}` : null,
                 districtCode ? `Huyện ${districtCode}` : null,
                 provinceCode ? `Tỉnh ${provinceCode}` : null,
-            ].filter(Boolean).join(", ") || "N/A"
+            ].filter(Boolean).join(", ") || "N/A";
         }
-    }
+    };
 
-    // Lấy dữ liệu từ state
     useEffect(() => {
         if (!state?.medicalRecordData) {
-            setError("Không tìm thấy thông tin hồ sơ bệnh án.")
-            setLoading(false)
-            return
+            setError("Không tìm thấy thông tin hồ sơ bệnh án.");
+            setLoading(false);
+            return;
         }
 
         const fetchData = async () => {
             try {
-                setLoading(true)
+                setLoading(true);
                 const record = {
                     id: state.medicalRecordData.id || "N/A",
                     appointmentId: state.medicalRecordData.appointmentId || "N/A",
                     date: state.medicalRecordData.date || "N/A",
                     time: state.medicalRecordData.time || "N/A",
                     diagnosis: state.medicalRecordData.diagnosis || "Chưa cập nhật",
-                    service: state.medicalRecordData.service || "Chưa cập nhật",
+                    services: Array.isArray(state.medicalRecordData.services)
+                        ? state.medicalRecordData.services
+                        : [],
                     notes: state.medicalRecordData.notes || "Không có ghi chú",
                     patient: {
                         id: state.medicalRecordData.patient?.id || "N/A",
-                        name: state.medicalRecordData.patient?.name || "Chưa cập nhật",
-                        email: state.medicalRecordData.patient?.email || "N/A",
-                        phone: state.medicalRecordData.patient?.phone || "N/A",
-                        gender: state.medicalRecordData.patient?.gender || "N/A",
+                        name: state.medicalRecordData.patient?.name || "Chưa cung cấp",
+                        email: state.medicalRecordData.patient?.email || "Chưa cung cấp",
+                        phone: state.medicalRecordData.patient?.phone || "Chưa cung cấp",
+                        gender: state.medicalRecordData.patient?.gender || "Chưa cung cấp",
                         dateOfBirth: state.medicalRecordData.patient?.dateOfBirth || "N/A",
                         province: state.medicalRecordData.patient?.province || null,
                         district: state.medicalRecordData.patient?.district || null,
@@ -119,91 +120,88 @@ export default function ViewMedicalRecordPage() {
                     },
                     doctor: {
                         id: state.medicalRecordData.doctor?.id || "N/A",
-                        name: state.medicalRecordData.doctor?.name || "Chưa cập nhật",
-                        specialty: state.medicalRecordData.doctor?.specialty || { name: "N/A" },
-                        qualification: state.medicalRecordData.doctor?.qualification || "N/A",
+                        name: state.medicalRecordData.doctor?.name || "Chưa cung cấp",
+                        specialty: state.medicalRecordData.doctor?.specialty || { name: "Chưa cung cấp" },
+                        qualification: state.medicalRecordData.doctor?.qualification || "Chưa cung cấp",
                         experience: state.medicalRecordData.doctor?.experience || null,
                     },
                     createdAt: state.medicalRecordData.createdAt || new Date().toISOString(),
                     updatedAt: state.medicalRecordData.updatedAt || new Date().toISOString(),
                     recordFileUrl: state.medicalRecordData.recordFileUrl || "",
                     recommendedProducts: state.medicalRecordData.recommendedProducts || [],
-                }
-                setMedicalRecord(record)
+                };
+                setMedicalRecord(record);
 
                 const resolvedAddress = await fetchAddressNames(
                     record.patient.province,
                     record.patient.district,
                     record.patient.ward,
                     record.patient.addressDetail
-                )
-                setAddress(resolvedAddress)
+                );
+                setAddress(resolvedAddress);
             } catch (err) {
-                console.error("Failed to resolve address:", err)
-                setError("Không thể tải thông tin địa chỉ.")
+                console.error("Failed to resolve address:", err);
+                setError("Không thể tải thông tin địa chỉ.");
             } finally {
-                setLoading(false)
+                setLoading(false);
             }
-        }
+        };
 
-        fetchData()
-    }, [state])
+        fetchData();
+    }, [state]);
 
-    // Xử lý zoom bằng chuột
     useEffect(() => {
         const handleWheel = (e) => {
-            e.preventDefault()
-            const delta = e.deltaY > 0 ? -0.1 : 0.1
-            setZoomLevel(prev => Math.min(Math.max(prev + delta, 0.5), 3))
-        }
+            e.preventDefault();
+            const delta = e.deltaY > 0 ? -0.1 : 0.1;
+            setZoomLevel(prev => Math.min(Math.max(prev + delta, 0.5), 3));
+        };
 
-        const imageContainer = imageContainerRef.current
+        const imageContainer = imageContainerRef.current;
         if (selectedImage && imageContainer) {
-            imageContainer.addEventListener("wheel", handleWheel, { passive: false })
+            imageContainer.addEventListener("wheel", handleWheel, { passive: false });
         }
 
         return () => {
             if (imageContainer) {
-                imageContainer.removeEventListener("wheel", handleWheel)
+                imageContainer.removeEventListener("wheel", handleWheel);
             }
-        }
-    }, [selectedImage])
+        };
+    }, [selectedImage]);
 
-    // Đóng modal bằng phím Escape
     useEffect(() => {
         const handleKeyDown = (e) => {
-            if (e.key === "Escape") handleCloseModal()
-        }
+            if (e.key === "Escape") handleCloseModal();
+        };
         if (selectedImage) {
-            window.addEventListener("keydown", handleKeyDown)
+            window.addEventListener("keydown", handleKeyDown);
         }
-        return () => window.removeEventListener("keydown", handleKeyDown)
-    }, [selectedImage])
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [selectedImage]);
 
-    // Xử lý quay lại
     const handleBack = () => {
-        const returnPath = state?.returnPath || "/dashboard/doctor/patients"
-        console.log("Navigating back to:", returnPath)
-        navigate(returnPath, { state: { activeSection: "health" } })
-    }
+        const returnPath = state?.returnPath || "/dashboard/doctor/patients";
+        console.log("Navigating back to:", returnPath);
+        navigate(returnPath, { state: { activeSection: "health" } });
+    };
 
     const handleImageClick = (url) => {
-        setSelectedImage(url)
-        setZoomLevel(1)
-    }
+        setSelectedImage(url);
+        setZoomLevel(1);
+    };
 
     const handleCloseModal = () => {
-        setSelectedImage(null)
-        setZoomLevel(1)
-    }
+        setSelectedImage(null);
+        setZoomLevel(1);
+    };
 
     const handleZoomIn = () => {
-        setZoomLevel(prev => Math.min(prev + 0.2, 3))
-    }
+        setZoomLevel(prev => Math.min(prev + 0.2, 3));
+    };
 
     const handleZoomOut = () => {
-        setZoomLevel(prev => Math.max(prev - 0.2, 0.5))
-    }
+        setZoomLevel(prev => Math.max(prev - 0.2, 0.5));
+    };
 
     if (loading) {
         return (
@@ -213,7 +211,7 @@ export default function ViewMedicalRecordPage() {
                     <p>Đang tải thông tin hồ sơ bệnh án...</p>
                 </div>
             </div>
-        )
+        );
     }
 
     if (error || !medicalRecord) {
@@ -227,18 +225,16 @@ export default function ViewMedicalRecordPage() {
                     </button>
                 </div>
             </div>
-        )
+        );
     }
 
-    const patient = medicalRecord.patient || {}
-    const doctor = medicalRecord.doctor || {}
-    const fileUrls = medicalRecord.recordFileUrl ? medicalRecord.recordFileUrl.split(";").filter(Boolean) : []
-    const imageUrls = fileUrls.filter(url => url.match(/\.(jpg|jpeg|png)$/i))
-    const otherFiles = fileUrls.filter(url => !url.match(/\.(jpg|jpeg|png)$/i))
-
-    // Prepend base URL to make file URLs accessible
-    const baseUrl = process.env.REACT_APP_API_BASE_URL || "http://localhost:8080"
-    const getFullUrl = (url) => url.startsWith("http") ? url : `${baseUrl}${url}`
+    const patient = medicalRecord.patient || {};
+    const doctor = medicalRecord.doctor || {};
+    const fileUrls = medicalRecord.recordFileUrl ? medicalRecord.recordFileUrl.split(";").filter(Boolean) : [];
+    const imageUrls = fileUrls.filter(url => url.match(/\.(jpg|jpeg|png)$/i));
+    const otherFiles = fileUrls.filter(url => !url.match(/\.(jpg|jpeg|png)$/i));
+    const baseUrl = process.env.REACT_APP_API_BASE_URL || "http://localhost:8080";
+    const getFullUrl = url => url.startsWith("http") ? url : `${baseUrl}${url}`;
 
     return (
         <div className="view-medical-record">
@@ -262,28 +258,28 @@ export default function ViewMedicalRecordPage() {
                                 <User size={18} className="view-medical-record__icon" />
                                 <div>
                                     <span className="view-medical-record__label">Tên</span>
-                                    <p className="view-medical-record__value">{patient.name || "N/A"}</p>
+                                    <p className="view-medical-record__value">{patient.name || "Chưa cung cấp"}</p>
                                 </div>
                             </div>
                             <div className="view-medical-record__info-item">
                                 <FileText size={18} className="view-medical-record__icon" />
                                 <div>
                                     <span className="view-medical-record__label">Email</span>
-                                    <p className="view-medical-record__value">{patient.email || "N/A"}</p>
+                                    <p className="view-medical-record__value">{patient.email || "Chưa cung cấp"}</p>
                                 </div>
                             </div>
                             <div className="view-medical-record__info-item">
                                 <FileText size={18} className="view-medical-record__icon" />
                                 <div>
                                     <span className="view-medical-record__label">Số điện thoại</span>
-                                    <p className="view-medical-record__value">{patient.phone || "N/A"}</p>
+                                    <p className="view-medical-record__value">{patient.phone || "Chưa cung cấp"}</p>
                                 </div>
                             </div>
                             <div className="view-medical-record__info-item">
                                 <FileText size={18} className="view-medical-record__icon" />
                                 <div>
                                     <span className="view-medical-record__label">Giới tính</span>
-                                    <p className="view-medical-record__value">{patient.gender === "Nam" ? "Nam" : patient.gender === "Nữ" ? "Nữ" : "N/A"}</p>
+                                    <p className="view-medical-record__value">{patient.gender === "MALE" ? "Nam" : patient.gender === "FEMALE" ? "Nữ" : "Chưa cung cấp"}</p>
                                 </div>
                             </div>
                             <div className="view-medical-record__info-item">
@@ -310,28 +306,28 @@ export default function ViewMedicalRecordPage() {
                                 <User size={18} className="view-medical-record__icon" />
                                 <div>
                                     <span className="view-medical-record__label">Tên</span>
-                                    <p className="view-medical-record__value">{doctor.name || "N/A"}</p>
+                                    <p className="view-medical-record__value">{doctor.name || "Chưa cung cấp"}</p>
                                 </div>
                             </div>
                             <div className="view-medical-record__info-item">
                                 <FileText size={18} className="view-medical-record__icon" />
                                 <div>
                                     <span className="view-medical-record__label">Chuyên khoa</span>
-                                    <p className="view-medical-record__value">{doctor.specialty?.name || "N/A"}</p>
+                                    <p className="view-medical-record__value">{doctor.specialty?.name || "Chưa cung cấp"}</p>
                                 </div>
                             </div>
                             <div className="view-medical-record__info-item">
                                 <FileText size={18} className="view-medical-record__icon" />
                                 <div>
                                     <span className="view-medical-record__label">Trình độ</span>
-                                    <p className="view-medical-record__value">{doctor.qualification || "N/A"}</p>
+                                    <p className="view-medical-record__value">{doctor.qualification || "Chưa cung cấp"}</p>
                                 </div>
                             </div>
                             <div className="view-medical-record__info-item">
                                 <FileText size={18} className="view-medical-record__icon" />
                                 <div>
                                     <span className="view-medical-record__label">Kinh nghiệm</span>
-                                    <p className="view-medical-record__value">{doctor.experience ? `${doctor.experience} năm` : "N/A"}</p>
+                                    <p className="view-medical-record__value">{doctor.experience ? `${doctor.experience} năm` : "Chưa cung cấp"}</p>
                                 </div>
                             </div>
                         </div>
@@ -350,8 +346,23 @@ export default function ViewMedicalRecordPage() {
                             <div className="view-medical-record__info-item">
                                 <FileText size={18} className="view-medical-record__icon" />
                                 <div>
-                                    <span className="view-medical-record__label">Dịch vụ</span>
-                                    <p className="view-medical-record__value">{medicalRecord.service || "Chưa cập nhật"}</p>
+                                    <span className="view-medical-record__label">Danh sách dịch vụ</span>
+                                    {medicalRecord.services.length > 0 ? (
+                                        <ul className="view-medical-record__services-list">
+                                            {medicalRecord.services.map((service) => (
+                                                <li key={service.id || `service-${Math.random()}`} className="view-medical-record__service-item">
+                                                    {service.name || `Dịch vụ ID: ${service.id || "N/A"}`}
+                                                    {service.description && service.description !== "N/A" && (
+                                                        <span className="view-medical-record__service-description">
+                                                            ({service.description})
+                                                        </span>
+                                                    )}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    ) : (
+                                        <p className="view-medical-record__value">Chưa có dịch vụ được chọn</p>
+                                    )}
                                 </div>
                             </div>
                             <div className="view-medical-record__info-item">
@@ -388,8 +399,8 @@ export default function ViewMedicalRecordPage() {
                                         <div>
                                             <span className="view-medical-record__label">Sản phẩm #{index + 1}</span>
                                             <p className="view-medical-record__value">
-                                                Tên: {item.product?.name || "N/A"}<br />
-                                                Mô tả: {item.product?.description || "N/A"}<br />
+                                                Tên: {item.product?.name || "Chưa cung cấp"}<br />
+                                                Mô tả: {item.product?.description || "Chưa cung cấp"}<br />
                                                 Số lượng: {item.quantity || "N/A"}<br />
                                             </p>
                                         </div>
@@ -472,5 +483,5 @@ export default function ViewMedicalRecordPage() {
                 </div>
             </div>
         </div>
-    )
+    );
 }

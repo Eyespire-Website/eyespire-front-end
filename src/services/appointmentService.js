@@ -11,17 +11,17 @@ const axiosInstance = axios.create({
 
 // Thêm interceptor để tự động thêm token vào header
 axiosInstance.interceptors.request.use(
-  (config) => {
-    const user = authService.getCurrentUser();
-    if (user) {
-      // Thêm userId vào header để backend có thể xác thực
-      config.headers['User-Id'] = user.id;
+    (config) => {
+      const user = authService.getCurrentUser();
+      if (user) {
+        // Thêm userId vào header để backend có thể xác thực
+        config.headers['User-Id'] = user.id;
+      }
+      return config;
+    },
+    (error) => {
+      return Promise.reject(error);
     }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
 );
 
 const appointmentService = {
@@ -123,6 +123,7 @@ const appointmentService = {
       throw error;
     }
   },
+
   getAppointmentsByPatientId: async (patientId) => {
     try {
       const response = await axiosInstance.get(`/appointments/patient/${patientId}`)
@@ -133,11 +134,11 @@ const appointmentService = {
     }
   },
 
-  updateAppointmentService: async (appointmentId, serviceId) => {
+  updateAppointmentServices: async (appointmentId, serviceIds) => {
     try {
-      console.log(`Updating service for appointmentId: ${appointmentId} to serviceId: ${serviceId}`);
-      const response = await axiosInstance.put(`/appointments/${appointmentId}/service`, { serviceId });
-      console.log("Update Appointment Service Response:", response.data);
+      console.log(`Updating services for appointmentId: ${appointmentId} to serviceIds: ${JSON.stringify(serviceIds)}`);
+      const response = await axiosInstance.put(`/appointments/${appointmentId}/services`, { serviceIds });
+      console.log("Update Appointment Services Response:", response.data);
       return response.data;
     } catch (error) {
       console.error('Lỗi khi cập nhật dịch vụ cuộc hẹn:', error.response?.data || error.message);
@@ -155,7 +156,6 @@ const appointmentService = {
     }
   },
 
-
   getDoctorAppointmentsByUserId: async (userId) => {
     try {
       const response = await axiosInstance.get(`/doctors/by-user/${userId}/appointments`);
@@ -165,6 +165,7 @@ const appointmentService = {
       throw error;
     }
   },
+
   updateAppointmentStatus: async (appointmentId, status) => {
     try {
       const response = await axiosInstance.put(`/appointments/${appointmentId}/status`, { status });
@@ -175,7 +176,6 @@ const appointmentService = {
     }
   },
 
-  // Chuyển trạng thái cuộc hẹn sang chờ thanh toán sau khi bác sĩ tạo hồ sơ bệnh án
   setAppointmentWaitingPayment: async (appointmentId, totalAmount) => {
     try {
       const response = await axiosInstance.put(`/appointments/${appointmentId}/waiting-payment`, { totalAmount });
@@ -186,7 +186,6 @@ const appointmentService = {
     }
   },
 
-  // Đánh dấu cuộc hẹn đã thanh toán và chuyển trạng thái sang hoàn thành
   markAppointmentAsPaid: async (appointmentId, transactionId) => {
     try {
       const response = await axiosInstance.put(`/appointments/${appointmentId}/mark-as-paid`, { transactionId });
@@ -197,7 +196,6 @@ const appointmentService = {
     }
   },
 
-  // Lấy danh sách cuộc hẹn đang chờ thanh toán
   getWaitingPaymentAppointments: async () => {
     try {
       const response = await axiosInstance.get('/appointments/waiting-payment');
@@ -208,7 +206,6 @@ const appointmentService = {
     }
   },
 
-  // Lấy danh sách cuộc hẹn đang chờ thanh toán của bác sĩ
   getWaitingPaymentAppointmentsByDoctor: async (doctorId) => {
     try {
       const response = await axiosInstance.get(`/appointments/doctor/${doctorId}/waiting-payment`);
@@ -219,7 +216,6 @@ const appointmentService = {
     }
   },
 
-  // Lấy thông tin hóa đơn của cuộc hẹn
   getAppointmentInvoice: async (appointmentId) => {
     try {
       const response = await axiosInstance.get(`/appointments/${appointmentId}/invoice`);
@@ -229,8 +225,7 @@ const appointmentService = {
       throw error;
     }
   },
-  
-  // Lấy chi tiết cuộc hẹn theo ID
+
   getAppointmentById: async (appointmentId) => {
     try {
       const response = await axiosInstance.get(`/appointments/${appointmentId}`);

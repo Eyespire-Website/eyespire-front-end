@@ -43,7 +43,7 @@ export default function DoctorAppointmentsPage() {
 
     const fetchAppointments = async () => {
         if (!userId) {
-            setError("Không tìm thấy thông tin bác sĩ. Vui lòng đăng nhập lại.")
+            setError("Không tìm thấy thông tin bác sĩ.")
             setLoading(false)
             return
         }
@@ -61,6 +61,16 @@ export default function DoctorAppointmentsPage() {
                 const isConfirmed = appointment.status === "CONFIRMED"
                 const hasMedicalRecord = await medicalRecordService.checkMedicalRecordExistsByAppointmentId(appointment.id)
 
+                // Handle multiple services
+                const services = Array.isArray(appointment.services)
+                    ? appointment.services.map(service => ({
+                        id: service.id,
+                        name: service.name || "Chưa chọn dịch vụ",
+                        description: service.description || "N/A"
+                    }))
+                    : []
+                const serviceIds = services.map(service => service.id)
+
                 console.log(`Appointment ID ${appointment.id}:`, {
                     isConfirmed,
                     status: appointment.status,
@@ -70,7 +80,8 @@ export default function DoctorAppointmentsPage() {
                     patientId: appointment.patient?.id,
                     patientName: appointment.patient?.name,
                     doctorId: appointment.doctor?.id,
-                    service: appointment.service,
+                    services,
+                    serviceIds,
                     formattedDate: date,
                     formattedTime: time,
                     hasMedicalRecord
@@ -93,9 +104,8 @@ export default function DoctorAppointmentsPage() {
                         addressDetail: appointment.patient?.addressDetail || "N/A",
                     },
                     doctor: appointment.doctor || { id: appointment.doctorId || userId },
-                    service: appointment.service && appointment.service.id
-                        ? { id: appointment.service.id, name: appointment.service.name || "Chưa chọn dịch vụ", description: appointment.service.description || "N/A" }
-                        : { id: null, name: "Chưa chọn dịch vụ", description: "N/A" },
+                    services, // Store array of services
+                    serviceIds, // Store array of service IDs
                     notes: appointment.notes || "Không có ghi chú",
                     status: appointment.status,
                     createdAt: appointment.createdAt || new Date().toISOString(),
@@ -113,7 +123,7 @@ export default function DoctorAppointmentsPage() {
         } catch (err) {
             console.error("Failed to fetch appointments:", err)
             if (err.response?.status === 401) {
-                setError("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.")
+                setError("Không thể xác thực. Vui lòng kiểm tra phiên đăng nhập.")
             } else if (err.response?.status === 404) {
                 setError("Không tìm thấy bác sĩ liên kết với tài khoản này.")
             } else {
@@ -154,7 +164,7 @@ export default function DoctorAppointmentsPage() {
                 patientId: appointment.patient?.id,
                 patientName: appointment.patient?.name,
                 doctorId: appointment.doctor?.id,
-                serviceId: appointment.service?.id || null,
+                serviceIds: appointment.serviceIds || [],
             },
         })
     }
@@ -170,7 +180,7 @@ export default function DoctorAppointmentsPage() {
                 (appointment.patient?.name?.toLowerCase() || "").includes(query) ||
                 (appointment.appointmentDate || "").includes(query) ||
                 (appointment.timeSlot?.toLowerCase() || "").includes(query) ||
-                (appointment.service?.name?.toLowerCase() || "").includes(query) ||
+                appointment.services.some(service => (service.name?.toLowerCase() || "").includes(query)) ||
                 (appointment.notes?.toLowerCase() || "").includes(query)
             )
         })
@@ -240,11 +250,6 @@ export default function DoctorAppointmentsPage() {
                     <button onClick={fetchAppointments} className="appointments__retry-button">
                         Thử lại
                     </button>
-                    {error.includes("đăng nhập") && (
-                        <button onClick={() => navigate("/login")} className="appointments__retry-button">
-                            Đăng nhập lại
-                        </button>
-                    )}
                 </div>
             </div>
         )
@@ -301,6 +306,9 @@ export default function DoctorAppointmentsPage() {
                         ) : (
                             paginatedAppointments.map((appointment, index) => {
                                 const status = statusConfig[appointment.status] || statusConfig.CONFIRMED
+                                const serviceNames = appointment.services.length > 0
+                                    ? appointment.services.map(s => s.name).join(", ")
+                                    : "Chưa chọn dịch vụ"
                                 return (
                                     <tr key={appointment.id} className="appointments__table-row">
                                         <td className="appointments__table-cell">{(currentPage - 1) * itemsPerPage + index + 1}</td>
@@ -324,7 +332,7 @@ export default function DoctorAppointmentsPage() {
                                         </td>
                                         <td className="appointments__table-cell">
                                             <div className="appointments__icon-text">
-                                                <span>{appointment.service?.name || "Chưa chọn dịch vụ"}</span>
+                                                <span>{serviceNames}</span>
                                             </div>
                                         </td>
                                         <td className="appointments__table-cell">

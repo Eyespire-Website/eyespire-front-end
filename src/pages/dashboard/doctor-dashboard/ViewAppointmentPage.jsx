@@ -1,16 +1,16 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useLocation, useNavigate } from "react-router-dom"
-import { User, Calendar, Clock, FileText, ArrowLeft } from "lucide-react"
-import axios from "axios"
-import "./view-appointment.css"
-import medicalRecordService from "../../../services/medicalRecordService"
+import { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { User, Calendar, Clock, FileText, ArrowLeft } from "lucide-react";
+import axios from "axios";
+import "./view-appointment.css";
+import medicalRecordService from "../../../services/medicalRecordService";
 
 const formatDateTime = (dateTime) => {
-    if (!dateTime) return "N/A"
+    if (!dateTime) return "N/A";
     try {
-        const date = new Date(dateTime)
+        const date = new Date(dateTime);
         return date.toLocaleString("vi-VN", {
             year: "numeric",
             month: "2-digit",
@@ -18,57 +18,57 @@ const formatDateTime = (dateTime) => {
             hour: "2-digit",
             minute: "2-digit",
             hour12: false,
-        })
+        });
     } catch {
-        return "N/A"
+        return "N/A";
     }
-}
+};
 
 const formatDate = (date) => {
-    if (!date) return "N/A"
+    if (!date) return "N/A";
     try {
-        const d = new Date(date)
-        return d.toLocaleDateString("vi-VN", { year: "numeric", month: "2-digit", day: "2-digit" })
+        const d = new Date(date);
+        return d.toLocaleDateString("vi-VN", { year: "numeric", month: "2-digit", day: "2-digit" });
     } catch {
-        return "N/A"
+        return "N/A";
     }
-}
+};
 
 const statusConfig = {
     CONFIRMED: { label: "Đã xác nhận", className: "status-confirmed" },
     PENDING: { label: "Chờ xác nhận", className: "status-pending" },
     COMPLETED: { label: "Hoàn thành", className: "status-completed" },
     CANCELLED: { label: "Đã hủy", className: "status-cancelled" },
-}
+};
 
 export default function ViewAppointmentPage() {
-    const { state } = useLocation()
-    const navigate = useNavigate()
-    const [appointment, setAppointment] = useState(null)
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState(null)
-    const [hasMedicalRecord, setHasMedicalRecord] = useState(false)
-    const [address, setAddress] = useState("N/A")
+    const { state } = useLocation();
+    const navigate = useNavigate();
+    const [appointment, setAppointment] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [hasMedicalRecord, setHasMedicalRecord] = useState(false);
+    const [address, setAddress] = useState("N/A");
 
     const fetchAddressNames = async (provinceCode, districtCode, wardCode, addressDetail) => {
         try {
-            const provincesResponse = await axios.get("https://provinces.open-api.vn/api/p/")
-            const provinces = provincesResponse.data
-            const province = provinces.find(p => p.code === parseInt(provinceCode))?.name || provinceCode || ""
+            const provincesResponse = await axios.get("https://provinces.open-api.vn/api/p/");
+            const provinces = provincesResponse.data;
+            const province = provinces.find(p => p.code === parseInt(provinceCode))?.name || provinceCode || "";
 
-            let district = districtCode || ""
-            let ward = wardCode || ""
+            let district = districtCode || "";
+            let ward = wardCode || "";
 
             if (provinceCode) {
-                const districtsResponse = await axios.get(`https://provinces.open-api.vn/api/p/${provinceCode}?depth=2`)
-                const districts = districtsResponse.data.districts
-                district = districts.find(d => d.code === parseInt(districtCode))?.name || districtCode || ""
+                const districtsResponse = await axios.get(`https://provinces.open-api.vn/api/p/${provinceCode}?depth=2`);
+                const districts = districtsResponse.data.districts;
+                district = districts.find(d => d.code === parseInt(districtCode))?.name || districtCode || "";
             }
 
             if (districtCode && provinceCode) {
-                const wardsResponse = await axios.get(`https://provinces.open-api.vn/api/d/${districtCode}?depth=2`)
-                const wards = wardsResponse.data.wards
-                ward = wards.find(w => w.code === parseInt(wardCode))?.name || wardCode || ""
+                const wardsResponse = await axios.get(`https://provinces.open-api.vn/api/d/${districtCode}?depth=2`);
+                const wards = wardsResponse.data.wards;
+                ward = wards.find(w => w.code === parseInt(wardCode))?.name || wardCode || "";
             }
 
             const addressParts = [
@@ -76,32 +76,32 @@ export default function ViewAppointmentPage() {
                 ward ? `Xã ${ward}` : null,
                 district ? `Huyện ${district}` : null,
                 province ? `Tỉnh ${province}` : null,
-            ].filter(Boolean).join(", ") || "N/A"
+            ].filter(Boolean).join(", ") || "N/A";
 
-            return addressParts
+            return addressParts;
         } catch (err) {
-            console.error("Failed to fetch address names:", err)
+            console.error("Failed to fetch address names:", err);
             return [
                 addressDetail || "N/A",
                 wardCode ? `Xã ${wardCode}` : null,
                 districtCode ? `Huyện ${districtCode}` : null,
                 provinceCode ? `Tỉnh ${provinceCode}` : null,
-            ].filter(Boolean).join(", ") || "N/A"
+            ].filter(Boolean).join(", ") || "N/A";
         }
-    }
+    };
 
     useEffect(() => {
         if (!state?.appointmentData) {
-            setError("Không tìm thấy thông tin cuộc hẹn.")
-            setLoading(false)
-            return
+            setError("Không tìm thấy thông tin cuộc hẹn.");
+            setLoading(false);
+            return;
         }
 
         const fetchMedicalRecordStatus = async () => {
             try {
-                setLoading(true)
-                const exists = await medicalRecordService.checkMedicalRecordExistsByAppointmentId(state.appointmentData.id)
-                setHasMedicalRecord(exists)
+                setLoading(true);
+                const exists = await medicalRecordService.checkMedicalRecordExistsByAppointmentId(state.appointmentData.id);
+                setHasMedicalRecord(exists);
                 setAppointment({
                     id: state.appointmentData.id,
                     appointmentDate: state.appointmentData.appointmentDate || "N/A",
@@ -123,40 +123,36 @@ export default function ViewAppointmentPage() {
                     doctor: {
                         id: state.appointmentData.doctor?.id || state.appointmentData.doctorId || "N/A",
                     },
-                    service: {
-                        id: state.appointmentData.service?.id || null, // Thêm service.id
-                        name: state.appointmentData.service?.name || state.appointmentData.service || "Khám tổng quát",
-                        description: state.appointmentData.service?.description || "N/A",
-                    },
+                    services: state.appointmentData.services || [],
                     notes: state.appointmentData.notes || "Không có ghi chú",
                     status: state.appointmentData.status || "CONFIRMED",
                     createdAt: state.appointmentData.createdAt || new Date().toISOString(),
                     updatedAt: state.appointmentData.updatedAt || new Date().toISOString(),
-                })
+                });
 
                 const resolvedAddress = await fetchAddressNames(
                     state.appointmentData.patient?.province,
                     state.appointmentData.patient?.district,
                     state.appointmentData.patient?.ward,
                     state.appointmentData.patient?.addressDetail
-                )
-                setAddress(resolvedAddress)
+                );
+                setAddress(resolvedAddress);
             } catch (err) {
-                console.error("Failed to check medical record:", err)
-                setError("Không thể kiểm tra hồ sơ bệnh án.")
+                console.error("Failed to check medical record:", err);
+                setError("Không thể kiểm tra hồ sơ bệnh án.");
             } finally {
-                setLoading(false)
+                setLoading(false);
             }
-        }
+        };
 
-        fetchMedicalRecordStatus()
-    }, [state])
+        fetchMedicalRecordStatus();
+    }, [state]);
 
     const handleBack = () => {
-        const returnPath = state?.returnPath || "/dashboard/doctor/appointments"
-        console.log("Navigating back to:", returnPath)
-        navigate(returnPath)
-    }
+        const returnPath = state?.returnPath || "/dashboard/doctor/appointments";
+        console.log("Navigating back to:", returnPath);
+        navigate(returnPath);
+    };
 
     const handleCreateMedicalRecord = () => {
         navigate("/dashboard/doctor/create-medical-record", {
@@ -165,12 +161,12 @@ export default function ViewAppointmentPage() {
                 patientId: appointment.patient?.id,
                 patientName: appointment.patient?.name,
                 doctorId: appointment.doctor?.id,
-                serviceId: appointment.service?.id || null, // Truyền serviceId
-                returnPath: "/dashboard/doctor/view-appointment", // Giữ đường dẫn quay lại
-                appointmentData: appointment, // Truyền lại appointment để quay lại ViewAppointmentPage
+                serviceIds: appointment.services.map(service => service.id),
+                returnPath: "/dashboard/doctor/view-appointment",
+                appointmentData: appointment,
             },
-        })
-    }
+        });
+    };
 
     if (loading) {
         return (
@@ -180,7 +176,7 @@ export default function ViewAppointmentPage() {
                     <p>Đang tải thông tin cuộc hẹn...</p>
                 </div>
             </div>
-        )
+        );
     }
 
     if (error || !appointment) {
@@ -194,13 +190,12 @@ export default function ViewAppointmentPage() {
                     </button>
                 </div>
             </div>
-        )
+        );
     }
 
-    const status = statusConfig[appointment.status] || statusConfig.CONFIRMED
-    const patient = appointment.patient || {}
-    const doctor = appointment.doctor || {}
-    const service = appointment.service || {}
+    const status = statusConfig[appointment.status] || statusConfig.CONFIRMED;
+    const patient = appointment.patient || {};
+    const services = appointment.services || [];
 
     return (
         <div className="view-appointment">
@@ -271,15 +266,23 @@ export default function ViewAppointmentPage() {
                             <div className="view-appointment__info-item">
                                 <FileText size={18} className="view-appointment__icon" />
                                 <div>
-                                    <span className="view-appointment__label">Tên dịch vụ</span>
-                                    <p className="view-appointment__value">{service.name || "N/A"}</p>
-                                </div>
-                            </div>
-                            <div className="view-appointment__info-item">
-                                <FileText size={18} className="view-appointment__icon" />
-                                <div>
-                                    <span className="view-appointment__label">Mô tả</span>
-                                    <p className="view-appointment__value">{service.description || "N/A"}</p>
+                                    <span className="view-appointment__label">Danh sách dịch vụ</span>
+                                    {services.length > 0 ? (
+                                        <ul className="view-appointment__services-list">
+                                            {services.map((service) => (
+                                                <li key={service.id || `service-${Math.random()}`} className="view-appointment__service-item">
+                                                    {service.name || `Dịch vụ ID: ${service.id || "N/A"}`}
+                                                    {service.description && service.description !== "N/A" && (
+                                                        <span className="view-appointment__service-description">
+                                                            ({service.description})
+                                                        </span>
+                                                    )}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    ) : (
+                                        <p className="view-appointment__value">Chưa có dịch vụ được chọn</p>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -353,5 +356,5 @@ export default function ViewAppointmentPage() {
                 </div>
             </div>
         </div>
-    )
+    );
 }

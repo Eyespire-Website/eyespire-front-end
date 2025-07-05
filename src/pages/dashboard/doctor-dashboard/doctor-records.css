@@ -289,10 +289,20 @@
     padding: 10px 12px;
     cursor: pointer;
     transition: background-color 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Added for checkbox spacing */
 }
 
 .dropdown-item:hover {
     background-color: #f8fafc;
+}
+
+.dropdown-item input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: #667eea;
+    cursor: pointer;
 }
 
 .search-container {
@@ -468,6 +478,59 @@
     color: #dc2626;
 }
 
+.services-list-container {
+    margin-top: 16px;
+    padding: 12px;
+    background-color: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+}
+
+.services-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.service-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 14px;
+    color: #1e293b;
+    transition: background-color 0.2s ease;
+}
+
+.service-item:last-child {
+    border-bottom: none;
+}
+
+.service-item:hover {
+    background-color: #f8fafc;
+}
+
+.remove-service-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border: 1px solid #fecaca;
+    border-radius: 6px;
+    background-color: #fef2f2;
+    color: #ef4444;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.remove-service-button:hover {
+    background-color: #fee2e2;
+    border-color: #fca5a5;
+    color: #dc2626;
+}
+
 .empty-message {
     font-size: 14px;
     color: #6b7280;
@@ -583,80 +646,6 @@
     }
 }
 
-/* Responsive Design */
-@media (max-width: 1024px) {
-    .form-grid-medical {
-        grid-template-columns: 1fr 1fr;
-    }
-}
-
-@media (max-width: 768px) {
-    .records-container {
-        padding: 16px;
-    }
-
-    .records-title {
-        font-size: 22px;
-    }
-
-    .records-subtitle {
-        font-size: 14px;
-    }
-
-    .form-grid-medical {
-        grid-template-columns: 1fr;
-    }
-
-    .form-section {
-        padding: 16px;
-    }
-
-    .form-actions {
-        flex-direction: column;
-        gap: 12px;
-    }
-
-    .cancel-button,
-    .create-record-button {
-        width: 100%;
-    }
-}
-
-@media (max-width: 480px) {
-    .records-title {
-        font-size: 18px;
-    }
-
-    .records-subtitle {
-        font-size: 13px;
-    }
-
-    .form-group label {
-        font-size: 13px;
-    }
-
-    .medication-card.simplified {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .medication-controls {
-        margin-top: 8px;
-        width: 100%;
-        justify-content: flex-end;
-    }
-
-    .medication-dropdown-item {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .medication-name {
-        margin-bottom: 4px;
-    }
-}
-/* Existing styles remain unchanged. Replace or add the following for the modal and image zoom functionality. */
-
 .file-preview-image {
     cursor: zoom-in;
     max-width: 100px;
@@ -698,7 +687,7 @@
     align-items: center;
     max-height: 70vh;
     overflow: auto;
-    cursor: zoom-in; /* Indicates the image is zoomable */
+    cursor: zoom-in;
 }
 
 .image-modal-content img {
@@ -745,4 +734,104 @@
 
 .image-modal-close:hover {
     color: #000;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .form-grid-medical {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .records-container {
+        padding: 16px;
+    }
+
+    .records-title {
+        font-size: 22px;
+    }
+
+    .records-subtitle {
+        font-size: 14px;
+    }
+
+    .form-grid-medical {
+        grid-template-columns: 1fr;
+    }
+
+    .form-section {
+        padding: 16px;
+    }
+
+    .form-actions {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .cancel-button,
+    .create-record-button {
+        width: 100%;
+    }
+
+    .services-list-container {
+        padding: 10px;
+    }
+
+    .service-item {
+        padding: 8px 10px;
+        font-size: 13px;
+    }
+
+    .remove-service-button {
+        width: 24px;
+        height: 24px;
+    }
+}
+
+@media (max-width: 480px) {
+    .records-title {
+        font-size: 18px;
+    }
+
+    .records-subtitle {
+        font-size: 13px;
+    }
+
+    .form-group label {
+        font-size: 13px;
+    }
+
+    .medication-card.simplified {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .medication-controls {
+        margin-top: 8px;
+        width: 100%;
+        justify-content: flex-end;
+    }
+
+    .medication-dropdown-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .medication-name {
+        margin-bottom: 4px;
+    }
+
+    .services-list-container {
+        padding: 8px;
+    }
+
+    .service-item {
+        font-size: 12px;
+    }
+
+    .remove-service-button {
+        width: 22px;
+        height: 22px;
+    }
 }
