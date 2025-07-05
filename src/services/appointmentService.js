@@ -57,15 +57,14 @@ const appointmentService = {
       });
       return response.data;
     } catch (error) {
-      console.error('Lỗi khi lấy khung giờ trống:', error);
+      console.error('Lỗi khi lấy khung giờ trống của bác sĩ:', error);
       throw error;
     }
   },
-
   // Lấy tất cả khung giờ trống theo ngày (không cần lọc theo bác sĩ)
   getAvailableTimeSlotsForDate: async (date) => {
     try {
-      const response = await axiosInstance.get('/available-slots', {
+      const response = await axiosInstance.get('/appointments/available-by-date', {
         params: {
           date: date
         }
@@ -73,16 +72,7 @@ const appointmentService = {
       return response.data;
     } catch (error) {
       console.error('Lỗi khi lấy khung giờ trống theo ngày:', error);
-      // Tạo danh sách khung giờ mặc định từ 8:00 đến 16:00 nếu API không tồn tại
-      const defaultSlots = [];
-      for (let hour = 8; hour <= 16; hour++) {
-        const hourString = hour < 10 ? `0${hour}:00` : `${hour}:00`;
-        defaultSlots.push({
-          time: hourString,
-          status: "AVAILABLE"
-        });
-      }
-      return defaultSlots;
+      throw error;
     }
   },
 

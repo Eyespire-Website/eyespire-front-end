@@ -174,7 +174,7 @@ const getRoleBasedRedirectPath = (role) => {
     case 'ADMIN':
       return '/dashboard/admin';
     case 'STORE_MANAGER':
-      return '/dashboard/admin'; // Tạm thởi chuyển hướng về admin dashboard
+      return '/dashboard/storeManagement'; // Chuyển hướng đến Store Management Dashboard
     case 'PATIENT':
     default:
       return '/'; // Mặc định chuyển hướng về trang chủ cho bệnh nhân

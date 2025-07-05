@@ -377,8 +377,8 @@ const InventoryContent = () => {
                         <span className="stat-title">Tổng sản phẩm</span>
                         <Package size={24} className="stat-icon" />
                     </div>
-                    <div className="stat-value">1,234</div>
-                    <div className="stat-change positive">+45 sản phẩm mới</div>
+                    <div className="stat-value">{products.length}</div>
+                    <div className="stat-change positive">{products.length > 0 ? `${products.length} sản phẩm trong kho` : 'Chưa có sản phẩm'}</div>
                 </div>
 
                 <div className="stat-card">
@@ -386,7 +386,7 @@ const InventoryContent = () => {
                         <span className="stat-title">Sắp hết hàng</span>
                         <AlertTriangle size={24} className="stat-icon" />
                     </div>
-                    <div className="stat-value">23</div>
+                    <div className="stat-value">{products.filter(p => p.stockQuantity > 0 && p.stockQuantity <= 10).length}</div>
                     <div className="stat-change negative">Cần nhập thêm</div>
                 </div>
 
@@ -395,17 +395,19 @@ const InventoryContent = () => {
                         <span className="stat-title">Giá trị kho</span>
                         <DollarSign size={24} className="stat-icon" />
                     </div>
-                    <div className="stat-value">₫125M</div>
-                    <div className="stat-change positive">+8% từ tháng trước</div>
-                </div>
-
-                <div className="stat-card">
-                    <div className="stat-hdr">
-                        <span className="stat-title">Xuất kho hôm nay</span>
-                        <TrendingUp size={24} className="stat-icon" />
+                    <div className="stat-value">
+                        {new Intl.NumberFormat('vi-VN', {
+                            style: 'currency',
+                            currency: 'VND',
+                            maximumFractionDigits: 0
+                        }).format(products.reduce((sum, product) => {
+                            // Chuyển đổi giá thành số và đảm bảo là số hợp lệ
+                            const price = parseFloat(product.price) || 0;
+                            const quantity = parseInt(product.stockQuantity) || 0;
+                            return sum + (price * quantity);
+                        }, 0))}
                     </div>
-                    <div className="stat-value">89</div>
-                    <div className="stat-change positive">+12 từ hôm qua</div>
+                    <div className="stat-change positive">Tổng giá trị hiện tại</div>
                 </div>
             </div>
 

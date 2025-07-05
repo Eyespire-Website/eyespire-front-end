@@ -9,6 +9,7 @@ import {
   faChevronDown,
   faCalendarAlt,
 } from "@fortawesome/free-solid-svg-icons";
+import logo from "../../assets/logo.png";
 import { useNavigate } from "react-router-dom";
 import authService from "../../services/authService";
 import { Link } from "react-router-dom";
@@ -189,9 +190,7 @@ const Header = () => {
       {/* Logo bên trái */}
       <div className="row-view2">
         <img
-          src={
-            "https://storage.googleapis.com/tagjs-prod.appspot.com/v1/VY3PPTks6o/e8ggwzic_expires_30_days.png"
-          }
+          src={logo}
           className="image"
         />
         <span className="text">{"Eyespire"}</span>

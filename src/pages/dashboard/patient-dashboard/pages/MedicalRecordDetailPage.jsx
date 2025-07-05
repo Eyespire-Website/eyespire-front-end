@@ -67,36 +67,83 @@ const MedicalRecordDetailPage = () => {
                 }
             }
             
+            // Xử lý dịch vụ y tế từ cuộc hẹn
+            let serviceName = "Khám mắt";
+            if (data.appointment && data.appointment.service) {
+                serviceName = data.appointment.service.name || "Khám mắt";
+            }
+            
             // Xử lý toa thuốc
             let prescriptions = [];
             if (data.recommendedProducts && data.recommendedProducts.length > 0) {
                 prescriptions = data.recommendedProducts.map(item => ({
                     name: item.product ? item.product.name : "Thuốc",
-                    dosage: "Theo chỉ định",
-                    frequency: "Theo chỉ định",
-                    duration: `${item.quantity} viên`,
-                    note: ""
+                    dosage: item.dosage || "Theo chỉ định",
+                    frequency: item.frequency || "Theo chỉ định",
+                    duration: item.quantity ? `${item.quantity} viên` : "Theo chỉ định",
+                    note: item.note || ""
                 }));
             }
             
+            // Xử lý hình ảnh và tệp đính kèm
+            let images = [];
+            let otherFiles = [];
+            
+            // Xử lý recordFileUrl nếu có
+            if (data.recordFileUrl) {
+                const url = getImageUrl(data.recordFileUrl);
+                if (url.match(/\.(jpeg|jpg|gif|png|webp)$/i)) {
+                    images.push(url);
+                } else {
+                    otherFiles.push(url);
+                }
+            }
+            
+            // Xử lý mảng recordFiles nếu có
+            if (data.recordFiles && Array.isArray(data.recordFiles)) {
+                data.recordFiles.forEach(file => {
+                    const url = getImageUrl(file.url || file);
+                    if (url.match(/\.(jpeg|jpg|gif|png|webp)$/i)) {
+                        images.push(url);
+                    } else {
+                        otherFiles.push(url);
+                    }
+                });
+            }
+            
+            // Xử lý ngày tạo
+            const createdDate = data.createdAt 
+                ? new Date(data.createdAt).toLocaleDateString('vi-VN')
+                : "Không xác định";
+            
             const formattedRecord = {
-                id: `EYE${data.id}`,
+                id: data.id,
+                recordId: data.id,
                 patient: patientName,
-                examType: data.diagnosis || "Khám mắt",
-                date: new Date(data.createdAt).toLocaleDateString('vi-VN'),
+                patientId: data.patientId,
+                serviceName: serviceName,
+                date: createdDate,
                 doctor: doctorName,
+                doctorId: data.doctorId,
                 diagnosis: data.diagnosis || "Không có chẩn đoán",
                 treatment: data.notes || "Không có phác đồ điều trị",
                 prescription: prescriptions,
-                images: data.recordFileUrl ? [getImageUrl(data.recordFileUrl)] : []
+                images: images,
+                otherFiles: otherFiles,
+                appointmentId: data.appointmentId,
+                createdAt: data.createdAt,
+                updatedAt: data.updatedAt,
+                visualAcuity: data.visualAcuity || "Không có thông tin",
+                intraocularPressure: data.intraocularPressure || "Không có thông tin",
+                refraction: data.refraction || "Không có thông tin"
             };
             
             console.log("Dữ liệu đã format:", formattedRecord);
             setRecordDetail(formattedRecord);
         } catch (err) {
             console.error("Error fetching medical record detail:", err);
-            setError("Không thể tải chi tiết hồ sơ điều trị. Vui lòng thử lại sau.");
-            toast.error("Không thể tải chi tiết hồ sơ điều trị. Vui lòng thử lại sau.");
+            setError("Không thể tải thông tin chi tiết hồ sơ điều trị. Vui lòng thử lại sau.");
+            toast.error("Không thể tải thông tin chi tiết hồ sơ điều trị");
         } finally {
             setLoading(false);
         }
@@ -222,8 +269,8 @@ const MedicalRecordDetailPage = () => {
                                         <p className="info-value">{recordDetail.patient}</p>
                                     </div>
                                     <div className="info-row">
-                                        <span className="info-label">Loại khám:</span>
-                                        <p className="info-value">{recordDetail.examType}</p>
+                                        <span className="info-label">Dịch vụ:</span>
+                                        <p className="info-value">{recordDetail.serviceName}</p>
                                     </div>
                                     <div className="info-row">
                                         <span className="info-label">Ngày khám:</span>

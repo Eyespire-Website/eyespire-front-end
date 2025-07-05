@@ -90,14 +90,14 @@ export default function CustomerAppointments() {
     }
 
     const handleViewDetails = (customerId) => {
-        navigate(`/dashboard/receptionist/appointments/customer/${customerId}`, {
+        navigate(`/dashboard/admin/appointments/customer/${customerId}`, {
             state: { fromPage: currentPage },
         })
     }
 
     const handleBack = () => {
         const fromPage = location.state?.fromPage || 1
-        navigate("/dashboard/receptionist/appointments", { state: { page: fromPage } })
+        navigate("/dashboard/admin/appointments", { state: { page: fromPage } })
     }
 
     if (loading) {

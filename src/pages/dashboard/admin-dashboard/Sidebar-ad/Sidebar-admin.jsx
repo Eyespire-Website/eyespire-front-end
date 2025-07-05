@@ -69,7 +69,7 @@ const SidebarAdmin = () => {
   return (
       <aside className={`sidebar ${isOpen ? '' : 'collapsed'}`}>
         <div className="sidebar-header">
-          <div className="branding">
+          <div className="branding" >
             <img src="https://storage.googleapis.com/tagjs-prod.appspot.com/v1/VY3PPTks6o/e8ggwzic_expires_30_days.png" alt="Eyespire" className="sidebar-logo" />
             <span className="sidebar-title">Eyespire</span>
           </div>

@@ -53,7 +53,7 @@ export default function MedicalRecordsPage() {
             console.log("Dữ liệu hồ sơ điều trị từ API:", data);
             
             // Chuyển đổi dữ liệu từ API sang định dạng phù hợp với giao diện
-            const formattedRecords = data.map((record, index) => {
+            const formattedRecords = data.map((record) => {
                 // Xử lý tên bác sĩ - kiểm tra cấu trúc dữ liệu thực tế
                 let doctorName = "Bác sĩ";
                 if (record.doctor) {
@@ -65,18 +65,38 @@ export default function MedicalRecordsPage() {
                         doctorName = "BS. " + record.doctor.name;
                     }
                 }
-
-                // Tạo ID hiển thị dạng EYE + ID
-                const displayId = `EYE${record.id}`;
-
+                
+                // Xử lý ngày tạo hồ sơ
+                const createdDate = record.createdAt 
+                    ? new Date(record.createdAt).toLocaleDateString('vi-VN')
+                    : "Không xác định";
+                
+                // Xử lý chẩn đoán
+                const diagnosis = record.diagnosis || "Chưa có chẩn đoán";
+                
+                // Xử lý dịch vụ y tế từ cuộc hẹn
+                let serviceName = "Khám mắt";
+                if (record.appointment && record.appointment.service) {
+                    serviceName = record.appointment.service.name || "Khám mắt";
+                }
+                
+                // Xử lý trạng thái
+                const status = record.status || "completed";
+                
                 return {
-                    id: index + 1, // Số thứ tự hiển thị
-                    storageId: displayId, // ID hiển thị
-                    service: record.diagnosis || "Khám mắt", // Sử dụng trường diagnosis
+                    id: record.id, // ID thực trong database để sử dụng khi gọi API
+                    diagnosis: diagnosis, // Chẩn đoán
+                    serviceName: serviceName, // Tên dịch vụ y tế
                     doctor: doctorName,
-                    date: new Date(record.createdAt).toLocaleDateString('vi-VN'),
-                    status: "completed",
-                    recordId: record.id // ID thực trong database để sử dụng khi gọi API
+                    date: createdDate,
+                    status: status,
+                    notes: record.notes || "Không có ghi chú",
+                    // Thêm các trường hữu ích khác
+                    appointmentId: record.appointmentId,
+                    patientId: record.patientId,
+                    doctorId: record.doctorId,
+                    createdAt: record.createdAt,
+                    updatedAt: record.updatedAt
                 };
             });
             
@@ -85,8 +105,6 @@ export default function MedicalRecordsPage() {
             console.error("Lỗi khi lấy dữ liệu hồ sơ điều trị:", err);
             setError("Không thể tải hồ sơ điều trị. Vui lòng thử lại sau.");
             toast.error("Không thể tải hồ sơ điều trị. Vui lòng thử lại sau.");
-            // Nếu có lỗi, sử dụng dữ liệu mẫu để hiển thị
-            setMedicalRecords([]);
         } finally {
             setLoading(false);
         }
@@ -111,8 +129,8 @@ export default function MedicalRecordsPage() {
 
     // Lọc dữ liệu theo từ khóa tìm kiếm
     const filteredRecords = medicalRecords.filter(record =>
-        record.storageId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        record.service?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        record.diagnosis?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        record.serviceName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         record.doctor?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
@@ -122,11 +140,11 @@ export default function MedicalRecordsPage() {
     const endIndex = startIndex + itemsPerPage;
     const currentRecords = filteredRecords.slice(startIndex, endIndex);
 
-    // Sửa: Sử dụng recordId (ID số) thay vì storageId để navigate
+    // Sửa: Sử dụng ID đúng để navigate
     const handleViewDetails = (record) => {
         console.log('Navigating to record:', record);
-        // Sửa đường dẫn từ /patient/medical-records/ thành /dashboard/patient/medical-records/
-        navigate(`/dashboard/patient/medical-records/${record.recordId}`);
+        // Đảm bảo sử dụng ID thực của hồ sơ để điều hướng
+        navigate(`/dashboard/patient/medical-records/${record.id}`);
     };
 
     const handleSearch = (e) => {
@@ -163,7 +181,7 @@ export default function MedicalRecordsPage() {
                             <Search className="search-icon" size={16} />
                             <input
                                 type="text"
-                                placeholder="Tìm hồ sơ (Mã hồ sơ, dịch vụ, bác sĩ...)"
+                                placeholder="Tìm hồ sơ (Dịch vụ, chẩn đoán, bác sĩ...)"
                                 className="search-input"
                                 value={searchTerm}
                                 onChange={handleSearch}
@@ -204,8 +222,8 @@ export default function MedicalRecordsPage() {
                         <thead>
                         <tr>
                             <th className="text-center">#</th>
-                            <th>Mã lưu trữ</th>
                             <th>Dịch vụ khám</th>
+                            <th>Chẩn đoán</th>
                             <th>Bác sĩ khám</th>
                             <th className="sortable">
                                 <div className="sort-header">
@@ -230,11 +248,11 @@ export default function MedicalRecordsPage() {
                                 </td>
                             </tr>
                         ) : (
-                            currentRecords.map((record) => (
+                            currentRecords.map((record, index) => (
                                 <tr key={record.id} onClick={() => handleViewDetails(record)}>
-                                    <td className="text-center font-medium">{record.id}</td>
-                                    <td className="storage-id">{record.storageId}</td>
-                                    <td className="font-medium">{record.service}</td>
+                                    <td className="text-center font-medium">{startIndex + index + 1}</td>
+                                    <td className="font-medium">{record.serviceName}</td>
+                                    <td>{record.diagnosis}</td>
                                     <td>{record.doctor}</td>
                                     <td>{record.date}</td>
                                     <td>

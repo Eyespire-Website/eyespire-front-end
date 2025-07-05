@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { useState } from "react"
+import { useState, useEffect } from "react";
 import {
     Users,
     Star,
@@ -16,696 +16,582 @@ import {
     X,
     Mail,
     Phone,
-    MapPin
-} from "lucide-react"
-import { toast } from "react-toastify"
-import "../styles/users.css"
+    MapPin,
+    Eye,
+    Unlock
+} from "lucide-react";
+import { toast } from "react-toastify";
+import userService from "../../../../services/userService";
+import "../styles/users.css";
 
-const UsersContent = ({ selectedCustomer, setSelectedCustomer, showCustomerModal, setShowCustomerModal }) => {
-    const [searchTerm, setSearchTerm] = useState("")
-    const [statusFilter, setStatusFilter] = useState("all")
-    const [roleFilter, setRoleFilter] = useState("all")
-    const [showAddModal, setShowAddModal] = useState(false)
-    const [users, setUsers] = useState([
-        {
-            id: 1,
-            name: "Nguyễn Văn A",
-            email: "nguyenvana@gmail.com",
-            phone: "0901234567",
-            role: "customer",
-            roleText: "Khách hàng",
-            status: "active",
-            statusText: "Hoạt động",
-            joinDate: "15/01/2024",
-            lastLogin: "Hôm nay, 08:30",
-            avatar: "/placeholder.svg?height=40&width=40",
-            totalAppointments: 5,
-            totalSpent: 2500000,
-            address: "123 Đường Lê Hồng Phong, Quận 1, TP.HCM",
-            dateOfBirth: "15/05/1985",
-            gender: "Nam",
-        },
-        {
-            id: 2,
-            name: "BS. Trần Thị B",
-            email: "tranthib@eyespire.com",
-            phone: "0912345678",
-            role: "doctor",
-            roleText: "Bác sĩ",
-            status: "active",
-            statusText: "Hoạt động",
-            joinDate: "12/01/2024",
-            lastLogin: "Hôm qua, 15:20",
-            avatar: "/placeholder.svg?height=40&width=40",
-            totalAppointments: 45,
-            totalSpent: 0,
-            address: "456 Đường Nguyễn Huệ, Quận 3, TP.HCM",
-            dateOfBirth: "22/08/1990",
-            gender: "Nữ",
-        },
-        {
-            id: 3,
-            name: "Lê Văn C",
-            email: "levanc@eyespire.com",
-            phone: "0923456789",
-            role: "receptionist",
-            roleText: "Lễ tân",
-            status: "active",
-            statusText: "Hoạt động",
-            joinDate: "08/01/2024",
-            lastLogin: "3 ngày trước",
-            avatar: "/placeholder.svg?height=40&width=40",
-            totalAppointments: 0,
-            totalSpent: 0,
-            address: "789 Đường Trần Hưng Đạo, Quận 5, TP.HCM",
-            dateOfBirth: "10/12/1988",
-            gender: "Nam",
-        },
-        {
-            id: 4,
-            name: "Phạm Thị D",
-            email: "phamthid@eyespire.com",
-            phone: "0934567890",
-            role: "pharmacist",
-            roleText: "Dược sĩ",
-            status: "active",
-            statusText: "Hoạt động",
-            joinDate: "05/01/2024",
-            lastLogin: "Hôm nay, 10:15",
-            avatar: "/placeholder.svg?height=40&width=40",
-            totalAppointments: 0,
-            totalSpent: 0,
-            address: "321 Đường Võ Văn Tần, Quận 3, TP.HCM",
-            dateOfBirth: "03/07/1992",
-            gender: "Nữ",
-        },
-        {
-            id: 5,
-            name: "Hoàng Văn E",
-            email: "hoangvane@gmail.com",
-            phone: "0945678901",
-            role: "customer",
-            roleText: "Khách hàng",
-            status: "active",
-            statusText: "Hoạt động",
-            joinDate: "01/01/2024",
-            lastLogin: "Hôm nay, 07:45",
-            avatar: "/placeholder.svg?height=40&width=40",
-            totalAppointments: 4,
-            totalSpent: 2000000,
-            address: "654 Đường Pasteur, Quận 1, TP.HCM",
-            dateOfBirth: "18/11/1987",
-            gender: "Nam",
-        },
-        {
-            id: 6,
-            name: "Võ Thị F",
-            email: "vothif@gmail.com",
-            phone: "0956789012",
-            role: "customer",
-            roleText: "Khách hàng",
-            status: "blocked",
-            statusText: "Bị khóa",
-            joinDate: "20/12/2023",
-            lastLogin: "1 tuần trước",
-            avatar: "/placeholder.svg?height=40&width=40",
-            totalAppointments: 1,
-            totalSpent: 500000,
-            address: "987 Đường Cách Mạng Tháng 8, Quận 10, TP.HCM",
-            dateOfBirth: "25/02/1995",
-            gender: "Nữ",
-        },
-    ])
-    const [newUser, setNewUser] = useState({
-        name: '',
-        email: '',
-        phone: '',
-        role: 'customer',
-        roleText: 'Khách hàng',
-        status: 'active',
-        statusText: 'Hoạt động',
-        address: '',
-        dateOfBirth: '',
-        gender: 'Nam'
-    })
+const UsersContent = () => {
+    // State cho tìm kiếm và filter
+    const [searchTerm, setSearchTerm] = useState('');
+    const [statusFilter, setStatusFilter] = useState('all');
+    const [roleFilter, setRoleFilter] = useState('all');
+    const [currentPage, setCurrentPage] = useState(0);
+    const [pageSize, setPageSize] = useState(10);
+    const [totalPages, setTotalPages] = useState(0);
+    const [totalItems, setTotalItems] = useState(0);
+    const [sortBy, setSortBy] = useState('name');
+    const [sortDir, setSortDir] = useState('asc');
+    const [users, setUsers] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const [selectedUser, setSelectedUser] = useState(null);
+    const [showUserModal, setShowUserModal] = useState(false);
+    // Estados relacionados à adição de usuário foram removidos
 
-    const statuses = ["active", "inactive", "blocked"]
-    const roles = ["customer", "doctor", "receptionist", "pharmacist"]
+    const statuses = ["active", "inactive", "blocked"];
+    const roles = ["DOCTOR", "RECEPTIONIST", "PATIENT", "STORE_MANAGER"];
 
-    const filteredUsers = users.filter((user) => {
-        const matchesSearch =
-            user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user.phone.includes(searchTerm)
-        const matchesStatus = statusFilter === "all" || user.status === statusFilter
-        const matchesRole = roleFilter === "all" || user.role === roleFilter
-        return matchesSearch && matchesStatus && matchesRole
-    })
-
+    // Hàm helper để chuyển đổi trạng thái thành văn bản
     const getStatusText = (status) => {
         switch (status) {
-            case "active": return "Hoạt động"
-            case "inactive": return "Không hoạt động"
-            case "blocked": return "Bị khóa"
-            default: return status
+            case "active": return "Hoạt động";
+            case "inactive": return "Không hoạt động";
+            case "blocked": return "Bị khóa";
+            default: return status;
         }
-    }
+    };
 
+    // Hàm helper để chuyển đổi vai trò thành văn bản
     const getRoleText = (role) => {
-        switch (role) {
-            case "customer": return "Khách hàng"
-            case "doctor": return "Bác sĩ"
-            case "receptionist": return "Lễ tân"
-            case "pharmacist": return "Dược sĩ"
-            default: return role
+        if (!role) return "Không xác định";
+        
+        // Chuyển về chữ thường để so sánh
+        const roleLower = role.toLowerCase();
+        
+        switch (roleLower) {
+            case "doctor": return "Bác sĩ";
+            case "receptionist": return "Lễ tân";
+            case "patient": return "Bệnh Nhân";
+            case "store_manager": return "Quản lý cửa hàng";
+            default: return role;
         }
-    }
+    };
 
-    const handleAddUser = () => {
-        setShowAddModal(true)
-        setNewUser({
-            name: '',
-            email: '',
-            phone: '',
-            role: 'customer',
-            roleText: 'Khách hàng',
-            status: 'active',
-            statusText: 'Hoạt động',
-            address: '',
-            dateOfBirth: '',
-            gender: 'Nam'
-        })
-    }
+    // Lưu trữ tất cả người dùng để lọc client-side
+    const [allUsers, setAllUsers] = useState([]);
+    
+    // Fetch users khi component mount và khi các dependency phân trang thay đổi
+    useEffect(() => {
+        fetchUsers();
+    }, [currentPage, pageSize, sortBy, sortDir]);
 
-    const handleInputChange = (e) => {
-        const { name, value } = e.target
-        if (name === "role") {
-            setNewUser(prev => ({
-                ...prev,
-                [name]: value,
-                roleText: getRoleText(value)
-            }))
-        } else if (name === "status") {
-            setNewUser(prev => ({
-                ...prev,
-                [name]: value,
-                statusText: getStatusText(value)
-            }))
+    // Hàm xử lý tìm kiếm
+    const handleSearch = (e) => {
+        setSearchTerm(e.target.value);
+        // Reset về trang đầu tiên khi tìm kiếm
+        setCurrentPage(0);
+    };
+
+    // Hàm xử lý thay đổi filter
+    const handleFilterChange = (type, value, event) => {
+        if (event) {
+            event.preventDefault(); // Ngăn chặn hành vi mặc định
+        }
+        
+        if (type === 'status') {
+            setStatusFilter(value);
+        } else if (type === 'role') {
+            setRoleFilter(value);
+        }
+        // Reset về trang đầu tiên khi thay đổi filter
+        setCurrentPage(0);
+    };
+
+    // Hàm fetch users từ API
+    const fetchUsers = async () => {
+        setLoading(true);
+        try {
+            // Chuẩn bị tham số cho API call - chỉ bao gồm phân trang và sắp xếp
+            const params = {
+                page: currentPage,
+                size: pageSize,
+                sortBy: sortBy,
+                sortDir: sortDir,
+                excludeAdmin: true // Thêm tham số để loại trừ admin từ API
+            };
+
+            // Gọi API
+            const response = await userService.getUsersWithPagination(params);
+            console.log("API response:", response);
+            
+            // Kiểm tra và cập nhật state với dữ liệu từ API
+            if (response && response.users) {
+                // Lọc bỏ tài khoản admin từ danh sách (phòng trường hợp API không hỗ trợ excludeAdmin)
+                const filteredUsers = response.users.filter(user => 
+                    user.role !== "ADMIN" && user.role !== "admin"
+                );
+                
+                setAllUsers(filteredUsers);
+                setTotalPages(response.totalPages || 0);
+                setTotalItems(response.totalItems || 0); // Sử dụng totalItems từ API
+                setError(null);
+            } else {
+                console.error("Invalid response format:", response);
+                setAllUsers([]);
+                setTotalPages(0);
+                setTotalItems(0);
+                setError("Định dạng dữ liệu không hợp lệ");
+            }
+        } catch (err) {
+            console.error("Error fetching users:", err);
+            setAllUsers([]);
+            setError("Có lỗi xảy ra khi tải dữ liệu người dùng. Vui lòng thử lại sau.");
+            toast.error("Có lỗi xảy ra khi tải dữ liệu người dùng");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Xử lý thay đổi trang
+    const handlePageChange = (newPage) => {
+        if (newPage >= 0 && newPage < totalPages) {
+            setCurrentPage(newPage);
+        }
+    };
+
+    // Funções relacionadas à adição de usuário foram removidas
+
+    // Xử lý khóa người dùng
+    const handleBlockUser = async (userId) => {
+        if (!window.confirm("Bạn có chắc muốn khóa người dùng này?")) return;
+        
+        try {
+            setLoading(true);
+            
+            // Gọi API để khóa người dùng
+            await userService.toggleUserStatus(userId, "blocked");
+            
+            // Cập nhật UI - sử dụng allUsers thay vì users
+            setAllUsers(prev => prev.map(user =>
+                user.id === userId
+                    ? { ...user, status: "blocked" }
+                    : user
+            ));
+            
+            toast.success("Khóa người dùng thành công");
+        } catch (err) {
+            console.error("Error blocking user:", err);
+            toast.error("Có lỗi xảy ra khi khóa người dùng");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Xử lý mở khóa người dùng
+    const handleUnblockUser = async (userId) => {
+        if (!window.confirm("Bạn có chắc muốn mở khóa người dùng này?")) return;
+        
+        try {
+            setLoading(true);
+            
+            // Gọi API để mở khóa người dùng
+            await userService.toggleUserStatus(userId, "active");
+            
+            // Cập nhật UI - sử dụng allUsers thay vì users
+            setAllUsers(prev => prev.map(user =>
+                user.id === userId
+                    ? { ...user, status: "active" }
+                    : user
+            ));
+            
+            toast.success("Mở khóa người dùng thành công");
+        } catch (err) {
+            console.error("Error unblocking user:", err);
+            toast.error("Có lỗi xảy ra khi mở khóa người dùng");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Xử lý hiển thị chi tiết người dùng
+    const handleViewUserDetails = (user) => {
+        setSelectedUser(user);
+        setShowUserModal(true);
+    };
+
+    // Função de adicionar usuário foi removida
+
+    // Tạo mảng các số trang để hiển thị phân trang
+    const getPageNumbers = () => {
+        const pageNumbers = [];
+        const maxPagesToShow = 5;
+        
+        if (totalPages <= maxPagesToShow) {
+            // Hiển thị tất cả các trang nếu tổng số trang ít hơn hoặc bằng maxPagesToShow
+            for (let i = 0; i < totalPages; i++) {
+                pageNumbers.push(i);
+            }
         } else {
-            setNewUser(prev => ({
-                ...prev,
-                [name]: value
-            }))
+            // Luôn hiển thị trang đầu tiên
+            pageNumbers.push(0);
+            
+            // Tính toán phạm vi trang cần hiển thị
+            let startPage = Math.max(1, currentPage - 1);
+            let endPage = Math.min(totalPages - 2, currentPage + 1);
+            
+            // Đảm bảo luôn hiển thị đủ số trang
+            if (endPage - startPage + 1 < maxPagesToShow - 2) {
+                if (currentPage < totalPages / 2) {
+                    endPage = Math.min(totalPages - 2, startPage + maxPagesToShow - 3);
+                } else {
+                    startPage = Math.max(1, endPage - (maxPagesToShow - 3));
+                }
+            }
+            
+            // Thêm dấu ... nếu cần
+            if (startPage > 1) {
+                pageNumbers.push('...');
+            }
+            
+            // Thêm các trang ở giữa
+            for (let i = startPage; i <= endPage; i++) {
+                pageNumbers.push(i);
+            }
+            
+            // Thêm dấu ... nếu cần
+            if (endPage < totalPages - 2) {
+                pageNumbers.push('...');
+            }
+            
+            // Luôn hiển thị trang cuối cùng
+            pageNumbers.push(totalPages - 1);
         }
-    }
+        
+        return pageNumbers;
+    };
 
-    const handleSubmit = () => {
-        if (!newUser.name || !newUser.email || !newUser.phone) {
-            toast.error("Vui lòng điền đầy đủ họ tên, email và số điện thoại")
-            return
+    // Lọc người dùng client-side dựa trên searchTerm, statusFilter, roleFilter
+    const filteredUsers = allUsers.filter(user => {
+        // Lọc theo từ khóa tìm kiếm
+        const searchMatch = 
+            !searchTerm || 
+            user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            user.phone?.includes(searchTerm);
+        
+        // Lọc theo trạng thái
+        const statusMatch = statusFilter === 'all' || user.status === statusFilter;
+        
+        // Lọc theo vai trò (xử lý cả chữ hoa và chữ thường)
+        const roleMatch = roleFilter === 'all' || 
+                         user.role?.toLowerCase() === roleFilter.toLowerCase() ||
+                         user.role === roleFilter;
+        
+        return searchMatch && statusMatch && roleMatch;
+    });
+    
+    // Hiển thị thông báo khi không có kết quả tìm kiếm
+    useEffect(() => {
+        if (filteredUsers.length === 0 && allUsers.length > 0 && (searchTerm || statusFilter !== 'all' || roleFilter !== 'all')) {
+            toast.info('Không tìm thấy người dùng phù hợp với điều kiện tìm kiếm');
         }
-        if (!/^\d{10}$/.test(newUser.phone)) {
-            toast.error("Số điện thoại phải có 10 chữ số")
-            return
-        }
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newUser.email)) {
-            toast.error("Email không hợp lệ")
-            return
-        }
+    }, [filteredUsers.length, allUsers.length, searchTerm, statusFilter, roleFilter]);
 
-        const newUserData = {
-            ...newUser,
-            id: users.length + 1,
-            joinDate: new Date().toLocaleDateString('vi-VN'),
-            lastLogin: "Chưa đăng nhập",
-            avatar: "/placeholder.svg?height=40&width=40",
-            totalAppointments: 0,
-            totalSpent: 0
-        }
-
-        setTimeout(() => {
-            setUsers(prev => [...prev, newUserData])
-            setShowAddModal(false)
-            toast.success("Thêm người dùng thành công")
-        }, 500)
-    }
-
-    const handleBlockUser = (userId) => {
-        if (!window.confirm("Bạn có chắc muốn khóa người dùng này?")) return
-        setTimeout(() => {
-            setUsers(prev => prev.map(user =>
-                user.id === userId
-                    ? { ...user, status: "blocked", statusText: "Bị khóa" }
-                    : user
-            ))
-            toast.success("Khóa người dùng thành công")
-        }, 500)
-    }
-
-    const handleUnblockUser = (userId) => {
-        if (!window.confirm("Bạn có chắc muốn mở khóa người dùng này?")) return
-        setTimeout(() => {
-            setUsers(prev => prev.map(user =>
-                user.id === userId
-                    ? { ...user, status: "active", statusText: "Hoạt động" }
-                    : user
-            ))
-            toast.success("Mở khóa người dùng thành công")
-        }, 500)
-    }
-
+    // Render UI
     return (
-        <div>
-            <div className="admin-stats-grid">
-                <div className="admin-stat-card">
-                    <div className="admin-stat-header">
-                        <span className="admin-stat-title">Tổng người dùng</span>
-                        <Users size={24} className="admin-stat-icon" />
+        <div className="users-content">
+            {/* Header với thống kê và tìm kiếm */}
+            <div className="users-header">
+                <div className="users-stats">
+                    <div className="stat-card">
+                        <div className="stat-icon">
+                            <Users size={24} />
+                        </div>
+                        <div className="stat-info">
+                            <h3>{allUsers && allUsers.filter(user => user.status === "active").length || 0}</h3>
+                            <p>Đang hoạt động</p>
+                        </div>
                     </div>
-                    <div className="admin-stat-value">{users.length}</div>
-                    <div className="admin-stat-change admin-stat-positive">
-                        +{users.filter(u => {
-                        const joinDate = new Date(u.joinDate.split('/').reverse().join('-'));
-                        const lastMonth = new Date();
-                        lastMonth.setMonth(lastMonth.getMonth() - 1);
-                        return joinDate > lastMonth;
-                    }).length} người dùng mới
+                    <div className="stat-card">
+                        <div className="stat-icon">
+                            <UserCheck size={24} />
+                        </div>
+                        <div className="stat-info">
+                            <h3>{allUsers && allUsers.filter(user => user.status === "active").length || 0}</h3>
+                            <p>Đang hoạt động</p>
+                        </div>
+                    </div>
+                    <div className="stat-card">
+                        <div className="stat-icon">
+                            <UserX size={24} />
+                        </div>
+                        <div className="stat-info">
+                            <h3>{allUsers && allUsers.filter(user => user.status === "blocked").length || 0}</h3>
+                            <p>Bị khóa</p>
+                        </div>
                     </div>
                 </div>
-                <div className="admin-stat-card">
-                    <div className="admin-stat-header">
-                        <span className="admin-stat-title">Bác sĩ hoạt động</span>
-                        <Star size={24} className="admin-stat-icon" />
+
+                <div className="users-actions">
+                    <div className="search-bar">
+                        <Search size={18} />
+                        <input 
+                            type="text" 
+                            placeholder="Tìm kiếm người dùng..." 
+                            value={searchTerm}
+                            onChange={handleSearch}
+                        />
                     </div>
-                    <div className="admin-stat-value">{users.filter(u => u.role === "doctor" && u.status === "active").length}</div>
-                    <div className="admin-stat-change admin-stat-positive">+0 từ tháng trước</div>
-                </div>
-                <div className="admin-stat-card">
-                    <div className="admin-stat-header">
-                        <span className="admin-stat-title">Lễ tân</span>
-                        <Activity size={24} className="admin-stat-icon" />
-                    </div>
-                    <div className="admin-stat-value">{users.filter(u => u.role === "receptionist").length}</div>
-                    <div className="admin-stat-change admin-stat-positive">+0% từ hôm qua</div>
-                </div>
-                <div className="admin-stat-card">
-                    <div className="admin-stat-header">
-                        <span className="admin-stat-title">Dược sĩ</span>
-                        <Lock size={24} className="admin-stat-icon" />
-                    </div>
-                    <div className="admin-stat-value">{users.filter(u => u.role === "pharmacist").length}</div>
-                    <div className="admin-stat-change admin-stat-negative">Cần xem xét</div>
+                    {/* Botão de adicionar usuário foi removido */}
                 </div>
             </div>
 
-            <div className="admin-users-card">
-                <div className="admin-users-card-header">
-                    <div className="admin-users-card-header-content">
-                        <h3 className="admin-users-card-title">Quản lý người dùng</h3>
-                        <div className="admin-users-search-box">
-                            <input
-                                type="text"
-                                placeholder="Tìm kiếm..."
-                                className="admin-users-search-input"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                            />
-                            <Search size={16} className="admin-users-search-icon"/>
-                        </div>
-                    </div>
+            {/* Bộ lọc */}
+            <div className="users-filters">
+                <div className="filter-group">
+                    <label>Trạng thái:</label>
+                    <select 
+                        value={statusFilter} 
+                        onChange={(e) => handleFilterChange('status', e.target.value, e)}
+                    >
+                        <option value="all">Tất cả</option>
+                        {statuses.map(status => (
+                            <option key={status} value={status}>
+                                {getStatusText(status)}
+                            </option>
+                        ))}
+                    </select>
                 </div>
-                <div className="admin-users-card-content">
-                    <div className="admin-users-filter-bar">
-                        <div className="admin-users-filter-group">
-                            <label>Trạng thái:</label>
-                            <select className="admin-users-form-select" value={statusFilter}
-                                    onChange={(e) => setStatusFilter(e.target.value)}>
-                                <option value="all">Tất cả</option>
-                                {statuses.map((status) => (
-                                    <option key={status} value={status}>
-                                        {getStatusText(status)}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                        <div className="admin-users-filter-group">
-                            <label>Vai trò:</label>
-                            <select className="admin-users-form-select" value={roleFilter}
-                                    onChange={(e) => setRoleFilter(e.target.value)}>
-                                <option value="all">Tất cả</option>
-                                {roles.map((role) => (
-                                    <option key={role} value={role}>
-                                        {getRoleText(role)}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                        <button className="admin-users-btn admin-users-btn-primary" onClick={handleAddUser}>
-                            <Plus size={16}/>
-                            Thêm người dùng
-                        </button>
-                    </div>
-
-                    <div className="admin-users-grid">
-                        {filteredUsers.length > 0 ? (
-                            filteredUsers.map((user) => (
-                                <div key={user.id} className="admin-user-card">
-                                    <div className="admin-user-header">
-                                        <div className="admin-user-avatar-container">
-                                            <img src={user.avatar || "/placeholder.svg"} alt="Avatar"
-                                                 className="admin-user-avatar"/>
-                                        </div>
-                                        <span
-                                            className={`admin-user-status admin-user-status-${user.status}`}>{user.statusText}</span>
-                                    </div>
-                                    <div className="user-info">
-                                        <h4 className="user-name">{user.name}</h4>
-                                        <p className="user-email">{user.email}</p>
-                                        <p className="user-phone">{user.phone}</p>
-                                        <span className={`user-role-badge ${user.role}`}>{user.roleText}</span>
-                                    </div>
-                                    <div className="user-stats">
-                                        <div className="user-stat">
-                                            <span className="stat-label">Tham gia:</span>
-                                            <span className="stat-value">{user.joinDate}</span>
-                                        </div>
-                                        <div className="user-stat">
-                                            <span className="stat-label">Lần cuối:</span>
-                                            <span className="stat-value">{user.lastLogin}</span>
-                                        </div>
-                                        <div className="user-stat">
-                                            <span className="stat-label">Cuộc hẹn:</span>
-                                            <span className="stat-value">{user.totalAppointments}</span>
-                                        </div>
-                                        <div className="user-stat">
-                                            <span className="stat-label">Chi tiêu:</span>
-                                            <span className="stat-value">₫{user.totalSpent.toLocaleString()}</span>
-                                        </div>
-                                    </div>
-                                    <div className="user-actions">
-                                        <button
-                                            className="btn btn-secondary"
-                                            onClick={() => {
-                                                setSelectedCustomer(user)
-                                                setShowCustomerModal(true)
-                                            }}
-                                        >
-                                            Chi tiết
-                                        </button>
-                                        {user.status === "blocked" ? (
-                                            <button
-                                                className="btn btn-success"
-                                                onClick={() => handleUnblockUser(user.id)}
-                                            >
-                                                <UserCheck size={16}/>
-                                                Mở khóa
-                                            </button>
-                                        ) : (
-                                            <button
-                                                className="btn btn-warning"
-                                                onClick={() => handleBlockUser(user.id)}
-                                            >
-                                                <UserX size={16}/>
-                                                Khóa
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
-                            ))
-                        ) : (
-                            <div className="no-results">Không tìm thấy người dùng nào phù hợp</div>
-                        )}
-                    </div>
-                    <div className="pagination">
-                        <button className="btn btn-secondary">Trước</button>
-                        <div className="page-numbers">
-                            <button className="btn btn-primary">1</button>
-                            <button className="btn btn-secondary">2</button>
-                            <button className="btn btn-secondary">3</button>
-                            <span>...</span>
-                            <button className="btn btn-secondary">8</button>
-                        </div>
-                        <button className="btn btn-secondary">Sau</button>
-                    </div>
+                <div className="filter-group">
+                    <label>Vai trò:</label>
+                    <select 
+                        value={roleFilter} 
+                        onChange={(e) => handleFilterChange('role', e.target.value, e)}
+                    >
+                        <option value="all">Tất cả</option>
+                        {roles.map(role => (
+                            <option key={role} value={role}>
+                                {getRoleText(role)}
+                            </option>
+                        ))}
+                    </select>
                 </div>
             </div>
 
-            {showCustomerModal && selectedCustomer && (
-                <div className="modal-overlay" onClick={() => setShowCustomerModal(false)}>
-                    <div className="modal-content appointment-modal" onClick={(e) => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <h3>Thông tin người dùng - {selectedCustomer.name}</h3>
-                            <button className="modal-close" onClick={() => setShowCustomerModal(false)}>
-                                <X size={20}/>
-                            </button>
-                        </div>
-                        <div className="modal-body">
-                            <div className="appointment-detail-layout">
-                                <div className="detail-section">
-                                    <h4 className="detail-section-title">
-                                        <UserCircle size={18}/>
-                                        Thông tin cá nhân
-                                    </h4>
-                                    <div className="detail-grid">
-                                        <div className="detail-item">
-                                            <span className="detail-label">Họ tên:</span>
-                                            <span className="detail-value">{selectedCustomer.name}</span>
-                                        </div>
-                                        <div className="detail-item">
-                                            <span className="detail-label">Email:</span>
-                                            <span className="detail-value">{selectedCustomer.email}</span>
-                                        </div>
-                                        <div className="detail-item">
-                                            <span className="detail-label">Số điện thoại:</span>
-                                            <span className="detail-value">{selectedCustomer.phone}</span>
-                                        </div>
-                                        <div className="detail-item">
-                                            <span className="detail-label">Ngày sinh:</span>
-                                            <span className="detail-value">{selectedCustomer.dateOfBirth}</span>
-                                        </div>
-                                        <div className="detail-item">
-                                            <span className="detail-label">Giới tính:</span>
-                                            <span className="detail-value">{selectedCustomer.gender}</span>
-                                        </div>
-                                        <div className="detail-item">
-                                            <span className="detail-label">Địa chỉ:</span>
-                                            <span className="detail-value">{selectedCustomer.address}</span>
-                                        </div>
-                                    </div>
+            {/* Hiển thị lỗi nếu có */}
+            {error && <div className="error-message">{error}</div>}
+
+            {/* Danh sách người dùng */}
+            {loading ? (
+                <div className="loading">Đang tải dữ liệu...</div>
+            ) : (
+                <>
+                    {!filteredUsers || filteredUsers.length === 0 ? (
+                        <div className="no-users">Không tìm thấy người dùng nào</div>
+                    ) : (
+                        <>
+                            <div className="users-table">
+                                <div className="users-table-header">
+                                    <div className="table-cell header-cell">#</div>
+                                    <div className="table-cell header-cell">Tên tài khoản</div>
+                                    <div className="table-cell header-cell">Email</div>
+                                    <div className="table-cell header-cell">Họ và tên</div>
+                                    <div className="table-cell header-cell">Số điện thoại</div>
+                                    <div className="table-cell header-cell">Vai trò</div>
+                                    <div className="table-cell header-cell">Trạng thái</div>
+                                    <div className="table-cell header-cell">Hành động</div>
                                 </div>
-                                <div className="detail-section">
-                                    <h4 className="detail-section-title">
-                                        <Shield size={18}/>
-                                        Thông tin tài khoản
-                                    </h4>
-                                    <div className="detail-grid">
-                                        <div className="detail-item">
-                                            <span className="detail-label">Ngày tham gia:</span>
-                                            <span className="detail-value">{selectedCustomer.joinDate}</span>
+                                <div className="users-table-body">
+                                    {filteredUsers.map((user, index) => (
+                                        <div key={user.id} className="users-table-row">
+                                            <div className="table-cell">{index + 1}</div>
+                                            <div className="table-cell username-cell">{user.username}</div>
+                                            <div className="table-cell">{user.email}</div>
+                                            <div className="table-cell">{user.name || 'NULL'}</div>
+                                            <div className="table-cell">{user.phone || 'NULL'}</div>
+                                            <div className="table-cell">
+                                                <span className={`role-badge ${user.role?.toLowerCase()}`}>
+                                                    {getRoleText(user.role)}
+                                                </span>
+                                            </div>
+                                            <div className="table-cell">
+                                                <span className={`status-badge ${user.status}`}>
+                                                    {getStatusText(user.status)}
+                                                </span>
+                                            </div>
+                                            <div className="table-cell action-cell">
+                                                <button 
+                                                    className="action-btn view-btn"
+                                                    onClick={() => handleViewUserDetails(user)}
+                                                    title="Xem chi tiết"
+                                                >
+                                                    <Eye size={16} />
+                                                </button>
+                                                <button 
+                                                    className={`action-btn toggle-btn ${user.status === 'blocked' ? 'unblock' : 'block'}`}
+                                                    onClick={() => user.status === 'blocked' ? handleUnblockUser(user.id) : handleBlockUser(user.id)}
+                                                    title={user.status === 'blocked' ? 'Mở khóa' : 'Khóa'}
+                                                >
+                                                    {user.status === 'blocked' ? <Unlock size={16} /> : <Lock size={16} />}
+                                                </button>
+                                            </div>
                                         </div>
-                                        <div className="detail-item">
-                                            <span className="detail-label">Lần đăng nhập cuối:</span>
-                                            <span className="detail-value">{selectedCustomer.lastLogin}</span>
-                                        </div>
-                                        <div className="detail-item">
-                                            <span className="detail-label">Trạng thái:</span>
-                                            <span
-                                                className={`status ${selectedCustomer.status}`}>{selectedCustomer.statusText}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="detail-section">
-                                    <h4 className="detail-section-title">
-                                        <Activity size={18}/>
-                                        Thống kê hoạt động
-                                    </h4>
-                                    <div className="detail-grid">
-                                        <div className="detail-item">
-                                            <span className="detail-label">Tổng cuộc hẹn:</span>
-                                            <span className="detail-value">{selectedCustomer.totalAppointments}</span>
-                                        </div>
-                                        <div className="detail-item">
-                                            <span className="detail-label">Tổng chi tiêu:</span>
-                                            <span
-                                                className="detail-value">₫{selectedCustomer.totalSpent.toLocaleString()}</span>
-                                        </div>
-                                        <div className="detail-item">
-                                            <span className="detail-label">Chi tiêu trung bình:</span>
-                                            <span className="detail-value">
-                                                ₫{selectedCustomer.totalAppointments > 0
-                                                ? Math.round(
-                                                    selectedCustomer.totalSpent / selectedCustomer.totalAppointments,
-                                                ).toLocaleString()
-                                                : "0"}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="detail-section">
-                                    <h4 className="detail-section-title">
-                                        <Clock size={18}/>
-                                        Hoạt động gần đây
-                                    </h4>
-                                    <div className="action-history">
-                                        <div className="history-item">
-                                            <div className="history-time">15/01/2024 - 08:30</div>
-                                            <div className="history-action">Đăng nhập hệ thống</div>
-                                            <div className="history-user">Từ: TP.HCM</div>
-                                        </div>
-                                        <div className="history-item">
-                                            <div className="history-time">14/01/2024 - 14:00</div>
-                                            <div className="history-action">Đặt lịch hẹn khám</div>
-                                            <div className="history-user">Dịch vụ: Khám tổng quát</div>
-                                        </div>
-                                        <div className="history-item">
-                                            <div className="history-time">12/01/2024 - 10:15</div>
-                                            <div className="history-action">Cập nhật thông tin cá nhân</div>
-                                            <div className="history-user">Thay đổi: Số điện thoại</div>
-                                        </div>
-                                    </div>
+                                    ))}
                                 </div>
                             </div>
-                        </div>
-                        <div className="admin-users-modal-footer">
-                            <button className="btn btn-secondary" onClick={() => setShowCustomerModal(false)}>
-                                Đóng
-                            </button>
-                        </div>
-                    </div>
-                </div>
+
+                            {/* Phân trang */}
+                            {filteredUsers.length > 0 && totalPages > 1 && (
+                                <div className="pagination">
+                                    <button 
+                                        className={`page-btn ${currentPage === 0 ? 'disabled' : ''}`}
+                                        onClick={() => handlePageChange(currentPage - 1)}
+                                        disabled={currentPage === 0}
+                                    >
+                                        &lt;
+                                    </button>
+                                    
+                                    {getPageNumbers().map(pageNum => (
+                                        <button
+                                            key={pageNum}
+                                            className={`page-btn ${currentPage === pageNum ? 'active' : ''}`}
+                                            onClick={() => handlePageChange(pageNum)}
+                                        >
+                                            {pageNum + 1}
+                                        </button>
+                                    ))}
+                                    
+                                    <button 
+                                        className={`page-btn ${currentPage === totalPages - 1 ? 'disabled' : ''}`}
+                                        onClick={() => handlePageChange(currentPage + 1)}
+                                        disabled={currentPage === totalPages - 1}
+                                    >
+                                        &gt;
+                                    </button>
+                                </div>
+                            )}
+                        </>
+                    )}
+                </>
             )}
 
-            {showAddModal && (
-                <div className="admin-users-modal-overlay">
-                    <div className="admin-users-modal">
-                        <div className="admin-users-modal-header">
-                            <h3 className="admin-users-modal-title">Thêm người dùng mới</h3>
-                            <button className="admin-users-modal-close"
-                                    onClick={() => setShowAddModal(false)}>
-                                <X size={18}/>
+            {/* Modal thêm người dùng đã được xóa */}
+
+            {/* Modal chi tiết người dùng */}
+            {showUserModal && selectedUser && (
+                <div className="modal-overlay">
+                    <div className="modal-content">
+                        <div className="modal-header">
+                            <h2 className="modal-title">Chi tiết người dùng</h2>
+                            <button className="close-btn" onClick={() => setShowUserModal(false)}>
+                                <X size={20} />
                             </button>
                         </div>
-                        <div className="admin-users-modal-body">
-                            <div className="admin-users-form">
-                                <div className="admin-users-form-row">
-                                    <div className="admin-users-form-group">
-                                        <label className="admin-users-form-label">Họ và tên</label>
-                                        <input
-                                            type="text"
-                                            className="admin-users-form-input"
-                                            name="name"
-                                            value={newUser.name}
-                                            onChange={handleInputChange}
-                                            placeholder="Nhập họ và tên"
+                        <div className="user-details-content">
+                            <div className="user-avatar-large">
+                                {selectedUser.avatarUrl ? (
+                                    <>
+                                        <img 
+                                            src={selectedUser.avatarUrl} 
+                                            alt={selectedUser.name} 
+                                            onError={(e) => {
+                                                e.target.onerror = null;
+                                                e.target.style.display = 'none';
+                                                document.getElementById('fallback-avatar-icon').style.display = 'block';
+                                            }} 
                                         />
-                                    </div>
-                                    <div className="admin-users-form-group">
-                                        <label className="admin-users-form-label">Email</label>
-                                        <input
-                                            type="email"
-                                            className="admin-users-form-input"
-                                            name="email"
-                                            value={newUser.email}
-                                            onChange={handleInputChange}
-                                            placeholder="Nhập địa chỉ email"
-                                        />
-                                    </div>
+                                        <UserCircle id="fallback-avatar-icon" size={80} style={{display: 'none'}} />
+                                    </>
+                                ) : (
+                                    <UserCircle size={80} />
+                                )}
+                            </div>
+                            <h3 className="user-name-large">{selectedUser.name}</h3>
+                            <div className="user-role-badge">
+                                <Shield size={16} />
+                                {getRoleText(selectedUser.role)}
+                            </div>
+                            <div className="user-status-badge">
+                                {selectedUser.status === "active" ? (
+                                    <UserCheck size={16} />
+                                ) : selectedUser.status === "blocked" ? (
+                                    <Lock size={16} />
+                                ) : (
+                                    <Clock size={16} />
+                                )}
+                                {getStatusText(selectedUser.status)}
+                            </div>
+                            
+                            <div className="user-info-grid">
+                                <div className="info-item">
+                                    <span className="info-label">Email</span>
+                                    <span className="info-value">{selectedUser.email}</span>
                                 </div>
-                                <div className="admin-users-form-row">
-                                    <div className="admin-users-form-group">
-                                        <label className="admin-users-form-label">Số điện thoại</label>
-                                        <input
-                                            type="text"
-                                            className="admin-users-form-input"
-                                            name="phone"
-                                            value={newUser.phone}
-                                            onChange={handleInputChange}
-                                            placeholder="Nhập số điện thoại"
-                                        />
-                                    </div>
-                                    <div className="admin-users-form-group">
-                                        <label className="admin-users-form-label">Vai trò</label>
-                                        <select
-                                            className="admin-users-form-select"
-                                            name="role"
-                                            value={newUser.role}
-                                            onChange={handleInputChange}
-                                        >
-                                            {roles.map(role => (
-                                                <option key={role} value={role}>{getRoleText(role)}</option>
-                                            ))}
-                                        </select>
-                                    </div>
+                                <div className="info-item">
+                                    <span className="info-label">Số điện thoại</span>
+                                    <span className="info-value">{selectedUser.phone || "Chưa cập nhật"}</span>
                                 </div>
-                                <div className="admin-users-form-row">
-                                    <div className="admin-users-form-group">
-                                        <label className="admin-users-form-label">Ngày sinh</label>
-                                        <input
-                                            type="date"
-                                            className="admin-users-form-input"
-                                            name="dateOfBirth"
-                                            value={newUser.dateOfBirth}
-                                            onChange={handleInputChange}
-                                        />
-                                    </div>
-                                    <div className="admin-users-form-group">
-                                        <label className="admin-users-form-label">Giới tính</label>
-                                        <select
-                                            className="admin-users-form-select"
-                                            name="gender"
-                                            value={newUser.gender}
-                                            onChange={handleInputChange}
-                                        >
-                                            <option value="Nam">Nam</option>
-                                            <option value="Nữ">Nữ</option>
-                                            <option value="Khác">Khác</option>
-                                        </select>
-                                    </div>
+                                <div className="info-item">
+                                    <span className="info-label">Tên tài khoản</span>
+                                    <span className="info-value">{selectedUser.username}</span>
                                 </div>
-                                <div className="admin-users-form-group">
-                                    <label className="admin-users-form-label">Địa chỉ</label>
-                                    <textarea
-                                        className="admin-users-form-textarea"
-                                        name="address"
-                                        value={newUser.address}
-                                        onChange={handleInputChange}
-                                        placeholder="Nhập địa chỉ đầy đủ"
-                                    />
+                                <div className="info-item">
+                                    <span className="info-label">Địa chỉ</span>
+                                    <span className="info-value">{selectedUser.address || "Chưa cập nhật"}</span>
                                 </div>
-                                <div className="admin-users-form-group">
-                                    <label className="admin-users-form-label">Trạng thái</label>
-                                    <select
-                                        className="admin-users-form-select"
-                                        name="status"
-                                        value={newUser.status}
-                                        onChange={handleInputChange}
-                                    >
-                                        {statuses.map(status => (
-                                            <option key={status} value={status}>{getStatusText(status)}</option>
-                                        ))}
-                                    </select>
+                                <div className="info-item">
+                                    <span className="info-label">Ngày sinh</span>
+                                    <span className="info-value">{selectedUser.dateOfBirth || "Chưa cập nhật"}</span>
+                                </div>
+                                <div className="info-item">
+                                    <span className="info-label">Giới tính</span>
+                                    <span className="info-value">{selectedUser.gender || "Chưa cập nhật"}</span>
+                                </div>
+                                <div className="info-item">
+                                    <span className="info-label">Ngày tạo</span>
+                                    <span className="info-value">
+                                        {selectedUser.createdAt ? new Date(selectedUser.createdAt).toLocaleDateString('vi-VN') : "Không có"}
+                                    </span>
+                                </div>
+                                <div className="info-item">
+                                    <span className="info-label">Cập nhật lần cuối</span>
+                                    <span className="info-value">
+                                        {selectedUser.updatedAt ? new Date(selectedUser.updatedAt).toLocaleDateString('vi-VN') : "Không có"}
+                                    </span>
                                 </div>
                             </div>
-                        </div>
-                        <div className="admin-users-modal-footer">
-                            <button
-                                className="admin-users-modal-cancel"
-                                onClick={() => setShowAddModal(false)}
-                            >
-                                Hủy
-                            </button>
-                            <button
-                                className="admin-users-modal-save"
-                                onClick={handleSubmit}
-                            >
-                                Lưu
-                            </button>
+                            
+                            <div className="modal-actions">
+                                <button 
+                                    className="cancel-btn" 
+                                    onClick={() => setShowUserModal(false)}
+                                >
+                                    Đóng
+                                </button>
+                                {selectedUser.status === "blocked" ? (
+                                    <button 
+                                        className="submit-btn" 
+                                        onClick={() => {
+                                            handleUnblockUser(selectedUser.id);
+                                            setShowUserModal(false);
+                                        }}
+                                    >
+                                        <Unlock size={16} />
+                                        Mở khóa người dùng
+                                    </button>
+                                ) : (
+                                    <button 
+                                        className="danger-btn" 
+                                        onClick={() => {
+                                            handleBlockUser(selectedUser.id);
+                                            setShowUserModal(false);
+                                        }}
+                                    >
+                                        <Lock size={16} />
+                                        Khóa người dùng
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
             )}
         </div>
-    )
-}
+    );
+};
 
-export default UsersContent
+export default UsersContent;
