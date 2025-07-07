@@ -430,19 +430,19 @@ const InventoryPage = () => {
 
       {/* Modal xác nhận xóa sản phẩm */}
       {isConfirmDeleteOpen && (
-        <div className="modal-overlay">
-          <div className="modal-content confirm-modal">
-            <div className="modal-header">
+        <div className="stm-modal-overlay">
+          <div className="stm-modal-content stm-confirm-modal">
+            <div className="stm-modal-header">
               <h3>Xác nhận xóa</h3>
             </div>
-            <div className="modal-body">
+            <div className="stm-modal-body">
               <p>
                 Bạn có chắc chắn muốn xóa sản phẩm{" "}
                 <strong>{productToDelete?.name}</strong>?
               </p>
-              <p className="warning-text">Hành động này không thể hoàn tác.</p>
+              <p className="stm-warning-text">Hành động này không thể hoàn tác.</p>
             </div>
-            <div className="modal-footer">
+            <div className="stm-modal-footer">
               <button
                 className="btn btn-secondary"
                 onClick={() => setIsConfirmDeleteOpen(false)}

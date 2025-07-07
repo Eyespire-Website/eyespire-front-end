@@ -3,48 +3,36 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background-color: #f5f7fa;
+  background-color: #f8f9fa;
   padding: 20px;
 }
 
-.payos-return-content {
-  background-color: white;
-  border-radius: 10px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  max-width: 600px;
+.payos-return-card {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   padding: 30px;
-}
-
-.payos-return-header {
+  width: 100%;
+  max-width: 500px;
   text-align: center;
-  margin-bottom: 30px;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 20px;
 }
 
-.payos-return-header h1 {
-  color: #2c3e50;
-  font-size: 28px;
-  margin: 0;
-}
-
-.payos-return-loading {
+.payos-return-processing,
+.payos-return-success,
+.payos-return-error {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 40px 0;
+  gap: 20px;
 }
 
 .loading-spinner {
-  border: 4px solid rgba(0, 0, 0, 0.1);
+  width: 50px;
+  height: 50px;
+  border: 5px solid #f3f3f3;
+  border-top: 5px solid #3498db;
   border-radius: 50%;
-  border-top: 4px solid #3498db;
-  width: 40px;
-  height: 40px;
   animation: spin 1s linear infinite;
-  margin-bottom: 20px;
 }
 
 @keyframes spin {
@@ -52,88 +40,74 @@
   100% { transform: rotate(360deg); }
 }
 
-.payos-return-result {
-  padding: 20px 0;
-}
-
-.payment-success, .payment-failed {
-  text-align: center;
-}
-
-.success-icon, .failed-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  margin-bottom: 20px;
-  font-size: 40px;
-}
-
 .success-icon {
-  background-color: #2ecc71;
-  color: white;
+  font-size: 60px;
+  color: #28a745;
 }
 
-.failed-icon {
-  background-color: #e74c3c;
-  color: white;
+.error-icon {
+  font-size: 60px;
+  color: #dc3545;
 }
 
-.payment-details, .appointment-details {
-  background-color: #f8f9fa;
-  border-radius: 8px;
-  padding: 15px;
-  margin: 20px 0;
-  text-align: left;
+.payos-return-card h2 {
+  margin: 10px 0;
+  color: #333;
+  font-size: 24px;
 }
 
-.payment-details p, .appointment-details p {
-  margin: 8px 0;
+.payos-return-card p {
+  margin: 5px 0;
+  color: #666;
+  font-size: 16px;
 }
 
 .redirect-message {
-  margin-top: 30px;
-  color: #7f8c8d;
-  font-style: italic;
+  margin-top: 20px;
+  font-size: 14px;
+  color: #888;
 }
 
-.error-message {
-  color: #e74c3c;
-  margin: 20px 0;
-}
-
-.action-buttons {
-  display: flex;
-  justify-content: center;
-  gap: 15px;
-  margin-top: 30px;
-}
-
-.retry-button, .support-button {
-  padding: 12px 25px;
+.view-order-btn,
+.return-cart-btn {
+  margin-top: 20px;
+  padding: 10px 20px;
   border: none;
-  border-radius: 5px;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: 500;
   cursor: pointer;
-  font-weight: 600;
-  transition: all 0.3s ease;
+  transition: background-color 0.3s ease;
 }
 
-.retry-button {
-  background-color: #3498db;
+.view-order-btn {
+  background-color: #28a745;
   color: white;
 }
 
-.retry-button:hover {
-  background-color: #2980b9;
+.view-order-btn:hover {
+  background-color: #218838;
 }
 
-.support-button {
-  background-color: #95a5a6;
+.return-cart-btn {
+  background-color: #6c757d;
   color: white;
 }
 
-.support-button:hover {
-  background-color: #7f8c8d;
+.return-cart-btn:hover {
+  background-color: #5a6268;
+}
+
+@media (max-width: 576px) {
+  .payos-return-card {
+    padding: 20px;
+  }
+  
+  .payos-return-card h2 {
+    font-size: 20px;
+  }
+  
+  .payos-return-card p {
+    font-size: 14px;
+  }
 }

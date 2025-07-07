@@ -131,21 +131,109 @@
 }
 
 .pi-add-to-cart-btn {
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  width: 100%;
+  padding: 15px 0;
+  background-color: #3b82f6;
   color: white;
   border: none;
-  padding: 1rem 2rem;
-  border-radius: 0.75rem;
-  font-weight: 600;
+  border-radius: 5px;
   font-size: 1rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s;
+  margin-top: 20px;
   text-transform: uppercase;
-  letter-spacing: 0.025em;
 }
 
 .pi-add-to-cart-btn:hover {
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  background-color: #2563eb;
   transform: translateY(-1px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.pi-add-to-cart-btn:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+  opacity: 0.8;
+  transform: none;
+}
+
+.pi-add-to-cart-btn.pi-loading {
+  position: relative;
+  color: transparent;
+}
+
+.pi-add-to-cart-btn.pi-loading::after {
+  content: "";
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  top: 50%;
+  left: 50%;
+  margin-top: -10px;
+  margin-left: -10px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  animation: pi-spin 0.8s infinite linear;
+}
+
+.pi-select-glasses-btn {
+  width: 100%;
+  padding: 15px 0;
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  margin-top: 20px;
+  text-transform: uppercase;
+}
+
+.pi-select-glasses-btn:hover {
+  background-color: #2563eb;
+  transform: translateY(-1px);
+}
+
+.pi-select-glasses-btn:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+  opacity: 0.8;
+  transform: none;
+}
+
+.pi-select-glasses-btn.pi-loading {
+  position: relative;
+  color: transparent;
+}
+
+.pi-select-glasses-btn.pi-loading::after {
+  content: "";
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  top: 50%;
+  left: 50%;
+  margin-top: -10px;
+  margin-left: -10px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  animation: pi-spin 0.8s infinite linear;
+}
+
+@keyframes pi-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Disabled controls */
+.pi-quantity-controls button:disabled,
+.pi-quantity-controls input:disabled,
+.pi-color-option:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }

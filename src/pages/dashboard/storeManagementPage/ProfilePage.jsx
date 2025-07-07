@@ -590,15 +590,15 @@ const ProfileContent = () => {
 
         {/* Password Change Modal */}
         {showPasswordModal && (
-          <div className="modal-overlay" onClick={() => setShowPasswordModal(false)}>
-            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-              <div className="modal-header">
+          <div className="stm-modal-overlay" onClick={() => setShowPasswordModal(false)}>
+            <div className="stm-modal-content" onClick={(e) => e.stopPropagation()}>
+              <div className="stm-modal-header">
                 <h3>Bảo mật tài khoản</h3>
-                <button className="modal-close" onClick={() => setShowPasswordModal(false)}>
+                <button className="stm-modal-close" onClick={() => setShowPasswordModal(false)}>
                   <X size={20} />
                 </button>
               </div>
-              <div className="modal-body">
+              <div className="stm-modal-body">
                 <div className="profile-form">
                   <div className="form-row">
                     <div className="form-group full-width">
@@ -647,7 +647,7 @@ const ProfileContent = () => {
                   </div>
                 </div>
               </div>
-              <div className="modal-footer">
+              <div className="stm-modal-footer">
                 <button className="btn btn-secondary" onClick={() => setShowPasswordModal(false)}>
                   Hủy
                 </button>

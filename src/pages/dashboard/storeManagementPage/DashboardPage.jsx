@@ -149,7 +149,7 @@ const DashboardPage = () => {
 
   return (
     <div>
-      <div className="stats-grid">
+      <div className="stm-stats-grid">
         <StatCard
           title="Tổng doanh thu"
           value="₫234.5M"
@@ -180,7 +180,7 @@ const DashboardPage = () => {
         />
       </div>
 
-      <div className="stats-grid">
+      <div className="stm-stats-grid">
         <StatCard
           title="Sản phẩm trong kho"
           value="1,234"
@@ -211,11 +211,11 @@ const DashboardPage = () => {
         />
       </div>
 
-      <div className="dashboard-grid">
-        <div className="card dashboard-card">
-          <div className="card-hdr">
-            <div className="card-hdr-content">
-              <h3 className="card-title">Hoạt động gần đây</h3>
+      <div className="stm-dashboard-grid">
+        <div className="stm-card stm-card--dashboard">
+          <div className="stm-card-header">
+            <div className="stm-card-header-content">
+              <h3 className="stm-card-title--dashboard">Hoạt động gần đây</h3>
               <SearchBox
                 value={searchTerm}
                 onChange={setSearchTerm}
@@ -223,25 +223,25 @@ const DashboardPage = () => {
               />
             </div>
           </div>
-          <div className="card-content">
-            <div className="activity-list">
+          <div className="stm-card-content--dashboard">
+            <div className="stm-activity-list">
               {filteredActivities.length > 0 ? (
                 filteredActivities.map((activity) => (
-                  <div key={activity.id} className="activity-item">
-                    <div className="activity-time">
+                  <div key={activity.id} className="stm-activity-item">
+                    <div className="stm-activity-time">
                       <Clock size={14} />
                       <span>{activity.time}</span>
                     </div>
-                    <div className="activity-content">
-                      <div className="activity-main">
-                        <h4 className="activity-title">{activity.activity}</h4>
-                        <p className="activity-person">bởi {activity.person}</p>
+                    <div className="stm-activity-content">
+                      <div className="stm-activity-main">
+                        <h4 className="stm-activity-title">{activity.activity}</h4>
+                        <p className="stm-activity-person">bởi {activity.person}</p>
                       </div>
-                      <div className="activity-meta">
-                        <span className={`status ${activity.status}`}>
+                      <div className="stm-activity-meta">
+                        <span className={`stm-status stm-status--${activity.status}`}>
                           {activity.statusText}
                         </span>
-                        <span className="activity-amount">
+                        <span className="stm-activity-amount">
                           {activity.amount}
                         </span>
                       </div>
@@ -249,13 +249,13 @@ const DashboardPage = () => {
                   </div>
                 ))
               ) : (
-                <div className="no-results">
+                <div className="stm-no-results">
                   Không tìm thấy hoạt động nào phù hợp
                 </div>
               )}
             </div>
-            <div className="card-footer">
-              <button className="btn btn-secondary">
+            <div className="stm-card-footer--dashboard">
+              <button className="stm-btn stm-btn--secondary">
                 Xem tất cả hoạt động
                 <ArrowUpRight size={16} />
               </button>
@@ -263,36 +263,36 @@ const DashboardPage = () => {
           </div>
         </div>
 
-        <div className="card dashboard-card">
-          <div className="card-hdr">
-            <h3 className="card-title">Sản phẩm bán chạy</h3>
+        <div className="stm-card stm-card--dashboard">
+          <div className="stm-card-header">
+            <h3 className="stm-card-title--dashboard">Sản phẩm bán chạy</h3>
           </div>
-          <div className="card-content">
-            <div className="products-list">
+          <div className="stm-card-content--dashboard">
+            <div className="stm-products-list">
               {topProducts.map((product) => (
-                <div key={product.id} className="product-item">
-                  <div className="product-info">
+                <div key={product.id} className="stm-product-item">
+                  <div className="stm-product-info">
                     <img
                       src={product.image || "/placeholder.svg"}
                       alt={product.name}
-                      className="product-image"
+                      className="stm-product-image"
                     />
-                    <div className="product-details">
-                      <h4 className="product-name">{product.name}</h4>
-                      <p className="product-sales">{product.sales} đã bán</p>
+                    <div className="stm-product-details">
+                      <h4 className="stm-product-name">{product.name}</h4>
+                      <p className="stm-product-sales">{product.sales} đã bán</p>
                     </div>
                   </div>
-                  <div className="product-stats">
-                    <div className="product-revenue">{product.revenue}</div>
-                    <div className="product-growth positive">
+                  <div className="stm-product-stats">
+                    <div className="stm-product-revenue">{product.revenue}</div>
+                    <div className="stm-product-growth stm-product-growth--positive">
                       {product.growth}
                     </div>
                   </div>
                 </div>
               ))}
             </div>
-            <div className="card-footer">
-              <button className="btn btn-secondary">
+            <div className="stm-card-footer--dashboard">
+              <button className="stm-btn stm-btn--secondary">
                 Xem tất cả sản phẩm
                 <ArrowUpRight size={16} />
               </button>
@@ -300,33 +300,33 @@ const DashboardPage = () => {
           </div>
         </div>
 
-        <div className="card dashboard-card">
-          <div className="card-hdr">
-            <h3 className="card-title">Đơn hàng gần đây</h3>
+        <div className="stm-card stm-card--dashboard">
+          <div className="stm-card-header">
+            <h3 className="stm-card-title--dashboard">Đơn hàng gần đây</h3>
           </div>
-          <div className="card-content">
-            <div className="orders-list">
+          <div className="stm-card-content--dashboard">
+            <div className="stm-orders-list">
               {recentOrders.map((order) => (
-                <div key={order.id} className="order-item">
-                  <div className="order-info">
-                    <div className="order-id">{order.id}</div>
-                    <div className="order-customer">{order.customer}</div>
-                    <div className="order-time">{order.time}</div>
+                <div key={order.id} className="stm-order-item">
+                  <div className="stm-order-info">
+                    <div className="stm-order-id">{order.id}</div>
+                    <div className="stm-order-customer">{order.customer}</div>
+                    <div className="stm-order-time">{order.time}</div>
                   </div>
-                  <div className="order-meta">
-                    <div className="order-total">{order.total}</div>
-                    <span className={`status ${order.status}`}>
+                  <div className="stm-order-meta">
+                    <div className="stm-order-total">{order.total}</div>
+                    <span className={`stm-status stm-status--${order.status}`}>
                       {order.statusText}
                     </span>
                   </div>
-                  <button className="btn btn-icon" title="Xem chi tiết">
+                  <button className="stm-btn stm-btn--icon" title="Xem chi tiết">
                     <Eye size={16} />
                   </button>
                 </div>
               ))}
             </div>
-            <div className="card-footer">
-              <button className="btn btn-secondary">
+            <div className="stm-card-footer--dashboard">
+              <button className="stm-btn stm-btn--secondary">
                 Xem tất cả đơn hàng
                 <ArrowUpRight size={16} />
               </button>
@@ -334,26 +334,26 @@ const DashboardPage = () => {
           </div>
         </div>
 
-        <div className="card dashboard-card">
-          <div className="card-hdr">
-            <h3 className="card-title">Thao tác nhanh</h3>
+        <div className="stm-card stm-card--dashboard">
+          <div className="stm-card-header">
+            <h3 className="stm-card-title--dashboard">Thao tác nhanh</h3>
           </div>
-          <div className="card-content">
-            <div className="quick-actions">
-              <button className="quick-action-btn">
+          <div className="stm-card-content--dashboard">
+            <div className="stm-quick-actions">
+              <button className="stm-quick-action-btn">
                 <ShoppingCart size={20} />
                 <span>Tạo đơn hàng mới</span>
               </button>
-              <button className="quick-action-btn">
+              <button className="stm-quick-action-btn">
                 <Package size={20} />
                 <span>Thêm sản phẩm</span>
               </button>
 
-              <button className="quick-action-btn">
+              <button className="stm-quick-action-btn">
                 <MessageSquare size={20} />
                 <span>Gửi tin nhắn</span>
               </button>
-              <button className="quick-action-btn">
+              <button className="stm-quick-action-btn">
                 <TrendingUp size={20} />
                 <span>Xem báo cáo</span>
               </button>

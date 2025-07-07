@@ -1,105 +1,22 @@
 "use client";
 import React, { useState, useEffect } from "react";
 
-import HeroBanner from "../../components/ProductShop/HeroBanner";
-import Header from "../../components/shop/Header-shop";
+import ShopHeader from "./ShopHeader";
 import Footer from "../../components/Footer/Footer";
 import ProductCard from "../../components/shop/ProductCard";
 import FilterSidebar from "../../components/shop/FilterSidebar";
+import productService from "../../services/productService";
 import "./index.css";
-const categories = [
-  { id: "all", label: "Shop All" },
-  { id: "aspheric", label: "Aspheric" },
-  { id: "high-index-plastic", label: "High Index Plastic" },
-  { id: "photochromic", label: "Photochromic" },
-];
 
-const products = [
-  {
-    id: 1,
-    name: "Glasses RWX 6442 (2502)",
-    price: 135,
-    colors: ["black", "brown", "green"],
-    category: "aspheric",
-    gender: "unisex",
-    image: "/placeholder.svg?height=200&width=200",
-  },
-  {
-    id: 2,
-    name: "Glasses 5368",
-    price: 180,
-    colors: ["pink", "white", "brown"],
-    category: "photochromic",
-    gender: "women",
-    image: "/placeholder.svg?height=200&width=200",
-  },
-  {
-    id: 3,
-    name: "Glasses RX (2669)",
-    price: 190,
-    colors: ["black", "white", "green"],
-    category: "high-index-plastic",
-    gender: "men",
-    image: "/placeholder.svg?height=200&width=200",
-  },
-  {
-    id: 4,
-    name: "Glasses RX 7065 (5068)",
-    price: 130,
-    colors: ["black", "brown", "green"],
-    category: "aspheric",
-    gender: "unisex",
-    image: "/placeholder.svg?height=200&width=200",
-  },
-  {
-    id: 5,
-    name: "Glasses RX 6307",
-    price: 240,
-    colors: ["black", "white", "brown"],
-    category: "photochromic",
-    gender: "men",
-    image: "/placeholder.svg?height=200&width=200",
-  },
-  {
-    id: 6,
-    name: "Dynamics Colorwave",
-    price: 220,
-    colors: ["black", "white", "green"],
-    category: "high-index-plastic",
-    gender: "women",
-    image: "/placeholder.svg?height=200&width=200",
-  },
-  {
-    id: 7,
-    name: "Glasses RX 5965 (6447)",
-    price: 160,
-    colors: ["black", "brown", "green"],
-    category: "aspheric",
-    gender: "unisex",
-    image: "/placeholder.svg?height=200&width=200",
-  },
-  {
-    id: 8,
-    name: "Sunglasses JH 9778 (9987)",
-    price: 150,
-    colors: ["black", "white", "brown"],
-    category: "photochromic",
-    gender: "men",
-    image: "/placeholder.svg?height=200&width=200",
-  },
-  {
-    id: 9,
-    name: "Sunglasses RX 0967",
-    price: 240,
-    colors: ["black", "white", "green"],
-    category: "high-index-plastic",
-    gender: "women",
-    image: "/placeholder.svg?height=200&width=200",
-  },
+const categories = [
+  { id: "all", label: "Tất cả sản phẩm" },
+  { id: "MEDICINE", label: "Thuốc nhỏ mắt" },
+  { id: "EYEWEAR", label: "Kính mắt" },
 ];
 
 export default function Shop() {
   // State management
+  const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const itemsPerPage = 9;
@@ -109,79 +26,101 @@ export default function Shop() {
   const [currentPage, setCurrentPage] = useState(1);
   const [filters, setFilters] = useState({
     categories: [],
-    colors: [],
-    genders: [],
-    frameShapes: [],
-    frameWidths: [],
-    priceRange: [105, 390],
+    priceRange: [0, 1000000],
   });
 
-  // Handle initial loading
+  // Fetch products from API
   useEffect(() => {
-    try {
-      setIsLoading(true);
-      // Simulate loading time
-      setTimeout(() => {
+    const fetchProducts = async () => {
+      try {
+        setIsLoading(true);
+        let data;
+        
+        // Nếu đang lọc theo loại sản phẩm cụ thể
+        if (activeCategory !== "all") {
+          data = await productService.getProductsByType(activeCategory);
+        } else {
+          data = await productService.getAllProducts();
+        }
+        
+        console.log("Dữ liệu sản phẩm từ API:", data);
+        setProducts(data);
         setIsLoading(false);
-      }, 500);
-    } catch (err) {
-      setError(err.message);
-      setIsLoading(false);
-    }
-  }, []);
+      } catch (err) {
+        console.error("Lỗi khi tải sản phẩm:", err);
+        setError("Không thể tải sản phẩm. Vui lòng thử lại sau.");
+        setIsLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, [activeCategory]);
 
   // Error handling component
   if (error) {
-    return <div className="error-message">Error: {error}</div>;
+    return (
+      <div className="shop-page">
+        <ShopHeader />
+        <div className="main-content">
+          <div className="container">
+            <div className="error-message">
+              <div className="error-icon">⚠️</div>
+              <h2>Đã xảy ra lỗi</h2>
+              <p>{error}</p>
+              <button 
+                onClick={() => window.location.reload()} 
+                className="filter-toggle-btn"
+              >
+                Thử lại
+              </button>
+            </div>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
   }
 
   // Loading state component
   if (isLoading) {
     return (
-      <div className="loading-skeleton">
-        {[...Array(6)].map((_, index) => (
-          <div key={index} className="product-skeleton" />
-        ))}
+      <div className="shop-page">
+        <ShopHeader />
+        <div className="main-content">
+          <div className="container">
+            <div className="loading-skeleton">
+              {[...Array(9)].map((_, index) => (
+                <div key={index} className="product-skeleton" />
+              ))}
+            </div>
+          </div>
+        </div>
+        <Footer />
       </div>
     );
   }
 
   // Filter products
   const filteredProducts = products.filter((product) => {
-    if (activeCategory !== "all" && product.category !== activeCategory)
+    // Lọc theo giá
+    if (product.price < filters.priceRange[0] || product.price > filters.priceRange[1]) {
       return false;
-    if (
-      filters.categories.length > 0 &&
-      !filters.categories.includes(product.category)
-    )
-      return false;
-    if (filters.colors.length > 0) {
-      const hasMatchingColor = product.colors.some((color) =>
-        filters.colors.includes(color)
-      );
-      if (!hasMatchingColor) return false;
     }
-    if (filters.genders.length > 0 && !filters.genders.includes(product.gender))
-      return false;
-    if (
-      product.price < filters.priceRange[0] ||
-      product.price > filters.priceRange[1]
-    )
-      return false;
+    
     return true;
   });
 
   // Sort products
   const sortedProducts = [...filteredProducts].sort((a, b) => {
-    switch (sortBy) {
-      case "price-low":
-        return a.price - b.price;
-      case "price-high":
-        return b.price - a.price;
-      case "name":
-        return a.name.localeCompare(b.name);
-      default:
-        return 0;
+    if (sortBy === "price-low") {
+      return a.price - b.price;
+    } else if (sortBy === "price-high") {
+      return b.price - a.price;
+    } else if (sortBy === "name") {
+      return a.name.localeCompare(b.name);
+    } else {
+      // Default sorting (by id)
+      return a.id - b.id;
     }
   });
 
@@ -202,15 +141,14 @@ export default function Shop() {
   };
 
   const handleAddToCart = (product) => {
-    console.log("Adding to cart:", product);
+    console.log("Thêm vào giỏ hàng:", product);
+    alert(`Đã thêm ${product.name} vào giỏ hàng!`);
     // Implement cart logic here
   };
 
   return (
     <div className="shop-page">
-      <Header />
-
-      <HeroBanner title="Shop" breadcrumb={["Home", "Shop"]} />
+      <ShopHeader />
 
       {/* Main Content */}
       <div className="main-content">
@@ -238,10 +176,10 @@ export default function Shop() {
           <button
             className="filter-toggle-btn"
             onClick={() => setShowFilter((v) => !v)}
-            aria-label={showFilter ? "Hide filters" : "Show filters"}
+            aria-label={showFilter ? "Ẩn bộ lọc" : "Hiển thị bộ lọc"}
           >
             <span className="filter-icon">{showFilter ? "−" : "+"}</span>
-            <span>{showFilter ? "Hide Filters" : "Show Filters"}</span>
+            <span>{showFilter ? "Ẩn bộ lọc" : "Hiển thị bộ lọc"}</span>
           </button>
           <div className="shop-layout">
             <FilterSidebar
@@ -254,50 +192,99 @@ export default function Shop() {
               {/* Sort Controls */}
               <div className="sort-controls">
                 <p className="results-count">
-                  Showing {startIndex + 1}-
+                  Hiển thị {sortedProducts.length > 0 ? startIndex + 1 : 0}-
                   {Math.min(startIndex + itemsPerPage, sortedProducts.length)}{" "}
-                  of {sortedProducts.length} results
+                  trong số {sortedProducts.length} kết quả
                 </p>
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
                   className="sort-select"
+                  aria-label="Sắp xếp sản phẩm"
                 >
-                  <option value="default">Default Sorting</option>
-                  <option value="price-low">Price: Low to High</option>
-                  <option value="price-high">Price: High to Low</option>
-                  <option value="name">Name: A to Z</option>
+                  <option value="default">Sắp xếp mặc định</option>
+                  <option value="price-low">Giá: Thấp đến cao</option>
+                  <option value="price-high">Giá: Cao đến thấp</option>
+                  <option value="name">Tên: A đến Z</option>
                 </select>
               </div>
 
               {/* Products Grid */}
               <div className="products-grid">
-                {paginatedProducts.map((product) => (
-                  <ProductCard
-                    key={product.id}
-                    product={product}
-                    onAddToCart={handleAddToCart}
-                  />
-                ))}
+                {paginatedProducts.length > 0 ? (
+                  paginatedProducts.map((product) => (
+                    <ProductCard
+                      key={product.id}
+                      product={product}
+                      onAddToCart={handleAddToCart}
+                    />
+                  ))
+                ) : (
+                  <div className="no-products">
+                    <div className="no-products-icon">🔍</div>
+                    <h3>Không tìm thấy sản phẩm nào</h3>
+                    <p>Vui lòng thử lại với bộ lọc khác</p>
+                  </div>
+                )}
               </div>
 
               {/* Pagination */}
-              <div className="pagination">
-                {Array.from(
-                  { length: Math.min(totalPages, 3) },
-                  (_, i) => i + 1
-                ).map((page) => (
-                  <button
-                    key={page}
-                    onClick={() => setCurrentPage(page)}
-                    className={`page-btn ${
-                      page === currentPage ? "active" : ""
-                    }`}
-                  >
-                    {page}
-                  </button>
-                ))}
-              </div>
+              {totalPages > 1 && (
+                <div className="pagination">
+                  {/* Previous button */}
+                  {currentPage > 1 && (
+                    <button
+                      onClick={() => setCurrentPage(currentPage - 1)}
+                      className="page-btn"
+                      aria-label="Trang trước"
+                    >
+                      &laquo;
+                    </button>
+                  )}
+                  
+                  {/* Page numbers */}
+                  {Array.from(
+                    { length: Math.min(totalPages, 5) },
+                    (_, i) => {
+                      // Logic to show pages around current page
+                      let pageNum;
+                      if (totalPages <= 5) {
+                        pageNum = i + 1;
+                      } else if (currentPage <= 3) {
+                        pageNum = i + 1;
+                      } else if (currentPage >= totalPages - 2) {
+                        pageNum = totalPages - 4 + i;
+                      } else {
+                        pageNum = currentPage - 2 + i;
+                      }
+                      return pageNum;
+                    }
+                  ).map((page) => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`page-btn ${
+                        page === currentPage ? "active" : ""
+                      }`}
+                      aria-label={`Trang ${page}`}
+                      aria-current={page === currentPage ? "page" : undefined}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                  
+                  {/* Next button */}
+                  {currentPage < totalPages && (
+                    <button
+                      onClick={() => setCurrentPage(currentPage + 1)}
+                      className="page-btn"
+                      aria-label="Trang sau"
+                    >
+                      &raquo;
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>

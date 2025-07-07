@@ -1,122 +1,116 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import Header from "../../components/shop/Header-shop";
+import ProductHeader from "./ProductHeader";
 import Footer from "../../components/Footer/Footer";
-import HeroBanner from "../../components/ProductShop/HeroBanner";
 import ProductGallery from "../../components/ProductShop/ProductGallery";
 import ProductInfo from "../../components/ProductShop/ProductInfo";
 import ProductTabs from "../../components/ProductShop/ProductTabs";
 import RelatedProducts from "../../components/ProductShop/RelatedProducts";
 import CallToAction from "../../components/ProductShop/CallToAction";
+import productService from "../../services/productService";
+import cartService from "../../services/cartService";
+import { toast } from "react-toastify";
 import "./index.css";
-
-const productData = {
-  id: 1,
-  name: "Neil",
-  price: 129,
-  originalPrice: 279,
-  rating: 5,
-  reviewCount: 1,
-  colors: [
-    { id: "black", name: "Black", color: "#000000" },
-    { id: "white", name: "White", color: "#ffffff" },
-    { id: "brown", name: "Brown", color: "#8b4513" },
-  ],
-  images: [
-    "/placeholder.svg?height=400&width=400",
-    "/placeholder.svg?height=400&width=400",
-    "/placeholder.svg?height=400&width=400",
-    "/placeholder.svg?height=400&width=400",
-    "/placeholder.svg?height=400&width=400",
-  ],
-  description: `Phasellus massa massa ultrices mi quis hendrerit. Lobortis mattis aliquam faucibus purus in massa tempor nec. In hac habitasse platea dictumst vestibulum rhoncus.
-
-Mauris pharetra et ultrices neque ornare aenean euismod elementum nisi. Quis ipsum suspendisse ultrices gravida dictum fusce. Curabitur vitae nunc sed velit dignissim sodales ut eu sem. Pellentesque ut amet porttitor eget dolor.`,
-  specifications: {
-    "Frame Material": "Acetate",
-    "Lens Width": "52mm",
-    "Bridge Width": "18mm",
-    "Temple Length": "145mm",
-    "Frame Color": "Multiple Options",
-    "Lens Type": "Prescription Ready",
-  },
-  reviews: [
-    {
-      id: 1,
-      author: "John Doe",
-      rating: 5,
-      date: "2024-01-15",
-      comment: "Excellent quality glasses! Very comfortable and stylish.",
-    },
-  ],
-};
-
-const relatedProducts = [
-  {
-    id: 2,
-    name: "Glasses POV (890)",
-    price: 195,
-    colors: ["black", "white", "brown"],
-    image: "/placeholder.svg?height=200&width=200",
-  },
-  {
-    id: 3,
-    name: "Glasses YUH 2390",
-    price: 125,
-    colors: ["black", "white", "brown"],
-    image: "/placeholder.svg?height=200&width=200",
-  },
-  {
-    id: 4,
-    name: "Sunglasses CKY 8339",
-    price: 140,
-    colors: ["black", "white", "brown"],
-    image: "/placeholder.svg?height=200&width=200",
-  },
-  {
-    id: 5,
-    name: "Glasses LD 8339",
-    price: 160,
-    colors: ["black", "white", "brown"],
-    image: "/placeholder.svg?height=200&width=200",
-  },
-];
 
 export default function ProductDetail() {
   const { id } = useParams();
-  const [selectedColor, setSelectedColor] = useState(productData.colors[0]);
+  const [selectedColor, setSelectedColor] = useState(null);
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [relatedProductsData, setRelatedProductsData] = useState([]);
+  const [addingToCart, setAddingToCart] = useState(false);
 
   useEffect(() => {
-    // Ở đây bạn có thể gọi API để lấy chi tiết sản phẩm dựa vào id
-    // Tạm thời dùng dữ liệu mẫu
-    setProduct(productData);
+    const fetchProductData = async () => {
+      try {
+        setLoading(true);
+        // Lấy thông tin sản phẩm từ API
+        const productData = await productService.getProductById(id);
+        setProduct(productData);
+        
+        // Nếu sản phẩm có màu sắc, thiết lập màu mặc định
+        if (productData.colors && productData.colors.length > 0) {
+          setSelectedColor(productData.colors[0]);
+        }
+        
+        // Lấy các sản phẩm liên quan (cùng loại)
+        if (productData.type) {
+          const relatedProducts = await productService.getProductsByType(productData.type);
+          // Lọc ra các sản phẩm khác với sản phẩm hiện tại
+          const filteredProducts = relatedProducts.filter(p => p.id !== productData.id).slice(0, 4);
+          setRelatedProductsData(filteredProducts);
+        }
+        
+        setLoading(false);
+      } catch (err) {
+        console.error("Error fetching product data:", err);
+        setError("Không thể tải thông tin sản phẩm. Vui lòng thử lại sau.");
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchProductData();
+    }
   }, [id]);
 
-  if (!product) {
-    return <div>Loading...</div>;
+  if (loading) {
+    return (
+      <div className="pr-loading-container">
+        <div className="pr-loading-spinner"></div>
+        <p>Đang tải thông tin sản phẩm...</p>
+      </div>
+    );
   }
-  const handleAddToCart = () => {
-    console.log("Adding to cart:", {
-      product: productData,
-      color: selectedColor,
-      quantity,
-    });
-    // Implement cart logic here
+
+  if (error) {
+    return (
+      <div className="pr-error-container">
+        <h2>Đã xảy ra lỗi</h2>
+        <p>{error}</p>
+        <button onClick={() => window.location.reload()}>Thử lại</button>
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="pr-error-container">
+        <h2>Không tìm thấy sản phẩm</h2>
+        <p>Sản phẩm bạn đang tìm kiếm không tồn tại hoặc đã bị xóa.</p>
+        <button onClick={() => window.history.back()}>Quay lại</button>
+      </div>
+    );
+  }
+
+  const handleAddToCart = async () => {
+    try {
+      // Hiển thị trạng thái đang thêm vào giỏ hàng
+      setAddingToCart(true);
+      
+      // Thêm sản phẩm vào giỏ hàng và đợi kết quả
+      await cartService.addToCart(product, selectedColor, quantity);
+      
+      // Hiển thị thông báo thành công
+      toast.success(`Đã thêm ${quantity} ${product.name} vào giỏ hàng!`);
+      
+      // Kích hoạt sự kiện storage để cập nhật số lượng trên Header
+      window.dispatchEvent(new Event('storage'));
+    } catch (error) {
+      console.error("Lỗi khi thêm vào giỏ hàng:", error);
+      toast.error("Không thể thêm sản phẩm vào giỏ hàng. Vui lòng thử lại sau.");
+    } finally {
+      setAddingToCart(false);
+    }
   };
 
   return (
     <div className="pr-product-detail-page">
-      <Header />
-
-      {/* Hero Banner */}
-      <HeroBanner
-        title="Single Product"
-        breadcrumb={["Home", "Shop", "Single Product"]}
-      />
+      <ProductHeader productName={product.name} />
 
       {/* Main Product Section */}
       <div className="pr-main-content">
@@ -124,38 +118,40 @@ export default function ProductDetail() {
           <div className="pr-product-layout">
             {/* Product Gallery */}
             <ProductGallery
-              images={productData.images}
+              images={product.images || [product.imageUrl || "/placeholder.svg?height=400&width=400"]}
               selectedImage={selectedImage}
               onImageSelect={setSelectedImage}
-              productName={productData.name}
+              productName={product.name}
             />
 
             {/* Product Info */}
             <ProductInfo
-              product={productData}
+              product={product}
               selectedColor={selectedColor}
               onColorSelect={setSelectedColor}
               quantity={quantity}
               onQuantityChange={setQuantity}
               onAddToCart={handleAddToCart}
+              addingToCart={addingToCart}
             />
           </div>
 
-          {/* Product Tabs */}
+          {/* Product Tabs (Description, Specifications, Reviews) */}
           <ProductTabs
-            description={productData.description}
-            specifications={productData.specifications}
-            reviews={productData.reviews}
+            description={product.description}
+            specifications={product.specifications}
+            reviews={product.reviews || []}
           />
 
           {/* Related Products */}
-          <RelatedProducts products={relatedProducts} />
-
-          {/* Call to Action Sections */}
-          <CallToAction />
+          <RelatedProducts products={relatedProductsData} />
         </div>
       </div>
 
+      {/* Call to Action */}
+      <CallToAction />
+
+      {/* Footer */}
       <Footer />
     </div>
   );
