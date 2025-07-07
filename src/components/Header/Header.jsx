@@ -14,6 +14,7 @@ import { useNavigate } from "react-router-dom";
 import authService from "../../services/authService";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
+import cartService from "../../services/cartService";
 
 const Header = () => {
   const navigate = useNavigate();
@@ -25,6 +26,7 @@ const Header = () => {
     top: 0,
     right: 0,
   });
+  const [cartItemCount, setCartItemCount] = useState(0);
 
   // Hàm xử lý URL avatar
   const getAvatarUrl = (url) => {
@@ -50,6 +52,22 @@ const Header = () => {
     if (currentUser) {
       setUser(currentUser);
     }
+    
+    // Lấy số lượng sản phẩm trong giỏ hàng
+    const updateCartCount = () => {
+      const count = cartService.getCartItemCount();
+      setCartItemCount(count);
+    };
+    
+    // Cập nhật số lượng ban đầu
+    updateCartCount();
+    
+    // Lắng nghe sự kiện thay đổi giỏ hàng
+    window.addEventListener('storage', updateCartCount);
+    
+    return () => {
+      window.removeEventListener('storage', updateCartCount);
+    };
   }, []);
 
   useEffect(() => {
@@ -69,8 +87,8 @@ const Header = () => {
     if (dropdownOpen && avatarRef.current) {
       const rect = avatarRef.current.getBoundingClientRect();
       setDropdownPosition({
-        top: rect.bottom + window.scrollY - 40,
-        right: window.innerWidth - rect.right,
+        top: rect.bottom + window.scrollY,
+        right: window.innerWidth - rect.right - 10,
       });
     }
 
@@ -137,17 +155,26 @@ const Header = () => {
 
     // Kiểm tra vai trò của người dùng
     if (currentUser.role && currentUser.role.toLowerCase() === 'patient') {
-      // Cuộn xuống phần đặt lịch hẹn
-      const appointmentElement = document.getElementById('appointment-section');
-      if (appointmentElement) {
-        appointmentElement.scrollIntoView({ behavior: 'smooth' });
+      // Kiểm tra xem đang ở trang chủ hay không
+      if (window.location.pathname === '/') {
+        // Nếu đang ở trang chủ, cuộn đến phần đặt lịch hẹn
+        const appointmentElement = document.getElementById('appointment-section');
+        if (appointmentElement) {
+          appointmentElement.scrollIntoView({ behavior: 'smooth' });
+        }
       } else {
-        // Nếu không tìm thấy phần tử, chuyển hướng về trang chủ
-        navigate('/#appointment-section');
+        // Nếu không ở trang chủ, chuyển hướng về trang chủ với hash fragment
+        navigate('/?scrollToAppointment=true');
       }
     } else {
+      // Hiển thị thông báo cho tất cả các trang
       toast.info("Chỉ bệnh nhân mới có thể đặt lịch hẹn");
     }
+  };
+
+  // Xử lý chuyển đến trang giỏ hàng
+  const handleCartClick = () => {
+    navigate("/cart");
   };
 
   // Render dropdown portal
@@ -159,10 +186,12 @@ const Header = () => {
         className="dropdown-menu-absolute"
         ref={dropdownRef}
         style={{
-          position: "absolute",
+          position: "fixed",
           top: `${dropdownPosition.top}px`,
           right: `${dropdownPosition.right}px`,
-          zIndex: 99999,
+          zIndex: 999999,
+          width: "240px",
+          pointerEvents: "auto",
         }}
       >
         <div className="dropdown-menu">
@@ -189,20 +218,24 @@ const Header = () => {
     <div className="row-view">
       {/* Logo bên trái */}
       <div className="row-view2">
-        <img
-          src={logo}
-          className="image"
-        />
-        <span className="text">{"Eyespire"}</span>
+        <Link to="/">
+          <img
+            src={logo}
+            className="image"
+          />
+        </Link>
+        <Link to="/" style={{ textDecoration: 'none' }}>
+          <span className="text">{"Eyespire"}</span>
+        </Link>
       </div>
 
       {/* Menu điều hướng ở giữa */}
       <div className="column2">
         <div className="row-view5">
-          <div className="row-view3">
+          <Link to="/" className="row-view3" style={{ textDecoration: 'none' }}>
             <span className="text2">{"Home"}</span>
             <span className="text3">{""}</span>
-          </div>
+          </Link>
 
           <Link to="/services" className="service-link">
             <span className="text4">{"Services"}</span>
@@ -230,8 +263,9 @@ const Header = () => {
 
       {/* Giỏ hàng và nút login/avatar bên phải */}
       <div className="row-view5">
-        <div className="cart-icon">
+        <div className="crt-cart-icon" onClick={handleCartClick}>
           <FontAwesomeIcon icon={faShoppingCart} />
+          {cartItemCount > 0 && <span className="crt-cart-count">{cartItemCount}</span>}
         </div>
 
         {/* Icon đặt lịch hẹn */}

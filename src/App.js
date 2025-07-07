@@ -19,7 +19,10 @@ import EyeServices from "./pages/servicepage/EyeServices";
 import AboutPage from "./pages/aboutPage/about";
 import ShopPage from "./pages/shoppage";
 import ProductDetail from "./pages/ProductPage";
+import CartPage from "./pages/CartPage";
 import PayOSReturn from "./pages/payment/PayOSReturn";
+import OrderPayOSReturn from "./pages/payment/OrderPayOSReturn";
+import OrderDetail from "./pages/OrderDetail";
 import VirtualGlasses from './pages/dashboard/patient-dashboard/pages/VirtualGlasses/VirtualGlasses';
 
 
@@ -51,9 +54,11 @@ function App() {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/dashboard/profile" element={<ProfilePage />} />
           <Route path="/product/:id" element={<ProductDetail />} />
+          <Route path="/cart" element={<CartPage />} />
           {/* Route xử lý kết quả thanh toán PayOS */}
           <Route path="/payment/payos-return" element={<PayOSReturn />} />
-          
+          <Route path="/payment/order-return" element={<OrderPayOSReturn />} />
+          <Route path="/orders/:orderId" element={<OrderDetail />} />        
           {/* Sử dụng các route components mới */}
           <Route path="/dashboard/storeManagement" element={<StoreManagementRoutes />} />
           <Route path="/dashboard/receptionist/*" element={<ReceptionistRoutes />} />

@@ -381,12 +381,12 @@ const ProductsPage = () => {
       </div>
 
       {showFeedbacks && selectedProduct && (
-        <div className="modal-overlay" onClick={() => setShowFeedbacks(false)}>
+        <div className="stm-modal-overlay" onClick={() => setShowFeedbacks(false)}>
           <div
-            className="modal-content feedback-modal"
+            className="stm-modal-content stm-feedback-modal"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="modal-header">
+            <div className="stm-modal-header">
               <h2>Feedback - {selectedProduct.name}</h2>
               <button
                 className="btn btn-icon"
@@ -396,47 +396,47 @@ const ProductsPage = () => {
               </button>
             </div>
 
-            <div className="modal-body">
-              <div className="feedback-summary">
-                <div className="rating-overview">
-                  <div className="overall-rating">
-                    <span className="rating-number">
+            <div className="stm-modal-body">
+              <div className="stm-feedback-summary">
+                <div className="stm-rating-overview">
+                  <div className="stm-overall-rating">
+                    <span className="stm-rating-number">
                       {selectedProduct.rating}
                     </span>
-                    <div className="stars-large">
+                    <div className="stm-stars-large">
                       {renderStars(selectedProduct.rating)}
                     </div>
-                    <span className="total-reviews">
+                    <span className="stm-total-reviews">
                       {selectedProduct.totalReviews} đánh giá
                     </span>
                   </div>
                 </div>
               </div>
 
-              <div className="feedback-list">
+              <div className="stm-feedback-list">
                 <h3>Đánh giá từ khách hàng</h3>
                 {selectedProduct.feedbacks.map((feedback) => (
-                  <div key={feedback.id} className="feedback-item">
-                    <div className="feedback-header">
-                      <div className="customer-info">
-                        <span className="customer-name">
+                  <div key={feedback.id} className="stm-feedback-item">
+                    <div className="stm-feedback-header">
+                      <div className="stm-customer-info">
+                        <span className="stm-customer-name">
                           {feedback.customerName}
                         </span>
                         {feedback.verified && (
-                          <span className="verified-badge">Đã xác minh</span>
+                          <span className="stm-verified-badge">Đã xác minh</span>
                         )}
                       </div>
-                      <div className="feedback-meta">
+                      <div className="stm-feedback-meta">
                         <div className="stars">
                           {renderStars(feedback.rating)}
                         </div>
-                        <span className="feedback-date">{feedback.date}</span>
+                        <span className="stm-feedback-date">{feedback.date}</span>
                       </div>
                     </div>
-                    <div className="feedback-content">
+                    <div className="stm-feedback-content">
                       <p>{feedback.comment}</p>
                     </div>
-                    <div className="feedback-actions">
+                    <div className="stm-feedback-actions">
                       <button className="btn btn-sm btn-secondary">
                         <ThumbsUp size={14} />
                         Hữu ích
@@ -454,7 +454,7 @@ const ProductsPage = () => {
               </div>
             </div>
 
-            <div className="modal-footer">
+            <div className="stm-modal-footer">
               <button
                 className="btn btn-secondary"
                 onClick={() => setShowFeedbacks(false)}

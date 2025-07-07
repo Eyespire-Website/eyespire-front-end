@@ -2,7 +2,7 @@
 
 import "./EyeServices.css"
 import { useState, useEffect } from "react"
-import Header from "../../components/Header/Header"
+import ServicesHeader from "./ServicesHeader"
 import Footer from "../../components/Footer/Footer"
 import Services from "../../components/Services/Services"
 
@@ -79,13 +79,7 @@ const EyeServices = () => {
         <div className="es-page-container">
             <div className="es-container">
                 {/* Hero Section */}
-                <div className="es-hero-section">
-                    <Header />
-                    <div className="es-service-page-title">
-                        <h1>Our Eye Care Services</h1>
-                        <p>Professional eye care services for your vision health</p>
-                    </div>
-                </div>
+                <ServicesHeader />
 
                 {/* Services Section */}
                 <div className="es-main-content">

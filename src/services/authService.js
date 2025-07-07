@@ -112,6 +112,11 @@ const getCurrentUser = () => {
   return null;
 };
 
+const getToken = () => {
+  const user = getCurrentUser();
+  return user ? user.token : null;
+};
+
 const isLoggedIn = () => {
   return getCurrentUser() !== null;
 };
@@ -188,6 +193,7 @@ const authService = {
   handleGoogleCallback,
   logout,
   getCurrentUser,
+  getToken,
   isLoggedIn,
   verifyOtp,
   forgotPassword,

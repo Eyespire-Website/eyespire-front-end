@@ -47,3 +47,64 @@
     padding: 2rem 0;
   }
 }
+
+/* Loading và Error States */
+.pr-loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  padding: 2rem;
+  text-align: center;
+}
+
+.pr-loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid rgba(26, 60, 139, 0.1);
+  border-radius: 50%;
+  border-top-color: #1a3c8b;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.pr-error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  padding: 2rem;
+  text-align: center;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  margin: 2rem auto;
+  max-width: 600px;
+}
+
+.pr-error-container h2 {
+  color: #dc3545;
+  margin-bottom: 1rem;
+}
+
+.pr-error-container button {
+  background-color: #1a3c8b;
+  color: white;
+  border: none;
+  padding: 0.5rem 1.5rem;
+  border-radius: 4px;
+  margin-top: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.pr-error-container button:hover {
+  background-color: #0d2b6b;
+}

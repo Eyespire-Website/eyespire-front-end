@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import "./index.css";
 import Header from "../../components/Header/Header";
 import Banner from "../../components/Banner/Banner";
@@ -11,8 +11,23 @@ import Gallery from "../../components/Gallery/Gallery";
 import Contact from "../../components/Contact/Contact";
 import Footer from "../../components/Footer/Footer";
 import ChatBox from "../../components/ChatBox/ChatBox";
+import { useLocation } from "react-router-dom";
 
 const HomePage = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    // Xử lý cuộn đến phần đặt lịch hẹn nếu có tham số scrollToAppointment
+    if (location.search.includes('scrollToAppointment=true')) {
+      setTimeout(() => {
+        const appointmentElement = document.getElementById('appointment-section');
+        if (appointmentElement) {
+          appointmentElement.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 500); // Đợi 500ms để đảm bảo trang đã render xong
+    }
+  }, [location]);
+
   return (
     <div className="contain">
       <div className="scroll-view">
@@ -40,7 +55,9 @@ const HomePage = () => {
         <Services />
         <About />
         <Products />
-        <Appointment />
+        <div id="appointment-section">
+          <Appointment />
+        </div>
         <Testimonials />
         <Gallery />
         <Contact />

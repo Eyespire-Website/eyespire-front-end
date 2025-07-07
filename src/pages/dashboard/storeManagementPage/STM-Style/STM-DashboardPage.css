@@ -1,65 +1,65 @@
 /* Dashboard Page Styles */
-.stats-grid {
+.stm-stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 1.5rem;
   margin-bottom: 2rem;
 }
 
-.dashboard-grid {
+.stm-dashboard-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
   gap: 1.5rem;
 }
 
-.card {
-  background: white;
-  border: 1px solid #e5e7eb;
+/* Sử dụng class stm-card đã được định nghĩa trong STM-components.css */
+/* Thêm các biến thể cho dashboard */
+.stm-card--dashboard {
+  background: var(--color-white);
+  border: 1px solid var(--color-gray-200);
   border-radius: 12px;
   overflow: hidden;
   transition: all 0.2s ease;
-}
-
-.card:hover {
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  border-color: #d1d5db;
-}
-
-.dashboard-card {
   height: fit-content;
 }
 
-.card-hdr {
-  padding: 1.5rem;
-  border-bottom: 1px solid #e5e7eb;
-  background: #f9fafb;
+.stm-card--dashboard:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  border-color: var(--color-gray-300);
 }
 
-.card-hdr-content {
+/* Sử dụng stm-card-header đã được định nghĩa trong STM-components.css */
+.stm-card-header--dashboard {
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--color-gray-200);
+  background: var(--color-gray-50);
+}
+
+.stm-card-header-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
 }
 
-.card-title {
-  font-size: 1.125rem;
+.stm-card-title--dashboard {
+  font-size: var(--text-lg);
   font-weight: 600;
-  color: #1f2937;
+  color: var(--color-gray-800);
   margin: 0;
 }
 
-.card-content {
+.stm-card-content--dashboard {
   padding: 1.5rem;
 }
 
-.card-footer {
+.stm-card-footer--dashboard {
   padding: 1rem 1.5rem;
-  border-top: 1px solid #e5e7eb;
-  background: #f9fafb;
+  border-top: 1px solid var(--color-gray-200);
+  background: var(--color-gray-50);
 }
 
-.activity-list {
+.stm-activity-list {
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -67,136 +67,113 @@
   overflow-y: auto;
 }
 
-.activity-item {
+.stm-activity-item {
   display: flex;
   gap: 1rem;
   padding: 1rem;
-  background: #f9fafb;
-  border-radius: 8px;
-  border: 1px solid #e5e7eb;
+  background: var(--color-gray-50);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-gray-200);
   transition: all 0.2s ease;
 }
 
-.activity-item:hover {
-  background: #f3f4f6;
-  border-color: #d1d5db;
+.stm-activity-item:hover {
+  background: var(--color-gray-100);
+  border-color: var(--color-gray-300);
 }
 
-.activity-time {
+.stm-activity-time {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: #6b7280;
-  font-size: 0.875rem;
+  color: var(--color-gray-500);
+  font-size: var(--text-sm);
   font-weight: 500;
   min-width: 80px;
 }
 
-.activity-content {
+.stm-activity-content {
   flex: 1;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.activity-main {
+.stm-activity-main {
   flex: 1;
 }
 
-.activity-title {
-  font-size: 0.875rem;
+.stm-activity-title {
+  font-size: var(--text-sm);
   font-weight: 600;
-  color: #1f2937;
+  color: var(--color-gray-800);
   margin: 0 0 0.25rem 0;
 }
 
-.activity-person {
-  font-size: 0.75rem;
-  color: #6b7280;
+.stm-activity-person {
+  font-size: var(--text-xs);
+  color: var(--color-gray-500);
   margin: 0;
 }
 
-.activity-meta {
+.stm-activity-meta {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   gap: 0.25rem;
 }
 
-.activity-amount {
-  font-size: 0.875rem;
+.stm-activity-amount {
+  font-size: var(--text-sm);
   font-weight: 600;
-  color: #1f2937;
+  color: var(--color-gray-800);
 }
 
-.status {
+/* Sử dụng các class status đã được định nghĩa trong STM-components.css */
+/* Thêm biến thể mới cho dashboard nếu cần */
+.stm-status--dashboard {
   padding: 0.25rem 0.75rem;
   border-radius: 9999px;
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
   font-weight: 500;
   text-align: center;
 }
 
-.status.active {
-  background: #dcfce7;
-  color: #166534;
-}
+/* Các trạng thái đã được định nghĩa trong STM-components.css */
+/* Không cần định nghĩa lại ở đây */
+/* Chỉ thêm các trạng thái đặc biệt cho dashboard nếu cần */
 
-.status.pending {
-  background: #fef3c7;
-  color: #92400e;
-}
 
-.status.confirmed {
-  background: #dbeafe;
-  color: #1e40af;
-}
-
-.status.processing {
-  background: #e0e7ff;
-  color: #5b21b6;
-}
-
-.status.shipped {
-  background: #cffafe;
-  color: #0f766e;
-}
-
-.status.delivered {
-  background: #dcfce7;
-  color: #166534;
-}
-
-.products-list {
+.stm-products-list {
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
-.product-item {
+.stm-product-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 1rem;
-  background: #f9fafb;
-  border-radius: 8px;
-  border: 1px solid #e5e7eb;
+  background: var(--color-gray-50);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-gray-200);
   transition: all 0.2s ease;
 }
 
-.product-item:hover {
-  background: #f3f4f6;
-  border-color: #d1d5db;
+.stm-product-item:hover {
+  background: var(--color-gray-100);
+  border-color: var(--color-gray-300);
 }
 
-.product-info {
+.stm-product-info {
   display: flex;
   align-items: center;
   gap: 0.75rem;
   flex: 1;
 }
 
-.product-image {
+.stm-product-image {
   width: 40px;
   height: 40px;
   border-radius: 6px;
@@ -220,73 +197,73 @@
   margin: 0;
 }
 
-.product-stats {
+.stm-product-stats {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   gap: 0.25rem;
 }
 
-.product-revenue {
-  font-size: 0.875rem;
+.stm-product-revenue {
+  font-size: var(--text-sm);
   font-weight: 600;
-  color: #1f2937;
+  color: var(--color-gray-800);
 }
 
-.product-growth {
-  font-size: 0.75rem;
+.stm-product-growth {
+  font-size: var(--text-xs);
   font-weight: 500;
 }
 
-.product-growth.positive {
-  color: #059669;
+.stm-product-growth--positive {
+  color: var(--color-green-500);
 }
 
-.orders-list {
+.stm-orders-list {
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
-.order-item {
+.stm-order-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 1rem;
-  background: #f9fafb;
-  border-radius: 8px;
-  border: 1px solid #e5e7eb;
+  background: var(--color-gray-50);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-gray-200);
   transition: all 0.2s ease;
 }
 
-.order-item:hover {
-  background: #f3f4f6;
-  border-color: #d1d5db;
+.stm-order-item:hover {
+  background: var(--color-gray-100);
+  border-color: var(--color-gray-300);
 }
 
-.order-info {
+.stm-order-info {
   flex: 1;
 }
 
-.order-id {
-  font-size: 0.875rem;
+.stm-order-id {
+  font-size: var(--text-sm);
   font-weight: 600;
-  color: #1f2937;
+  color: var(--color-gray-800);
   margin-bottom: 0.25rem;
 }
 
-.order-customer {
-  font-size: 0.75rem;
-  color: #6b7280;
+.stm-order-customer {
+  font-size: var(--text-xs);
+  color: var(--color-gray-500);
   margin-bottom: 0.25rem;
 }
 
-.order-time {
-  font-size: 0.75rem;
-  color: #9ca3af;
+.stm-order-time {
+  font-size: var(--text-xs);
+  color: var(--color-gray-400);
 }
 
-.order-meta {
+.stm-order-meta {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -294,108 +271,108 @@
   margin-right: 1rem;
 }
 
-.order-total {
-  font-size: 0.875rem;
+.stm-order-total {
+  font-size: var(--text-sm);
   font-weight: 600;
-  color: #1f2937;
+  color: var(--color-gray-800);
 }
 
-.quick-actions {
+.stm-quick-actions {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 1rem;
 }
 
-.quick-action-btn {
+.stm-quick-action-btn {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.5rem;
   padding: 1.5rem 1rem;
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
+  background: var(--color-gray-50);
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--radius-md);
   cursor: pointer;
   transition: all 0.2s ease;
   text-decoration: none;
-  color: #374151;
+  color: var(--color-gray-700);
 }
 
-.quick-action-btn:hover {
-  background: #f3f4f6;
-  border-color: #d1d5db;
+.stm-quick-action-btn:hover {
+  background: var(--color-gray-100);
+  border-color: var(--color-gray-300);
   transform: translateY(-1px);
 }
 
-.quick-action-btn span {
-  font-size: 0.875rem;
+.stm-quick-action-btn span {
+  font-size: var(--text-sm);
   font-weight: 500;
   text-align: center;
 }
 
-.no-results {
+.stm-no-results {
   text-align: center;
-  color: #6b7280;
+  color: var(--color-gray-500);
   font-style: italic;
   padding: 2rem;
 }
 
 @media (max-width: 768px) {
-  .stats-grid {
+  .stm-stats-grid {
     grid-template-columns: 1fr;
     gap: 1rem;
   }
 
-  .dashboard-grid {
+  .stm-dashboard-grid {
     grid-template-columns: 1fr;
     gap: 1rem;
   }
 
-  .card-hdr-content {
+  .stm-card-header-content {
     flex-direction: column;
     align-items: stretch;
     gap: 1rem;
   }
 
-  .activity-item {
+  .stm-activity-item {
     flex-direction: column;
     gap: 0.75rem;
   }
 
-  .activity-content {
+  .stm-activity-content {
     flex-direction: column;
     align-items: stretch;
     gap: 0.5rem;
   }
 
-  .activity-meta {
+  .stm-activity-meta {
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
   }
 
-  .product-item {
+  .stm-product-item {
     flex-direction: column;
     gap: 1rem;
     text-align: center;
   }
 
-  .product-stats {
+  .stm-product-stats {
     align-items: center;
   }
 
-  .order-item {
+  .stm-order-item {
     flex-direction: column;
     gap: 1rem;
     text-align: center;
   }
 
-  .order-meta {
+  .stm-order-meta {
     align-items: center;
     margin-right: 0;
   }
 
-  .quick-actions {
+  .stm-quick-actions {
     grid-template-columns: repeat(2, 1fr);
   }
 }

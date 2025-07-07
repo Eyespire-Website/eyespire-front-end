@@ -489,17 +489,17 @@ const OrdersPage = () => {
                         ₫{order.total.toLocaleString()}
                       </td>
                       <td>
-                        <span className={`status ${order.paymentStatus}`}>
+                        <span className={`stm-status stm-status--${order.paymentStatus}`}>
                           {getPaymentStatusText(order.paymentStatus)}
                         </span>
                       </td>
                       <td>
-                        <span className={`status ${order.status}`}>
+                        <span className={`stm-status stm-status--${order.status}`}>
                           {order.statusText}
                         </span>
                       </td>
                       <td>
-                        <div className="action-buttons">
+                        <div className="stm-action-buttons">
                           <button
                             className="btn btn-icon"
                             title="Xem chi tiết"
@@ -520,7 +520,7 @@ const OrdersPage = () => {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={8} className="no-results">
+                    <td colSpan={8} className="stm-no-results">
                       {searchTerm ||
                       statusFilter !== "all" ||
                       paymentFilter !== "all"
