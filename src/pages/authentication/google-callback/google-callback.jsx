@@ -36,8 +36,13 @@ export default function GoogleCallback() {
                 
                 // Chỉ chuyển hướng khi đăng nhập thành công
                 if (result && result.id) {
-                    // Chuyển hướng đến trang chủ sau khi đăng nhập thành công
-                    navigate('/');
+                    console.log("Google login successful:", result);
+                    console.log("User role:", result.role);
+                    
+                    // Chuyển hướng dựa trên vai trò người dùng
+                    const redirectPath = authService.getRoleBasedRedirectPath(result.role);
+                    console.log("Redirect path:", redirectPath);
+                    navigate(redirectPath);
                 } else {
                     // Nếu không có kết quả hợp lệ, hiển thị lỗi
                     setError('Đăng nhập bằng Google thất bại. Vui lòng thử lại.');

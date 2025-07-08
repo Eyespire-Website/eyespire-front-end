@@ -10,7 +10,7 @@ import MessagesPage from "./MessagesPage";
 import ProfilePage from "./ProfilePage";
 import DashboardPage from "./DashboardPage";
 import "./STM-Style/STM-globals.css";
-const AdminDashboard = () => {
+const StoreManagerDashboard = () => {
   const [activeSection, setActiveSection] = useState("dashboard");
 
   const menuItems = [
@@ -61,4 +61,4 @@ const AdminDashboard = () => {
   );
 };
 
-export default AdminDashboard;
+export default StoreManagerDashboard;
