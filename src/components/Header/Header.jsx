@@ -123,6 +123,9 @@ const Header = () => {
         case 'receptionist':
           navigate('/dashboard/receptionist');
           break;
+        case 'store_manager':
+          navigate('/dashboard/storeManagement');
+          break;
         case 'patient':
         default:
           navigate('/dashboard/patient');

@@ -1,182 +1,147 @@
-"use client"
-
-import { X, Star, Package, Tag, ShoppingCart, Truck, Calendar } from "lucide-react"
-import "./stmStyle/STM-ProductDetailModal.css"
+import React from 'react';
+import { X, Star } from 'lucide-react';
+import './stmStyle/STM-ProductDetailModal.css';
 
 const ProductDetailModal = ({ product, isOpen, onClose }) => {
-  if (!isOpen || !product) return null
-
-  const renderStars = (rating) => {
-    return Array.from({ length: 5 }, (_, index) => (
-      <Star
-        key={index}
-        size={16}
-        className={index < Math.floor(rating) ? "star-filled" : "star-empty"}
-        fill={index < Math.floor(rating) ? "#fbbf24" : "none"}
-        color="#fbbf24"
-      />
-    ))
-  }
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "active":
-        return "#10b981"
-      case "inactive":
-        return "#ef4444"
-      case "draft":
-        return "#6b7280"
-      default:
-        return "#64748b"
-    }
-  }
+  if (!isOpen || !product) return null;
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content product-detail-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <h2>Chi tiết sản phẩm</h2>
-          <button className="btn btn-icon" onClick={onClose}>
+    <div className="stm-modal-overlay">
+      <div className="stm-modal-content stm-product-detail-modal">
+        <div className="stm-modal-header">
+          <h3>Chi tiết sản phẩm</h3>
+          <button className="stm-modal-close" onClick={onClose}>
             <X size={20} />
           </button>
         </div>
-
-        <div className="modal-body">
-          <div className="product-detail-grid">
-            <div className="product-images">
-              <div className="main-image-container">
-                <img
-                  src={product.image || "/placeholder.svg?height=300&width=300"}
-                  alt={product.name}
-                  className="main-image"
-                />
-                <span
-                  className="product-status-badge"
-                  style={{
-                    backgroundColor: getStatusColor(product.status) + "20",
-                    color: getStatusColor(product.status),
-                  }}
-                >
-                  {product.statusText}
-                </span>
-              </div>
-              {product.gallery && product.gallery.length > 0 && (
-                <div className="product-thumbnails">
-                  {product.gallery.map((img, index) => (
-                    <img
-                      key={index}
-                      src={img || "/placeholder.svg?height=80&width=80"}
-                      alt={`${product.name} thumbnail ${index + 1}`}
-                      className="thumbnail"
+        
+        <div className="stm-modal-body">
+          <div className="stm-product-detail-header">
+            <div className="stm-product-detail-image">
+              <img src={product.image || "/placeholder.svg"} alt={product.name} />
+            </div>
+            <div className="stm-product-detail-info">
+              <h2 className="stm-product-detail-name">{product.name}</h2>
+              <div className="stm-product-detail-id">Mã SP: {product.id}</div>
+              <div className="stm-product-detail-price">₫{product.price?.toLocaleString()}</div>
+              <div className="stm-product-detail-rating">
+                <div className="stm-rating-stars">
+                  {[...Array(5)].map((_, i) => (
+                    <Star
+                      key={i}
+                      size={16}
+                      fill={i < Math.floor(product.rating || 0) ? "#FFB800" : "none"}
+                      color={i < Math.floor(product.rating || 0) ? "#FFB800" : "#D1D5DB"}
                     />
                   ))}
                 </div>
-              )}
-            </div>
-
-            <div className="product-info">
-              <h1 className="product-name">{product.name}</h1>
-              <div className="product-id">Mã sản phẩm: {product.id}</div>
-
-              {product.rating && (
-                <div className="product-rating">
-                  <div className="stars">{renderStars(product.rating)}</div>
-                  <span className="rating-text">
-                    {product.rating} ({product.totalReviews} đánh giá)
-                  </span>
-                </div>
-              )}
-
-              <div className="product-price">₫{product.price?.toLocaleString()}</div>
-
-              <div className="product-description">
-                <h3>Mô tả sản phẩm</h3>
-                <p>{product.description}</p>
+                <span className="stm-rating-value">{product.rating}</span>
+                <span className="stm-rating-count">({product.totalReviews} đánh giá)</span>
               </div>
-
-              <div className="product-meta">
-                <div className="meta-item">
-                  <Package size={16} />
-                  <span className="meta-label">Danh mục:</span>
-                  <span className="meta-value">{product.category}</span>
-                </div>
-
-                {product.sales !== undefined && (
-                  <div className="meta-item">
-                    <ShoppingCart size={16} />
-                    <span className="meta-label">Đã bán:</span>
-                    <span className="meta-value">{product.sales} sản phẩm</span>
-                  </div>
-                )}
-
-                {product.supplier && (
-                  <div className="meta-item">
-                    <Truck size={16} />
-                    <span className="meta-label">Nhà cung cấp:</span>
-                    <span className="meta-value">{product.supplier}</span>
-                  </div>
-                )}
-
-                {product.lastUpdated && (
-                  <div className="meta-item">
-                    <Calendar size={16} />
-                    <span className="meta-label">Cập nhật:</span>
-                    <span className="meta-value">{product.lastUpdated}</span>
-                  </div>
-                )}
-
-                {product.tags && product.tags.length > 0 && (
-                  <div className="meta-item tags-item">
-                    <Tag size={16} />
-                    <span className="meta-label">Tags:</span>
-                    <div className="tags-list">
-                      {product.tags.map((tag, index) => (
-                        <span key={index} className="tag">
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
+              <div className="stm-product-detail-status">
+                <span className={`stm-status stm-status--${product.status}`}>
+                  {product.statusText}
+                </span>
               </div>
             </div>
           </div>
 
+          <div className="stm-product-detail-section">
+            <h4 className="stm-section-title">Thông tin cơ bản</h4>
+            <div className="stm-product-detail-grid">
+              <div className="stm-detail-item">
+                <div className="stm-detail-label">Danh mục:</div>
+                <div className="stm-detail-value">{product.category}</div>
+              </div>
+              <div className="stm-detail-item">
+                <div className="stm-detail-label">Số lượng:</div>
+                <div className="stm-detail-value">{product.quantity}</div>
+              </div>
+              <div className="stm-detail-item">
+                <div className="stm-detail-label">Nhà cung cấp:</div>
+                <div className="stm-detail-value">{product.supplier}</div>
+              </div>
+              <div className="stm-detail-item">
+                <div className="stm-detail-label">Cập nhật:</div>
+                <div className="stm-detail-value">{product.lastUpdated}</div>
+              </div>
+              <div className="stm-detail-item">
+                <div className="stm-detail-label">Đã bán:</div>
+                <div className="stm-detail-value">{product.sales || 0}</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="stm-product-detail-section">
+            <h4 className="stm-section-title">Mô tả sản phẩm</h4>
+            <p className="stm-product-description">{product.description}</p>
+          </div>
+
+          {product.tags && product.tags.length > 0 && (
+            <div className="stm-product-detail-section">
+              <h4 className="stm-section-title">Thẻ</h4>
+              <div className="stm-product-tags">
+                {product.tags.map((tag, index) => (
+                  <span key={index} className="stm-product-tag">{tag}</span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {product.gallery && product.gallery.length > 0 && (
+            <div className="stm-product-detail-section">
+              <h4 className="stm-section-title">Thư viện ảnh</h4>
+              <div className="stm-product-gallery">
+                {product.gallery.map((image, index) => (
+                  <div key={index} className="stm-gallery-item">
+                    <img src={image} alt={`Ảnh ${index + 1}`} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {product.feedbacks && product.feedbacks.length > 0 && (
-            <div className="product-feedbacks">
-              <h3>Đánh giá từ khách hàng ({product.feedbacks.length})</h3>
-              <div className="feedback-list">
+            <div className="stm-product-detail-section">
+              <h4 className="stm-section-title">Đánh giá gần đây</h4>
+              <div className="stm-product-feedbacks">
                 {product.feedbacks.map((feedback) => (
-                  <div key={feedback.id} className="feedback-item">
-                    <div className="feedback-header">
-                      <div className="customer-info">
-                        <span className="customer-name">{feedback.customerName}</span>
-                        {feedback.verified && <span className="verified-badge">Đã xác minh</span>}
+                  <div key={feedback.id} className="stm-feedback-item">
+                    <div className="stm-feedback-header">
+                      <div className="stm-feedback-customer">
+                        {feedback.customerName}
+                        {feedback.verified && (
+                          <span className="stm-verified-badge">Đã xác thực</span>
+                        )}
                       </div>
-                      <div className="feedback-meta">
-                        <div className="stars">{renderStars(feedback.rating)}</div>
-                        <span className="feedback-date">{feedback.date}</span>
+                      <div className="stm-feedback-rating">
+                        {[...Array(5)].map((_, i) => (
+                          <Star
+                            key={i}
+                            size={14}
+                            fill={i < feedback.rating ? "#FFB800" : "none"}
+                            color={i < feedback.rating ? "#FFB800" : "#D1D5DB"}
+                          />
+                        ))}
                       </div>
                     </div>
-                    <div className="feedback-content">
-                      <p>{feedback.comment}</p>
-                    </div>
+                    <div className="stm-feedback-date">{feedback.date}</div>
+                    <div className="stm-feedback-comment">{feedback.comment}</div>
                   </div>
                 ))}
               </div>
             </div>
           )}
         </div>
-
-        <div className="modal-footer">
-          <button className="btn btn-secondary" onClick={onClose}>
+        
+        <div className="stm-modal-footer">
+          <button className="stm-btn stm-btn--secondary" onClick={onClose}>
             Đóng
           </button>
-          <button className="btn btn-primary">Chỉnh sửa sản phẩm</button>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ProductDetailModal
+export default ProductDetailModal;
