@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import SearchBox from "../../../components/storeManagement/SearchBox";
 import StatCard from "../../../components/storeManagement/StatCard";
 import FilterBar from "../../../components/storeManagement/FilterBar";
@@ -12,11 +12,15 @@ import {
   Package,
   AlertTriangle,
   DollarSign,
-  TrendingUp,
   Edit,
   Eye,
   Trash2,
+  ZoomIn,
+  ZoomOut,
+  X,
+  TrendingUp, // Added for topSellingProducts StatCard
 } from "lucide-react";
+import productService from "../../../services/productService";
 
 const InventoryPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -29,199 +33,187 @@ const InventoryPage = () => {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState(null);
+  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [zoomLevel, setZoomLevel] = useState(1);
+  const imageContainerRef = useRef(null);
 
-  // Mở rộng dữ liệu mẫu với thêm thông tin chi tiết
-  const [products, setProducts] = useState([
-    {
-      id: "SP001",
-      name: "Thức ăn cá Koi cao cấp",
-      category: "Thức ăn",
-      quantity: 150,
-      price: 250000,
-      status: "active",
-      statusText: "Còn hàng",
-      supplier: "Công ty TNHH Thức ăn Thủy sản",
-      lastUpdated: "15/01/2024",
-      image: "/placeholder.svg?height=50&width=50",
-      description:
-        "Thức ăn cao cấp cho cá Koi giúp tăng cường màu sắc và hỗ trợ hệ miễn dịch. Thức ăn được nhập khẩu từ Nhật Bản, đảm bảo chất lượng tốt nhất cho cá của bạn.",
-      rating: 4.8,
-      totalReviews: 124,
-      sales: 1240,
-      tags: ["Thức ăn cá", "Koi", "Cao cấp", "Nhập khẩu"],
-      gallery: [
-        "/placeholder.svg?height=80&width=80&text=Mặt+trước",
-        "/placeholder.svg?height=80&width=80&text=Mặt+sau",
-        "/placeholder.svg?height=80&width=80&text=Thành+phần",
-      ],
-      feedbacks: [
-        {
-          id: "f1",
-          customerName: "Nguyễn Văn A",
-          verified: true,
-          rating: 5,
-          date: "12/01/2024",
-          comment:
-            "Cá của tôi rất thích thức ăn này. Lông cá mượt và màu sắc rực rỡ hơn.",
-        },
-        {
-          id: "f2",
-          customerName: "Trần Thị B",
-          verified: true,
-          rating: 4,
-          date: "10/01/2024",
-          comment:
-            "Chất lượng tốt, giá hơi cao nhưng xứng đáng với chất lượng.",
-        },
-      ],
-    },
-    {
-      id: "SP002",
-      name: "Máy lọc nước hồ cá",
-      category: "Thiết bị",
-      quantity: 25,
-      price: 1500000,
-      status: "active",
-      statusText: "Còn hàng",
-      supplier: "Công ty CP Thiết bị Thủy sinh",
-      lastUpdated: "12/01/2024",
-      image: "/placeholder.svg?height=50&width=50",
-      description:
-        "Máy lọc nước cao cấp dành cho hồ cá cảnh với công suất lọc mạnh mẽ. Dễ dàng lắp đặt và bảo trì, đảm bảo nước hồ cá luôn trong sạch.",
-      rating: 4.5,
-      totalReviews: 85,
-      sales: 320,
-      tags: ["Máy lọc", "Thiết bị hồ cá", "Lọc nước"],
-      gallery: [
-        "/placeholder.svg?height=80&width=80&text=Tổng+quan",
-        "/placeholder.svg?height=80&width=80&text=Bộ+lọc",
-        "/placeholder.svg?height=80&width=80&text=Sử+dụng",
-      ],
-      feedbacks: [
-        {
-          id: "f3",
-          customerName: "Lê Văn C",
-          verified: true,
-          rating: 5,
-          date: "11/01/2024",
-          comment: "Máy hoạt động rất tốt, nước hồ trong vắt sau khi lắp đặt.",
-        },
-      ],
-    },
-    {
-      id: "SP003",
-      name: "Thuốc trị bệnh cho cá",
-      category: "Y tế",
-      quantity: 5,
-      price: 180000,
-      status: "warning",
-      statusText: "Sắp hết",
-      supplier: "Công ty Dược phẩm Thủy sản",
-      lastUpdated: "10/01/2024",
-      image: "/placeholder.svg?height=50&width=50",
-      description:
-        "Thuốc trị bệnh đốm trắng và nấm cho cá cảnh. Công thức độc quyền an toàn cho cá và không gây hại cho hệ sinh thái hồ.",
-      rating: 4.2,
-      totalReviews: 56,
-      sales: 210,
-      tags: ["Thuốc", "Y tế", "Trị bệnh cá"],
-      gallery: [
-        "/placeholder.svg?height=80&width=80&text=Sản+phẩm",
-        "/placeholder.svg?height=80&width=80&text=Hướng+dẫn",
-      ],
-      feedbacks: [
-        {
-          id: "f4",
-          customerName: "Phạm Văn D",
-          verified: false,
-          rating: 4,
-          date: "08/01/2024",
-          comment:
-            "Thuốc hiệu quả nhưng cần tuân thủ liều lượng để tránh ảnh hưởng đến cá khỏe mạnh.",
-        },
-      ],
-    },
-    {
-      id: "SP004",
-      name: "Đèn LED chiếu sáng hồ",
-      category: "Thiết bị",
-      quantity: 0,
-      price: 800000,
-      status: "inactive",
-      statusText: "Hết hàng",
-      supplier: "Công ty TNHH Ánh sáng Thủy sinh",
-      lastUpdated: "05/01/2024",
-      image: "/placeholder.svg?height=50&width=50",
-      description:
-        "Đèn LED chuyên dụng cho hồ cá cảnh với nhiều chế độ màu sắc và cường độ ánh sáng. Thiết kế chống nước và tiết kiệm điện năng.",
-      rating: 4.7,
-      totalReviews: 92,
-      sales: 450,
-      tags: ["Đèn LED", "Thiết bị hồ cá", "Chiếu sáng"],
-      gallery: [
-        "/placeholder.svg?height=80&width=80&text=Sản+phẩm",
-        "/placeholder.svg?height=80&width=80&text=Màu+sắc",
-        "/placeholder.svg?height=80&width=80&text=Lắp+đặt",
-      ],
-      feedbacks: [
-        {
-          id: "f5",
-          customerName: "Hoàng Thị E",
-          verified: true,
-          rating: 5,
-          date: "04/01/2024",
-          comment:
-            "Đèn rất đẹp và dễ điều chỉnh. Cá của tôi có vẻ thích nghi tốt với ánh sáng.",
-        },
-      ],
-    },
-  ]);
+  const itemsPerPage = 10;
+  const baseUrl = process.env.REACT_APP_API_BASE_URL || "http://localhost:8080";
+  const fallbackImage = "https://placehold.co/50x50?text=Image";
 
-  const categories = ["Thức ăn", "Thiết bị", "Y tế"];
-  const statuses = ["Còn hàng", "Sắp hết", "Hết hàng"];
+  // Map backend ProductType to frontend category labels
+  const mapProductTypeToCategory = (type) => {
+    const categoryMap = {
+      MEDICINE: "Y tế",
+      EYEWEAR: "Thiết bị",
+    };
+    return categoryMap[type] || "Thiết bị";
+  };
 
-  // Tính toán thống kê
-  const calculateStats = useCallback(() => {
+  // Normalize image URL
+  const getFullUrl = (url) => {
+    if (!url || url.trim() === "") {
+      console.log("Image URL is null or empty, using fallback:", fallbackImage);
+      return fallbackImage;
+    }
+    return url.startsWith("http") ? url : `${baseUrl}${url.replace("/Uploads", "/images")}`;
+  };
+
+  // Handle image loading errors
+  const handleImageError = (e) => {
+    console.warn(`Failed to load image: ${e.target.src}`);
+    e.target.src = fallbackImage;
+  };
+
+  // Handle image click to open modal
+  const handleImageClick = (url) => {
+    setSelectedImage(url);
+    setZoomLevel(1);
+  };
+
+  // Close image modal
+  const handleCloseModal = () => {
+    setSelectedImage(null);
+    setZoomLevel(1);
+  };
+
+  // Zoom controls
+  const handleZoomIn = () => {
+    setZoomLevel((prev) => Math.min(prev + 0.2, 3));
+  };
+
+  const handleZoomOut = () => {
+    setZoomLevel((prev) => Math.max(prev - 0.2, 0.5));
+  };
+
+  // Handle wheel zoom
+  useEffect(() => {
+    const handleWheel = (e) => {
+      e.preventDefault();
+      const delta = e.deltaY > 0 ? -0.1 : 0.1;
+      setZoomLevel((prev) => Math.min(Math.max(prev + delta, 0.5), 3));
+    };
+
+    const imageContainer = imageContainerRef.current;
+    if (selectedImage && imageContainer) {
+      imageContainer.addEventListener("wheel", handleWheel, { passive: false });
+    }
+
+    return () => {
+      if (imageContainer) {
+        imageContainer.removeEventListener("wheel", handleWheel);
+      }
+    };
+  }, [selectedImage]);
+
+  // Handle Escape key to close modal
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") handleCloseModal();
+    };
+    if (selectedImage) {
+      window.addEventListener("keydown", handleKeyDown);
+    }
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedImage]);
+
+  // Fetch products
+  const fetchProducts = useCallback(async () => {
+    try {
+      setLoading(true);
+      const data = await productService.getAllProducts();
+      const mappedProducts = data.map((product) => {
+        const imageUrl = getFullUrl(product.imageUrl);
+        return {
+          id: product.id.toString(),
+          name: product.name || "Không có tên",
+          category: mapProductTypeToCategory(product.type),
+          quantity: product.stockQuantity || 0,
+          price: Number(product.price) || 0,
+          sales: Number(product.sales) || 0, // Use sales from ProductDTO
+          status: product.stockQuantity === 0 ? "inactive" : product.stockQuantity <= 5 ? "warning" : "active",
+          statusText: product.stockQuantity === 0 ? "Hết hàng" : product.stockQuantity <= 5 ? "Sắp hết" : "Còn hàng",
+          lastUpdated: product.updatedAt ? new Date(product.updatedAt).toLocaleDateString("vi-VN") : "N/A",
+          image: imageUrl,
+          description: product.description || "Không có mô tả",
+          rating: 4.5, // Placeholder, as feedback isn't fetched here
+          totalReviews: 0, // Placeholder
+          tags: [mapProductTypeToCategory(product.type)],
+          gallery: [imageUrl],
+          feedbacks: [], // Placeholder
+        };
+      });
+      setProducts(mappedProducts);
+      const uniqueCategories = [...new Set(mappedProducts.map((p) => p.category))];
+      setCategories(uniqueCategories.length > 0 ? uniqueCategories : ["Thiết bị"]);
+      setError(null);
+    } catch (err) {
+      const errorMessage =
+          err.response?.status === 404
+              ? "Không tìm thấy sản phẩm"
+              : err.response?.status === 500
+                  ? "Lỗi server, vui lòng thử lại sau"
+                  : "Không thể tải dữ liệu sản phẩm";
+      setError(errorMessage);
+      console.error("Error fetching products:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
+
+  // Calculate stats with memoization
+  const stats = useMemo(() => {
     const totalProducts = products.length;
     const lowStockCount = products.filter((p) => p.status === "warning").length;
-    const outOfStockCount = products.filter(
-      (p) => p.status === "inactive"
-    ).length;
+    const outOfStockCount = products.filter((p) => p.status === "inactive").length;
     const inventoryValue = products.reduce(
-      (total, p) => total + p.price * p.quantity,
-      0
+        (total, p) => total + p.price * p.quantity,
+        0
     );
+    const topSellingProducts = products.filter((p) => p.sales > 0).length;
 
     return {
       totalProducts,
       lowStockCount,
       outOfStockCount,
       inventoryValue,
+      topSellingProducts,
     };
   }, [products]);
 
-  const stats = calculateStats();
-
+  // Filter products
   const filteredProducts = products
-    .filter(
-      (product) =>
-        (product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          product.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          product.supplier.toLowerCase().includes(searchTerm.toLowerCase())) &&
-        (categoryFilter === "all" || product.category === categoryFilter) &&
-        (statusFilter === "all" || product.statusText === statusFilter)
-    )
-    .sort((a, b) => {
-      let comparison = 0;
-      comparison = a.name.localeCompare(b.name);
-      return comparison;
-    });
+      .filter(
+          (product) =>
+              (product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                  product.id.toLowerCase().includes(searchTerm.toLowerCase())) &&
+              (categoryFilter === "all" || product.category === categoryFilter) &&
+              (statusFilter === "all" || product.status === statusFilter)
+      )
+      .sort((a, b) => a.name.localeCompare(b.name));
 
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+  const paginatedProducts = filteredProducts.slice(
+      (currentPage - 1) * itemsPerPage,
+      currentPage * itemsPerPage
+  );
+
+  // Handle edit product
   const handleEditProduct = (productId) => {
     console.log("Editing product:", productId);
     setEditingProductId(productId);
   };
 
+  // Handle view product
   const handleViewProduct = (productId) => {
     console.log("Viewing product:", productId);
     const product = products.find((p) => p.id === productId);
@@ -231,6 +223,7 @@ const InventoryPage = () => {
     }
   };
 
+  // Handle delete product
   const handleDeleteProduct = (productId) => {
     const product = products.find((p) => p.id === productId);
     if (product) {
@@ -239,22 +232,27 @@ const InventoryPage = () => {
     }
   };
 
-  const confirmDelete = () => {
+  // Confirm delete
+  const confirmDelete = async () => {
     if (productToDelete) {
-      // Xóa sản phẩm khỏi state
-      setProducts((prevProducts) =>
-        prevProducts.filter((p) => p.id !== productToDelete.id)
-      );
-
-      // Reset các state liên quan
-      setProductToDelete(null);
-      setIsConfirmDeleteOpen(false);
-
-      // Thông báo xóa thành công
-      alert(`Đã xóa sản phẩm ${productToDelete.name} thành công`);
+      try {
+        await productService.deleteProduct(productToDelete.id);
+        setProducts((prevProducts) =>
+            prevProducts.filter((p) => p.id !== productToDelete.id)
+        );
+        alert(`Đã xóa sản phẩm ${productToDelete.name} thành công`);
+        fetchProducts();
+      } catch (err) {
+        alert("Không thể xóa sản phẩm");
+        console.error(err);
+      } finally {
+        setProductToDelete(null);
+        setIsConfirmDeleteOpen(false);
+      }
     }
   };
 
+  // Filter options
   const filterOptions = [
     {
       label: "Danh mục",
@@ -270,75 +268,95 @@ const InventoryPage = () => {
       value: statusFilter,
       options: [
         { value: "all", label: "Tất cả" },
-        ...statuses.map((status) => ({ value: status, label: status })),
+        { value: "active", label: "Còn hàng" },
+        { value: "warning", label: "Sắp hết" },
+        { value: "inactive", label: "Hết hàng" },
       ],
       onChange: setStatusFilter,
     },
   ];
 
   if (showAddProduct) {
-    return <AddProductPage onBack={() => setShowAddProduct(false)} />;
+    return (
+        <AddProductPage
+            onBack={() => setShowAddProduct(false)}
+            onAddSuccess={fetchProducts}
+        />
+    );
   }
 
   if (editingProductId) {
     return (
-      <EditProductPage
-        productId={editingProductId}
-        onBack={() => setEditingProductId(null)}
-      />
+        <EditProductPage
+            productId={editingProductId}
+            onBack={() => setEditingProductId(null)}
+            onEditSuccess={fetchProducts}
+        />
+    );
+  }
+
+  if (loading) {
+    return (
+        <div className="inventory-loading">
+          <div className="spinner"></div>
+          <p>Đang tải dữ liệu...</p>
+        </div>
+    );
+  }
+
+  if (error) {
+    return (
+        <div className="inventory-error">
+          <p>{error}</p>
+          <button className="btn btn-secondary" onClick={fetchProducts}>
+            Thử lại
+          </button>
+        </div>
     );
   }
 
   return (
-    <div>
-      <div className="stats-grid">
-        <StatCard
-          title="Tổng sản phẩm"
-          value={stats.totalProducts.toString()}
-          change={`${stats.outOfStockCount} sản phẩm hết hàng`}
-          icon={<Package size={24} />}
-          changeType={stats.outOfStockCount > 0 ? "negative" : "positive"}
-        />
-        <StatCard
-          title="Sắp hết hàng"
-          value={stats.lowStockCount}
-          change="Cần nhập thêm"
-          icon={<AlertTriangle size={24} />}
-          changeType="warning"
-        />
-        <StatCard
-          title="Giá trị kho"
-          value={`₫${stats.inventoryValue.toLocaleString()}`}
-          change="+8% từ tháng trước"
-          icon={<DollarSign size={24} />}
-          changeType="positive"
-        />
-        <StatCard
-          title="Xuất kho hôm nay"
-          value={89}
-          change="+12 từ hôm qua"
-          icon={<TrendingUp size={24} />}
-          changeType="positive"
-        />
-      </div>
-
-      <div className="card">
-        <div className="card-hdr">
-          <div className="card-hdr-content">
-            <h3 className="card-title">Quản lý kho hàng</h3>
-            <SearchBox value={searchTerm} onChange={setSearchTerm} />
-          </div>
-        </div>
-        <div className="card-content">
-          <FilterBar
-            filters={filterOptions}
-            onAddNew={() => setShowAddProduct(true)}
-            addButtonText="Thêm sản phẩm"
+      <div className="inventory-container">
+        <div className="stats-grid">
+          <StatCard
+              title="Tổng sản phẩm"
+              value={stats.totalProducts.toString()}
+              change={`${stats.outOfStockCount} sản phẩm hết hàng`}
+              icon={<Package size={24} />}
+              changeType={stats.outOfStockCount > 0 ? "negative" : "positive"}
           />
+          <StatCard
+              title="Sắp hết hàng"
+              value={stats.lowStockCount}
+              change="Cần nhập thêm"
+              icon={<AlertTriangle size={24} />}
+              changeType="warning"
+          />
+          <StatCard
+              title="Giá trị kho"
+              value={`₫${stats.inventoryValue.toLocaleString()}`}
+              icon={<DollarSign size={24} />}
+              changeType="positive"
+          />
+        </div>
 
-          <div className="tbl-container">
-            <table className="tbl">
-              <thead>
+        <div className="card">
+          <div className="card-hdr">
+            <div className="card-hdr-content">
+              <h3 className="card-title">Quản lý kho hàng</h3>
+              <SearchBox value={searchTerm} onChange={setSearchTerm} />
+            </div>
+          </div>
+          <div className="card-content">
+            <FilterBar
+                filters={filterOptions}
+                onAddNew={() => setShowAddProduct(true)}
+                addButtonText="Thêm sản phẩm"
+            />
+
+            <div className="tbl-container">
+              <table className="tbl">
+                <thead>
                 <tr>
                   <th>Hình ảnh</th>
                   <th>Mã SP</th>
@@ -346,117 +364,143 @@ const InventoryPage = () => {
                   <th>Danh mục</th>
                   <th>Số lượng</th>
                   <th>Giá</th>
-                  <th>Nhà cung cấp</th>
+                  <th>Đã bán</th>
                   <th>Cập nhật</th>
                   <th>Trạng thái</th>
                   <th>Thao tác</th>
                 </tr>
-              </thead>
-              <tbody>
-                {filteredProducts.length > 0 ? (
-                  filteredProducts.map((product) => (
-                    <tr key={product.id}>
-                      <td>
-                        <img
-                          src={product.image || "/placeholder.svg"}
-                          alt={product.name}
-                          className="product-img"
-                        />
-                      </td>
-                      <td>{product.id}</td>
-                      <td>{product.name}</td>
-                      <td>{product.category}</td>
-                      <td>{product.quantity}</td>
-                      <td>₫{product.price.toLocaleString()}</td>
-                      <td>{product.supplier}</td>
-                      <td>{product.lastUpdated}</td>
-                      <td>
+                </thead>
+                <tbody>
+                {paginatedProducts.length > 0 ? (
+                    paginatedProducts.map((product) => (
+                        <tr key={product.id}>
+                          <td>
+                            <img
+                                src={getFullUrl(product.image)}
+                                alt={product.name}
+                                className="product-img"
+                                onError={handleImageError}
+                                onClick={() => handleImageClick(getFullUrl(product.image))}
+                                style={{ cursor: "pointer" }}
+                            />
+                          </td>
+                          <td>{product.id}</td>
+                          <td>{product.name}</td>
+                          <td>{product.category}</td>
+                          <td>{product.quantity}</td>
+                          <td>₫{product.price.toLocaleString()}</td>
+                          <td>{product.sales}</td>
+                          <td>{product.lastUpdated}</td>
+                          <td>
                         <span className={`status ${product.status}`}>
                           {product.statusText}
                         </span>
-                      </td>
-                      <td>
-                        <div className="action-buttons">
-                          <button
-                            className="btn btn-icon"
-                            title="Chỉnh sửa"
-                            onClick={() => handleEditProduct(product.id)}
-                          >
-                            <Edit size={16} />
-                          </button>
-                          <button
-                            className="btn btn-icon"
-                            title="Xem chi tiết"
-                            onClick={() => handleViewProduct(product.id)}
-                          >
-                            <Eye size={16} />
-                          </button>
-                          <button
-                            className="btn btn-icon"
-                            title="Xóa"
-                            onClick={() => handleDeleteProduct(product.id)}
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
+                          </td>
+                          <td>
+                            <div className="action-buttons">
+                              <button
+                                  className="btn btn-icon"
+                                  title="Chỉnh sửa"
+                                  onClick={() => handleEditProduct(product.id)}
+                              >
+                                <Edit size={16} />
+                              </button>
+                              <button
+                                  className="btn btn-icon"
+                                  title="Xem chi tiết"
+                                  onClick={() => handleViewProduct(product.id)}
+                              >
+                                <Eye size={16} />
+                              </button>
+                              <button
+                                  className="btn btn-icon"
+                                  title="Xóa"
+                                  onClick={() => handleDeleteProduct(product.id)}
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                    ))
+                ) : (
+                    <tr>
+                      <td colSpan={10} className="no-results">
+                        Không tìm thấy sản phẩm nào phù hợp
                       </td>
                     </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={10} className="no-results">
-                      Không tìm thấy sản phẩm nào phù hợp
-                    </td>
-                  </tr>
                 )}
-              </tbody>
-            </table>
-          </div>
+                </tbody>
+              </table>
+            </div>
 
-          <Pagination
-            currentPage={currentPage}
-            totalPages={10}
-            onPageChange={setCurrentPage}
-          />
+            <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+            />
+          </div>
         </div>
+
+        <ProductDetailModal
+            product={selectedProduct}
+            isOpen={isDetailModalOpen}
+            onClose={() => setIsDetailModalOpen(false)}
+        />
+
+        {isConfirmDeleteOpen && (
+            <div className="stm-modal-overlay">
+              <div className="stm-modal-content stm-confirm-modal">
+                <div className="stm-modal-header">
+                  <h3>Xác nhận xóa</h3>
+                </div>
+                <div className="stm-modal-body">
+                  <p>
+                    Bạn có chắc chắn muốn xóa sản phẩm{" "}
+                    <strong>{productToDelete?.name}</strong>?
+                  </p>
+                  <p className="stm-warning-text">Hành động này không thể hoàn tác.</p>
+                </div>
+                <div className="stm-modal-footer">
+                  <button
+                      className="btn btn-secondary"
+                      onClick={() => setIsConfirmDeleteOpen(false)}
+                  >
+                    Hủy
+                  </button>
+                  <button className="btn btn-danger" onClick={confirmDelete}>
+                    Xóa sản phẩm
+                  </button>
+                </div>
+              </div>
+            </div>
+        )}
+
+        {selectedImage && (
+            <div className="image-modal-overlay" onClick={handleCloseModal}>
+              <div className="image-modal" onClick={(e) => e.stopPropagation()}>
+                <button className="image-modal-close" onClick={handleCloseModal}>
+                  <X size={24} />
+                </button>
+                <div className="image-modal-content" ref={imageContainerRef}>
+                  <img
+                      src={selectedImage}
+                      alt="Zoomed product"
+                      style={{ transform: `scale(${zoomLevel})`, transition: "transform 0.2s" }}
+                  />
+                </div>
+                <div className="image-modal-controls">
+                  <button onClick={handleZoomIn} disabled={zoomLevel >= 3}>
+                    <ZoomIn size={20} />
+                  </button>
+                  <button onClick={handleZoomOut} disabled={zoomLevel <= 0.5}>
+                    <ZoomOut size={20} />
+                  </button>
+                </div>
+              </div>
+            </div>
+        )}
       </div>
-
-      {/* Modal xem chi tiết sản phẩm */}
-      <ProductDetailModal
-        product={selectedProduct}
-        isOpen={isDetailModalOpen}
-        onClose={() => setIsDetailModalOpen(false)}
-      />
-
-      {/* Modal xác nhận xóa sản phẩm */}
-      {isConfirmDeleteOpen && (
-        <div className="stm-modal-overlay">
-          <div className="stm-modal-content stm-confirm-modal">
-            <div className="stm-modal-header">
-              <h3>Xác nhận xóa</h3>
-            </div>
-            <div className="stm-modal-body">
-              <p>
-                Bạn có chắc chắn muốn xóa sản phẩm{" "}
-                <strong>{productToDelete?.name}</strong>?
-              </p>
-              <p className="stm-warning-text">Hành động này không thể hoàn tác.</p>
-            </div>
-            <div className="stm-modal-footer">
-              <button
-                className="btn btn-secondary"
-                onClick={() => setIsConfirmDeleteOpen(false)}
-              >
-                Hủy
-              </button>
-              <button className="btn btn-danger" onClick={confirmDelete}>
-                Xóa sản phẩm
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
   );
 };
 

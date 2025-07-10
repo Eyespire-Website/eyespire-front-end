@@ -419,37 +419,6 @@ const MessagesPage = () => {
 
   return (
     <div>
-      <div className="stats-grid">
-        <StatCard
-          title="Tổng tin nhắn"
-          value={totalMessages}
-          change={`+${Math.floor(totalMessages * 0.1)} tin nhắn mới`}
-          icon={<MessageSquare size={24} />}
-          changeType="positive"
-        />
-        <StatCard
-          title="Cuộc trò chuyện"
-          value={totalConversations}
-          change={`+${Math.floor(totalConversations * 0.2)} cuộc trò chuyện`}
-          icon={<Users size={24} />}
-          changeType="positive"
-        />
-        <StatCard
-          title="Chưa đọc"
-          value={unreadMessages}
-          change="Cần phản hồi"
-          icon={<Clock size={24} />}
-          changeType={unreadMessages > 0 ? "negative" : "positive"}
-        />
-        <StatCard
-          title="Thời gian phản hồi"
-          value={avgResponseTime}
-          change="Trung bình"
-          icon={<Send size={24} />}
-          changeType="positive"
-        />
-      </div>
-
       <div className="messages-container">
         <div className="conversations-panel">
           <div className="conversations-header">

@@ -52,19 +52,19 @@ const Header = () => {
     if (currentUser) {
       setUser(currentUser);
     }
-    
+
     // Lấy số lượng sản phẩm trong giỏ hàng
     const updateCartCount = () => {
       const count = cartService.getCartItemCount();
       setCartItemCount(count);
     };
-    
+
     // Cập nhật số lượng ban đầu
     updateCartCount();
-    
+
     // Lắng nghe sự kiện thay đổi giỏ hàng
     window.addEventListener('storage', updateCartCount);
-    
+
     return () => {
       window.removeEventListener('storage', updateCartCount);
     };
@@ -74,10 +74,10 @@ const Header = () => {
     // Xử lý click bên ngoài dropdown để đóng dropdown
     const handleClickOutside = (event) => {
       if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target) &&
-        avatarRef.current &&
-        !avatarRef.current.contains(event.target)
+          dropdownRef.current &&
+          !dropdownRef.current.contains(event.target) &&
+          avatarRef.current &&
+          !avatarRef.current.contains(event.target)
       ) {
         setDropdownOpen(false);
       }
@@ -132,7 +132,6 @@ const Header = () => {
           break;
       }
     } else {
-      // Nếu không có thông tin vai trò, mặc định chuyển đến trang profile
       navigate('/dashboard/profile');
     }
     setDropdownOpen(false);
@@ -185,126 +184,126 @@ const Header = () => {
     if (!dropdownOpen) return null;
 
     return ReactDOM.createPortal(
-      <div
-        className="dropdown-menu-absolute"
-        ref={dropdownRef}
-        style={{
-          position: "fixed",
-          top: `${dropdownPosition.top}px`,
-          right: `${dropdownPosition.right}px`,
-          zIndex: 999999,
-          width: "240px",
-          pointerEvents: "auto",
-        }}
-      >
-        <div className="dropdown-menu">
-          <div className="dropdown-header">
-            <p className="user-name">{user.name || user.username}</p>
-            <p className="user-email">{user.email}</p>
+        <div
+            className="dropdown-menu-absolute"
+            ref={dropdownRef}
+            style={{
+              position: "fixed",
+              top: `${dropdownPosition.top}px`,
+              right: `${dropdownPosition.right}px`,
+              zIndex: 999999,
+              width: "240px",
+              pointerEvents: "auto",
+            }}
+        >
+          <div className="dropdown-menu">
+            <div className="dropdown-header">
+              <p className="user-name">{user.name || user.username}</p>
+              <p className="user-email">{user.email}</p>
+            </div>
+            <div className="dropdown-divider"></div>
+            <div className="dropdown-item" onClick={handleProfileClick}>
+              <FontAwesomeIcon icon={faUser} className="dropdown-icon" />
+              <span>Tài khoản của tôi</span>
+            </div>
+            <div className="dropdown-item" onClick={handleLogout}>
+              <FontAwesomeIcon icon={faSignOutAlt} className="dropdown-icon" />
+              <span>Đăng xuất</span>
+            </div>
           </div>
-          <div className="dropdown-divider"></div>
-          <div className="dropdown-item" onClick={handleProfileClick}>
-            <FontAwesomeIcon icon={faUser} className="dropdown-icon" />
-            <span>Tài khoản của tôi</span>
-          </div>
-          <div className="dropdown-item" onClick={handleLogout}>
-            <FontAwesomeIcon icon={faSignOutAlt} className="dropdown-icon" />
-            <span>Đăng xuất</span>
-          </div>
-        </div>
-      </div>,
-      document.body
+        </div>,
+        document.body
     );
   };
 
   return (
-    <div className="row-view">
-      {/* Logo bên trái */}
-      <div className="row-view2">
-        <Link to="/">
-          <img
-            src={logo}
-            className="image"
-          />
-        </Link>
-        <Link to="/" style={{ textDecoration: 'none' }}>
-          <span className="text">{"Eyespire"}</span>
-        </Link>
-      </div>
-
-      {/* Menu điều hướng ở giữa */}
-      <div className="column2">
-        <div className="row-view5">
-          <Link to="/" className="row-view3" style={{ textDecoration: 'none' }}>
-            <span className="text2">{"Home"}</span>
-            <span className="text3">{""}</span>
+      <div className="row-view">
+        {/* Logo bên trái */}
+        <div className="row-view2">
+          <Link to="/">
+            <img
+                src={logo}
+                className="image"
+            />
           </Link>
-
-          <Link to="/services" className="service-link">
-            <span className="text4">{"Services"}</span>
+          <Link to="/" style={{ textDecoration: 'none' }}>
+            <span className="text">{"Eyespire"}</span>
           </Link>
-
-          <div className="row-view3">
-            <span className="text5">{"Doctors"}</span>
-            <span className="text3">{""}</span>
-          </div>
-          <Link to="/shop" className="row-view3">
-            <span className="text5">{"Shop"}</span>
-            <span className="text3">{""}</span>
-          </Link>
-
-          {/* Nút About, sử dụng button với onClick */}
-          {/* Nút About với lớp btn-about */}
-          <div className="row-view3">
-            <button className="btn-about" onClick={handleAboutClick}>
-              {"About"}
-            </button>
-            <span className="text3">{""}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Giỏ hàng và nút login/avatar bên phải */}
-      <div className="row-view5">
-        <div className="crt-cart-icon" onClick={handleCartClick}>
-          <FontAwesomeIcon icon={faShoppingCart} />
-          {cartItemCount > 0 && <span className="crt-cart-count">{cartItemCount}</span>}
         </div>
 
-        {/* Icon đặt lịch hẹn */}
-        <div className="appointment-icon-container" onClick={handleAppointmentClick}>
-          <FontAwesomeIcon icon={faCalendarAlt} className="header-icon" />
-        </div>
+        {/* Menu điều hướng ở giữa */}
+        <div className="column2">
+          <div className="row-view5">
+            <Link to="/" className="row-view3" style={{ textDecoration: 'none' }}>
+              <span className="text2">{"Home"}</span>
+              <span className="text3">{""}</span>
+            </Link>
 
-        {user ? (
-          <div className="user-profile">
-            <div
-              className="avatar-container"
-              onClick={toggleDropdown}
-              ref={avatarRef}
-            >
-              {user.avatarUrl ? (
-                <img
-                  src={getAvatarUrl(user.avatarUrl)}
-                  alt="User Avatar"
-                  className="user-avatar"
-                />
-              ) : (
-                <div className="default-avatar">
-                  <FontAwesomeIcon icon={faUser} />
-                </div>
-              )}
-              <FontAwesomeIcon icon={faChevronDown} className="dropdown-icon" />
+            <Link to="/services" className="service-link">
+              <span className="text4">{"Services"}</span>
+            </Link>
+
+            <div className="row-view3">
+              <span className="text5">{"Doctors"}</span>
+              <span className="text3">{""}</span>
             </div>
-            {renderDropdownPortal()}
+            <Link to="/shop" className="row-view3">
+              <span className="text5">{"Shop"}</span>
+              <span className="text3">{""}</span>
+            </Link>
+
+            {/* Nút About, sử dụng button với onClick */}
+            {/* Nút About với lớp btn-about */}
+            <div className="row-view3">
+              <button className="btn-about" onClick={handleAboutClick}>
+                {"About"}
+              </button>
+              <span className="text3">{""}</span>
+            </div>
           </div>
-        ) : (
-          <button className="login-button" onClick={handleLoginClick}>
-            {"Login"}
-          </button>
-        )}
+        </div>
+
+        {/* Giỏ hàng và nút login/avatar bên phải */}
+        <div className="row-view5">
+          <div className="crt-cart-icon" onClick={handleCartClick}>
+            <FontAwesomeIcon icon={faShoppingCart} />
+            {cartItemCount > 0 && <span className="crt-cart-count">{cartItemCount}</span>}
+          </div>
+
+          {/* Icon đặt lịch hẹn */}
+          <div className="appointment-icon-container" onClick={handleAppointmentClick}>
+            <FontAwesomeIcon icon={faCalendarAlt} className="header-icon" />
+          </div>
+
+          {user ? (
+              <div className="user-profile">
+                <div
+                    className="avatar-container"
+                    onClick={toggleDropdown}
+                    ref={avatarRef}
+                >
+                  {user.avatarUrl ? (
+                      <img
+                          src={getAvatarUrl(user.avatarUrl)}
+                          alt="User Avatar"
+                          className="user-avatar"
+                      />
+                  ) : (
+                      <div className="default-avatar">
+                        <FontAwesomeIcon icon={faUser} />
+                      </div>
+                  )}
+                  <FontAwesomeIcon icon={faChevronDown} className="dropdown-icon" />
+                </div>
+                {renderDropdownPortal()}
+              </div>
+          ) : (
+              <button className="login-button" onClick={handleLoginClick}>
+                {"Login"}
+              </button>
+          )}
+        </div>
       </div>
-    </div>
   );
 };
 

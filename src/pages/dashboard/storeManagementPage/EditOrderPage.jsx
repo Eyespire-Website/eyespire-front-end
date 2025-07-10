@@ -1,7 +1,9 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { ArrowLeft, X, Search, User, Package, CreditCard, Save, Eye, Calculator, Trash2 } from "lucide-react"
+import { useState, useEffect, useRef } from "react";
+import { ArrowLeft, X, Search, User, Package, Save, Eye, Calculator, Trash2 } from "lucide-react";
+import orderService from "../../../services/orderService";
+import "./STM-Style/editOrder.css";
 
 const EditOrderPage = ({ orderId, orderData: initialOrderData, onBack, onOrderUpdated, onOrderDeleted }) => {
   const [orderData, setOrderData] = useState({
@@ -11,1117 +13,692 @@ const EditOrderPage = ({ orderId, orderData: initialOrderData, onBack, onOrderUp
       email: "",
       phone: "",
       address: "",
+      userId: null,
     },
     items: [],
-    paymentMethod: "cash",
-    shippingMethod: "standard",
     notes: "",
     discount: 0,
     discountType: "amount",
-    status: "pending",
+    status: "PENDING",
     createdAt: "",
-  })
+  });
+  const [originalData, setOriginalData] = useState(null);
+  const [customerSearch, setCustomerSearch] = useState("");
+  const [productSearch, setProductSearch] = useState("");
+  const [showCustomerList, setShowCustomerList] = useState(false);
+  const [showProductList, setShowProductList] = useState(false);
+  const [customers, setCustomers] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [previewMode, setPreviewMode] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
+  const [showQuickStatusUpdate, setShowQuickStatusUpdate] = useState(false);
+  const [isQuickUpdating, setIsQuickUpdating] = useState(false);
 
-  const [originalData, setOriginalData] = useState(null)
-  const [customerSearch, setCustomerSearch] = useState("")
-  const [productSearch, setProductSearch] = useState("")
-  const [showCustomerList, setShowCustomerList] = useState(false)
-  const [showProductList, setShowProductList] = useState(false)
-  const [errors, setErrors] = useState({})
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-  const [previewMode, setPreviewMode] = useState(false)
-  const [hasChanges, setHasChanges] = useState(false)
-
-  // Thêm state cho quick status update
-  const [showQuickStatusUpdate, setShowQuickStatusUpdate] = useState(false)
-  const [isQuickUpdating, setIsQuickUpdating] = useState(false)
-
-  // Mock data
-  const customers = [
-    {
-      id: "KH001",
-      name: "Nguyễn Văn A",
-      email: "nguyenvana@gmail.com",
-      phone: "0901234567",
-      address: "123 Đường Lê Lợi, Quận 1, TP.HCM",
-    },
-    {
-      id: "KH002",
-      name: "Trần Thị B",
-      email: "tranthib@gmail.com",
-      phone: "0912345678",
-      address: "456 Đường Nguyễn Huệ, Quận 3, TP.HCM",
-    },
-    {
-      id: "KH003",
-      name: "Lê Văn C",
-      email: "levanc@gmail.com",
-      phone: "0923456789",
-      address: "789 Đường Pasteur, Quận 1, TP.HCM",
-    },
-    {
-      id: "KH004",
-      name: "Phạm Thị D",
-      email: "phamthid@gmail.com",
-      phone: "0934567890",
-      address: "321 Đường Võ Văn Tần, Quận 3, TP.HCM",
-    },
-    {
-      id: "KH005",
-      name: "Hoàng Văn E",
-      email: "hoangvane@gmail.com",
-      phone: "0945678901",
-      address: "654 Đường Cách Mạng Tháng 8, Quận 10, TP.HCM",
-    },
-  ]
-
-  const products = [
-    {
-      id: "SP001",
-      name: "Thức ăn cá Koi cao cấp",
-      price: 250000,
-      quantity: 150,
-      image: "/placeholder.svg?height=40&width=40",
-    },
-    {
-      id: "SP002",
-      name: "Máy lọc nước hồ cá",
-      price: 1500000,
-      quantity: 25,
-      image: "/placeholder.svg?height=40&width=40",
-    },
-    {
-      id: "SP003",
-      name: "Thuốc trị bệnh cho cá",
-      price: 180000,
-      quantity: 5,
-      image: "/placeholder.svg?height=40&width=40",
-    },
-    {
-      id: "SP004",
-      name: "Đèn LED chiếu sáng hồ",
-      price: 800000,
-      quantity: 12,
-      image: "/placeholder.svg?height=40&width=40",
-    },
-    {
-      id: "SP005",
-      name: "Bộ test nước hồ cá",
-      price: 350000,
-      quantity: 8,
-      image: "/placeholder.svg?height=40&width=40",
-    },
-    {
-      id: "SP006",
-      name: "Thức ăn cá Koi loại thường",
-      price: 120000,
-      quantity: 200,
-      image: "/placeholder.svg?height=40&width=40",
-    },
-  ]
-
-  const paymentMethods = [
-    { value: "cash", label: "Tiền mặt" },
-    { value: "transfer", label: "Chuyển khoản" },
-    { value: "credit", label: "Thẻ tín dụng" },
-    { value: "cod", label: "Thu hộ (COD)" },
-  ]
-
-  const shippingMethods = [
-    { value: "standard", label: "Giao hàng tiêu chuẩn", fee: 50000 },
-    { value: "express", label: "Giao hàng nhanh", fee: 30000 },
-    { value: "pickup", label: "Khách tự đến lấy", fee: 0 },
-  ]
+  const customerSearchRef = useRef(null);
+  const productSearchRef = useRef(null);
 
   const orderStatuses = [
-    { value: "pending", label: "Chờ xác nhận" },
-    { value: "confirmed", label: "Đã xác nhận" },
-    { value: "processing", label: "Đang xử lý" },
-    { value: "shipped", label: "Đã gửi hàng" },
-    { value: "delivered", label: "Đã giao hàng" },
-    { value: "cancelled", label: "Đã hủy" },
-  ]
+    { value: "PENDING", label: "Chờ xác nhận" },
+    { value: "PAID", label: "Đã thanh toán" },
+    { value: "SHIPPED", label: "Đã gửi hàng" },
+    { value: "COMPLETED", label: "Đã hoàn thành" },
+    { value: "CANCELED", label: "Đã hủy" },
+  ];
 
   useEffect(() => {
-    const loadOrderData = async () => {
-      setIsLoading(true)
-      setErrors({})
+    const loadData = async () => {
+      setIsLoading(true);
+      setErrors({});
 
       try {
-        await new Promise((resolve) => setTimeout(resolve, 500))
+        const fetchedCustomers = await orderService.getPatientForOrder(1);
+        setCustomers([fetchedCustomers]);
 
-        if (!orderId) {
-          throw new Error("Order ID is required")
-        }
+        setProducts([
+          { id: "SP001", name: "Thức ăn cá Koi cao cấp", price: 250000, quantity: 150, image: "/placeholder.svg?height=40&width=40" },
+          { id: "SP002", name: "Máy lọc nước hồ cá", price: 1500000, quantity: 25, image: "/placeholder.svg?height=40&width=40" },
+        ]);
 
-        if (initialOrderData) {
-          // Chuyển đổi dữ liệu từ OrdersPage format sang EditOrderPage format
+        if (orderId && initialOrderData) {
           const convertedData = {
-            id: initialOrderData.id,
+            id: initialOrderData.id || "",
             customer: {
-              name: initialOrderData.customerName,
-              email: initialOrderData.customerEmail,
-              phone: initialOrderData.customerPhone,
-              address: initialOrderData.customerAddress,
+              name: initialOrderData.customerName || "",
+              email: initialOrderData.customerEmail || "",
+              phone: initialOrderData.customerPhone || "",
+              address: initialOrderData.customerAddress || "",
+              userId: initialOrderData.userId || 1,
             },
-            items: initialOrderData.items.map((item) => ({
+            items: (initialOrderData.items || []).map((item) => ({
               ...item,
               maxQuantity: products.find((p) => p.id === item.id)?.quantity || item.quantity + 10,
             })),
-            paymentMethod: getPaymentMethodValue(initialOrderData.paymentMethod),
-            shippingMethod: getShippingMethodValue(initialOrderData.shippingMethod),
             notes: initialOrderData.notes || "",
-            discount: 0, // Tính từ dữ liệu có sẵn nếu cần
-            discountType: "amount",
-            status: initialOrderData.status,
-            createdAt: initialOrderData.createdAt,
-          }
-
-          setOrderData(convertedData)
-          setOriginalData(convertedData)
-          setCustomerSearch(convertedData.customer.name)
-          console.log("Loaded order data:", convertedData)
+            discount: initialOrderData.discount || 0,
+            discountType: initialOrderData.discountType || "amount",
+            status: initialOrderData.status?.toUpperCase() || "PENDING",
+            createdAt: initialOrderData.createdAt || "",
+          };
+          setOrderData(convertedData);
+          setOriginalData(convertedData);
+          setCustomerSearch(convertedData.customer.name);
         } else {
-          throw new Error(`Order with ID "${orderId}" not found`)
+          throw new Error("Invalid order ID or data");
         }
       } catch (error) {
-        console.error("Error loading order:", error)
-        const errorMessage = error.message.includes("not found")
-          ? `Không tìm thấy đơn hàng với mã "${orderId}". Vui lòng kiểm tra lại mã đơn hàng.`
-          : "Có lỗi xảy ra khi tải thông tin đơn hàng. Vui lòng thử lại."
-
-        alert(errorMessage)
-        setTimeout(() => {
-          onBack()
-        }, 2000)
+        console.error("Error loading order:", error);
+        alert("Không thể tải thông tin đơn hàng. Vui lòng thử lại.");
+        onBack();
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
-    }
+    };
 
-    if (orderId) {
-      loadOrderData()
-    } else {
-      console.warn("No order ID provided")
-      alert("Không có mã đơn hàng để chỉnh sửa!")
-      onBack()
-    }
-  }, [orderId, initialOrderData, onBack])
+    loadData();
+  }, [orderId, initialOrderData, onBack]);
 
-  // Helper functions để chuyển đổi giữa label và value
-  const getPaymentMethodValue = (label) => {
-    const method = paymentMethods.find((m) => m.label === label)
-    return method ? method.value : "cash"
-  }
-
-  const getShippingMethodValue = (label) => {
-    const method = shippingMethods.find((m) => m.label === label)
-    return method ? method.value : "standard"
-  }
-
-  const getStatusText = (status) => {
-    switch (status) {
-      case "pending":
-        return "Chờ xác nhận"
-      case "confirmed":
-        return "Đã xác nhận"
-      case "processing":
-        return "Đang xử lý"
-      case "shipped":
-        return "Đã gửi hàng"
-      case "delivered":
-        return "Đã giao hàng"
-      case "cancelled":
-        return "Đã hủy"
-      default:
-        return status
-    }
-  }
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (customerSearchRef.current && !customerSearchRef.current.contains(event.target)) {
+        setShowCustomerList(false);
+      }
+      if (productSearchRef.current && !productSearchRef.current.contains(event.target)) {
+        setShowProductList(false);
+      }
+    };
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, []);
 
   useEffect(() => {
     if (originalData) {
-      const hasChanged = JSON.stringify(orderData) !== JSON.stringify(originalData)
-      setHasChanges(hasChanged)
+      setHasChanges(JSON.stringify(orderData) !== JSON.stringify(originalData));
     }
-  }, [orderData, originalData])
+  }, [orderData, originalData]);
 
   const filteredCustomers = customers.filter(
-    (customer) =>
-      customer.name.toLowerCase().includes(customerSearch.toLowerCase()) ||
-      customer.phone.includes(customerSearch) ||
-      customer.email.toLowerCase().includes(customerSearch.toLowerCase()),
-  )
+      (customer) =>
+          customer.name?.toLowerCase().includes(customerSearch.toLowerCase()) ||
+          customer.phone?.includes(customerSearch) ||
+          customer.email?.toLowerCase().includes(customerSearch.toLowerCase())
+  );
 
   const filteredProducts = products.filter(
-    (product) =>
-      product.name.toLowerCase().includes(productSearch.toLowerCase()) ||
-      product.id.toLowerCase().includes(productSearch.toLowerCase()),
-  )
+      (product) =>
+          product.name?.toLowerCase().includes(productSearch.toLowerCase()) ||
+          product.id?.toLowerCase().includes(productSearch.toLowerCase())
+  );
 
   const selectCustomer = (customer) => {
     setOrderData((prev) => ({
       ...prev,
       customer: {
-        name: customer.name,
-        email: customer.email,
-        phone: customer.phone,
-        address: customer.address,
+        name: customer.name || "",
+        email: customer.email || "",
+        phone: customer.phone || "",
+        address: customer.address || "",
+        userId: customer.id || 1,
       },
-    }))
-    setCustomerSearch(customer.name)
-    setShowCustomerList(false)
-
+    }));
+    setCustomerSearch(customer.name || "");
+    setShowCustomerList(false);
     setErrors((prev) => ({
       ...prev,
       "customer.name": "",
       "customer.email": "",
       "customer.phone": "",
       "customer.address": "",
-    }))
-  }
+    }));
+  };
 
   const addProduct = (product) => {
     if (product.quantity === 0) {
-      alert("Sản phẩm này đã hết hàng!")
-      return
+      alert("Sản phẩm này đã hết hàng!");
+      return;
     }
-
-    const existingItem = orderData.items.find((item) => item.id === product.id)
-
-    if (existingItem) {
-      if (existingItem.quantity >= product.quantity) {
-        alert("Không thể thêm vì vượt quá số lượng tồn kho!")
-        return
-      }
-
-      setOrderData((prev) => ({
-        ...prev,
-        items: prev.items.map((item) =>
-          item.id === product.id
-            ? { ...item, quantity: item.quantity + 1, total: (item.quantity + 1) * item.price }
-            : item,
-        ),
-      }))
-    } else {
-      setOrderData((prev) => ({
-        ...prev,
-        items: [
-          ...prev.items,
-          {
-            id: product.id,
-            name: product.name,
-            price: product.price,
-            quantity: 1,
-            total: product.price,
-            image: product.image,
-            maxQuantity: product.quantity,
-          },
-        ],
-      }))
+    const existingItem = orderData.items.find((item) => item.id === product.id);
+    if (existingItem && existingItem.quantity >= product.quantity) {
+      alert("Không thể thêm vì vượt quá số lượng tồn kho!");
+      return;
     }
-
-    setProductSearch("")
-    setShowProductList(false)
-  }
+    setOrderData((prev) => ({
+      ...prev,
+      items: existingItem
+          ? prev.items.map((item) =>
+              item.id === product.id
+                  ? { ...item, quantity: item.quantity + 1, total: (item.quantity + 1) * item.price }
+                  : item
+          )
+          : [
+            ...prev.items,
+            {
+              id: product.id,
+              name: product.name,
+              price: product.price,
+              quantity: 1,
+              total: product.price,
+              image: product.image,
+              maxQuantity: product.quantity,
+            },
+          ],
+    }));
+    setProductSearch("");
+    setShowProductList(false);
+  };
 
   const updateItemQuantity = (itemId, newQuantity) => {
+    const item = orderData.items.find((item) => item.id === itemId);
     if (newQuantity <= 0) {
-      removeItem(itemId)
-      return
+      removeItem(itemId);
+      return;
     }
-
-    const item = orderData.items.find((item) => item.id === itemId)
     if (newQuantity > item.maxQuantity) {
-      alert("Số lượng vượt quá tồn kho!")
-      return
+      alert("Số lượng vượt quá tồn kho!");
+      return;
     }
-
     setOrderData((prev) => ({
       ...prev,
       items: prev.items.map((item) =>
-        item.id === itemId ? { ...item, quantity: newQuantity, total: newQuantity * item.price } : item,
+          item.id === itemId ? { ...item, quantity: newQuantity, total: newQuantity * item.price } : item
       ),
-    }))
-  }
+    }));
+  };
 
   const removeItem = (itemId) => {
     setOrderData((prev) => ({
       ...prev,
       items: prev.items.filter((item) => item.id !== itemId),
-    }))
-  }
+    }));
+  };
 
   const handleCustomerChange = (field, value) => {
     setOrderData((prev) => ({
       ...prev,
-      customer: {
-        ...prev.customer,
-        [field]: value,
-      },
-    }))
+      customer: { ...prev.customer, [field]: value },
+    }));
+    setErrors((prev) => ({ ...prev, [`customer.${field}`]: "" }));
+  };
 
-    if (errors[`customer.${field}`]) {
-      setErrors((prev) => ({
-        ...prev,
-        [`customer.${field}`]: "",
-      }))
-    }
-  }
+  const calculateSubtotal = () => orderData.items.reduce((sum, item) => sum + item.total, 0);
 
-  const calculateSubtotal = () => {
-    return orderData.items.reduce((sum, item) => sum + item.total, 0)
-  }
+  const calculateDiscount = () =>
+      orderData.discountType === "percentage"
+          ? (calculateSubtotal() * orderData.discount) / 100
+          : orderData.discount;
 
-  const calculateDiscount = () => {
-    const subtotal = calculateSubtotal()
-    if (orderData.discountType === "percentage") {
-      return (subtotal * orderData.discount) / 100
-    }
-    return orderData.discount
-  }
+  const calculateTax = () => Math.round((calculateSubtotal() - calculateDiscount()) * 0.1);
 
-  const calculateShipping = () => {
-    const method = shippingMethods.find((m) => m.value === orderData.shippingMethod)
-    return method ? method.fee : 0
-  }
-
-  const calculateTax = () => {
-    const subtotal = calculateSubtotal()
-    const discount = calculateDiscount()
-    return Math.round((subtotal - discount) * 0.1)
-  }
-
-  const calculateTotal = () => {
-    const subtotal = calculateSubtotal()
-    const discount = calculateDiscount()
-    const shipping = calculateShipping()
-    const tax = calculateTax()
-    return subtotal - discount + shipping + tax
-  }
+  const calculateTotal = () => calculateSubtotal() - calculateDiscount() + calculateTax();
 
   const validateForm = () => {
-    const newErrors = {}
+    const newErrors = {};
+    if (!orderData.customer.name?.trim()) newErrors["customer.name"] = "Tên khách hàng là bắt buộc";
+    if (!orderData.customer.email?.trim()) newErrors["customer.email"] = "Email là bắt buộc";
+    if (!orderData.customer.phone?.trim()) newErrors["customer.phone"] = "Số điện thoại là bắt buộc";
+    if (!orderData.customer.address?.trim()) newErrors["customer.address"] = "Địa chỉ là bắt buộc";
+    if (orderData.items.length === 0) newErrors.items = "Phải có ít nhất một sản phẩm";
 
-    if (!orderData.customer.name.trim()) newErrors["customer.name"] = "Tên khách hàng là bắt buộc"
-    if (!orderData.customer.email.trim()) newErrors["customer.email"] = "Email là bắt buộc"
-    if (!orderData.customer.phone.trim()) newErrors["customer.phone"] = "Số điện thoại là bắt buộc"
-    if (!orderData.customer.address.trim()) newErrors["customer.address"] = "Địa chỉ là bắt buộc"
-
-    if (orderData.items.length === 0) newErrors.items = "Phải có ít nhất một sản phẩm"
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (orderData.customer.email && !emailRegex.test(orderData.customer.email)) {
-      newErrors["customer.email"] = "Email không hợp lệ"
+      newErrors["customer.email"] = "Email không hợp lệ";
     }
-
-    const phoneRegex = /^[0-9]{10,11}$/
+    const phoneRegex = /^[0-9]{10,11}$/;
     if (orderData.customer.phone && !phoneRegex.test(orderData.customer.phone.replace(/\s/g, ""))) {
-      newErrors["customer.phone"] = "Số điện thoại không hợp lệ"
+      newErrors["customer.phone"] = "Số điện thoại không hợp lệ";
     }
 
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
+    if (!validateForm()) return;
 
-    if (!validateForm()) return
-
-    setIsSubmitting(true)
-
+    setIsSubmitting(true);
     try {
-      const now = new Date()
+      const orderPayload = {
+        userId: orderData.customer.userId || 1,
+        shippingAddress: orderData.customer.address,
+        items: orderData.items.map((item) => ({
+          productId: parseInt(item.id.replace("SP", "")),
+          productName: item.name,
+          quantity: item.quantity,
+          price: item.price,
+          subtotal: item.total,
+        })),
+        totalAmount: calculateTotal(),
+        status: orderData.status,
+        notes: orderData.notes,
+        discount: calculateDiscount(),
+      };
 
+      await orderService.updateOrder(orderId, orderPayload);
       const updatedOrder = {
-        id: orderData.id,
+        ...orderData,
         customerName: orderData.customer.name,
         customerEmail: orderData.customer.email,
         customerPhone: orderData.customer.phone,
         customerAddress: orderData.customer.address,
-        orderDate: new Date(orderData.createdAt).toLocaleDateString("vi-VN"),
-        status: orderData.status,
-        statusText: getStatusText(orderData.status),
-        paymentMethod: paymentMethods.find((m) => m.value === orderData.paymentMethod)?.label,
-        paymentStatus: originalData.paymentStatus || "pending", // Giữ nguyên payment status
-        shippingMethod: shippingMethods.find((m) => m.value === orderData.shippingMethod)?.label,
-        items: orderData.items,
+        userId: orderData.customer.userId,
         subtotal: calculateSubtotal(),
-        shipping: calculateShipping(),
         tax: calculateTax(),
         total: calculateTotal(),
-        notes: orderData.notes,
-        createdAt: orderData.createdAt,
-        updatedAt: now.toISOString(),
-      }
+        discount: calculateDiscount(),
+        updatedAt: new Date().toISOString(),
+        statusText: orderStatuses.find((s) => s.value === orderData.status)?.label || orderData.status,
+      };
 
-      await new Promise((resolve) => setTimeout(resolve, 2000))
-
-      console.log("Updated order:", updatedOrder)
-
-      // Gọi callback để cập nhật danh sách đơn hàng
-      if (onOrderUpdated) {
-        onOrderUpdated(updatedOrder)
-      }
-
-      setOriginalData(orderData)
-      setHasChanges(false)
+      onOrderUpdated(updatedOrder);
+      setOriginalData(orderData);
+      setHasChanges(false);
+      alert("Đơn hàng đã được cập nhật thành công!");
     } catch (error) {
-      console.error("Error updating order:", error)
-      alert("Có lỗi xảy ra khi cập nhật đơn hàng!")
+      console.error("Error updating order:", error);
+      alert("Có lỗi xảy ra khi cập nhật đơn hàng: " + (error.message || "Vui lòng thử lại."));
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   const handleDelete = async () => {
-    if (window.confirm("Bạn có chắc chắn muốn xóa đơn hàng này không? Hành động này không thể hoàn tác.")) {
-      try {
-        await new Promise((resolve) => setTimeout(resolve, 1000))
-
-        console.log("Deleted order:", orderId)
-
-        // Gọi callback để xóa đơn hàng khỏi danh sách
-        if (onOrderDeleted) {
-          onOrderDeleted(orderId)
-        }
-      } catch (error) {
-        console.error("Error deleting order:", error)
-        alert("Có lỗi xảy ra khi xóa đơn hàng!")
-      }
-    }
-  }
-
-  const resetForm = () => {
-    if (window.confirm("Bạn có chắc chắn muốn hủy tất cả thay đổi không?")) {
-      setOrderData(originalData)
-      setCustomerSearch(originalData.customer.name)
-      setErrors({})
-      setHasChanges(false)
-    }
-  }
-
-  // Thêm function cập nhật nhanh trạng thái
-  const handleQuickStatusUpdate = async (newStatus) => {
-    if (newStatus === orderData.status) return
-
-    setIsQuickUpdating(true)
-
+    if (!window.confirm("Bạn có chắc chắn muốn xóa đơn hàng này?")) return;
+    setIsSubmitting(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      await orderService.deleteOrder(orderId);
+      onOrderDeleted(orderId);
+      alert("Đơn hàng đã được xóa thành công!");
+      onBack();
+    } catch (error) {
+      console.error("Error deleting order:", error);
+      alert("Có lỗi xảy ra khi xóa đơn hàng: " + (error.message || "Vui lòng thử lại."));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
-      const updatedData = {
+  const handleQuickStatusUpdate = async (newStatus) => {
+    if (newStatus === orderData.status) return;
+    setIsQuickUpdating(true);
+    try {
+      await orderService.updateOrderStatus(orderId, newStatus);
+      const updatedOrder = {
         ...orderData,
         status: newStatus,
-      }
-
-      setOrderData(updatedData)
-
-      // Tự động lưu thay đổi trạng thái
-      const now = new Date()
-      const updatedOrder = {
-        id: orderData.id,
-        customerName: orderData.customer.name,
-        customerEmail: orderData.customer.email,
-        customerPhone: orderData.customer.phone,
-        customerAddress: orderData.customer.address,
-        orderDate: new Date(orderData.createdAt).toLocaleDateString("vi-VN"),
-        status: newStatus,
-        statusText: getStatusText(newStatus),
-        paymentMethod: paymentMethods.find((m) => m.value === orderData.paymentMethod)?.label,
-        paymentStatus: originalData.paymentStatus || "pending",
-        shippingMethod: shippingMethods.find((m) => m.value === orderData.shippingMethod)?.label,
-        items: orderData.items,
-        subtotal: calculateSubtotal(),
-        shipping: calculateShipping(),
-        tax: calculateTax(),
-        total: calculateTotal(),
-        notes: orderData.notes,
-        createdAt: orderData.createdAt,
-        updatedAt: now.toISOString(),
-      }
-
-      if (onOrderUpdated) {
-        onOrderUpdated(updatedOrder)
-      }
-
-      alert(`Trạng thái đã được cập nhật thành "${getStatusText(newStatus)}"`)
+        statusText: orderStatuses.find((s) => s.value === newStatus)?.label || newStatus,
+        updatedAt: new Date().toISOString(),
+      };
+      setOrderData(updatedOrder);
+      onOrderUpdated(updatedOrder);
+      alert(`Trạng thái đơn hàng đã được cập nhật thành "${orderStatuses.find((s) => s.value === newStatus)?.label || newStatus}"`);
     } catch (error) {
-      console.error("Error updating status:", error)
-      alert("Có lỗi xảy ra khi cập nhật trạng thái!")
+      console.error("Error updating status:", error);
+      alert("Có lỗi xảy ra khi cập nhật trạng thái: " + (error.message || "Vui lòng thử lại."));
     } finally {
-      setIsQuickUpdating(false)
-      setShowQuickStatusUpdate(false)
+      setIsQuickUpdating(false);
+      setShowQuickStatusUpdate(false);
     }
-  }
+  };
 
-  // Close dropdowns when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (!event.target.closest(".customer-search-container")) {
-        setShowCustomerList(false)
-      }
-      if (!event.target.closest(".product-search-container")) {
-        setShowProductList(false)
-      }
-    }
-
-    document.addEventListener("click", handleClickOutside)
-    return () => document.removeEventListener("click", handleClickOutside)
-  }, [])
+  const resetForm = () => {
+    if (!window.confirm("Bạn có chắc chắn muốn hủy tất cả thay đổi?")) return;
+    setOrderData(originalData);
+    setCustomerSearch(originalData.customer.name);
+    setErrors({});
+    setHasChanges(false);
+  };
 
   if (isLoading) {
     return (
-      <div className="edit-order-container">
-        <div className="loading-state">
-          <div className="loading-spinner"></div>
-          <p>Đang tải thông tin đơn hàng...</p>
-          <small>Mã đơn hàng: {orderId}</small>
+        <div className="eop-edit-order-container eop-max-w-7xl eop-mx-auto eop-p-6">
+          <div className="eop-loading-state eop-flex eop-flex-col eop-items-center eop-justify-center eop-h-64">
+            <div className="eop-animate-spin eop-rounded-full eop-h-12 eop-w-12 eop-border-t-2 eop-border-b-2 eop-border-blue-500"></div>
+            <p className="eop-mt-4 eop-text-gray-600">Đang tải thông tin đơn hàng...</p>
+            <p className="eop-text-sm eop-text-gray-500">Mã đơn hàng: {orderId}</p>
+          </div>
         </div>
-      </div>
-    )
+    );
   }
 
   if (!orderData.id && !isLoading) {
     return (
-      <div className="edit-order-container">
-        <div className="error-state">
-          <div className="error-icon">⚠️</div>
-          <h2>Không thể tải đơn hàng</h2>
-          <p>Đơn hàng với mã "{orderId}" không tồn tại hoặc đã bị xóa.</p>
-          <button className="btn btn-primary" onClick={onBack}>
-            <ArrowLeft size={16} />
-            Quay lại danh sách
-          </button>
+        <div className="eop-edit-order-container eop-max-w-7xl eop-mx-auto eop-p-6">
+          <div className="eop-error-state eop-flex eop-flex-col eop-items-center eop-justify-center eop-h-64 eop-bg-red-50 eop-rounded-lg">
+            <div className="eop-text-4xl eop-text-red-500">⚠️</div>
+            <h2 className="eop-text-xl eop-font-semibold eop-text-red-600 eop-mt-4">Không thể tải đơn hàng</h2>
+            <p className="eop-text-gray-600 eop-mt-2">Đơn hàng với mã "{orderId}" không tồn tại hoặc đã bị xóa.</p>
+            <button
+                className="eop-mt-4 eop-btn eop-bg-blue-500 eop-text-white eop-hover:bg-blue-600 eop-flex eop-items-center eop-gap-2"
+                onClick={onBack}
+            >
+              <ArrowLeft size={16} />
+              Quay lại danh sách
+            </button>
+          </div>
         </div>
-      </div>
-    )
+    );
   }
 
-  if (previewMode) {
-    return (
-      <div className="edit-order-container">
-        <div className="page-header">
-          <button className="btn btn-secondary" onClick={() => setPreviewMode(false)}>
+  return (
+      <div className="eop-edit-order-container eop-max-w-7xl eop-mx-auto eop-p-6">
+        <div className="eop-page-header eop-flex eop-items-center eop-justify-between eop-mb-6">
+          <button
+              className="eop-btn eop-bg-gray-500 eop-text-white eop-hover:bg-gray-600 eop-flex eop-items-center eop-gap-2"
+              onClick={onBack}
+          >
             <ArrowLeft size={16} />
-            Quay lại chỉnh sửa
+            Quay lại
           </button>
-          <h1>Xem trước đơn hàng #{orderData.id}</h1>
-          <div className="header-actions">
-            <button className="btn btn-danger" onClick={handleDelete}>
-              <Trash2 size={16} />
-              Xóa đơn hàng
+          <h1 className="eop-text-2xl eop-font-bold eop-text-gray-800">Chỉnh sửa đơn hàng #{orderData.id}</h1>
+          <div className="eop-header-actions eop-flex eop-gap-3">
+            {hasChanges && (
+                <button
+                    className="eop-btn eop-bg-yellow-500 eop-text-white eop-hover:bg-yellow-600 eop-flex eop-items-center eop-gap-2"
+                    onClick={resetForm}
+                >
+                  Hủy thay đổi
+                </button>
+            )}
+            <button
+                className="eop-btn eop-bg-blue-500 eop-text-white eop-hover:bg-blue-600 eop-flex eop-items-center eop-gap-2"
+                onClick={() => setPreviewMode(true)}
+            >
+              <Eye size={16} />
+              Xem trước
             </button>
-            <button className="btn btn-primary" onClick={handleSubmit} disabled={isSubmitting || !hasChanges}>
+            <button
+                className="eop-btn eop-bg-red-500 eop-text-white eop-hover:bg-red-600 eop-flex eop-items-center eop-gap-2"
+                onClick={handleDelete}
+                disabled={isSubmitting}
+            >
+              <Trash2 size={16} />
+              Xóa
+            </button>
+            <button
+                className="eop-btn eop-bg-green-500 eop-text-white eop-hover:bg-green-600 eop-flex eop-items-center eop-gap-2"
+                onClick={handleSubmit}
+                disabled={isSubmitting || !hasChanges}
+            >
               <Save size={16} />
               {isSubmitting ? "Đang lưu..." : "Lưu thay đổi"}
             </button>
           </div>
         </div>
 
-        <div className="order-preview">
-          <div className="preview-card">
-            <div className="order-status-section">
-              <h3>Trạng thái đơn hàng</h3>
-              <div className="status-info">
-                <span className={`status-badge ${orderData.status}`}>
-                  {orderStatuses.find((s) => s.value === orderData.status)?.label}
-                </span>
-                <span className="order-date">
-                  Tạo ngày: {new Date(orderData.createdAt).toLocaleDateString("vi-VN")}
-                </span>
-              </div>
+        {hasChanges && (
+            <div className="eop-changes-indicator eop-bg-yellow-100 eop-text-yellow-800 eop-p-3 eop-rounded-lg eop-mb-4">
+              ⚠️ Bạn có thay đổi chưa được lưu
             </div>
+        )}
 
-            <div className="preview-section">
-              <h3>
-                <User size={18} />
-                Thông tin khách hàng
-              </h3>
-              <div className="customer-preview">
-                <p>
-                  <strong>Tên:</strong> {orderData.customer.name}
-                </p>
-                <p>
-                  <strong>Email:</strong> {orderData.customer.email}
-                </p>
-                <p>
-                  <strong>Điện thoại:</strong> {orderData.customer.phone}
-                </p>
-                <p>
-                  <strong>Địa chỉ:</strong> {orderData.customer.address}
-                </p>
-              </div>
-            </div>
-
-            <div className="preview-section">
-              <h3>
-                <Package size={18} />
-                Sản phẩm đặt hàng
-              </h3>
-              <div className="items-preview">
-                {orderData.items.map((item) => (
-                  <div key={item.id} className="item-preview">
-                    <img src={item.image || "/placeholder.svg"} alt={item.name} />
-                    <div className="item-details">
-                      <h4>{item.name}</h4>
-                      <p>Số lượng: {item.quantity}</p>
-                      <p>Đơn giá: ₫{item.price.toLocaleString()}</p>
-                      <p className="item-total">Thành tiền: ₫{item.total.toLocaleString()}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="preview-section">
-              <h3>
-                <CreditCard size={18} />
-                Thông tin thanh toán
-              </h3>
-              <div className="payment-preview">
-                <p>
-                  <strong>Phương thức thanh toán:</strong>{" "}
-                  {paymentMethods.find((m) => m.value === orderData.paymentMethod)?.label}
-                </p>
-                <p>
-                  <strong>Phương thức vận chuyển:</strong>{" "}
-                  {shippingMethods.find((m) => m.value === orderData.shippingMethod)?.label}
-                </p>
-                {orderData.notes && (
-                  <p>
-                    <strong>Ghi chú:</strong> {orderData.notes}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            <div className="preview-section">
-              <h3>Tổng kết đơn hàng</h3>
-              <div className="order-summary">
-                <div className="summary-row">
-                  <span>Tạm tính:</span>
-                  <span>₫{calculateSubtotal().toLocaleString()}</span>
-                </div>
-                {calculateDiscount() > 0 && (
-                  <div className="summary-row">
-                    <span>Giảm giá:</span>
-                    <span>-₫{calculateDiscount().toLocaleString()}</span>
-                  </div>
-                )}
-                <div className="summary-row">
-                  <span>Phí vận chuyển:</span>
-                  <span>₫{calculateShipping().toLocaleString()}</span>
-                </div>
-                <div className="summary-row">
-                  <span>Thuế (10%):</span>
-                  <span>₫{calculateTax().toLocaleString()}</span>
-                </div>
-                <div className="summary-row total">
-                  <span>Tổng cộng:</span>
-                  <span>₫{calculateTotal().toLocaleString()}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  return (
-    <div className="edit-order-container">
-      <div className="page-header">
-        <button className="btn btn-secondary" onClick={onBack}>
-          <ArrowLeft size={16} />
-          Quay lại
-        </button>
-        <h1>Chỉnh sửa đơn hàng #{orderData.id}</h1>
-        <div className="header-actions">
-          {hasChanges && (
-            <button className="btn btn-secondary" onClick={resetForm}>
-              Hủy thay đổi
-            </button>
-          )}
-          <button className="btn btn-secondary" onClick={() => setPreviewMode(true)}>
-            <Eye size={16} />
-            Xem trước
-          </button>
-          <button className="btn btn-danger" onClick={handleDelete}>
-            <Trash2 size={16} />
-            Xóa
-          </button>
-          <button className="btn btn-primary" onClick={handleSubmit} disabled={isSubmitting || !hasChanges}>
-            <Save size={16} />
-            {isSubmitting ? "Đang lưu..." : "Lưu thay đổi"}
-          </button>
-        </div>
-      </div>
-
-      {hasChanges && (
-        <div className="changes-indicator">
-          <p>⚠️ Bạn có thay đổi chưa được lưu</p>
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit} className="edit-order-form">
-        <div className="form-grid">
-          {/* Order Status */}
-          <div className="form-section">
-            <div className="section-header">
-              <h2>Trạng thái đơn hàng</h2>
-              <div className="quick-actions">
+        <form onSubmit={handleSubmit} className="eop-edit-order-form eop-grid eop-grid-cols-1 eop-lg:grid-cols-3 eop-gap-6">
+          <div className="eop-lg:col-span-2 eop-space-y-6">
+            <div className="eop-form-section eop-bg-white eop-p-6 eop-rounded-lg eop-shadow-md">
+              <h2 className="eop-text-lg eop-font-semibold eop-mb-4 eop-flex eop-items-center eop-gap-2">
+                <Calculator size={20} />
+                Trạng thái đơn hàng
+              </h2>
+              <div className="eop-flex eop-justify-between eop-items-center eop-mb-4">
+                <select
+                    className="eop-form-select eop-w-1/2 eop-p-2 eop-border eop-rounded-lg"
+                    value={orderData.status}
+                    onChange={(e) => setOrderData((prev) => ({ ...prev, status: e.target.value }))}
+                >
+                  {orderStatuses.map((status) => (
+                      <option key={status.value} value={status.value}>
+                        {status.label}
+                      </option>
+                  ))}
+                </select>
                 <button
-                  type="button"
-                  className="btn btn-sm btn-primary"
-                  onClick={() => setShowQuickStatusUpdate(!showQuickStatusUpdate)}
-                  disabled={isQuickUpdating}
+                    type="button"
+                    className="eop-btn eop-bg-blue-500 eop-text-white eop-hover:bg-blue-600"
+                    onClick={() => setShowQuickStatusUpdate(!showQuickStatusUpdate)}
+                    disabled={isQuickUpdating}
                 >
                   Cập nhật nhanh
                 </button>
               </div>
-            </div>
-
-            {showQuickStatusUpdate && (
-              <div className="quick-status-update">
-                <p>Chọn trạng thái mới:</p>
-                <div className="status-buttons">
-                  {orderStatuses.map((status) => (
-                    <button
-                      key={status.value}
-                      type="button"
-                      className={`btn btn-sm ${status.value === orderData.status ? "btn-secondary" : "btn-outline"}`}
-                      onClick={() => handleQuickStatusUpdate(status.value)}
-                      disabled={isQuickUpdating || status.value === orderData.status}
-                    >
-                      {isQuickUpdating ? "..." : status.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <div className="form-row">
-              <div className="form-group">
-                <label className="form-label">Trạng thái</label>
-                <select
-                  className="form-select"
-                  value={orderData.status}
-                  onChange={(e) => setOrderData((prev) => ({ ...prev, status: e.target.value }))}
-                >
-                  {orderStatuses.map((status) => (
-                    <option key={status.value} value={status.value}>
-                      {status.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Ngày tạo</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  value={new Date(orderData.createdAt).toLocaleString("vi-VN")}
-                  disabled
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Customer Information */}
-          <div className="form-section">
-            <h2>
-              <User size={20} />
-              Thông tin khách hàng
-            </h2>
-
-            <div className="customer-search-container">
-              <label className="form-label">Tìm khách hàng</label>
-              <div className="search-input-container">
-                <input
-                  type="text"
-                  className="form-input"
-                  value={customerSearch}
-                  onChange={(e) => {
-                    setCustomerSearch(e.target.value)
-                    setShowCustomerList(true)
-                  }}
-                  placeholder="Tìm theo tên, email hoặc số điện thoại"
-                  onFocus={() => setShowCustomerList(true)}
-                />
-                <Search size={16} className="search-icon" />
-              </div>
-
-              {showCustomerList && filteredCustomers.length > 0 && (
-                <div className="dropdown-list">
-                  {filteredCustomers.map((customer) => (
-                    <div key={customer.id} className="dropdown-item" onClick={() => selectCustomer(customer)}>
-                      <div className="customer-item">
-                        <h4>{customer.name}</h4>
-                        <p>
-                          {customer.phone} • {customer.email}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <div className="form-row">
-              <div className="form-group">
-                <label className="form-label required">Tên khách hàng</label>
-                <input
-                  type="text"
-                  className={`form-input ${errors["customer.name"] ? "error" : ""}`}
-                  value={orderData.customer.name}
-                  onChange={(e) => handleCustomerChange("name", e.target.value)}
-                  placeholder="Nhập tên khách hàng"
-                />
-                {errors["customer.name"] && <span className="error-message">{errors["customer.name"]}</span>}
-              </div>
-
-              <div className="form-group">
-                <label className="form-label required">Email</label>
-                <input
-                  type="email"
-                  className={`form-input ${errors["customer.email"] ? "error" : ""}`}
-                  value={orderData.customer.email}
-                  onChange={(e) => handleCustomerChange("email", e.target.value)}
-                  placeholder="Nhập email"
-                />
-                {errors["customer.email"] && <span className="error-message">{errors["customer.email"]}</span>}
-              </div>
-            </div>
-
-            <div className="form-row">
-              <div className="form-group">
-                <label className="form-label required">Số điện thoại</label>
-                <input
-                  type="tel"
-                  className={`form-input ${errors["customer.phone"] ? "error" : ""}`}
-                  value={orderData.customer.phone}
-                  onChange={(e) => handleCustomerChange("phone", e.target.value)}
-                  placeholder="Nhập số điện thoại"
-                />
-                {errors["customer.phone"] && <span className="error-message">{errors["customer.phone"]}</span>}
-              </div>
-
-              <div className="form-group">
-                <label className="form-label required">Địa chỉ</label>
-                <input
-                  type="text"
-                  className={`form-input ${errors["customer.address"] ? "error" : ""}`}
-                  value={orderData.customer.address}
-                  onChange={(e) => handleCustomerChange("address", e.target.value)}
-                  placeholder="Nhập địa chỉ"
-                />
-                {errors["customer.address"] && <span className="error-message">{errors["customer.address"]}</span>}
-              </div>
-            </div>
-          </div>
-
-          {/* Products */}
-          <div className="form-section">
-            <h2>
-              <Package size={20} />
-              Sản phẩm
-            </h2>
-
-            <div className="product-search-container">
-              <label className="form-label">Thêm sản phẩm</label>
-              <div className="search-input-container">
-                <input
-                  type="text"
-                  className="form-input"
-                  value={productSearch}
-                  onChange={(e) => {
-                    setProductSearch(e.target.value)
-                    setShowProductList(true)
-                  }}
-                  placeholder="Tìm sản phẩm theo tên hoặc mã"
-                  onFocus={() => setShowProductList(true)}
-                />
-                <Search size={16} className="search-icon" />
-              </div>
-
-              {showProductList && filteredProducts.length > 0 && (
-                <div className="dropdown-list">
-                  {filteredProducts.map((product) => (
-                    <div
-                      key={product.id}
-                      className={`dropdown-item ${product.quantity === 0 ? "disabled" : ""}`}
-                      onClick={() => product.quantity > 0 && addProduct(product)}
-                    >
-                      <div className="product-item">
-                        <img src={product.image || "/placeholder.svg"} alt={product.name} />
-                        <div className="product-details">
-                          <h4>{product.name}</h4>
-                          <p>
-                            ₫{product.price.toLocaleString()} • Còn {product.quantity}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {errors.items && <span className="error-message">{errors.items}</span>}
-
-            {orderData.items.length > 0 && (
-              <div className="order-items">
-                <h3>Sản phẩm đã chọn</h3>
-                {orderData.items.map((item) => (
-                  <div key={item.id} className="order-item">
-                    <img src={item.image || "/placeholder.svg"} alt={item.name} />
-                    <div className="item-info">
-                      <h4>{item.name}</h4>
-                      <p>₫{item.price.toLocaleString()}</p>
-                    </div>
-                    <div className="quantity-controls">
-                      <button
-                        type="button"
-                        className="btn btn-sm btn-secondary"
-                        onClick={() => updateItemQuantity(item.id, item.quantity - 1)}
-                      >
-                        -
-                      </button>
-                      <span className="quantity">{item.quantity}</span>
-                      <button
-                        type="button"
-                        className="btn btn-sm btn-secondary"
-                        onClick={() => updateItemQuantity(item.id, item.quantity + 1)}
-                      >
-                        +
-                      </button>
-                    </div>
-                    <div className="item-total">₫{item.total.toLocaleString()}</div>
-                    <button type="button" className="btn btn-icon" onClick={() => removeItem(item.id)}>
-                      <X size={16} />
-                    </button>
+              {showQuickStatusUpdate && (
+                  <div className="eop-quick-status-update eop-grid eop-grid-cols-3 eop-gap-2">
+                    {orderStatuses.map((status) => (
+                        <button
+                            key={status.value}
+                            type="button"
+                            className={`eop-btn ${status.value === orderData.status ? "eop-bg-gray-300" : "eop-bg-blue-100 eop-hover:bg-blue-200"} eop-text-gray-800`}
+                            onClick={() => handleQuickStatusUpdate(status.value)}
+                            disabled={isQuickUpdating || status.value === orderData.status}
+                        >
+                          {isQuickUpdating ? "..." : status.label}
+                        </button>
+                    ))}
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Payment & Shipping */}
-          <div className="form-section">
-            <h2>
-              <CreditCard size={20} />
-              Thanh toán & Vận chuyển
-            </h2>
-
-            <div className="form-row">
-              <div className="form-group">
-                <label className="form-label required">Phương thức thanh toán</label>
-                <select
-                  className="form-select"
-                  value={orderData.paymentMethod}
-                  onChange={(e) => setOrderData((prev) => ({ ...prev, paymentMethod: e.target.value }))}
-                >
-                  {paymentMethods.map((method) => (
-                    <option key={method.value} value={method.value}>
-                      {method.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label className="form-label required">Phương thức vận chuyển</label>
-                <select
-                  className="form-select"
-                  value={orderData.shippingMethod}
-                  onChange={(e) => setOrderData((prev) => ({ ...prev, shippingMethod: e.target.value }))}
-                >
-                  {shippingMethods.map((method) => (
-                    <option key={method.value} value={method.value}>
-                      {method.label} {method.fee > 0 && `(+₫${method.fee.toLocaleString()})`}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              )}
             </div>
 
-            <div className="form-row">
-              <div className="form-group">
-                <label className="form-label">Giảm giá</label>
-                <div className="discount-input">
-                  <input
-                    type="number"
-                    className="form-input"
-                    value={orderData.discount}
-                    onChange={(e) => setOrderData((prev) => ({ ...prev, discount: Number(e.target.value) || 0 }))}
-                    placeholder="0"
-                    min="0"
-                  />
-                  <select
-                    className="form-select"
-                    value={orderData.discountType}
-                    onChange={(e) => setOrderData((prev) => ({ ...prev, discountType: e.target.value }))}
-                  >
-                    <option value="amount">₫</option>
-                    <option value="percentage">%</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Ghi chú</label>
-                <textarea
-                  className="form-textarea"
-                  value={orderData.notes}
-                  onChange={(e) => setOrderData((prev) => ({ ...prev, notes: e.target.value }))}
-                  placeholder="Ghi chú đặc biệt cho đơn hàng"
-                  rows={3}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Order Summary */}
-          {orderData.items.length > 0 && (
-            <div className="form-section">
-              <h2>
-                <Calculator size={20} />
-                Tổng kết đơn hàng
+            <div className="eop-form-section eop-bg-white eop-p-6 eop-rounded-lg eop-shadow-md">
+              <h2 className="eop-text-lg eop-font-semibold eop-mb-4 eop-flex eop-items-center eop-gap-2">
+                <User size={20} />
+                Thông tin khách hàng
               </h2>
-
-              <div className="order-summary">
-                <div className="summary-row">
-                  <span>Tạm tính:</span>
-                  <span>₫{calculateSubtotal().toLocaleString()}</span>
+              <div className="eop-relative eop-mb-4" ref={customerSearchRef}>
+                <label className="eop-form-label eop-block eop-text-sm eop-font-medium eop-text-gray-700">Tìm khách hàng</label>
+                <div className="eop-relative">
+                  <input
+                      type="text"
+                      className="eop-form-input eop-w-full eop-p-2 eop-border eop-rounded-lg"
+                      value={customerSearch}
+                      onChange={(e) => {
+                        setCustomerSearch(e.target.value);
+                        setShowCustomerList(true);
+                      }}
+                      placeholder="Tìm theo tên, email hoặc số điện thoại"
+                      onFocus={() => setShowCustomerList(true)}
+                  />
+                  <Search size={16} className="eop-absolute eop-right-3 eop-top-1/2 eop-transform eop--translate-y-1/2 eop-text-gray-400" />
                 </div>
-                {calculateDiscount() > 0 && (
-                  <div className="summary-row discount">
-                    <span>Giảm giá:</span>
-                    <span>-₫{calculateDiscount().toLocaleString()}</span>
-                  </div>
+                {showCustomerList && filteredCustomers.length > 0 && (
+                    <div className="eop-absolute eop-z-10 eop-w-full eop-bg-white eop-border eop-rounded-lg eop-shadow-lg eop-mt-1 eop-max-h-60 eop-overflow-y-auto">
+                      {filteredCustomers.map((customer) => (
+                          <div
+                              key={customer.id}
+                              className="eop-p-3 eop-hover:bg-blue-50 eop-cursor-pointer"
+                              onClick={() => selectCustomer(customer)}
+                          >
+                            <h4 className="eop-font-medium">{customer.name}</h4>
+                            <p className="eop-text-sm eop-text-gray-600">{customer.phone} • {customer.email}</p>
+                          </div>
+                      ))}
+                    </div>
                 )}
-                <div className="summary-row">
-                  <span>Phí vận chuyển:</span>
-                  <span>₫{calculateShipping().toLocaleString()}</span>
+              </div>
+              <div className="eop-grid eop-grid-cols-2 eop-gap-4">
+                <div className="eop-form-group">
+                  <label className="eop-form-label eop-block eop-text-sm eop-font-medium eop-text-gray-700 eop-required">Tên khách hàng</label>
+                  <input
+                      type="text"
+                      className={`eop-form-input eop-w-full eop-p-2 eop-border eop-rounded-lg ${errors["customer.name"] ? "eop-border-red-500" : ""}`}
+                      value={orderData.customer.name}
+                      onChange={(e) => handleCustomerChange("name", e.target.value)}
+                      placeholder="Nhập tên khách hàng"
+                  />
+                  {errors["customer.name"] && <span className="eop-text-red-500 eop-text-sm">{errors["customer.name"]}</span>}
                 </div>
-                <div className="summary-row">
-                  <span>Thuế (10%):</span>
-                  <span>₫{calculateTax().toLocaleString()}</span>
+                <div className="eop-form-group">
+                  <label className="eop-form-label eop-block eop-text-sm eop-font-medium eop-text-gray-700 eop-required">Email</label>
+                  <input
+                      type="email"
+                      className={`eop-form-input eop-w-full eop-p-2 eop-border eop-rounded-lg ${errors["customer.email"] ? "eop-border-red-500" : ""}`}
+                      value={orderData.customer.email}
+                      onChange={(e) => handleCustomerChange("email", e.target.value)}
+                      placeholder="Nhập email"
+                  />
+                  {errors["customer.email"] && <span className="eop-text-red-500 eop-text-sm">{errors["customer.email"]}</span>}
                 </div>
-                <div className="summary-row total">
-                  <span>Tổng cộng:</span>
-                  <span>₫{calculateTotal().toLocaleString()}</span>
+                <div className="eop-form-group">
+                  <label className="eop-form-label eop-block eop-text-sm eop-font-medium eop-text-gray-700 eop-required">Số điện thoại</label>
+                  <input
+                      type="tel"
+                      className={`eop-form-input eop-w-full eop-p-2 eop-border eop-rounded-lg ${errors["customer.phone"] ? "eop-border-red-500" : ""}`}
+                      value={orderData.customer.phone}
+                      onChange={(e) => handleCustomerChange("phone", e.target.value)}
+                      placeholder="Nhập số điện thoại"
+                  />
+                  {errors["customer.phone"] && <span className="eop-text-red-500 eop-text-sm">{errors["customer.phone"]}</span>}
+                </div>
+                <div className="eop-form-group">
+                  <label className="eop-form-label eop-block eop-text-sm eop-font-medium eop-text-gray-700 eop-required">Địa chỉ</label>
+                  <input
+                      type="text"
+                      className={`eop-form-input eop-w-full eop-p-2 eop-border eop-rounded-lg ${errors["customer.address"] ? "eop-border-red-500" : ""}`}
+                      value={orderData.customer.address}
+                      onChange={(e) => handleCustomerChange("address", e.target.value)}
+                      placeholder="Nhập địa chỉ"
+                  />
+                  {errors["customer.address"] && <span className="eop-text-red-500 eop-text-sm">{errors["customer.address"]}</span>}
                 </div>
               </div>
             </div>
-          )}
-        </div>
-      </form>
-    </div>
-  )
-}
 
-export default EditOrderPage
+            <div className="eop-form-section eop-bg-white eop-p-6 eop-rounded-lg eop-shadow-md">
+              <h2 className="eop-text-lg eop-font-semibold eop-mb-4 eop-flex eop-items-center eop-gap-2">
+                <Package size={20} />
+                Sản phẩm
+              </h2>
+              <div className="eop-relative eop-mb-4" ref={productSearchRef}>
+                <label className="eop-form-label eop-block eop-text-sm eop-font-medium eop-text-gray-700">Thêm sản phẩm</label>
+                <div className="eop-relative">
+                  <input
+                      type="text"
+                      className="eop-form-input eop-w-full eop-p-2 eop-border eop-rounded-lg"
+                      value={productSearch}
+                      onChange={(e) => {
+                        setProductSearch(e.target.value);
+                        setShowProductList(true);
+                      }}
+                      placeholder="Tìm sản phẩm theo tên hoặc mã"
+                      onFocus={() => setShowProductList(true)}
+                  />
+                  <Search size={16} className="eop-absolute eop-right-3 eop-top-1/2 eop-transform eop--translate-y-1/2 eop-text-gray-400" />
+                </div>
+                {showProductList && filteredProducts.length > 0 && (
+                    <div className="eop-absolute eop-z-10 eop-w-full eop-bg-white eop-border eop-rounded-lg eop-shadow-lg eop-mt-1 eop-max-h-60 eop-overflow-y-auto">
+                      {filteredProducts.map((product) => (
+                          <div
+                              key={product.id}
+                              className={`eop-p-3 eop-hover:bg-blue-50 eop-cursor-pointer ${product.quantity === 0 ? "eop-opacity-50 eop-cursor-not-allowed" : ""}`}
+                              onClick={() => product.quantity > 0 && addProduct(product)}
+                          >
+                            <div className="eop-flex eop-items-center eop-gap-3">
+                              <img src={product.image} alt={product.name} className="eop-w-10 eop-h-10 eop-object-cover eop-rounded" />
+                              <div>
+                                <h4 className="eop-font-medium">{product.name}</h4>
+                                <p className="eop-text-sm eop-text-gray-600">₫{product.price.toLocaleString()} • Còn {product.quantity}</p>
+                              </div>
+                            </div>
+                          </div>
+                      ))}
+                    </div>
+                )}
+              </div>
+              {errors.items && <span className="eop-text-red-500 eop-text-sm">{errors.items}</span>}
+              {orderData.items.length > 0 && (
+                  <div className="eop-order-items eop-space-y-4">
+                    <h3 className="eop-text-md eop-font-semibold">Sản phẩm đã chọn</h3>
+                    {orderData.items.map((item) => (
+                        <div key={item.id} className="eop-flex eop-items-center eop-gap-4 eop-p-3 eop-bg-gray-50 eop-rounded-lg">
+                          <img src={item.image} alt={item.name} className="eop-w-12 eop-h-12 eop-object-cover eop-rounded" />
+                          <div className="eop-flex-1">
+                            <h4 className="eop-font-medium">{item.name}</h4>
+                            <p className="eop-text-sm eop-text-gray-600">₫{item.price.toLocaleString()}</p>
+                          </div>
+                          <div className="eop-flex eop-items-center eop-gap-2">
+                            <button
+                                type="button"
+                                className="eop-btn eop-bg-gray-200 eop-hover:bg-gray-300 eop-text-gray-800"
+                                onClick={() => updateItemQuantity(item.id, item.quantity - 1)}
+                            >
+                              -
+                            </button>
+                            <span className="eop-w-12 eop-text-center">{item.quantity}</span>
+                            <button
+                                type="button"
+                                className="eop-btn eop-bg-gray-200 eop-hover:bg-gray-300 eop-text-gray-800"
+                                onClick={() => updateItemQuantity(item.id, item.quantity + 1)}
+                            >
+                              +
+                            </button>
+                          </div>
+                          <p className="eop-font-semibold">₫{item.total.toLocaleString()}</p>
+                          <button
+                              type="button"
+                              className="eop-btn eop-bg-red-500 eop-text-white eop-hover:bg-red-600"
+                              onClick={() => removeItem(item.id)}
+                          >
+                            <X size={16} />
+                          </button>
+                        </div>
+                    ))}
+                  </div>
+              )}
+            </div>
+          </div>
+
+          <div className="eop-lg:col-span-1">
+            <div className="eop-form-section eop-bg-white eop-p-6 eop-rounded-lg eop-shadow-md eop-sticky eop-top-6">
+              <h2 className="eop-text-lg eop-font-semibold eop-mb-4">Tổng kết</h2>
+              <div className="eop-space-y-4">
+                <div className="eop-form-group">
+                  <label className="eop-form-label eop-block eop-text-sm eop-font-medium eop-text-gray-700">Giảm giá</label>
+                  <div className="eop-flex eop-gap-2">
+                    <input
+                        type="number"
+                        className="eop-form-input eop-w-full eop-p-2 eop-border eop-rounded-lg"
+                        value={orderData.discount}
+                        onChange={(e) => setOrderData((prev) => ({ ...prev, discount: Number(e.target.value) || 0 }))}
+                        placeholder="0"
+                        min="0"
+                    />
+                    <select
+                        className="eop-form-select eop-p-2 eop-border eop-rounded-lg"
+                        value={orderData.discountType}
+                        onChange={(e) => setOrderData((prev) => ({ ...prev, discountType: e.target.value }))}
+                    >
+                      <option value="amount">₫</option>
+                      <option value="percentage">%</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="eop-form-group">
+                  <label className="eop-form-label eop-block eop-text-sm eop-font-medium eop-text-gray-700">Ghi chú</label>
+                  <textarea
+                      className="eop-form-textarea eop-w-full eop-p-2 eop-border eop-rounded-lg"
+                      value={orderData.notes}
+                      onChange={(e) => setOrderData((prev) => ({ ...prev, notes: e.target.value }))}
+                      placeholder="Ghi chú đặc biệt cho đơn hàng"
+                      rows={4}
+                  />
+                </div>
+                {orderData.items.length > 0 && (
+                    <div className="eop-order-summary eop-space-y-2">
+                      <h3 className="eop-text-md eop-font-semibold">Tổng kết đơn hàng</h3>
+                      <div className="eop-flex eop-justify-between"><span>Tạm tính:</span><span>₫{calculateSubtotal().toLocaleString()}</span></div>
+                      {calculateDiscount() > 0 && (
+                          <div className="eop-flex eop-justify-between eop-text-green-600"><span>Giảm giá:</span><span>-₫{calculateDiscount().toLocaleString()}</span></div>
+                      )}
+                      <div className="eop-flex eop-justify-between"><span>Thuế (10%):</span><span>₫{calculateTax().toLocaleString()}</span></div>
+                      <div className="eop-flex eop-justify-between eop-font-bold eop-text-lg"><span>Tổng cộng:</span><span>₫{calculateTotal().toLocaleString()}</span></div>
+                    </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+  );
+};
+
+export default EditOrderPage;

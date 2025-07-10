@@ -33,7 +33,7 @@
 
 /* Table specific content */
 .customer-info {
-  display: flex;
+  display: block;
   flex-direction: column;
   gap: 2px;
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Sidebar from "../../../components/storeManagement/Sidebar";
+import SideBar from "./Sidebar";
 import Header from "../../../components/storeManagement/Header";
 import OrdersPage from "./OrdersPage";
 import InventoryPage from "./InventoryPage";
@@ -10,7 +10,8 @@ import MessagesPage from "./MessagesPage";
 import ProfilePage from "./ProfilePage";
 import DashboardPage from "./DashboardPage";
 import "./STM-Style/STM-globals.css";
-const StoreManagerDashboard = () => {
+
+const AdminDashboard = () => {
   const [activeSection, setActiveSection] = useState("dashboard");
 
   const menuItems = [
@@ -25,7 +26,7 @@ const StoreManagerDashboard = () => {
   const renderContent = () => {
     switch (activeSection) {
       case "dashboard":
-        return <DashboardPage />;
+        return <DashboardPage setActiveTab={setActiveSection} />;
       case "orders":
         return <OrdersPage />;
       case "inventory":
@@ -37,7 +38,7 @@ const StoreManagerDashboard = () => {
       case "profile":
         return <ProfilePage />;
       default:
-        return <DashboardPage />;
+        return <DashboardPage setActiveTab={setActiveSection} />;
     }
   };
 
@@ -47,18 +48,14 @@ const StoreManagerDashboard = () => {
   };
 
   return (
-    <div className="adm-layout">
-      <Sidebar
-        activeSection={activeSection}
-        onSectionChange={setActiveSection}
-      />
-
-      <main className="mc">
-        <Header title={getSectionTitle()} />
-        <div className="mc-content">{renderContent()}</div>
-      </main>
-    </div>
+      <div className="dashboard">
+        <SideBar activeTab={activeSection} setActiveTab={setActiveSection} />
+        <div className="dashboard-content">
+          <Header title={getSectionTitle()} />
+          <div className="content-area">{renderContent()}</div>
+        </div>
+      </div>
   );
 };
 
-export default StoreManagerDashboard;
+export default AdminDashboard;
