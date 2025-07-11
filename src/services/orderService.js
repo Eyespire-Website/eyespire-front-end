@@ -1,128 +1,104 @@
 import axios from 'axios';
-import authService from './authService';
+import authHeader from './auth-header';
 
-const API_URL = 'http://localhost:8080/api';
+const BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
 
-const orderService = {
-  /**
-   * Tạo đơn hàng từ giỏ hàng
-   * @param {Object} orderData Dữ liệu đơn hàng
-   * @returns {Promise<Object>} Thông tin đơn hàng đã tạo
-   */
-  createOrder: async (orderData) => {
-    try {
-      const token = authService.getToken();
-      const response = await axios.post(`${API_URL}/orders`, orderData, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Error creating order:', error);
-      throw error;
+class OrderService {
+    /**
+     * Lấy danh sách đơn hàng của người dùng
+     * @param {number} userId - ID của người dùng
+     * @returns {Promise} - Promise chứa danh sách đơn hàng
+     */
+    getUserOrders(userId) {
+        return axios.get(`${BASE_URL}/api/orders/user/${userId}`, { headers: authHeader() })
+            .then(response => {
+                return response.data;
+            });
     }
-  },
 
-  /**
-   * Tạo thanh toán PayOS cho đơn hàng
-   * @param {Object} paymentData Dữ liệu thanh toán
-   * @returns {Promise<Object>} Thông tin thanh toán PayOS
-   */
-  createPayOSPayment: async (paymentData) => {
-    try {
-      const token = authService.getToken();
-      const response = await axios.post(`${API_URL}/orders/payment/payos`, paymentData, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Error creating PayOS payment:', error);
-      throw error;
+    /**
+     * Lấy thông tin chi tiết của một đơn hàng
+     * @param {number} orderId - ID của đơn hàng
+     * @returns {Promise} - Promise chứa thông tin chi tiết đơn hàng
+     */
+    getOrderById(orderId) {
+        return axios.get(`${BASE_URL}/api/orders/${orderId}`, { headers: authHeader() })
+            .then(response => {
+                return response.data;
+            });
     }
-  },
 
-  /**
-   * Xác thực kết quả thanh toán từ PayOS
-   * @param {Object} verifyData Dữ liệu xác thực
-   * @returns {Promise<Object>} Kết quả xác thực
-   */
-  verifyPayOSPayment: async (verifyData) => {
-    try {
-      const token = authService.getToken();
-      const response = await axios.post(`${API_URL}/orders/payment/payos/verify`, verifyData, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Error verifying PayOS payment:', error);
-      throw error;
+    /**
+     * Tạo đơn hàng mới từ giỏ hàng
+     * @param {number} userId - ID của người dùng
+     * @param {string} shippingAddress - Địa chỉ giao hàng
+     * @returns {Promise} - Promise chứa thông tin đơn hàng đã tạo
+     */
+    createOrderFromCart(userId, shippingAddress) {
+        return axios.post(`${BASE_URL}/api/orders`, {
+            userId: userId,
+            shippingAddress: shippingAddress
+        }, { headers: authHeader() })
+            .then(response => {
+                return response.data;
+            });
     }
-  },
 
-  /**
-   * Kiểm tra trạng thái thanh toán
-   * @param {string} orderCode Mã đơn hàng
-   * @returns {Promise<Object>} Trạng thái thanh toán
-   */
-  checkPaymentStatus: async (orderCode) => {
-    try {
-      const token = authService.getToken();
-      const response = await axios.get(`${API_URL}/orders/payment/payos/${orderCode}/status`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
+    /**
+     * Chuyển đổi trạng thái đơn hàng sang text hiển thị
+     * @param {string} status - Trạng thái đơn hàng
+     * @returns {string} - Text hiển thị
+     */
+    getStatusText(status) {
+        switch (status) {
+            case 'PENDING':
+                return 'Đang xử lý';
+            case 'PAID':
+                return 'Đã thanh toán';
+            case 'SHIPPED':
+                return 'Đang giao hàng';
+            case 'COMPLETED':
+                return 'Đã hoàn thành';
+            case 'CANCELED':
+                return 'Đã hủy';
+            default:
+                return status;
         }
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Error checking payment status:', error);
-      throw error;
     }
-  },
 
-  /**
-   * Lấy thông tin đơn hàng theo ID
-   * @param {number} orderId ID đơn hàng
-   * @returns {Promise<Object>} Thông tin đơn hàng
-   */
-  getOrderById: async (orderId) => {
-    try {
-      const token = authService.getToken();
-      const response = await axios.get(`${API_URL}/orders/${orderId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
+    /**
+     * Lấy class CSS cho trạng thái đơn hàng
+     * @param {string} status - Trạng thái đơn hàng
+     * @returns {string} - Class CSS
+     */
+    getStatusClass(status) {
+        switch (status) {
+            case 'PENDING':
+                return 'status-processing';
+            case 'PAID':
+                return 'status-paid';
+            case 'SHIPPED':
+                return 'status-shipping';
+            case 'COMPLETED':
+                return 'status-delivered';
+            case 'CANCELED':
+                return 'status-cancelled';
+            default:
+                return 'status-default';
         }
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Error getting order:', error);
-      throw error;
     }
-  },
 
-  /**
-   * Lấy danh sách đơn hàng của người dùng
-   * @returns {Promise<Array>} Danh sách đơn hàng
-   */
-  getUserOrders: async () => {
-    try {
-      const token = authService.getToken();
-      const userId = authService.getCurrentUser().id;
-      const response = await axios.get(`${API_URL}/orders/user/${userId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Error getting user orders:', error);
-      throw error;
+    /**
+     * Format số tiền thành định dạng tiền tệ VND
+     * @param {number} amount - Số tiền
+     * @returns {string} - Chuỗi tiền tệ đã format
+     */
+    formatCurrency(amount) {
+        return new Intl.NumberFormat('vi-VN', {
+            style: 'currency',
+            currency: 'VND'
+        }).format(amount);
     }
-  }
-};
+}
 
-export default orderService;
+export default new OrderService();

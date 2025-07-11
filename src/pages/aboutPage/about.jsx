@@ -6,6 +6,7 @@ import Footer from "../../components/Footer/Footer"
 import MedicalClinicBanner from "./jsx/medical-clinic-banner";
 import LaserClinicSection from "./jsx/laser-clinic-section";
 import HealthTechShowcase from "./jsx/health-tech-showcase";
+import ChatBox from "../../components/ChatBox/ChatBox";
 
 export default function AboutPage() {
     return (
@@ -19,6 +20,7 @@ export default function AboutPage() {
             <LaserClinicSection />
             <HealthTechShowcase />
             <Footer />
+            <ChatBox />
 
         </main>
     )

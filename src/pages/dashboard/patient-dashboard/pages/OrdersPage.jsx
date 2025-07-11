@@ -2,66 +2,22 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import authService from "../../../../services/authService";
 import userService from "../../../../services/userService";
+import orderService from "../../../../services/orderService";
 
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import '../styles/orders-patient.css'; // You'll need to create this CSS file
-import { Calendar, Package, FileText, History, User, Search } from 'lucide-react';
-
-import PatientSidebar from '../PatientSidebar';
+import '../styles/orders-patient.css';
+import { Search, Package, Calendar, MapPin, ShoppingBag } from 'lucide-react';
 
 export default function OrdersPage() {
     const navigate = useNavigate();
-    const [user, setUser] = useState({
-        name: "",
-        email: "",
-        role: "PATIENT",
-        avatar: ""
-    });
+    const [user, setUser] = useState(null);
     const [orders, setOrders] = useState([]);
     const [filteredOrders, setFilteredOrders] = useState([]);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
-
-    // Sample orders data - replace with API call
-    const sampleOrders = [
-        {
-            id: "ORD001",
-            date: "2025-01-12",
-            items: "Kính cận Essilor, Gọng Titan",
-            total: "2,500,000 ₫",
-            status: "delivered",
-            estimatedDelivery: "2025-01-15",
-            trackingNumber: "VN123456789",
-        },
-        {
-            id: "ORD002",
-            date: "2025-01-08",
-            items: "Thuốc nhỏ mắt Refresh",
-            total: "150,000 ₫",
-            status: "shipping",
-            estimatedDelivery: "2025-01-14",
-            trackingNumber: "VN987654321",
-        },
-        {
-            id: "ORD003",
-            date: "2025-01-05",
-            items: "Kính râm UV Protection",
-            total: "800,000 ₫",
-            status: "processing",
-            estimatedDelivery: "2025-01-16",
-            trackingNumber: "VN456789123",
-        },
-        {
-            id: "ORD004",
-            date: "2025-01-03",
-            items: "Lens contact hàng tháng",
-            total: "450,000 ₫",
-            status: "cancelled",
-            estimatedDelivery: null,
-            trackingNumber: null,
-        },
-    ];
+    const [currentPage, setCurrentPage] = useState(1);
+    const [ordersPerPage] = useState(5);
 
     // Fetch user data
     const fetchUserData = async () => {
@@ -72,33 +28,16 @@ export default function OrdersPage() {
                 return;
             }
 
-            setLoading(true);
             const userData = await userService.getCurrentUserInfo();
-
-            setUser({
-                name: userData.name || "",
-                email: userData.email || "",
-                role: userData.role || "PATIENT",
-                avatar: userData.avatarUrl || ""
-            });
-
-            setLoading(false);
+            setUser(userData);
         } catch (error) {
             console.error("Lỗi khi lấy thông tin người dùng:", error);
-
             const currentUser = authService.getCurrentUser();
             if (currentUser) {
-                setUser({
-                    name: currentUser.name || "",
-                    email: currentUser.email || "",
-                    role: currentUser.role || "PATIENT",
-                    avatar: currentUser.avatarUrl || ""
-                });
+                setUser(currentUser);
             } else {
                 navigate('/login');
             }
-
-            setLoading(false);
         }
     };
 
@@ -106,19 +45,22 @@ export default function OrdersPage() {
     const fetchOrdersData = async () => {
         try {
             setLoading(true);
-            // Replace with actual API call
-            // const ordersData = await orderService.getUserOrders();
-            // setOrders(ordersData);
+            const currentUser = authService.getCurrentUser();
+            if (!currentUser) {
+                navigate('/login');
+                return;
+            }
 
-            // Using sample data for now
-            setOrders(sampleOrders);
-            setFilteredOrders(sampleOrders);
-
+            const ordersData = await orderService.getUserOrders(currentUser.id);
+            setOrders(ordersData);
+            setFilteredOrders(ordersData);
             setLoading(false);
         } catch (error) {
             console.error("Lỗi khi lấy danh sách đơn hàng:", error);
-            toast.error("Có lỗi xảy ra khi tải danh sách đơn hàng!");
+            toast.error("Không thể tải danh sách đơn hàng. Vui lòng thử lại sau.");
             setLoading(false);
+            setOrders([]);
+            setFilteredOrders([]);
         }
     };
 
@@ -127,152 +69,242 @@ export default function OrdersPage() {
         fetchOrdersData();
     }, []);
 
-    // Handle search
+    // Filter orders based on search term
     useEffect(() => {
         if (searchTerm.trim() === "") {
             setFilteredOrders(orders);
         } else {
-            const filtered = orders.filter(order =>
-                order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                order.items.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                order.trackingNumber?.toLowerCase().includes(searchTerm.toLowerCase())
-            );
+            const filtered = orders.filter(order => {
+                // Tìm theo ID đơn hàng
+                const idMatch = order.id.toString().toLowerCase().includes(searchTerm.toLowerCase());
+                
+                // Tìm theo sản phẩm trong đơn hàng
+                const itemsMatch = order.orderItems && order.orderItems.some(item => 
+                    item.product && item.product.name && 
+                    item.product.name.toLowerCase().includes(searchTerm.toLowerCase())
+                );
+                
+                // Tìm theo mã vận đơn
+                const trackingMatch = order.trackingNumber && 
+                    order.trackingNumber.toLowerCase().includes(searchTerm.toLowerCase());
+                
+                return idMatch || itemsMatch || trackingMatch;
+            });
             setFilteredOrders(filtered);
         }
+        setCurrentPage(1); // Reset về trang đầu tiên khi tìm kiếm
     }, [searchTerm, orders]);
 
-    const getStatusColor = (status) => {
-        switch (status) {
-            case "delivered":
-                return "status-delivered";
-            case "shipping":
-                return "status-shipping";
-            case "processing":
-                return "status-processing";
-            case "cancelled":
-                return "status-cancelled";
-            default:
-                return "status-default";
-        }
-    };
+    // Pagination
+    const indexOfLastOrder = currentPage * ordersPerPage;
+    const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
+    const currentOrders = filteredOrders.slice(indexOfFirstOrder, indexOfLastOrder);
+    const totalPages = Math.ceil(filteredOrders.length / ordersPerPage);
 
-    const getStatusText = (status) => {
-        switch (status) {
-            case "delivered":
-                return "Đã giao";
-            case "shipping":
-                return "Đang giao";
-            case "processing":
-                return "Đang xử lý";
-            case "cancelled":
-                return "Đã hủy";
-            default:
-                return status;
-        }
-    };
+    const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
     const handleOrderClick = (orderId) => {
-        console.log("Navigating to:", `/patient/orders/${orderId}`);
-        navigate(`/patient/orders/${orderId}`);
-    };
-
-    const handleMenuClick = (route) => {
-        navigate(route);
+        navigate(`/dashboard/patient/orders/${orderId}`);
     };
 
     // Get avatar URL helper
     const getAvatarUrl = (url) => {
-        if (!url) return null;
+        if (!url) {
+            return '';
+        }
 
-        if (url.startsWith('http://') || url.startsWith('https://')) {
+        if (url.startsWith('http')) {
             return url;
         }
 
         if (url.startsWith('/')) {
-            return `http://localhost:8080${url}`;
+            return `${process.env.REACT_APP_API_URL || 'http://localhost:8080'}${url}`;
         }
 
         return url;
     };
 
+    // Format date
+    const formatDate = (dateString) => {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        return date.toLocaleDateString('vi-VN', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+        });
+    };
+
+    // Get product names from order items
+    const getProductNames = (order) => {
+        // Kiểm tra cả orderItems và items
+        const orderItems = order.orderItems || [];
+        const items = order.items || [];
+        
+        // Nếu có items (cấu trúc từ OrderDetailPage), ưu tiên sử dụng
+        if (items.length > 0) {
+            // Lọc các item có productName
+            const validItems = items.filter(item => item.productName);
+            
+            if (validItems.length === 0) return 'Chưa có thông tin sản phẩm';
+            
+            // Chỉ hiển thị tối đa 2 sản phẩm
+            if (validItems.length <= 2) {
+                return validItems
+                    .map(item => `${item.productName} (x${item.quantity || 1})`)
+                    .join(', ');
+            } else {
+                const firstTwo = validItems
+                    .slice(0, 2)
+                    .map(item => `${item.productName} (x${item.quantity || 1})`)
+                    .join(', ');
+                return `${firstTwo} và ${validItems.length - 2} sản phẩm khác`;
+            }
+        }
+        
+        // Nếu có orderItems (cấu trúc từ OrdersPage), sử dụng cấu trúc này
+        if (orderItems.length > 0) {
+            // Lọc ra các sản phẩm có tên và thông tin đầy đủ
+            const validItems = orderItems.filter(item => item.product && item.product.name);
+            
+            if (validItems.length === 0) return 'Chưa có thông tin sản phẩm';
+            
+            // Chỉ hiển thị tối đa 2 sản phẩm
+            if (validItems.length <= 2) {
+                return validItems
+                    .map(item => `${item.product.name} (x${item.quantity || 1})`)
+                    .join(', ');
+            } else {
+                const firstTwo = validItems
+                    .slice(0, 2)
+                    .map(item => `${item.product.name} (x${item.quantity || 1})`)
+                    .join(', ');
+                return `${firstTwo} và ${validItems.length - 2} sản phẩm khác`;
+            }
+        }
+        
+        return 'Chưa có thông tin sản phẩm';
+    };
+
     return (
-        <div className="main-content" style={{ margin: 0, width: '100%', boxSizing: 'border-box' }}>
+        <div className="ptod-container">
             <ToastContainer position="top-right" autoClose={3000} />
 
             {/* Header */}
-            <header className="content-header">
-                <div className="header-left">
-                    <h1>Theo dõi đơn hàng</h1>
-                    <div className="search-container">
-                        <Search className="search-icon" />
+            <header className="ptod-header">
+                <div className="ptod-header-left">
+                    <h1 className="ptod-title">Theo dõi đơn hàng</h1>
+                    <div className="ptod-search-container">
+                        <Search className="ptod-search-icon" />
                         <input
                             type="text"
-                            placeholder="Tìm kiếm đơn hàng..."
-                            className="search-input"
+                            placeholder="Tìm kiếm theo mã đơn hàng, sản phẩm..."
+                            className="ptod-search-input"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
                 </div>
 
-                <div className="header-right">
-                    <div className="user-avatar">
-                        {user.avatar ? (
-                            <img src={getAvatarUrl(user.avatar)} alt={user.name} className="avatar-image" />
+                <div className="ptod-header-right">
+                    <div className="ptod-user-avatar">
+                        {user && user.avatarUrl ? (
+                            <img src={getAvatarUrl(user.avatarUrl)} alt={user.name} className="ptod-avatar-image" />
                         ) : (
-                            user.name?.charAt(0) || "U"
+                            user && user.name ? user.name.charAt(0) : "U"
                         )}
                     </div>
                 </div>
             </header>
 
             {/* Orders Content */}
-            <div className="orders-content">
+            <div className="ptod-orders-content">
                 {loading ? (
-                    <div className="loading-container">
-                        <div className="loading-spinner">Đang tải...</div>
+                    <div className="ptod-loading-container">
+                        <div className="ptod-loading-spinner">Đang tải...</div>
                     </div>
                 ) : (
-                    <div className="orders-list">
-                        {filteredOrders.length === 0 ? (
-                            <div className="no-orders">
-                                <Package className="no-orders-icon" />
-                                <h3>Không có đơn hàng nào</h3>
-                                <p>Bạn chưa có đơn hàng nào được tạo.</p>
-                            </div>
-                        ) : (
-                            filteredOrders.map((order) => (
-                                <div
-                                    key={order.id}
-                                    className="order-card"
-                                    onClick={() => handleOrderClick(order.id)}
-                                >
-                                    <div className="order-content">
-                                        <div className="order-main-info">
-                                            <h3 className="order-id">Đơn hàng #{order.id}</h3>
-                                            <p className="order-items">{order.items}</p>
-                                            <p className="order-date">Ngày đặt: {order.date}</p>
-                                            <p className="order-total">{order.total}</p>
-                                            {order.trackingNumber && (
-                                                <p className="order-tracking">Mã vận đơn: {order.trackingNumber}</p>
-                                            )}
-                                            {order.estimatedDelivery && (
-                                                <p className="order-delivery">Dự kiến giao: {order.estimatedDelivery}</p>
-                                            )}
-                                        </div>
-                                        <div className="order-actions">
-                                            <span className={`order-status ${getStatusColor(order.status)}`}>
-                                                {getStatusText(order.status)}
-                                            </span>
-                                            <button className="order-detail-btn">
-                                                Xem chi tiết
-                                            </button>
+                    <>
+                        <div className="ptod-orders-list">
+                            {filteredOrders.length === 0 ? (
+                                <div className="ptod-no-orders">
+                                    <Package className="ptod-no-orders-icon" />
+                                    <h3>Không có đơn hàng nào</h3>
+                                    <p>Bạn chưa có đơn hàng nào hoặc đơn hàng đang được tải.</p>
+                                </div>
+                            ) : (
+                                currentOrders.map((order) => (
+                                    <div
+                                        key={order.id}
+                                        className="ptod-order-card"
+                                        onClick={() => handleOrderClick(order.id)}
+                                    >
+                                        <div className="ptod-order-content">
+                                            <div className="ptod-order-main-info">
+                                                <h3 className="ptod-order-id">
+                                                    <ShoppingBag size={16} className="ptod-order-icon" />
+                                                    Đơn hàng #{order.id}
+                                                </h3>
+                                                <p className="ptod-order-items">{getProductNames(order)}</p>
+                                                <div className="ptod-order-meta">
+                                                    <div className="ptod-order-date">
+                                                        <Calendar size={14} />
+                                                        <span>Ngày đặt: {formatDate(order.createdAt)}</span>
+                                                    </div>
+                                                    <p className="ptod-order-total">{orderService.formatCurrency(order.totalAmount)}</p>
+                                                </div>
+                                                {order.shippingAddress && (
+                                                    <p className="ptod-order-address">
+                                                        <MapPin size={14} className="ptod-address-icon" />
+                                                        <span>Địa chỉ:</span> {order.shippingAddress}
+                                                    </p>
+                                                )}
+                                            </div>
+                                            <div className="ptod-order-actions">
+                                                <span className={`ptod-order-status ${orderService.getStatusClass(order.status)}`}>
+                                                    {orderService.getStatusText(order.status)}
+                                                </span>
+                                                <button className="ptod-order-detail-btn">
+                                                    Xem chi tiết
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            ))
+                                ))
+                            )}
+                        </div>
+
+                        {/* Pagination */}
+                        {filteredOrders.length > 0 && (
+                            <div className="ptod-pagination">
+                                <button
+                                    className="ptod-pagination-btn"
+                                    onClick={() => paginate(currentPage - 1)}
+                                    disabled={currentPage === 1}
+                                >
+                                    &laquo;
+                                </button>
+                                
+                                {Array.from({ length: totalPages }, (_, i) => (
+                                    <button
+                                        key={i + 1}
+                                        className={`ptod-pagination-btn ${currentPage === i + 1 ? 'ptod-active' : ''}`}
+                                        onClick={() => paginate(i + 1)}
+                                    >
+                                        {i + 1}
+                                    </button>
+                                ))}
+                                
+                                <button
+                                    className="ptod-pagination-btn"
+                                    onClick={() => paginate(currentPage + 1)}
+                                    disabled={currentPage === totalPages}
+                                >
+                                    &raquo;
+                                </button>
+                            </div>
                         )}
-                    </div>
+                    </>
                 )}
             </div>
         </div>

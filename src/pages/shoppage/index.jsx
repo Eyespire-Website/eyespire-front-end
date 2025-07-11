@@ -6,6 +6,7 @@ import Footer from "../../components/Footer/Footer";
 import ProductCard from "../../components/shop/ProductCard";
 import FilterSidebar from "../../components/shop/FilterSidebar";
 import productService from "../../services/productService";
+import ChatBox from "../../components/ChatBox/ChatBox";
 import "./index.css";
 
 const categories = [
@@ -291,6 +292,7 @@ export default function Shop() {
       </div>
 
       <Footer />
+      <ChatBox />
     </div>
   );
 }
