@@ -92,20 +92,20 @@ export default function LoginPage() {
             <div className="login-panel">
                 <div className="login-content">
                     {/* Header */}
-                    <div className="header">
-                        <div className="logo" onClick={() => navigate("/")}>
+                    <div className="lgin-header">
+                        <div className="lgin-logo" onClick={() => navigate("/")}>
                             <img
                                 src={"https://storage.googleapis.com/tagjs-prod.appspot.com/v1/VY3PPTks6o/e8ggwzic_expires_30_days.png"}
-                                className="logo-image"
+                                className="lgin-logo-image"
                                 alt="Eyespire Logo"
                             />
-                            <span className="logo-text">Eyespire</span>
+                            <span className="lgin-logo-text">Eyespire</span>
                         </div>
-                        <button className="signup-btn" onClick={() => navigate("/signup")}>Sign Up</button>
+                        <button className="lgin-signup-btn" onClick={() => navigate("/signup")}>Sign Up</button>
                     </div>
 
                     {/* Welcome Section */}
-                    <div className="welcome-section">
+                    <div className="lgin-welcome-section">
                         <h1>Welcome back!</h1>
                         <p>Please login to your account</p>
                     </div>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
 import authService from "../../../services/authService";
 import userService from "../../../services/userService";
+import addressService from "../../../services/addressService";
 import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -21,13 +22,11 @@ const ProfileContent = () => {
     role: "STORE_MANAGER",
     birthdate: "",
     provinceCode: "",
-    districtCode: "",
-    wardCode: "",
+    wardCode: "", 
   });
 
   const [provinces, setProvinces] = useState([]);
-  const [districts, setDistricts] = useState([]);
-  const [wards, setWards] = useState([]);
+  const [wards, setWards] = useState([]); 
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -39,6 +38,7 @@ const ProfileContent = () => {
   const [passwordError, setPasswordError] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState("");
+  const [migrationNote, setMigrationNote] = useState(""); 
 
   // Check if user is Google account
   const isGoogleAccount = () => {
@@ -61,36 +61,32 @@ const ProfileContent = () => {
     return url;
   };
 
-  // Update address based on province, district, and ward
-  const updateAddress = () => {
-    const selectedProvince = provinces.find(p => p.code === user.provinceCode);
-    const selectedDistrict = districts.find(d => d.code === user.districtCode);
-    const selectedWard = wards.find(w => w.code === user.wardCode);
-
-    const addressParts = [];
-    if (user.address && !user.provinceCode && !user.districtCode && !user.wardCode) {
-      addressParts.push(user.address);
-    }
-    if (selectedWard) addressParts.push(selectedWard.name);
-    if (selectedDistrict) addressParts.push(selectedDistrict.name);
-    if (selectedProvince) addressParts.push(selectedProvince.name);
-
-    const newAddress = addressParts.length > 0 ? addressParts.join(', ') : user.address;
-    setUser(prev => ({ ...prev, address: newAddress }));
-  };
-
-  // Fetch user data and initialize provinces
+  // Lấy thông tin người dùng từ API
   const fetchUserData = async () => {
     try {
-      const currentUserFromStorage = authService.getCurrentUser();
-      if (!currentUserFromStorage) {
+      const currentUser = authService.getCurrentUser();
+      if (!currentUser) {
         navigate('/login');
         return;
       }
 
       setLoading(true);
+      // Lấy thông tin người dùng hiện tại từ API
       const userData = await userService.getCurrentUserInfo();
 
+      // Migrate địa chỉ cũ nếu cần
+      let migratedAddress = null;
+      if (userData.province && userData.district && userData.ward) {
+        // Có dữ liệu địa chỉ cũ (3 cấp), cần migrate
+        migratedAddress = await addressService.migrateOldAddress({
+          province: userData.province,
+          district: userData.district,
+          ward: userData.ward
+        });
+        setMigrationNote(migratedAddress.migrationNote);
+      }
+
+      // Cập nhật state với dữ liệu mới
       setUser({
         name: userData.name || "",
         email: userData.email || "",
@@ -98,91 +94,97 @@ const ProfileContent = () => {
         gender: userData.gender || "MALE",
         username: userData.username || "",
         fullname: userData.name || "",
-        address: userData.addressDetail || userData.addressDetail || "",
+        address: userData.addressDetail || "",
         role: userData.role || "STORE_MANAGER",
         birthdate: userData.dateOfBirth || "",
-        provinceCode: userData.province || "",
-        districtCode: userData.district || "",
-        wardCode: userData.ward || "",
+        provinceCode: migratedAddress?.province || userData.province || "",
+        wardCode: migratedAddress?.ward || userData.ward || "",
       });
 
+      // Cập nhật avatar nếu có
       if (userData.avatarUrl) {
         setPreviewUrl(userData.avatarUrl);
       }
 
-      // Fetch provinces
-      const provinceResponse = await axios.get("https://provinces.open-api.vn/api/p/");
-      setProvinces(provinceResponse.data);
-
-      // Fetch districts if province is selected
-      if (userData.province) {
-        const districtResponse = await axios.get(`https://provinces.open-api.vn/api/p/${userData.province}?depth=2`);
-        setDistricts(districtResponse.data.districts || []);
-
-        // Fetch wards if district is selected
-        if (userData.district) {
-          const wardResponse = await axios.get(`https://provinces.open-api.vn/api/d/${userData.district}?depth=2`);
-          setWards(wardResponse.data.wards || []);
-        }
+      // Nếu có provinceCode, load wards
+      if (migratedAddress?.province || userData.province) {
+        fetchWards(migratedAddress?.province || userData.province);
       }
 
-      // Update address after fetching data
-      setTimeout(() => updateAddress(), 0);
+      setLoading(false);
     } catch (error) {
-      console.error("Error fetching data:", error);
-      toast.error("Không thể tải thông tin người dùng");
-    } finally {
+      console.error("Lỗi khi lấy thông tin người dùng:", error);
+
+      // Nếu API lỗi, sử dụng dữ liệu từ localStorage
+      const currentUser = authService.getCurrentUser();
+      if (currentUser) {
+        setUser({
+          name: currentUser.name || "",
+          email: currentUser.email || "",
+          phone: currentUser.phone || "",
+          gender: currentUser.gender || "MALE",
+          username: currentUser.username || "",
+          fullname: currentUser.name || "",
+          address: currentUser.address || "",
+          role: currentUser.role || "STORE_MANAGER",
+          birthdate: currentUser.birthdate || "",
+          provinceCode: currentUser.provinceCode || "",
+          wardCode: currentUser.wardCode || "",
+        });
+
+        if (currentUser.avatarUrl) {
+          setPreviewUrl(currentUser.avatarUrl);
+        }
+
+        // Nếu có provinceCode, load wards
+        if (currentUser.provinceCode) {
+          fetchWards(currentUser.provinceCode);
+        }
+      } else {
+        // Nếu không có thông tin người dùng, chuyển hướng về trang đăng nhập
+        navigate('/login');
+      }
+
       setLoading(false);
     }
   };
 
-  // Fetch user data on component mount
+  // Fetch tất cả các tỉnh/thành phố khi component mount
+  useEffect(() => {
+    const fetchProvinces = async () => {
+      try {
+        setLoading(true);
+        const provincesData = await addressService.getProvinces();
+        setProvinces(provincesData);
+        setLoading(false);
+      } catch (error) {
+        console.error("Lỗi khi lấy dữ liệu tỉnh/thành phố:", error);
+        toast.error("Không thể tải danh sách tỉnh/thành phố");
+        setLoading(false);
+      }
+    };
+
+    fetchProvinces();
+  }, []);
+
+  // Lấy thông tin người dùng từ API
   useEffect(() => {
     fetchUserData();
   }, []);
 
-  // Fetch districts when province changes
-  useEffect(() => {
-    if (user.provinceCode) {
+  // Fetch phường/xã khi chọn tỉnh/thành phố
+  const fetchWards = async (provinceId) => {
+    try {
       setLoading(true);
-      fetch(`https://provinces.open-api.vn/api/p/${user.provinceCode}?depth=2`)
-          .then(response => response.json())
-          .then(data => {
-            setDistricts(data.districts || []);
-            setLoading(false);
-            updateAddress();
-          })
-          .catch(error => {
-            console.error("Error fetching districts:", error);
-            setLoading(false);
-          });
-    } else {
-      setDistricts([]);
-      setWards([]);
-      updateAddress();
+      const wardsData = await addressService.getWardsByProvince(provinceId);
+      setWards(wardsData);
+      setLoading(false);
+    } catch (error) {
+      console.error("Lỗi khi lấy dữ liệu phường/xã:", error);
+      toast.error("Không thể tải danh sách phường/xã");
+      setLoading(false);
     }
-  }, [user.provinceCode]);
-
-  // Fetch wards when district changes
-  useEffect(() => {
-    if (user.districtCode) {
-      setLoading(true);
-      fetch(`https://provinces.open-api.vn/api/d/${user.districtCode}?depth=2`)
-          .then(response => response.json())
-          .then(data => {
-            setWards(data.wards || []);
-            setLoading(false);
-            updateAddress();
-          })
-          .catch(error => {
-            console.error("Error fetching wards:", error);
-            setLoading(false);
-          });
-    } else {
-      setWards([]);
-      updateAddress();
-    }
-  }, [user.districtCode]);
+  };
 
   // Handle input changes
   const handleChange = (e) => {
@@ -195,34 +197,26 @@ const ProfileContent = () => {
 
   // Handle province change
   const handleProvinceChange = (e) => {
-    const provinceCode = e.target.value;
+    const provinceId = e.target.value;
     setUser(prev => ({
       ...prev,
-      provinceCode,
-      districtCode: "",
-      wardCode: "",
+      provinceCode: provinceId,
+      wardCode: "" 
     }));
-    setDistricts([]);
-    setWards([]);
-    updateAddress();
-  };
-
-  // Handle district change
-  const handleDistrictChange = (e) => {
-    const districtCode = e.target.value;
-    setUser(prev => ({
-      ...prev,
-      districtCode,
-      wardCode: "",
-    }));
-    setWards([]);
-    updateAddress();
+    
+    if (provinceId) {
+      fetchWards(provinceId);
+    } else {
+      setWards([]);
+    }
   };
 
   // Handle ward change
   const handleWardChange = (e) => {
-    setUser(prev => ({ ...prev, wardCode: e.target.value }));
-    updateAddress();
+    setUser(prev => ({
+      ...prev,
+      wardCode: e.target.value
+    }));
   };
 
   // Handle profile save
@@ -236,7 +230,6 @@ const ProfileContent = () => {
         username: user.username,
         birthdate: user.birthdate,
         provinceCode: user.provinceCode,
-        districtCode: user.districtCode,
         wardCode: user.wardCode,
         address: user.address
       };
@@ -319,7 +312,7 @@ const ProfileContent = () => {
     try {
       await userService.changePassword({
         currentPassword: passwordData.currentPassword,
-        newPassword: passwordData.newPassword // Fixed typo here
+        newPassword: passwordData.newPassword 
       });
       setPasswordData({
         currentPassword: "",
@@ -481,31 +474,13 @@ const ProfileContent = () => {
               </div>
 
               <div className="form-group">
-                <label>Quận/Huyện</label>
-                <select
-                    name="districtCode"
-                    value={user.districtCode}
-                    onChange={handleDistrictChange}
-                    className="form-control"
-                    disabled={!user.provinceCode || loading}
-                >
-                  <option value="">-- Chọn Quận/Huyện --</option>
-                  {districts.map(district => (
-                      <option key={district.code} value={district.code}>
-                        {district.name}
-                      </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="form-group">
                 <label>Phường/Xã</label>
                 <select
                     name="wardCode"
                     value={user.wardCode}
                     onChange={handleWardChange}
                     className="form-control"
-                    disabled={!user.districtCode || loading}
+                    disabled={!user.provinceCode || loading}
                 >
                   <option value="">-- Chọn Phường/Xã --</option>
                   {wards.map(ward => (

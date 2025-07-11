@@ -32,32 +32,32 @@ body {
     flex-direction: column;
 }
 
-.header {
+.lgin-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 3rem;
 }
 
-.logo {
+.lgin-logo {
     display: flex;
     align-items: center;
     gap: 0.5rem;
 }
 
-.logo-image {
+.lgin-logo-image {
     width: 31px;
     height: 32px;
     object-fit: contain;
 }
 
-.logo-text {
+.lgin-logo-text {
     font-size: 1.1rem;
     color: #1a3c8b; /* Đổi sang màu xanh dương đậm */
     font-weight: 500;
 }
 
-.signup-btn {
+.lgin-signup-btn {
     background: #9BBAFC; /* Màu xanh dương nhạt */
     color: #1a3c8b; /* Màu xanh dương đậm */
     border: none;
@@ -68,22 +68,22 @@ body {
     transition: background-color 0.2s;
 }
 
-.signup-btn:hover {
+.lgin-signup-btn:hover {
     background: #7a9cf0; /* Màu xanh dương nhạt hơn khi hover */
 }
 
-.welcome-section {
+.lgin-welcome-section {
     margin-bottom: 2rem;
 }
 
-.welcome-section h1 {
+.lgin-welcome-section h1 {
     font-size: 2rem;
     color: #1a3c8b; /* Màu xanh dương đậm */
     margin-bottom: 0.5rem;
     font-weight: 600;
 }
 
-.welcome-section p {
+.lgin-welcome-section p {
     color: #4a5568; /* Màu xám đậm hơn */
     font-size: 0.95rem;
 }
