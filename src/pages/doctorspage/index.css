@@ -1,0 +1,156 @@
+.dth-page-banner {
+  background-color: #03246B;
+  padding: 100px 0 60px;
+  text-align: center;
+  color: white;
+  position: relative;
+}
+
+.dth-page-banner::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 50px;
+  background-image: linear-gradient(to bottom right, #03246B, #0056b3);
+  background-size: cover;
+  background-position: center;
+}
+
+.dth-page-banner-content {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.dth-page-banner h1 {
+  font-size: 42px;
+  margin-bottom: 15px;
+  font-weight: 700;
+}
+
+.dth-page-banner p {
+  font-size: 18px;
+  opacity: 0.9;
+}
+
+.dth-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 15px;
+}
+
+.dth-filter-section {
+  background-color: #f8f9fa;
+  padding: 30px 0;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.dth-filter-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+}
+
+.dth-search-box {
+  flex: 1;
+  min-width: 250px;
+}
+
+.dth-search-box input {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #ced4da;
+  border-radius: 5px;
+  font-size: 16px;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+.dth-search-box input:focus {
+  border-color: #03246B;
+}
+
+.dth-specialty-filter {
+  min-width: 200px;
+}
+
+.dth-specialty-filter select {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #ced4da;
+  border-radius: 5px;
+  font-size: 16px;
+  outline: none;
+  background-color: white;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 15px;
+}
+
+.dth-specialty-filter select:focus {
+  border-color: #03246B;
+}
+
+.dth-doctors-page-section {
+  padding: 60px 0;
+  background-color: white;
+}
+
+.dth-doctors-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 30px;
+}
+
+.dth-loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+}
+
+.dth-spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid rgba(3, 36, 107, 0.2);
+  border-radius: 50%;
+  border-top-color: #03246B;
+  animation: dth-spin 1s linear infinite;
+}
+
+@keyframes dth-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.dth-no-doctors {
+  text-align: center;
+  font-size: 18px;
+  color: #6c757d;
+  padding: 30px;
+  grid-column: 1 / -1;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .dth-page-banner h1 {
+    font-size: 32px;
+  }
+  
+  .dth-filter-controls {
+    flex-direction: column;
+  }
+  
+  .dth-search-box,
+  .dth-specialty-filter {
+    width: 100%;
+  }
+}

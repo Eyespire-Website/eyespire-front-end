@@ -5,6 +5,7 @@ import { useState, useEffect } from "react"
 import ServicesHeader from "./ServicesHeader"
 import Footer from "../../components/Footer/Footer"
 import Services from "../../components/Services/Services"
+import ChatBox from "../../components/ChatBox/ChatBox"
 
 const EyeServices = () => {
     const [countdown, setCountdown] = useState({
@@ -405,6 +406,7 @@ const EyeServices = () => {
                 </section>
                 {/* Footer */}
                 <Footer />
+                <ChatBox />
             </div>
         </div>
     )

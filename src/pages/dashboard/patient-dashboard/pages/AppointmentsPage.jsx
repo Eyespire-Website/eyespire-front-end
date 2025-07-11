@@ -94,7 +94,7 @@ export default function AppointmentsPage() {
                     service: serviceName,
                     date: formatDate(appointmentDate),
                     time: formatTime(appointmentDate),
-                    doctor: appointment.doctor ? `BS. ${appointment.doctor.name}` : "Chưa xác định",
+                    doctor: appointment.doctor && appointment.doctor.name ? `BS. ${appointment.doctor.name}` : "Chưa xác định",
                     status: mapAppointmentStatus(appointment.status),
                     reason: appointment.reason || "Không có thông tin",
                     notes: appointment.notes || "Quý khách vui lòng tới trước giờ hẹn 15 phút!",
@@ -298,22 +298,98 @@ export default function AppointmentsPage() {
             setLoading(true);
             // Lấy thông tin chi tiết cuộc hẹn
             const details = await appointmentService.getAppointmentById(appointmentId);
+            console.log("Raw appointment details:", JSON.stringify(details, null, 2));
             
             // Lấy thông tin hóa đơn của cuộc hẹn
             let invoiceDetails = null;
             try {
                 invoiceDetails = await appointmentService.getAppointmentInvoice(appointmentId);
-                console.log("Invoice details:", invoiceDetails);
+                console.log("Invoice details:", JSON.stringify(invoiceDetails, null, 2));
             } catch (invoiceError) {
                 console.error("Lỗi khi lấy thông tin hóa đơn:", invoiceError);
                 // Không throw lỗi ở đây để vẫn hiển thị thông tin cuộc hẹn nếu không có hóa đơn
             }
             
-            // Log toàn bộ dữ liệu hóa đơn để kiểm tra
-            console.log("Chi tiết hóa đơn:", JSON.stringify(invoiceDetails, null, 2));
+            // Xử lý dữ liệu dịch vụ - có thể là mảng hoặc đối tượng đơn lẻ
+            let serviceName = "Khám mắt tổng quát";
+            let servicePrice = 0;
+            
+            if (details.services && Array.isArray(details.services) && details.services.length > 0) {
+                serviceName = details.services[0].name;
+                servicePrice = Number(details.services[0].price || 0);
+            } else if (details.service && typeof details.service === 'object') {
+                serviceName = details.service.name;
+                servicePrice = Number(details.service.price || 0);
+            } else if (details.serviceName) {
+                serviceName = details.serviceName;
+                servicePrice = Number(details.servicePrice || 0);
+            }
+            
+            // Khởi tạo biến formattedDate và formattedTime
+            let formattedDate = "Không có thông tin";
+            let formattedTime = "Không có thông tin";
+            
+            // Log để kiểm tra dữ liệu
+            console.log("Raw appointment details:", details);
+            
+            // Xử lý cho định dạng ISO "2025-07-14T09:00:00"
+            if (details.appointmentTime && typeof details.appointmentTime === 'string') {
+                try {
+                    // Xử lý chuỗi ISO hoặc chuỗi với khoảng trắng
+                    const dateTimeStr = details.appointmentTime;
+                    const dateObj = new Date(dateTimeStr);
+                    
+                    if (!isNaN(dateObj.getTime())) {
+                        // Định dạng ngày DD/MM/YYYY
+                        const day = String(dateObj.getDate()).padStart(2, '0');
+                        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+                        const year = dateObj.getFullYear();
+                        formattedDate = `${day}/${month}/${year}`;
+                        
+                        // Định dạng giờ HH:MM
+                        const hours = String(dateObj.getHours()).padStart(2, '0');
+                        const minutes = String(dateObj.getMinutes()).padStart(2, '0');
+                        formattedTime = `${hours}:${minutes}`;
+                    } else {
+                        console.error("Không thể parse chuỗi thời gian:", dateTimeStr);
+                    }
+                } catch (error) {
+                    console.error("Lỗi khi xử lý appointmentTime:", error);
+                }
+            } else if (details.appointmentDate && details.timeSlot) {
+                // Backup: Sử dụng appointmentDate và timeSlot nếu có
+                try {
+                    const dateObj = new Date(`${details.appointmentDate}T${details.timeSlot}`);
+                    
+                    if (!isNaN(dateObj.getTime())) {
+                        // Định dạng ngày DD/MM/YYYY
+                        const day = String(dateObj.getDate()).padStart(2, '0');
+                        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+                        const year = dateObj.getFullYear();
+                        formattedDate = `${day}/${month}/${year}`;
+                        
+                        // Định dạng giờ HH:MM
+                        formattedTime = details.timeSlot;
+                    }
+                } catch (error) {
+                    console.error("Lỗi khi xử lý appointmentDate và timeSlot:", error);
+                }
+            }
+            
+            console.log("Thông tin thời gian đã format:", {
+                formattedDate,
+                formattedTime
+            });
+            
+            // Xử lý dữ liệu bác sĩ - có thể có name hoặc fullName
+            let doctorName = "Chưa phân công";
+            if (details.doctor) {
+                doctorName = details.doctor.name || details.doctor.fullName || "Chưa phân công";
+            } else if (details.doctorName) {
+                doctorName = details.doctorName;
+            }
             
             // Lấy phí dịch vụ khám - đảm bảo là số
-            const servicePrice = Number(details.service?.price || 0);
             console.log("Phí dịch vụ khám:", servicePrice);
             
             // Lấy thông tin thuốc từ API riêng (giống bên tiếp tân)
@@ -331,35 +407,26 @@ export default function AppointmentsPage() {
             console.log("Phí thuốc từ API riêng:", medicationAmount);
             
             // Nếu không có dữ liệu từ API riêng, thử lấy từ hóa đơn
-            if (medicationAmount === 0) {
+            if (medicationAmount === 0 && invoiceDetails) {
                 console.log("Không có dữ liệu thuốc từ API riêng, thử lấy từ hóa đơn...");
                 
                 // Kiểm tra nếu có thông tin về sản phẩm thuốc trong hóa đơn
                 if (invoiceDetails?.products && Array.isArray(invoiceDetails.products)) {
-                    console.log("Danh sách sản phẩm thuốc từ hóa đơn:", invoiceDetails.products);
-                    
-                    // Tính tổng tiền thuốc dựa trên giá và số lượng
                     medicationAmount = invoiceDetails.products.reduce((total, product) => {
                         const price = Number(product.price || 0);
                         const quantity = Number(product.quantity || 1);
-                        console.log(`Sản phẩm: ${product.name}, Giá: ${price}, Số lượng: ${quantity}, Thành tiền: ${price * quantity}`);
                         return total + (price * quantity);
                     }, 0);
                 } 
                 // Kiểm tra các trường khác có thể chứa thông tin về phí thuốc
                 else if (invoiceDetails?.medicationProducts && Array.isArray(invoiceDetails.medicationProducts)) {
-                    console.log("Danh sách sản phẩm thuốc (medicationProducts):", invoiceDetails.medicationProducts);
-                    
                     medicationAmount = invoiceDetails.medicationProducts.reduce((total, product) => {
                         const price = Number(product.price || 0);
                         const quantity = Number(product.quantity || 1);
                         return total + (price * quantity);
                     }, 0);
                 }
-                // Kiểm tra các trường khác có thể chứa thông tin về phí thuốc
                 else if (invoiceDetails?.medications && Array.isArray(invoiceDetails.medications)) {
-                    console.log("Danh sách thuốc (medications):", invoiceDetails.medications);
-                    
                     medicationAmount = invoiceDetails.medications.reduce((total, med) => {
                         const price = Number(med.price || 0);
                         const quantity = Number(med.quantity || 1);
@@ -379,7 +446,6 @@ export default function AppointmentsPage() {
                 
                 // Đặc biệt kiểm tra trường totalAmount trong medicationDetails của hóa đơn
                 if (invoiceDetails?.medicationDetails?.totalAmount) {
-                    console.log("Tìm thấy medicationDetails.totalAmount trong hóa đơn:", invoiceDetails.medicationDetails.totalAmount);
                     medicationAmount = Number(invoiceDetails.medicationDetails.totalAmount);
                 }
             }
@@ -391,11 +457,11 @@ export default function AppointmentsPage() {
             console.log("Tạm tính (dịch vụ + thuốc):", totalAmount);
             
             // Lấy tiền đặt cọc - đảm bảo là số
-            const depositAmount = Number(invoiceDetails?.depositAmount || 0);
+            const depositAmount = Number(invoiceDetails?.depositAmount || details.depositAmount || 0);
             console.log("Tiền cọc đã thanh toán:", depositAmount);
             
             // Tính số tiền còn lại cần thanh toán
-            const remainingAmount = totalAmount - depositAmount;
+            const remainingAmount = Math.max(0, totalAmount - depositAmount);
             console.log("Số tiền cần thanh toán:", remainingAmount);
             
             // Kiểm tra trạng thái thanh toán
@@ -411,17 +477,17 @@ export default function AppointmentsPage() {
                 patientName: user?.name || "Không có thông tin",
                 patientEmail: user?.email || "Không có thông tin",
                 patientPhone: user?.phone || "Không có thông tin",
-                doctorName: details.doctor?.fullName || "Không có thông tin",
-                serviceName: details.service?.name || "Không có thông tin",
-                servicePrice: Number(details.service?.price || 0),
-                date: details.date ? new Date(details.date).toLocaleDateString('vi-VN') : "Không có thông tin",
-                time: details.time || "Không có thông tin",
+                doctorName: doctorName,
+                serviceName: serviceName,
+                servicePrice: servicePrice,
+                date: formattedDate,
+                time: formattedTime,
                 status: details.status || "PENDING",
                 statusText: getStatusText(details.status),
                 statusClass: getStatusClass(details.status),
-                note: details.note || "Không có ghi chú",
+                note: details.note || details.notes || "Không có ghi chú",
                 medicationAmount: Number(medicationAmount),
-                medicationDetails: medicationDetails, // Thêm dữ liệu thuốc chi tiết
+                medicationDetails: medicationDetails,
                 depositAmount: Number(depositAmount),
                 totalAmount: Number(totalAmount),
                 remainingAmount: Number(remainingAmount),
@@ -431,7 +497,7 @@ export default function AppointmentsPage() {
                 paymentStatus: isFullyPaid ? 'Đã thanh toán' : 'Chờ thanh toán',
                 cancellationReason: details.cancellationReason || "",
                 cancellationTime: details.cancellationTime || null,
-                refundPolicy: details.cancellationTime ? calculateRefundPolicy(details.date, details.cancellationTime) : null
+                refundPolicy: details.cancellationTime ? calculateRefundPolicy(details.date || details.appointmentTime, details.cancellationTime) : null
             };
             
             console.log("Formatted details:", formattedDetails);
@@ -665,7 +731,7 @@ export default function AppointmentsPage() {
                                         </p>
                                     ) : (
                                         <p>
-                                            <strong>Không hoàn tiền</strong> - Bạn hủy lịch quá gần thời gian hẹn 
+                                            <strong>Không hoàn tiền</strong> - Bạn hủy lịch quá gần thởi gian hẹn 
                                             (dưới 24 giờ trước lịch hẹn).
                                         </p>
                                     )}
@@ -728,26 +794,24 @@ export default function AppointmentsPage() {
                                         <div className="details-row">
                                             <span className="details-label">Dịch vụ:</span>
                                             <span className="details-value">
-                                                {typeof appointmentDetails.service === 'object' 
-                                                    ? appointmentDetails.service.name 
-                                                    : appointmentDetails.service}
+                                                {appointmentDetails.serviceName || "Khám mắt tổng quát"}
                                             </span>
                                         </div>
                                         <div className="details-row">
                                             <span className="details-label">Ngày hẹn:</span>
                                             <span className="details-value highlight-date">
-                                                {appointmentDetails.appointmentDate}
+                                                {appointmentDetails.date || "Không có thông tin"}
                                             </span>
                                         </div>
                                         <div className="details-row">
                                             <span className="details-label">Giờ hẹn:</span>
                                             <span className="details-value highlight-time">
-                                                {appointmentDetails.timeSlot}
+                                                {appointmentDetails.time || "Không có thông tin"}
                                             </span>
                                         </div>
                                         <div className="details-row">
                                             <span className="details-label">Bác sĩ:</span>
-                                            <span className="details-value">{appointmentDetails.doctor?.name || 'Chưa phân công'}</span>
+                                            <span className="details-value">{appointmentDetails.doctorName || "Chưa phân công"}</span>
                                         </div>
                                         <div className="details-row">
                                             <span className="details-label">Trạng thái:</span>
