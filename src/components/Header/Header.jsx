@@ -248,8 +248,14 @@ const Header = () => {
             <span className="text5">{"Doctors"}</span>
             <span className="text3">{""}</span>
           </Link>
+
           <Link to="/shop" className="row-view3">
             <span className="text5">{"Shop"}</span>
+            <span className="text3">{""}</span>
+          </Link>
+
+          <Link to="/our-doctors" className="row-view3" style={{ textDecoration: 'none' }}>
+            <span className="text5">{"Our Doctors"}</span>
             <span className="text3">{""}</span>
           </Link>
 

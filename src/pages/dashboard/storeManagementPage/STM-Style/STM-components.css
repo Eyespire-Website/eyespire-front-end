@@ -12,7 +12,7 @@
   --color-gray-600: #64748b;
   --color-gray-700: #374151;
   --color-gray-800: #1e293b;
-  
+
   /* Brand Colors */
   --color-blue-500: #3b82f6;
   --color-blue-700: #1e40af;
@@ -24,7 +24,7 @@
   --color-yellow-700: #92400e;
   --color-cyan-500: #0891b2;
   --color-purple-500: #7c3aed;
-  
+
   /* Status Colors */
   --color-success-bg: #dcfce7;
   --color-success-text: #166534;
@@ -38,7 +38,7 @@
   --color-processing-text: #7c3aed;
   --color-shipped-bg: #cffafe;
   --color-shipped-text: #0891b2;
-  
+
   /* Spacing */
   --space-xs: 4px;
   --space-sm: 8px;
@@ -46,12 +46,12 @@
   --space-lg: 16px;
   --space-xl: 20px;
   --space-2xl: 24px;
-  
+
   /* Border Radius */
   --radius-sm: 4px;
   --radius-md: 6px;
   --radius-lg: 8px;
-  
+
   /* Font Sizes */
   --text-xs: 12px;
   --text-sm: 14px;
@@ -213,44 +213,25 @@
   display: inline-block;
 }
 
-/* Success States */
-.stm-status--active,
-.stm-status--delivered,
+/* Individual Status Styles */
 .stm-status--paid {
-  background: var(--color-success-bg);
-  color: var(--color-success-text);
-}
-
-/* Error States */
-.stm-status--inactive,
-.stm-status--cancelled,
-.stm-status--failed {
-  background: var(--color-error-bg);
-  color: var(--color-error-text);
-}
-
-/* Warning States */
-.stm-status--pending,
-.stm-status--warning {
-  background: var(--color-warning-bg);
-  color: var(--color-warning-text);
-}
-
-/* Info States */
-.stm-status--confirmed {
-  background: var(--color-info-bg);
-  color: var(--color-info-text);
-}
-
-/* Special States */
-.stm-status--processing {
-  background: var(--color-processing-bg);
-  color: var(--color-processing-text);
+  background: var(--color-success-bg); /* Xanh nhạt cho Đã thanh toán */
+  color: var(--color-success-text); /* Xanh đậm */
 }
 
 .stm-status--shipped {
-  background: var(--color-shipped-bg);
-  color: var(--color-shipped-text);
+  background: var(--color-shipped-bg); /* Cyan nhạt cho Đã gửi hàng */
+  color: var(--color-shipped-text); /* Cyan đậm */
+}
+
+.stm-status--completed {
+  background: var(--color-info-bg); /* Xanh dương nhạt cho Đã hoàn thành */
+  color: var(--color-info-text); /* Xanh dương đậm */
+}
+
+.stm-status--canceled {
+  background: var(--color-error-bg); /* Đỏ nhạt cho Đã hủy */
+  color: var(--color-error-text); /* Đỏ đậm */
 }
 
 /* Pagination */

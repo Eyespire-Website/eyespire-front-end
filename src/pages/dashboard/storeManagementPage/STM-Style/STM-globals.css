@@ -11,3 +11,77 @@
 @import "STM-EditProductPage.css";
 @import "STM-CreateOrderPage.css";
 @import "STM-EditOrderPage.css";
+
+.dashboard {
+  display: flex;
+  height: 100vh;
+  /* Xóa overflow: hidden để không giới hạn cuộn */
+}
+
+.dashboard-content {
+  flex: 1;
+  overflow-y: auto; /* Đảm bảo cuộn dọc */
+  position: relative;
+}
+
+.content-area {
+  width: 100%;
+  min-height: calc(100vh - 4rem); /* Đảm bảo nội dung có chiều cao tối thiểu để kích hoạt cuộn */
+}
+
+.header {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+/* Đảm bảo dashboard-content vẫn cuộn được khi sidebar thu gọn */
+.sidebar-wrapper.collapsed + .dashboard-content {
+  overflow-y: auto; /* Giữ khả năng cuộn */
+}
+
+/* Collapsed state for header */
+.header.collapsed {
+  margin-left: 80px;
+}
+
+.product-img {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+.tbl td {
+  vertical-align: middle;
+  padding: 8px;
+}
+.inventory-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+}
+.inventory-loading .spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #3498db;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 10px;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+.inventory-error {
+  text-align: center;
+  padding: 20px;
+  color: #d32f2f;
+}
