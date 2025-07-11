@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import userService from "../../../services/userService";
 import authService from "../../../services/authService";
+import addressService from "../../../services/addressService";
+import specialtyService from "../../../services/specialtyService";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
@@ -18,7 +20,6 @@ export default function DoctorDashboard() {
         address: "",
         birthdate: "",
         provinceCode: "",
-        districtCode: "",
         wardCode: "",
         specialization: "",
         licenseNumber: "",
@@ -27,7 +28,6 @@ export default function DoctorDashboard() {
         specialtyId: "",
     });
     const [provinces, setProvinces] = useState([]);
-    const [districts, setDistricts] = useState([]);
     const [wards, setWards] = useState([]);
     const [specialties, setSpecialties] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -63,152 +63,206 @@ export default function DoctorDashboard() {
         return url;
     };
 
-    useEffect(() => {
-        const fetchDoctorData = async () => {
-            try {
-                setLoading(true);
-                const currentUser = authService.getCurrentUser();
-                if (!currentUser) {
-                    toast.error("Vui lòng đăng nhập!");
-                    navigate("/login");
-                    return;
-                }
-                const userData = await userService.getCurrentUserInfo();
-                let doctorDataResponse = null;
-                try {
-                    doctorDataResponse = await userService.getDoctorByUserId();
-                } catch (error) {
-                    if (error.response?.status !== 404) {
-                        throw error;
-                    }
-                }
-                setDoctorData({
-                    name: userData.name || "",
-                    email: userData.email || "",
-                    phone: userData.phone || "",
-                    gender: userData.gender?.toLowerCase() || "male",
-                    username: userData.username || "",
-                    fullname: userData.name || "",
-                    address: userData.addressDetail || "",
-                    birthdate: userData.dateOfBirth || "",
-                    provinceCode: userData.province || "",
-                    districtCode: userData.district || "",
-                    wardCode: userData.ward || "",
-                    specialization: doctorDataResponse?.specialization || "",
-                    licenseNumber: doctorDataResponse?.qualification || "",
-                    experience: doctorDataResponse?.experience || "",
-                    bio: doctorDataResponse?.description || "",
-                    specialtyId: doctorDataResponse?.specialtyId || "",
-                });
-                if (userData.avatarUrl) {
-                    setPreviewUrl(userData.avatarUrl);
-                }
-                if (userData.province) {
-                    await fetchDistricts(userData.province);
-                }
-                if (userData.district) {
-                    await fetchWards(userData.district);
-                }
-            } catch (error) {
-                console.error("Error fetching doctor data:", error);
-                toast.error(error.response?.data || "Lỗi khi lấy thông tin bác sĩ!");
-                navigate("/login");
-            } finally {
-                setLoading(false);
+    const fetchDoctorData = async () => {
+        try {
+            const currentUser = authService.getCurrentUser();
+            if (!currentUser) {
+                navigate('/login');
+                return;
             }
-        };
-        fetchDoctorData();
-    }, [navigate]);
 
-    useEffect(() => {
-        const fetchSpecialties = async () => {
-            try {
-                const data = await userService.getSpecialties();
-                setSpecialties(data);
-            } catch (error) {
-                console.error("Error fetching specialties:", error);
-                toast.error("Lỗi khi lấy danh sách chuyên khoa!");
+            setLoading(true);
+            const userData = await userService.getCurrentUserInfo();
+            const doctorInfo = await userService.getDoctorInfo();
+            console.log("=== FETCH DOCTOR DATA DEBUG ===");
+            console.log("userData from backend:", userData);
+            console.log("doctorInfo from backend:", doctorInfo);
+            console.log("=== DROPDOWN DEBUG ===");
+            console.log("provinces:", provinces);
+            console.log("wards:", wards);
+            console.log("specialties:", specialties);
+
+            setDoctorData({
+                name: userData.name || "",
+                email: userData.email || "",
+                phone: userData.phone || "",
+                gender: userData.gender || "male",
+                username: userData.username || "",
+                fullname: userData.name || "",
+                address: userData.addressDetail || "",
+                birthdate: userData.dateOfBirth || "",
+                provinceCode: userData.province || userData.provinceCode || "",
+                wardCode: userData.ward || userData.wardCode || "",
+                specialization: doctorInfo?.specialization || "",
+                licenseNumber: doctorInfo?.qualification || "",
+                experience: doctorInfo?.experience || "",
+                bio: doctorInfo?.description || "",
+                specialtyId: doctorInfo?.specialtyId || "",
+                // Map specialization text to specialtyId for dropdown
+                _specialization: doctorInfo?.specialization || "",
+            });
+            
+            console.log("=== FINAL DOCTOR DATA ===");
+            console.log("provinceCode:", userData.province || userData.provinceCode || "");
+            console.log("wardCode:", userData.ward || userData.wardCode || "");
+            console.log("specialization:", doctorInfo?.specialization || "");
+
+            if (userData.avatarUrl) {
+                setPreviewUrl(userData.avatarUrl);
             }
-        };
-        fetchSpecialties();
-    }, []);
+
+            if (userData.provinceCode) {
+                fetchWards(userData.provinceCode);
+            }
+
+            setLoading(false);
+        } catch (error) {
+            console.error("Lỗi khi lấy thông tin bác sĩ:", error);
+            toast.error("Không thể tải thông tin bác sĩ");
+
+            const currentUser = authService.getCurrentUser();
+            if (currentUser) {
+                setDoctorData({
+                    name: currentUser.name || "",
+                    email: currentUser.email || "",
+                    phone: currentUser.phone || "",
+                    gender: currentUser.gender || "male",
+                    username: currentUser.username || "",
+                    fullname: currentUser.name || "",
+                    address: currentUser.address || "",
+                    birthdate: currentUser.birthdate || "",
+                    provinceCode: currentUser.province || currentUser.provinceCode || "",
+                    wardCode: currentUser.ward || currentUser.wardCode || "",
+                    specialization: currentUser.specialization || "",
+                    licenseNumber: currentUser.licenseNumber || "",
+                    experience: currentUser.experience || "",
+                    bio: currentUser.bio || "",
+                    specialtyId: currentUser.specialtyId || "",
+                });
+
+                if (currentUser.avatarUrl) {
+                    setPreviewUrl(currentUser.avatarUrl);
+                }
+
+                if (currentUser.provinceCode) {
+                    fetchWards(currentUser.provinceCode);
+                }
+            } else {
+                navigate('/login');
+            }
+
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
         const fetchProvinces = async () => {
             try {
                 setLoading(true);
-                const response = await axios.get("https://provinces.open-api.vn/api/p/");
-                setProvinces(response.data);
+                const provincesData = await addressService.getProvinces();
+                setProvinces(provincesData);
+                setLoading(false);
             } catch (error) {
-                console.error("Error fetching provinces:", error);
-                toast.error("Lỗi khi lấy danh sách tỉnh/thành phố!");
-            } finally {
+                console.error("Lỗi khi lấy dữ liệu tỉnh/thành phố:", error);
+                toast.error("Không thể tải danh sách tỉnh/thành phố");
                 setLoading(false);
             }
         };
+
+        const fetchSpecialties = async () => {
+            try {
+                const specialtiesData = await specialtyService.getAllSpecialties();
+                setSpecialties(specialtiesData);
+            } catch (error) {
+                console.error("Lỗi khi lấy dữ liệu chuyên khoa:", error);
+                toast.error("Không thể tải danh sách chuyên khoa");
+            }
+        };
+
         fetchProvinces();
+        fetchSpecialties();
     }, []);
 
-    const fetchDistricts = async (provinceCode) => {
+    useEffect(() => {
+        fetchDoctorData();
+    }, []);
+
+    // Re-apply dropdown values after dropdown data is loaded
+    const [dropdownDataLoaded, setDropdownDataLoaded] = useState(false);
+    
+    useEffect(() => {
+        if (provinces.length > 0 && specialties.length > 0 && !dropdownDataLoaded) {
+            console.log("=== DROPDOWN DATA LOADED, RE-APPLYING VALUES ===");
+            setDropdownDataLoaded(true);
+            
+            // Map specialization text to specialtyId
+            if (doctorData._specialization && !doctorData.specialtyId) {
+                const matchedSpecialty = specialties.find(s => s.name === doctorData._specialization);
+                if (matchedSpecialty) {
+                    console.log("Mapping specialization:", doctorData._specialization, "-> ID:", matchedSpecialty.id);
+                    setDoctorData(prev => ({
+                        ...prev,
+                        specialtyId: matchedSpecialty.id
+                    }));
+                }
+            }
+            
+            // Load wards for selected province
+            if (doctorData.provinceCode) {
+                fetchWards(doctorData.provinceCode);
+            }
+        }
+    }, [provinces.length, specialties.length, dropdownDataLoaded, doctorData.provinceCode, doctorData._specialization, doctorData.specialtyId]);
+
+    const fetchWards = async (provinceId) => {
         try {
             setLoading(true);
-            const response = await axios.get(`https://provinces.open-api.vn/api/p/${provinceCode}?depth=2`);
-            setDistricts(response.data.districts);
+            const wardsData = await addressService.getWardsByProvince(provinceId);
+            setWards(wardsData);
+            setLoading(false);
         } catch (error) {
-            console.error("Error fetching districts:", error);
-            toast.error("Lỗi khi lấy danh sách quận/huyện!");
-        } finally {
+            console.error("Lỗi khi lấy dữ liệu phường/xã:", error);
+            toast.error("Không thể tải danh sách phường/xã");
             setLoading(false);
         }
     };
 
-    const fetchWards = async (districtCode) => {
-        try {
-            setLoading(true);
-            const response = await axios.get(`https://provinces.open-api.vn/api/d/${districtCode}?depth=2`);
-            setWards(response.data.wards);
-        } catch (error) {
-            console.error("Error fetching wards:", error);
-            toast.error("Lỗi khi lấy danh sách phường/xã!");
-        } finally {
-            setLoading(false);
+    const handleProvinceChange = (e) => {
+        const provinceId = e.target.value;
+        setDoctorData(prev => ({
+            ...prev,
+            provinceCode: provinceId,
+            wardCode: ""
+        }));
+        
+        if (provinceId) {
+            fetchWards(provinceId);
+        } else {
+            setWards([]);
         }
+    };
+
+    const handleWardChange = (e) => {
+        setDoctorData(prev => ({
+            ...prev,
+            wardCode: e.target.value
+        }));
     };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
+        
+        // Debug log for experience field
+        if (name === 'experience') {
+            console.log("=== EXPERIENCE CHANGE DEBUG ===");
+            console.log("Input value:", value);
+            console.log("Input type:", typeof value);
+        }
+        
         setDoctorData((prev) => ({
             ...prev,
             [name]: value,
         }));
-    };
-
-    const handleProvinceChange = (e) => {
-        const provinceCode = e.target.value;
-        setDoctorData((prev) => ({
-            ...prev,
-            provinceCode,
-            districtCode: "",
-            wardCode: "",
-        }));
-        setDistricts([]);
-        setWards([]);
-        if (provinceCode) {
-            fetchDistricts(provinceCode);
-        }
-    };
-
-    const handleDistrictChange = (e) => {
-        const districtCode = e.target.value;
-        setDoctorData((prev) => ({
-            ...prev,
-            districtCode,
-            wardCode: "",
-        }));
-        setWards([]);
-        if (districtCode) {
-            fetchWards(districtCode);
-        }
     };
 
     const handleFileChange = (e) => {
@@ -276,16 +330,20 @@ export default function DoctorDashboard() {
     const handleSave = async () => {
         try {
             setSaving(true);
+            console.log("=== FRONTEND SENDING DATA ===");
+            console.log("doctorData:", doctorData);
+            
             const response = await userService.updateDoctorProfile(doctorData);
-            setDoctorData((prev) => ({
-                ...prev,
-                ...response.user,
-                specialization: response.doctor.specialization,
-                licenseNumber: response.doctor.qualification,
-                experience: response.doctor.experience,
-                bio: response.doctor.description,
-                specialtyId: response.doctor.specialtyId,
-            }));
+            console.log("=== BACKEND RESPONSE ===");
+            console.log("response:", response);
+            
+            // Đơn giản hóa: chỉ cập nhật với response data
+            if (response) {
+                // Không reload data để tránh override user input
+                // Chỉ cập nhật các field cần thiết từ response
+                console.log("Profile updated successfully, keeping current form state");
+            }
+            
             toast.success("Cập nhật thông tin bác sĩ thành công!");
         } catch (error) {
             console.error("Error saving:", error);
@@ -441,19 +499,16 @@ export default function DoctorDashboard() {
                             </div>
                             <div className="form-group">
                                 <label>Năm kinh nghiệm</label>
-                                <select
+                                <input
+                                    type="number"
                                     name="experience"
                                     value={doctorData.experience}
                                     onChange={handleChange}
                                     className="form-control"
-                                >
-                                    <option value="">-- Chọn số năm --</option>
-                                    <option value="1">1</option>
-                                    <option value="2">2</option>
-                                    <option value="3">3</option>
-                                    <option value="5">5</option>
-                                    <option value="10">10+</option>
-                                </select>
+                                    min="0"
+                                    max="50"
+                                    placeholder="Nhập số năm kinh nghiệm"
+                                />
                             </div>
                             <div className="form-group">
                                 <label>Tỉnh/Thành phố</label>
@@ -473,34 +528,17 @@ export default function DoctorDashboard() {
                                 </select>
                             </div>
                             <div className="form-group">
-                                <label>Quận/Huyện</label>
-                                <select
-                                    name="districtCode"
-                                    value={doctorData.districtCode}
-                                    onChange={handleDistrictChange}
-                                    className="form-control"
-                                    disabled={!doctorData.provinceCode || loading}
-                                >
-                                    <option value="">-- Chọn Quận/Huyện --</option>
-                                    {districts.map((district) => (
-                                        <option key={district.code} value={district.code}>
-                                            {district.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div className="form-group">
                                 <label>Phường/Xã</label>
                                 <select
                                     name="wardCode"
                                     value={doctorData.wardCode}
-                                    onChange={handleChange}
+                                    onChange={handleWardChange}
                                     className="form-control"
-                                    disabled={!doctorData.districtCode || loading}
+                                    disabled={!doctorData.provinceCode || loading}
                                 >
                                     <option value="">-- Chọn Phường/Xã --</option>
                                     {wards.map((ward) => (
-                                        <option key={ward.code} value={ward.code}>
+                                        <option key={ward.id} value={ward.id}>
                                             {ward.name}
                                         </option>
                                     ))}

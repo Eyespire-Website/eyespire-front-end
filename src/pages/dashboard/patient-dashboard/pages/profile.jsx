@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import authService from "../../../../services/authService";
 import userService from "../../../../services/userService";
-import axios from 'axios';
+import addressService from "../../../../services/addressService";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import '../styles/profile.css'
@@ -22,13 +22,11 @@ export default function ProfilePage() {
         role: "",
         birthdate: "",
         provinceCode: "",
-        districtCode: "",
-        wardCode: "",
+        wardCode: "", // Bỏ districtCode
     });
 
     const [provinces, setProvinces] = useState([]);
-    const [districts, setDistricts] = useState([]);
-    const [wards, setWards] = useState([]);
+    const [wards, setWards] = useState([]); // Bỏ districts
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
     const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -83,6 +81,10 @@ export default function ProfilePage() {
             // Lấy thông tin người dùng hiện tại từ API
             const userData = await userService.getCurrentUserInfo();
 
+            // Sử dụng dữ liệu địa chỉ trực tiếp
+            let finalProvinceCode = userData.province || "";
+            let finalWardCode = userData.ward || "";
+
             // Cập nhật state với dữ liệu mới
             setUser({
                 name: userData.name || "",
@@ -94,9 +96,8 @@ export default function ProfilePage() {
                 address: userData.addressDetail || "",
                 role: userData.role || "PATIENT",
                 birthdate: userData.dateOfBirth || "",
-                provinceCode: userData.province || "",
-                districtCode: userData.district || "",
-                wardCode: userData.ward || "",
+                provinceCode: finalProvinceCode,
+                wardCode: finalWardCode,
             });
 
             // Cập nhật avatar nếu có
@@ -104,14 +105,9 @@ export default function ProfilePage() {
                 setPreviewUrl(userData.avatarUrl);
             }
 
-            // Nếu có provinceCode, load districts
-            if (userData.province) {
-                fetchDistricts(userData.province);
-            }
-
-            // Nếu có districtCode, load wards
-            if (userData.district) {
-                fetchWards(userData.district);
+            // Nếu có provinceCode, load wards
+            if (finalProvinceCode) {
+                fetchWards(finalProvinceCode);
             }
 
             setLoading(false);
@@ -132,22 +128,16 @@ export default function ProfilePage() {
                     role: currentUser.role || "PATIENT",
                     birthdate: currentUser.birthdate || "",
                     provinceCode: currentUser.provinceCode || "",
-                    districtCode: currentUser.districtCode || "",
-                    wardCode: currentUser.wardCode || "",
+                    wardCode: currentUser.wardCode || "", // Bỏ districtCode
                 });
 
                 if (currentUser.avatarUrl) {
                     setPreviewUrl(currentUser.avatarUrl);
                 }
 
-                // Nếu có provinceCode, load districts
+                // Nếu có provinceCode, load wards
                 if (currentUser.provinceCode) {
-                    fetchDistricts(currentUser.provinceCode);
-                }
-
-                // Nếu có districtCode, load wards
-                if (currentUser.districtCode) {
-                    fetchWards(currentUser.districtCode);
+                    fetchWards(currentUser.provinceCode);
                 }
             } else {
                 // Nếu không có thông tin người dùng, chuyển hướng về trang đăng nhập
@@ -163,11 +153,12 @@ export default function ProfilePage() {
         const fetchProvinces = async () => {
             try {
                 setLoading(true);
-                const response = await axios.get('https://provinces.open-api.vn/api/p/');
-                setProvinces(response.data);
+                const provincesData = await addressService.getProvinces();
+                setProvinces(provincesData);
                 setLoading(false);
             } catch (error) {
                 console.error("Lỗi khi lấy dữ liệu tỉnh/thành phố:", error);
+                toast.error('Không thể tải danh sách tỉnh/thành phố');
                 setLoading(false);
             }
         };
@@ -180,28 +171,16 @@ export default function ProfilePage() {
         fetchUserData();
     }, []);
 
-    // Fetch quận/huyện khi chọn tỉnh/thành phố
-    const fetchDistricts = async (provinceCode) => {
+    // Fetch phường/xã khi chọn tỉnh/thành phố (API mới: 2 cấp)
+    const fetchWards = async (provinceCode) => {
         try {
             setLoading(true);
-            const response = await axios.get(`https://provinces.open-api.vn/api/p/${provinceCode}?depth=2`);
-            setDistricts(response.data.districts);
-            setLoading(false);
-        } catch (error) {
-            console.error("Lỗi khi lấy dữ liệu quận/huyện:", error);
-            setLoading(false);
-        }
-    };
-
-    // Fetch phường/xã khi chọn quận/huyện
-    const fetchWards = async (districtCode) => {
-        try {
-            setLoading(true);
-            const response = await axios.get(`https://provinces.open-api.vn/api/d/${districtCode}?depth=2`);
-            setWards(response.data.wards);
+            const wardsData = await addressService.getWardsByProvince(provinceCode);
+            setWards(wardsData);
             setLoading(false);
         } catch (error) {
             console.error("Lỗi khi lấy dữ liệu phường/xã:", error);
+            toast.error('Không thể tải danh sách phường/xã');
             setLoading(false);
         }
     };
@@ -227,8 +206,7 @@ export default function ProfilePage() {
                 username: user.username,
                 birthdate: user.birthdate,
                 provinceCode: user.provinceCode,
-                districtCode: user.districtCode,
-                wardCode: user.wardCode,
+                wardCode: user.wardCode, // Bỏ districtCode
                 address: user.address
             };
 
@@ -260,38 +238,29 @@ export default function ProfilePage() {
         }));
     };
 
-    // Xử lý khi chọn tỉnh/thành phố
+    // Xử lý khi chọn tỉnh/thành phố (API mới: 2 cấp)
     const handleProvinceChange = (e) => {
         const provinceCode = e.target.value;
-        // Reset district và ward khi thay đổi province
+        // Reset ward khi thay đổi province (bỏ district)
         setUser(prev => ({
             ...prev,
             provinceCode,
-            districtCode: "",
             wardCode: ""
         }));
-        setDistricts([]);
         setWards([]);
 
         if (provinceCode) {
-            fetchDistricts(provinceCode);
+            fetchWards(provinceCode); // Trực tiếp fetch wards từ province
         }
     };
 
-    // Xử lý khi chọn quận/huyện
-    const handleDistrictChange = (e) => {
-        const districtCode = e.target.value;
-        // Reset ward khi thay đổi district
+    // Xử lý khi chọn phường/xã
+    const handleWardChange = (e) => {
+        const wardCode = e.target.value;
         setUser(prev => ({
             ...prev,
-            districtCode,
-            wardCode: ""
+            wardCode
         }));
-        setWards([]);
-
-        if (districtCode) {
-            fetchWards(districtCode);
-        }
     };
 
     const handlePasswordChange = (e) => {
@@ -538,26 +507,8 @@ export default function ProfilePage() {
                                 >
                                     <option value="">-- Chọn Tỉnh/Thành phố --</option>
                                     {provinces.map(province => (
-                                        <option key={province.code} value={province.code}>
+                                        <option key={province.id} value={province.id}>
                                             {province.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            <div className="form-group">
-                                <label>Quận/Huyện</label>
-                                <select
-                                    name="districtCode"
-                                    value={user.districtCode}
-                                    onChange={handleDistrictChange}
-                                    className="form-control"
-                                    disabled={!user.provinceCode || loading}
-                                >
-                                    <option value="">-- Chọn Quận/Huyện --</option>
-                                    {districts.map(district => (
-                                        <option key={district.code} value={district.code}>
-                                            {district.name}
                                         </option>
                                     ))}
                                 </select>
@@ -568,13 +519,13 @@ export default function ProfilePage() {
                                 <select
                                     name="wardCode"
                                     value={user.wardCode}
-                                    onChange={handleChange}
+                                    onChange={handleWardChange}
                                     className="form-control"
-                                    disabled={!user.districtCode || loading}
+                                    disabled={!user.provinceCode || loading}
                                 >
                                     <option value="">-- Chọn Phường/Xã --</option>
                                     {wards.map(ward => (
-                                        <option key={ward.code} value={ward.code}>
+                                        <option key={ward.id} value={ward.id}>
                                             {ward.name}
                                         </option>
                                     ))}

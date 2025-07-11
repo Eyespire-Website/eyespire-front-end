@@ -97,6 +97,21 @@ const userService = {
     }
   },
 
+  // Lấy thông tin doctor từ doctors table
+  getDoctorInfo: async () => {
+    try {
+      const currentUser = authService.getCurrentUser();
+      if (!currentUser) {
+        throw new Error("Không tìm thấy thông tin người dùng");
+      }
+      const response = await axiosInstance.get(`/doctors/by-user/${currentUser.id}`);
+      return response.data;
+    } catch (error) {
+      console.error("Lỗi khi lấy thông tin doctor:", error);
+      return null; // Return null nếu không tìm thấy doctor
+    }
+  },
+
   updateDoctorProfile: async (doctorData) => {
     try {
       const currentUser = authService.getCurrentUser();
@@ -105,15 +120,14 @@ const userService = {
       }
 
       const userData = {
-        name: doctorData.fullname || currentUser.name,
-        phone: doctorData.phone || "",
+        name: doctorData.fullname,
+        phone: doctorData.phone,
         gender: doctorData.gender?.toUpperCase() || "MALE",
-        username: doctorData.username || currentUser.username,
-        dateOfBirth: doctorData.birthdate || null,
-        province: doctorData.provinceCode || "",
-        district: doctorData.districtCode || "",
-        ward: doctorData.wardCode || "",
-        addressDetail: doctorData.address || "",
+        username: doctorData.username,
+        birthdate: doctorData.birthdate,
+        provinceCode: doctorData.provinceCode,
+        wardCode: doctorData.wardCode,
+        address: doctorData.address
       };
 
       const doctorEntityData = {
@@ -127,8 +141,14 @@ const userService = {
         specialtyId: parseInt(doctorData.specialtyId) || null,
         imageUrl: doctorData.imageUrl || null,
       };
+      
+      console.log("=== EXPERIENCE DEBUG ===");
+      console.log("doctorData.experience (raw):", doctorData.experience);
+      console.log("doctorData.experience (type):", typeof doctorData.experience);
+      console.log("Final experience value:", doctorEntityData.experience);
 
-      console.log("Updating doctor profile with userId:", currentUser.id);
+      console.log("=== DOCTOR PROFILE UPDATE DEBUG ===");
+      console.log("Original doctorData:", doctorData);
       console.log("User payload:", userData);
       console.log("Doctor payload:", doctorEntityData);
 

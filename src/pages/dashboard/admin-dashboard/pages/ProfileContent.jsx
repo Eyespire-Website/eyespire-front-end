@@ -2,13 +2,14 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import authService from "../../../../services/authService";
 import userService from "../../../../services/userService";
+import addressService from "../../../../services/addressService";
 import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import '../styles/profile.css'
 import { Shield, Settings, User } from 'lucide-react';
 
-export default function ProfilePage() {
+export default function ProfileContent() {
     const navigate = useNavigate();
     const [user, setUser] = useState({
         name: "",
@@ -18,16 +19,14 @@ export default function ProfilePage() {
         username: "",
         fullname: "",
         address: "",
-        role: "ADMIN", // Default role for admin
+        role: "",
         birthdate: "",
         provinceCode: "",
-        districtCode: "",
-        wardCode: "",
+        wardCode: "", 
     });
 
     const [provinces, setProvinces] = useState([]);
-    const [districts, setDistricts] = useState([]);
-    const [wards, setWards] = useState([]);
+    const [wards, setWards] = useState([]); 
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
     const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -39,6 +38,7 @@ export default function ProfilePage() {
     const [passwordError, setPasswordError] = useState("");
     const [selectedFile, setSelectedFile] = useState(null);
     const [previewUrl, setPreviewUrl] = useState("");
+    const [migrationNote, setMigrationNote] = useState(""); 
 
     // Kiểm tra xem người dùng đăng nhập bằng Google hay không
     const isGoogleAccount = () => {
@@ -67,21 +67,11 @@ export default function ProfilePage() {
         return url;
     };
 
-    // Hàm lấy thông tin người dùng từ API
+    // Lấy thông tin người dùng từ API
     const fetchUserData = async () => {
         try {
-            // Kiểm tra xem có thông tin người dùng trong localStorage không
-            const currentUserFromStorage = authService.getCurrentUser();
-            if (!currentUserFromStorage) {
-                // Nếu không có thông tin người dùng, chuyển hướng về trang đăng nhập
-                navigate('/login');
-                return;
-            }
-
-            // Kiểm tra xem người dùng có phải là admin không
-            if (currentUserFromStorage.role !== 'ADMIN') {
-                // Nếu không phải admin, chuyển hướng về trang đăng nhập
-                toast.error("Bạn không có quyền truy cập trang này");
+            const currentUser = authService.getCurrentUser();
+            if (!currentUser) {
                 navigate('/login');
                 return;
             }
@@ -89,6 +79,18 @@ export default function ProfilePage() {
             setLoading(true);
             // Lấy thông tin người dùng hiện tại từ API
             const userData = await userService.getCurrentUserInfo();
+
+            // Migrate địa chỉ cũ nếu cần
+            let migratedAddress = null;
+            if (userData.province && userData.district && userData.ward) {
+                // Có dữ liệu địa chỉ cũ (3 cấp), cần migrate
+                migratedAddress = await addressService.migrateOldAddress({
+                    province: userData.province,
+                    district: userData.district,
+                    ward: userData.ward
+                });
+                setMigrationNote(migratedAddress.migrationNote);
+            }
 
             // Cập nhật state với dữ liệu mới
             setUser({
@@ -101,9 +103,8 @@ export default function ProfilePage() {
                 address: userData.addressDetail || "",
                 role: userData.role || "ADMIN",
                 birthdate: userData.dateOfBirth || "",
-                provinceCode: userData.province || "",
-                districtCode: userData.district || "",
-                wardCode: userData.ward || "",
+                provinceCode: migratedAddress?.province || userData.province || "",
+                wardCode: migratedAddress?.ward || userData.ward || "",
             });
 
             // Cập nhật avatar nếu có
@@ -111,14 +112,9 @@ export default function ProfilePage() {
                 setPreviewUrl(userData.avatarUrl);
             }
 
-            // Nếu có provinceCode, load districts
-            if (userData.province) {
-                fetchDistricts(userData.province);
-            }
-
-            // Nếu có districtCode, load wards
-            if (userData.district) {
-                fetchWards(userData.district);
+            // Nếu có provinceCode, load wards
+            if (migratedAddress?.province || userData.province) {
+                fetchWards(migratedAddress?.province || userData.province);
             }
 
             setLoading(false);
@@ -128,14 +124,6 @@ export default function ProfilePage() {
             // Nếu API lỗi, sử dụng dữ liệu từ localStorage
             const currentUser = authService.getCurrentUser();
             if (currentUser) {
-                // Kiểm tra xem người dùng có phải là admin không
-                if (currentUser.role !== 'ADMIN') {
-                    // Nếu không phải admin, chuyển hướng về trang đăng nhập
-                    toast.error("Bạn không có quyền truy cập trang này");
-                    navigate('/login');
-                    return;
-                }
-                
                 setUser({
                     name: currentUser.name || "",
                     email: currentUser.email || "",
@@ -147,7 +135,6 @@ export default function ProfilePage() {
                     role: currentUser.role || "ADMIN",
                     birthdate: currentUser.birthdate || "",
                     provinceCode: currentUser.provinceCode || "",
-                    districtCode: currentUser.districtCode || "",
                     wardCode: currentUser.wardCode || "",
                 });
 
@@ -155,14 +142,9 @@ export default function ProfilePage() {
                     setPreviewUrl(currentUser.avatarUrl);
                 }
 
-                // Nếu có provinceCode, load districts
+                // Nếu có provinceCode, load wards
                 if (currentUser.provinceCode) {
-                    fetchDistricts(currentUser.provinceCode);
-                }
-
-                // Nếu có districtCode, load wards
-                if (currentUser.districtCode) {
-                    fetchWards(currentUser.districtCode);
+                    fetchWards(currentUser.provinceCode);
                 }
             } else {
                 // Nếu không có thông tin người dùng, chuyển hướng về trang đăng nhập
@@ -173,52 +155,39 @@ export default function ProfilePage() {
         }
     };
 
-    // Hàm lấy danh sách tỉnh/thành phố
-    const fetchProvinces = async () => {
-        try {
-            setLoading(true);
-            const response = await axios.get('https://provinces.open-api.vn/api/p/');
-            setProvinces(response.data);
-            setLoading(false);
-        } catch (error) {
-            console.error("Lỗi khi lấy dữ liệu tỉnh/thành phố:", error);
-            setLoading(false);
-        }
-    };
-
     // Fetch tất cả các tỉnh/thành phố khi component mount
     useEffect(() => {
+        const fetchProvinces = async () => {
+            try {
+                setLoading(true);
+                const provincesData = await addressService.getProvinces();
+                setProvinces(provincesData);
+                setLoading(false);
+            } catch (error) {
+                console.error("Lỗi khi lấy dữ liệu tỉnh/thành phố:", error);
+                toast.error("Không thể tải danh sách tỉnh/thành phố");
+                setLoading(false);
+            }
+        };
+
         fetchProvinces();
     }, []);
 
     // Lấy thông tin người dùng từ API
     useEffect(() => {
-        document.title = "Eyespire Admin - Hồ sơ cá nhân";
         fetchUserData();
     }, []);
 
-    // Fetch quận/huyện khi chọn tỉnh/thành phố
-    const fetchDistricts = async (provinceCode) => {
+    // Fetch phường/xã khi chọn tỉnh/thành phố
+    const fetchWards = async (provinceId) => {
         try {
             setLoading(true);
-            const response = await axios.get(`https://provinces.open-api.vn/api/p/${provinceCode}?depth=2`);
-            setDistricts(response.data.districts);
-            setLoading(false);
-        } catch (error) {
-            console.error("Lỗi khi lấy dữ liệu quận/huyện:", error);
-            setLoading(false);
-        }
-    };
-
-    // Fetch phường/xã khi chọn quận/huyện
-    const fetchWards = async (districtCode) => {
-        try {
-            setLoading(true);
-            const response = await axios.get(`https://provinces.open-api.vn/api/d/${districtCode}?depth=2`);
-            setWards(response.data.wards);
+            const wardsData = await addressService.getWardsByProvince(provinceId);
+            setWards(wardsData);
             setLoading(false);
         } catch (error) {
             console.error("Lỗi khi lấy dữ liệu phường/xã:", error);
+            toast.error("Không thể tải danh sách phường/xã");
             setLoading(false);
         }
     };
@@ -240,12 +209,11 @@ export default function ProfilePage() {
             const userData = {
                 name: user.fullname,
                 phone: user.phone,
-                gender: user.gender.toUpperCase(), // Chuyển đổi thành chữ hoa để phù hợp với enum GenderType
+                gender: user.gender.toUpperCase(),
                 username: user.username,
                 birthdate: user.birthdate,
                 provinceCode: user.provinceCode,
-                districtCode: user.districtCode,
-                wardCode: user.wardCode,
+                wardCode: user.wardCode, 
                 address: user.address
             };
 
@@ -277,38 +245,26 @@ export default function ProfilePage() {
         }));
     };
 
-    // Xử lý khi chọn tỉnh/thành phố
     const handleProvinceChange = (e) => {
-        const provinceCode = e.target.value;
-        // Reset district và ward khi thay đổi province
+        const provinceId = e.target.value;
         setUser(prev => ({
             ...prev,
-            provinceCode,
-            districtCode: "",
-            wardCode: ""
+            provinceCode: provinceId,
+            wardCode: "" 
         }));
-        setDistricts([]);
-        setWards([]);
-
-        if (provinceCode) {
-            fetchDistricts(provinceCode);
+        
+        if (provinceId) {
+            fetchWards(provinceId);
+        } else {
+            setWards([]);
         }
     };
 
-    // Xử lý khi chọn quận/huyện
-    const handleDistrictChange = (e) => {
-        const districtCode = e.target.value;
-        // Reset ward khi thay đổi district
+    const handleWardChange = (e) => {
         setUser(prev => ({
             ...prev,
-            districtCode,
-            wardCode: ""
+            wardCode: e.target.value
         }));
-        setWards([]);
-
-        if (districtCode) {
-            fetchWards(districtCode);
-        }
     };
 
     const handlePasswordChange = (e) => {
@@ -563,31 +519,13 @@ export default function ProfilePage() {
                             </div>
 
                             <div className="form-group">
-                                <label>Quận/Huyện</label>
-                                <select
-                                    name="districtCode"
-                                    value={user.districtCode}
-                                    onChange={handleDistrictChange}
-                                    className="form-control"
-                                    disabled={!user.provinceCode || loading}
-                                >
-                                    <option value="">-- Chọn Quận/Huyện --</option>
-                                    {districts.map(district => (
-                                        <option key={district.code} value={district.code}>
-                                            {district.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            <div className="form-group">
                                 <label>Phường/Xã</label>
                                 <select
                                     name="wardCode"
                                     value={user.wardCode}
-                                    onChange={handleChange}
+                                    onChange={handleWardChange}
                                     className="form-control"
-                                    disabled={!user.districtCode || loading}
+                                    disabled={!user.provinceCode || loading}
                                 >
                                     <option value="">-- Chọn Phường/Xã --</option>
                                     {wards.map(ward => (
