@@ -1,0 +1,379 @@
+/* CSS cho trang chi tiết đơn hàng - prefix ptod */
+
+.ptod-container {
+    padding: 20px 30px;
+    background-color: #f8f9fa;
+    min-height: 100vh;
+}
+
+/* Header */
+.ptod-header {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.ptod-back-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: none;
+    border: none;
+    color: #03246b;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+    transition: color 0.2s;
+}
+
+.ptod-back-button:hover {
+    color: #021a4a;
+}
+
+.ptod-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: #03246b;
+    margin: 0;
+}
+
+/* Section styles */
+.ptod-section-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    margin: 0 0 15px 0;
+}
+
+.ptod-status-section,
+.ptod-info-section,
+.ptod-products-section {
+    margin-bottom: 30px;
+}
+
+/* Cards */
+.ptod-status-card,
+.ptod-info-card,
+.ptod-products-card {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+}
+
+/* Status section */
+.ptod-status-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.ptod-status-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-processing {
+    background-color: #fff8e1;
+    color: #f57c00;
+}
+
+.status-paid {
+    background-color: #e1f5fe;
+    color: #0288d1;
+}
+
+.status-shipping {
+    background-color: #e8f5e9;
+    color: #388e3c;
+}
+
+.status-delivered {
+    background-color: #e8f5e9;
+    color: #388e3c;
+}
+
+.status-cancelled {
+    background-color: #ffebee;
+    color: #d32f2f;
+}
+
+.status-default {
+    background-color: #f5f5f5;
+    color: #757575;
+}
+
+.ptod-order-date {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #6c757d;
+}
+
+/* Status timeline */
+.ptod-status-timeline {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    margin-top: 30px;
+    padding: 0 10px;
+}
+
+.ptod-status-line {
+    position: absolute;
+    top: 10px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background-color: #e0e0e0;
+    z-index: 1;
+}
+
+.ptod-status-step {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 2;
+    flex: 1;
+}
+
+.ptod-status-indicator {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: white;
+    border: 2px solid #e0e0e0;
+    margin-bottom: 10px;
+}
+
+.ptod-status-label {
+    font-size: 12px;
+    color: #6c757d;
+    text-align: center;
+    max-width: 80px;
+}
+
+.ptod-status-completed .ptod-status-indicator {
+    background-color: #03246b;
+    border-color: #03246b;
+}
+
+.ptod-status-completed .ptod-status-label {
+    color: #03246b;
+    font-weight: 600;
+}
+
+.ptod-status-current .ptod-status-indicator {
+    border-color: #03246b;
+    border-width: 3px;
+}
+
+.ptod-status-current .ptod-status-label {
+    color: #03246b;
+    font-weight: 600;
+}
+
+/* Info section */
+.ptod-info-item {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.ptod-info-item:last-child {
+    margin-bottom: 0;
+}
+
+.ptod-info-item h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin: 0 0 5px 0;
+}
+
+.ptod-info-item p {
+    font-size: 14px;
+    color: #6c757d;
+    margin: 0;
+}
+
+.ptod-payment-status {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.ptod-payment-paid {
+    background-color: #e8f5e9;
+    color: #388e3c;
+}
+
+.ptod-payment-pending {
+    background-color: #fff8e1;
+    color: #f57c00;
+}
+
+/* Products section */
+.ptod-products-list {
+    margin-bottom: 20px;
+}
+
+.ptod-product-item {
+    display: flex;
+    align-items: center;
+    padding: 15px 0;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.ptod-product-item:last-child {
+    border-bottom: none;
+}
+
+.ptod-product-image {
+    width: 60px;
+    height: 60px;
+    border-radius: 4px;
+    background-color: #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    margin-right: 15px;
+}
+
+.ptod-product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.ptod-product-details {
+    flex: 1;
+}
+
+.ptod-product-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin: 0 0 5px 0;
+}
+
+.ptod-product-price {
+    font-size: 14px;
+    color: #6c757d;
+    margin: 0;
+}
+
+.ptod-product-subtotal {
+    font-size: 16px;
+    font-weight: 600;
+    color: #03246b;
+}
+
+.ptod-order-summary {
+    border-top: 1px solid #e0e0e0;
+    padding-top: 15px;
+}
+
+.ptod-summary-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 14px;
+    color: #6c757d;
+}
+
+.ptod-summary-total {
+    font-size: 18px;
+    font-weight: 600;
+    color: #03246b;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed #e0e0e0;
+}
+
+.ptod-no-products {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 30px 0;
+    color: #6c757d;
+}
+
+.ptod-no-products svg {
+    margin-bottom: 15px;
+    opacity: 0.7;
+}
+
+/* Loading and error states */
+.ptod-loading-container,
+.ptod-error-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    text-align: center;
+}
+
+.ptod-loading-spinner {
+    color: #03246b;
+    font-size: 16px;
+}
+
+.ptod-error-container h2 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #333;
+    margin: 0 0 10px 0;
+}
+
+.ptod-error-container p {
+    font-size: 14px;
+    color: #6c757d;
+    margin: 0 0 20px 0;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .ptod-container {
+        padding: 15px;
+    }
+    
+    .ptod-status-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .ptod-status-timeline {
+        margin-top: 20px;
+    }
+    
+    .ptod-status-label {
+        font-size: 10px;
+    }
+    
+    .ptod-product-item {
+        flex-wrap: wrap;
+    }
+    
+    .ptod-product-subtotal {
+        width: 100%;
+        margin-top: 10px;
+        text-align: right;
+    }
+}

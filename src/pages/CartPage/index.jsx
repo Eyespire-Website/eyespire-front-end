@@ -6,6 +6,7 @@ import Footer from "../../components/Footer/Footer";
 import cartService from "../../services/cartService";
 import authService from "../../services/authService";
 import orderService from "../../services/orderService";
+import ChatBox from "../../components/ChatBox/ChatBox";
 import "./index.css";
 
 export default function CartPage() {
@@ -318,6 +319,7 @@ export default function CartPage() {
       </div>
       
       <Footer />
+      <ChatBox />
     </div>
   );
 }

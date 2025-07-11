@@ -7,6 +7,7 @@ import PatientProfile from "./pages/profile";
 import AppointmentsPage from "./pages/AppointmentsPage";
 import OrdersPage from "./pages/OrdersPage";
 import PaymentHistoryPage from "./pages/PaymentHistoryPage";
+import PaymentDetailPage from "./pages/PaymentDetailPage";
 import OrderDetailPage from "./pages/OrderDetailPage";
 import MedicalRecordsPage from "./pages/MedicalRecordsPage";
 import MedicalRecordDetailPage from "./pages/MedicalRecordDetailPage";
@@ -23,6 +24,7 @@ export default function PatientRoutes() {
                 <Route path="medical-records" element={<MedicalRecordsPage />} />
                 <Route path="medical-records/:id" element={<MedicalRecordDetailPage />} />
                 <Route path="payment-history" element={<PaymentHistoryPage />} />
+                <Route path="payment-history/:id/:type" element={<PaymentDetailPage />} />
             </Route>
         </Routes>
     );

@@ -244,10 +244,10 @@ const Header = () => {
             <span className="text4">{"Services"}</span>
           </Link>
 
-          <div className="row-view3">
+          <Link to="/doctors" className="row-view3" style={{ textDecoration: 'none' }}>
             <span className="text5">{"Doctors"}</span>
             <span className="text3">{""}</span>
-          </div>
+          </Link>
           <Link to="/shop" className="row-view3">
             <span className="text5">{"Shop"}</span>
             <span className="text3">{""}</span>

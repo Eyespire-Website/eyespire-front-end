@@ -11,6 +11,7 @@ import CallToAction from "../../components/ProductShop/CallToAction";
 import productService from "../../services/productService";
 import cartService from "../../services/cartService";
 import { toast } from "react-toastify";
+import ChatBox from "../../components/ChatBox/ChatBox";
 import "./index.css";
 
 export default function ProductDetail() {
@@ -153,6 +154,7 @@ export default function ProductDetail() {
 
       {/* Footer */}
       <Footer />
+      <ChatBox />
     </div>
   );
 }

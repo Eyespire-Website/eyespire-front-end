@@ -24,6 +24,7 @@ import PayOSReturn from "./pages/payment/PayOSReturn";
 import OrderPayOSReturn from "./pages/payment/OrderPayOSReturn";
 import OrderDetail from "./pages/OrderDetail";
 import VirtualGlasses from './pages/dashboard/patient-dashboard/pages/VirtualGlasses/VirtualGlasses';
+import DoctorsPage from "./pages/doctorspage";
 
 
 function App() {
@@ -52,6 +53,7 @@ function App() {
           <Route path="/auth/google/callback" element={<GoogleCallback />} />
           <Route path="/services" element={<EyeServices />} />
           <Route path="/about" element={<AboutPage />} />
+          <Route path="/doctors" element={<DoctorsPage />} />
           <Route path="/dashboard/profile" element={<ProfilePage />} />
           <Route path="/product/:id" element={<ProductDetail />} />
           <Route path="/cart" element={<CartPage />} />
