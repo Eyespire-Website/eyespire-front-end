@@ -1,4 +1,5 @@
-Reset and base styles * {
+/* Reset and base styles */
+* {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -97,4 +98,60 @@ body {
 .btn-sm {
   padding: 4px 8px;
   font-size: 12px;
+}
+
+/* Header actions */
+.pm-header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* Form actions for create user form */
+.pm-form-actions.pm-inline-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+/* Inline button for "Tạo thông tin khách hàng" */
+.pm-inline-button {
+  padding: 6px 12px;
+  font-size: 13px;
+}
+
+/* Error message */
+.pm-error-message {
+  color: #d32f2f;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Search input container */
+.pm-search-input-container {
+  position: relative;
+}
+
+.pm-search-icon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.pm-clear-button {
+  position: absolute;
+  right: 30px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #666;
+}
+
+.pm-clear-button:hover {
+  color: #000;
 }

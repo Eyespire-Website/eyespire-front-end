@@ -107,6 +107,26 @@ class OrderService {
     }
 
     /**
+     * Tạo đơn hàng tại quầy
+     * @param {Object} orderData Dữ liệu đơn hàng
+     * @returns {Promise<Object>} Thông tin đơn hàng đã tạo
+     */
+    async createInStoreOrder(orderData) {
+        try {
+            const token = authService.getToken();
+            const response = await axios.post(`${API_URL}/orders/instore`, orderData, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+            });
+            return response.data;
+        } catch (error) {
+            throw new Error(error.response?.data?.message || 'Lỗi khi tạo đơn hàng tại quầy. Vui lòng thử lại.');
+        }
+    }
+
+    /**
      * Lấy danh sách tất cả đơn hàng (cho Store Manager)
      * @returns {Promise<Array>} Danh sách đơn hàng
      */

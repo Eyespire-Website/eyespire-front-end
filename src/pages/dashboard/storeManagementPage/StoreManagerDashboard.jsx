@@ -6,7 +6,7 @@ import Header from "../../../components/storeManagement/Header";
 import OrdersPage from "./OrdersPage";
 import InventoryPage from "./InventoryPage";
 import ProductsPage from "./ProductsPage";
-import MessagesPage from "./MessagesPage";
+import MessagePage from "./MessagesPage";
 import ProfilePage from "./ProfilePage";
 import DashboardPage from "./DashboardPage";
 import "./STM-Style/STM-globals.css";
@@ -34,7 +34,7 @@ const AdminDashboard = () => {
       case "products":
         return <ProductsPage />;
       case "messages":
-        return <MessagesPage />;
+        return <MessagePage />;
       case "profile":
         return <ProfilePage />;
       default:
@@ -51,7 +51,7 @@ const AdminDashboard = () => {
       <div className="dashboard">
         <SideBar activeTab={activeSection} setActiveTab={setActiveSection} />
         <div className="dashboard-content">
-          <Header title={getSectionTitle()} />
+          {activeSection !== "messages" && <Header title={getSectionTitle()} />}
           <div className="content-area">{renderContent()}</div>
         </div>
       </div>

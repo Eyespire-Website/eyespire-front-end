@@ -236,6 +236,16 @@ const userService = {
     }
   },
 
+  createPatient: async (userData) => {
+    try {
+      const response = await axiosInstance.post("/users/patients", userData);
+      return response.data;
+    } catch (error) {
+      console.error("Lỗi khi tạo khách hàng:", error);
+      throw error;
+    }
+  },
+
   getPatientById: async (id) => {
     try {
       const response = await axiosInstance.get(`/users/${id}`);

@@ -1,836 +1,728 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { ArrowLeft, X, Search, User, Package, CreditCard, Save, Eye, Calculator } from "lucide-react"
+import { useState, useEffect } from "react";
+import { ArrowLeft, X, Search, User, Package, CreditCard, Save, Eye, Calculator, Plus } from "lucide-react";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import orderService from "../../../services/orderService";
+import productService from "../../../services/productService";
+import userService from "../../../services/userService";
 
 const CreateOrderPage = ({ onBack, onOrderCreated }) => {
   const [orderData, setOrderData] = useState({
-    customer: {
-      name: "",
-      email: "",
-      phone: "",
-      address: "",
-    },
+    patient: { id: null, name: "", email: "", phone: "" },
     items: [],
-    paymentMethod: "cash",
-    shippingMethod: "standard",
-    notes: "",
-    discount: 0,
-    discountType: "amount", // amount or percentage
-  })
-
-  const [customerSearch, setCustomerSearch] = useState("")
-  const [productSearch, setProductSearch] = useState("")
-  const [showCustomerList, setShowCustomerList] = useState(false)
-  const [showProductList, setShowProductList] = useState(false)
-  const [errors, setErrors] = useState({})
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [previewMode, setPreviewMode] = useState(false)
-
-  // Mock data
-  const customers = [
-    {
-      id: "KH001",
-      name: "Nguyễn Văn A",
-      email: "nguyenvana@gmail.com",
-      phone: "0901234567",
-      address: "123 Đường Lê Lợi, Quận 1, TP.HCM",
-    },
-    {
-      id: "KH002",
-      name: "Trần Thị B",
-      email: "tranthib@gmail.com",
-      phone: "0912345678",
-      address: "456 Đường Nguyễn Huệ, Quận 3, TP.HCM",
-    },
-    {
-      id: "KH003",
-      name: "Lê Văn C",
-      email: "levanc@gmail.com",
-      phone: "0923456789",
-      address: "789 Đường Pasteur, Quận 1, TP.HCM",
-    },
-    {
-      id: "KH004",
-      name: "Phạm Thị D",
-      email: "phamthid@gmail.com",
-      phone: "0934567890",
-      address: "321 Đường Võ Văn Tần, Quận 3, TP.HCM",
-    },
-    {
-      id: "KH005",
-      name: "Hoàng Văn E",
-      email: "hoangvane@gmail.com",
-      phone: "0945678901",
-      address: "654 Đường Cách Mạng Tháng 8, Quận 10, TP.HCM",
-    },
-  ]
-
-  const products = [
-    {
-      id: "SP001",
-      name: "Thức ăn cá Koi cao cấp",
-      price: 250000,
-      quantity: 150,
-      image: "/placeholder.svg?height=40&width=40",
-    },
-    {
-      id: "SP002",
-      name: "Máy lọc nước hồ cá",
-      price: 1500000,
-      quantity: 25,
-      image: "/placeholder.svg?height=40&width=40",
-    },
-    {
-      id: "SP003",
-      name: "Thuốc trị bệnh cho cá",
-      price: 180000,
-      quantity: 5,
-      image: "/placeholder.svg?height=40&width=40",
-    },
-    {
-      id: "SP004",
-      name: "Đèn LED chiếu sáng hồ",
-      price: 800000,
-      quantity: 12,
-      image: "/placeholder.svg?height=40&width=40",
-    },
-    {
-      id: "SP005",
-      name: "Bộ test nước hồ cá",
-      price: 350000,
-      quantity: 8,
-      image: "/placeholder.svg?height=40&width=40",
-    },
-    {
-      id: "SP006",
-      name: "Thức ăn cá Koi loại thường",
-      price: 120000,
-      quantity: 200,
-      image: "/placeholder.svg?height=40&width=40",
-    },
-  ]
+    paymentMethod: "CASH",
+  });
+  const [emailInput, setEmailInput] = useState("");
+  const [emailSearchResults, setEmailSearchResults] = useState([]);
+  const [showEmailResults, setShowEmailResults] = useState(false);
+  const [emailNotFound, setEmailNotFound] = useState(false);
+  const [showNewUserForm, setShowNewUserForm] = useState(false);
+  const [productSearch, setProductSearch] = useState("");
+  const [products, setProducts] = useState([]);
+  const [showProductList, setShowProductList] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCreatingUser, setIsCreatingUser] = useState(false);
+  const [previewMode, setPreviewMode] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const paymentMethods = [
-    { value: "cash", label: "Tiền mặt" },
-    { value: "transfer", label: "Chuyển khoản" },
-    { value: "credit", label: "Thẻ tín dụng" },
-    { value: "cod", label: "Thu hộ (COD)" },
-  ]
+    { value: "CASH", label: "Tiền mặt" },
+    { value: "PAYOS", label: "PayOS (Thanh toán online)" },
+  ];
 
-  const shippingMethods = [
-    { value: "standard", label: "Giao hàng tiêu chuẩn", fee: 50000 },
-    { value: "express", label: "Giao hàng nhanh", fee: 30000 },
-    { value: "pickup", label: "Khách tự đến lấy", fee: 0 },
-  ]
+  const baseUrl = process.env.REACT_APP_API_BASE_URL || "http://localhost:8080";
+  const fallbackImage = "https://placehold.co/50x50?text=Image";
 
-  const filteredCustomers = customers.filter(
-    (customer) =>
-      customer.name.toLowerCase().includes(customerSearch.toLowerCase()) ||
-      customer.phone.includes(customerSearch) ||
-      customer.email.toLowerCase().includes(customerSearch.toLowerCase()),
-  )
+  // Normalize image URL
+  const getFullUrl = (url) => {
+    if (!url || url.trim() === "") {
+      console.log("Image URL is null or empty, using fallback:", fallbackImage);
+      return fallbackImage;
+    }
+    return url.startsWith("http") ? url : `${baseUrl}${url.replace("/Uploads", "/images")}`;
+  };
 
-  const filteredProducts = products.filter(
-    (product) =>
-      product.name.toLowerCase().includes(productSearch.toLowerCase()) ||
-      product.id.toLowerCase().includes(productSearch.toLowerCase()),
-  )
+  // Handle image loading errors
+  const handleImageError = (e) => {
+    console.warn(`Failed to load image: ${e.target.src}`);
+    e.target.src = fallbackImage;
+  };
 
-  const selectCustomer = (customer) => {
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        const productData = await productService.getAllProducts();
+        setProducts(productData || []);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+        toast.error("Không thể tải danh sách sản phẩm.", {
+          toastId: "fetch-products-error",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchData();
+
+    const handleClickOutside = (event) => {
+      if (!event.target.closest(".pm-email-search-container")) {
+        setShowEmailResults(false);
+      }
+      if (!event.target.closest(".pm-product-search-container")) {
+        setShowProductList(false);
+      }
+    };
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    const searchUsers = async () => {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (emailInput.length > 2 && emailRegex.test(emailInput)) {
+        try {
+          const response = await userService.searchUsersAdmin(emailInput, 0, 10);
+          const users = Array.isArray(response.users) ? response.users : [];
+          const exactMatches = users.filter(user => user.email.toLowerCase() === emailInput.toLowerCase());
+          setEmailSearchResults(exactMatches);
+          setShowEmailResults(true);
+          setEmailNotFound(exactMatches.length === 0);
+          setShowNewUserForm(false);
+        } catch (error) {
+          console.error("Error searching users:", error);
+          setEmailSearchResults([]);
+          setShowEmailResults(false);
+          setEmailNotFound(true);
+          toast.error("Không thể tìm kiếm khách hàng.", {
+            toastId: "search-users-error",
+          });
+        }
+      } else {
+        setEmailSearchResults([]);
+        setShowEmailResults(false);
+        setEmailNotFound(emailInput.length > 2);
+        setShowNewUserForm(false);
+      }
+    };
+    searchUsers();
+  }, [emailInput]);
+
+  const selectUser = (user) => {
     setOrderData((prev) => ({
       ...prev,
-      customer: {
-        name: customer.name,
-        email: customer.email,
-        phone: customer.phone,
-        address: customer.address,
-      },
-    }))
-    setCustomerSearch(customer.name)
-    setShowCustomerList(false)
+      patient: { id: user.id, name: user.name, email: user.email, phone: user.phone || "" },
+    }));
+    setEmailInput(user.email);
+    setShowEmailResults(false);
+    setEmailNotFound(false);
+    setShowNewUserForm(false);
+    setErrors((prev) => ({ ...prev, "patient.email": "", "patient.name": "", "patient.phone": "" }));
+  };
 
-    // Clear customer errors
-    setErrors((prev) => ({
+  const resetPatient = () => {
+    setOrderData((prev) => ({
       ...prev,
-      "customer.name": "",
-      "customer.email": "",
-      "customer.phone": "",
-      "customer.address": "",
-    }))
-  }
+      patient: { id: null, name: "", email: "", phone: "" },
+    }));
+    setEmailInput("");
+    setShowEmailResults(false);
+    setEmailNotFound(false);
+    setShowNewUserForm(false);
+    setErrors((prev) => ({ ...prev, "patient.email": "", "patient.name": "", "patient.phone": "" }));
+  };
+
+  const handleEmailInput = (value) => {
+    setEmailInput(value);
+    setOrderData((prev) => ({
+      ...prev,
+      patient: { id: null, name: "", email: value, phone: "" },
+    }));
+    setShowNewUserForm(false);
+  };
+
+  const handleCreateNewUser = () => {
+    setShowNewUserForm(true);
+    setEmailNotFound(false);
+    setErrors((prev) => ({ ...prev, "patient.email": "", "patient.name": "", "patient.phone": "" }));
+  };
+
+  const handlePatientChange = (field, value) => {
+    setOrderData((prev) => ({
+      ...prev,
+      patient: { ...prev.patient, [field]: value },
+    }));
+    if (errors[`patient.${field}`]) {
+      setErrors((prev) => ({ ...prev, [`patient.${field}`]: "" }));
+    }
+  };
+
+  const validateUserForm = () => {
+    const newErrors = {};
+    if (!orderData.patient.email.trim()) newErrors["patient.email"] = "Email là bắt buộc";
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (orderData.patient.email && !emailRegex.test(orderData.patient.email)) {
+      newErrors["patient.email"] = "Email không hợp lệ";
+    }
+    if (!orderData.patient.name.trim()) newErrors["patient.name"] = "Tên khách hàng là bắt buộc";
+    if (!orderData.patient.phone.trim()) newErrors["patient.phone"] = "Số điện thoại là bắt buộc";
+    const phoneRegex = /^[0-9]{10,11}$/;
+    if (orderData.patient.phone && !phoneRegex.test(orderData.patient.phone.replace(/\s/g, ""))) {
+      newErrors["patient.phone"] = "Số điện thoại không hợp lệ";
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleCreateUserProfile = async () => {
+    if (!validateUserForm()) return;
+    setIsCreatingUser(true);
+    try {
+      const userData = {
+        name: orderData.patient.name,
+        email: orderData.patient.email,
+        phone: orderData.patient.phone,
+        role: "PATIENT",
+        status: "active",
+      };
+      const newUser = await userService.createPatient(userData);
+      if (!newUser.id) throw new Error("Không nhận được ID từ user mới");
+      setOrderData((prev) => ({
+        ...prev,
+        patient: { ...prev.patient, id: newUser.id },
+      }));
+      setShowNewUserForm(false);
+      setErrors((prev) => ({ ...prev, general: "", "patient.email": "", "patient.name": "", "patient.phone": "" }));
+      toast.success("Hồ sơ khách hàng đã được tạo thành công!", {
+        toastId: "create-user-success",
+      });
+    } catch (error) {
+      console.error("Error creating patient:", error);
+      toast.error(error.response?.data?.message || error.message || "Không thể tạo hồ sơ khách hàng.", {
+        toastId: "create-user-error",
+      });
+    } finally {
+      setIsCreatingUser(false);
+    }
+  };
 
   const addProduct = (product) => {
-    if (product.quantity === 0) {
-      alert("Sản phẩm này đã hết hàng!")
-      return
+    if (product.stockQuantity === 0) {
+      toast.error("Sản phẩm này đã hết hàng!", {
+        toastId: `product-out-of-stock-${product.id}`,
+      });
+      return;
     }
-
-    const existingItem = orderData.items.find((item) => item.id === product.id)
-
+    const existingItem = orderData.items.find((item) => item.productId === product.id);
     if (existingItem) {
-      if (existingItem.quantity >= product.quantity) {
-        alert("Không thể thêm vì vượt quá số lượng tồn kho!")
-        return
+      if (existingItem.quantity >= product.stockQuantity) {
+        toast.error("Không thể thêm vì vượt quá số lượng tồn kho!", {
+          toastId: `product-exceed-stock-${product.id}`,
+        });
+        return;
       }
-
       setOrderData((prev) => ({
         ...prev,
         items: prev.items.map((item) =>
-          item.id === product.id
-            ? { ...item, quantity: item.quantity + 1, total: (item.quantity + 1) * item.price }
-            : item,
+            item.productId === product.id
+                ? { ...item, quantity: item.quantity + 1, total: (item.quantity + 1) * item.price }
+                : item
         ),
-      }))
+      }));
     } else {
       setOrderData((prev) => ({
         ...prev,
         items: [
           ...prev.items,
           {
-            id: product.id,
+            productId: product.id,
             name: product.name,
             price: product.price,
             quantity: 1,
             total: product.price,
-            image: product.image,
-            maxQuantity: product.quantity,
+            image: getFullUrl(product.imageUrl), // Use getFullUrl
+            maxQuantity: product.stockQuantity,
           },
         ],
-      }))
+      }));
     }
+    setProductSearch("");
+    setShowProductList(false);
+  };
 
-    setProductSearch("")
-    setShowProductList(false)
-  }
-
-  const updateItemQuantity = (itemId, newQuantity) => {
+  const updateItemQuantity = (productId, newQuantity) => {
     if (newQuantity <= 0) {
-      removeItem(itemId)
-      return
+      removeItem(productId);
+      return;
     }
-
-    const item = orderData.items.find((item) => item.id === itemId)
+    const item = orderData.items.find((item) => item.productId === productId);
     if (newQuantity > item.maxQuantity) {
-      alert("Số lượng vượt quá tồn kho!")
-      return
+      toast.error("Số lượng vượt quá tồn kho!", {
+        toastId: `quantity-exceed-${productId}`,
+      });
+      return;
     }
-
     setOrderData((prev) => ({
       ...prev,
       items: prev.items.map((item) =>
-        item.id === itemId ? { ...item, quantity: newQuantity, total: newQuantity * item.price } : item,
+          item.productId === productId
+              ? { ...item, quantity: newQuantity, total: newQuantity * item.price }
+              : item
       ),
-    }))
-  }
+    }));
+  };
 
-  const removeItem = (itemId) => {
+  const removeItem = (productId) => {
     setOrderData((prev) => ({
       ...prev,
-      items: prev.items.filter((item) => item.id !== itemId),
-    }))
-  }
-
-  const handleCustomerChange = (field, value) => {
-    setOrderData((prev) => ({
-      ...prev,
-      customer: {
-        ...prev.customer,
-        [field]: value,
-      },
-    }))
-
-    // Clear error when user starts typing
-    if (errors[`customer.${field}`]) {
-      setErrors((prev) => ({
-        ...prev,
-        [`customer.${field}`]: "",
-      }))
-    }
-  }
-
-  const calculateSubtotal = () => {
-    return orderData.items.reduce((sum, item) => sum + item.total, 0)
-  }
-
-  const calculateDiscount = () => {
-    const subtotal = calculateSubtotal()
-    if (orderData.discountType === "percentage") {
-      return (subtotal * orderData.discount) / 100
-    }
-    return orderData.discount
-  }
-
-  const calculateShipping = () => {
-    const method = shippingMethods.find((m) => m.value === orderData.shippingMethod)
-    return method ? method.fee : 0
-  }
-
-  const calculateTax = () => {
-    const subtotal = calculateSubtotal()
-    const discount = calculateDiscount()
-    return Math.round((subtotal - discount) * 0.1) // 10% tax
-  }
+      items: prev.items.filter((item) => item.productId !== productId),
+    }));
+  };
 
   const calculateTotal = () => {
-    const subtotal = calculateSubtotal()
-    const discount = calculateDiscount()
-    const shipping = calculateShipping()
-    const tax = calculateTax()
-    return subtotal - discount + shipping + tax
-  }
+    return orderData.items.reduce((sum, item) => sum + item.total, 0);
+  };
 
-  const validateForm = () => {
-    const newErrors = {}
-
-    if (!orderData.customer.name.trim()) newErrors["customer.name"] = "Tên khách hàng là bắt buộc"
-    if (!orderData.customer.email.trim()) newErrors["customer.email"] = "Email là bắt buộc"
-    if (!orderData.customer.phone.trim()) newErrors["customer.phone"] = "Số điện thoại là bắt buộc"
-    if (!orderData.customer.address.trim()) newErrors["customer.address"] = "Địa chỉ là bắt buộc"
-
-    if (orderData.items.length === 0) newErrors.items = "Phải có ít nhất một sản phẩm"
-
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (orderData.customer.email && !emailRegex.test(orderData.customer.email)) {
-      newErrors["customer.email"] = "Email không hợp lệ"
-    }
-
-    // Validate phone format
-    const phoneRegex = /^[0-9]{10,11}$/
-    if (orderData.customer.phone && !phoneRegex.test(orderData.customer.phone.replace(/\s/g, ""))) {
-      newErrors["customer.phone"] = "Số điện thoại không hợp lệ"
-    }
-
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
-
-  const generateOrderId = () => {
-    const timestamp = Date.now().toString().slice(-6)
-    return `ORD${timestamp}`
-  }
-
-  const getStatusText = (status) => {
-    switch (status) {
-      case "pending":
-        return "Chờ xác nhận"
-      case "confirmed":
-        return "Đã xác nhận"
-      case "processing":
-        return "Đang xử lý"
-      case "shipped":
-        return "Đã gửi hàng"
-      case "delivered":
-        return "Đã giao hàng"
-      case "cancelled":
-        return "Đã hủy"
-      default:
-        return status
-    }
-  }
+  const validateOrderForm = () => {
+    const newErrors = {};
+    if (!orderData.patient.id) newErrors["patient.email"] = "Vui lòng chọn hoặc tạo hồ sơ khách hàng";
+    if (orderData.items.length === 0) newErrors.items = "Phải có ít nhất một sản phẩm";
+    if (!orderData.paymentMethod) newErrors.paymentMethod = "Vui lòng chọn phương thức thanh toán";
+    if (!["CASH", "PAYOS"].includes(orderData.paymentMethod))
+      newErrors.paymentMethod = "Phương thức thanh toán không hợp lệ";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
+    if (!validateOrderForm()) {
+      toast.error("Vui lòng kiểm tra lại thông tin đơn hàng.", {
+        toastId: "order-validation-error",
+      });
+      return;
+    }
 
-    if (!validateForm()) return
-
-    setIsSubmitting(true)
-
+    setIsSubmitting(true);
     try {
-      // Generate order ID
-      const orderId = generateOrderId()
-      const now = new Date()
-
-      const newOrder = {
-        id: orderId,
-        customerName: orderData.customer.name,
-        customerEmail: orderData.customer.email,
-        customerPhone: orderData.customer.phone,
-        customerAddress: orderData.customer.address,
-        orderDate: now.toLocaleDateString("vi-VN"),
-        status: "pending",
-        statusText: getStatusText("pending"),
-        paymentMethod: paymentMethods.find((m) => m.value === orderData.paymentMethod)?.label,
-        paymentStatus: "pending",
-        shippingMethod: shippingMethods.find((m) => m.value === orderData.shippingMethod)?.label,
-        items: orderData.items,
-        subtotal: calculateSubtotal(),
-        shipping: calculateShipping(),
-        tax: calculateTax(),
-        total: calculateTotal(),
-        notes: orderData.notes,
-        createdAt: now.toISOString(),
-        updatedAt: now.toISOString(),
+      if (!orderData.patient || !orderData.patient.id) {
+        throw new Error("Không có ID khách hàng");
+      }
+      if (!orderData.items || !Array.isArray(orderData.items) || orderData.items.length === 0) {
+        throw new Error("Không có sản phẩm trong đơn hàng");
+      }
+      if (!orderData.paymentMethod || typeof orderData.paymentMethod !== "string") {
+        throw new Error("Không có phương thức thanh toán");
       }
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000))
+      orderData.items.forEach((item) => {
+        if (!item.productId || !item.quantity || !item.price) {
+          throw new Error("Thông tin sản phẩm không hợp lệ");
+        }
+      });
 
-      console.log("Created order:", newOrder)
+      const formattedData = {
+        userId: Number(orderData.patient.id),
+        items: orderData.items.map((item) => ({
+          productId: item.productId,
+          quantity: item.quantity,
+          price: item.price,
+        })),
+        paymentMethod: orderData.paymentMethod,
+        shippingAddress: null,
+      };
 
-      // Gọi callback để cập nhật danh sách đơn hàng
-      if (onOrderCreated) {
-        onOrderCreated(newOrder)
+      if (!formattedData.userId || typeof formattedData.userId !== "number") {
+        throw new Error("userId không hợp lệ");
       }
+      if (!formattedData.items || !Array.isArray(formattedData.items) || formattedData.items.length === 0) {
+        throw new Error("Danh sách sản phẩm không hợp lệ");
+      }
+      if (!formattedData.paymentMethod || !["CASH", "PAYOS"].includes(formattedData.paymentMethod)) {
+        throw new Error("Phương thức thanh toán không hợp lệ");
+      }
+
+      console.log("Sending in-store order data:", formattedData);
+
+      const newOrder = await orderService.createInStoreOrder(formattedData);
+      console.log("In-store order created successfully:", newOrder);
+
+      if (orderData.paymentMethod === "PAYOS") {
+        const paymentData = {
+          orderId: newOrder.id,
+          userId: Number(orderData.patient.id),
+          amount: Number(calculateTotal()),
+          description: `Thanh toán đơn hàng #${newOrder.id}`,
+          returnUrl: `${window.location.origin}/payment/payos-return`,
+        };
+        const paymentResponse = await orderService.createPayOSPayment(paymentData);
+        if (paymentResponse && paymentResponse.paymentUrl) {
+          window.location.href = paymentResponse.paymentUrl;
+          return; // Prevent further execution
+        } else {
+          throw new Error("Không thể tạo URL thanh toán PayOS");
+        }
+      }
+
+      toast.success(`Đơn hàng #${newOrder.id.toString().padStart(3, "0")} đã được tạo thành công!`, {
+        toastId: `order-created-${newOrder.id}`,
+      });
+      onOrderCreated?.(newOrder);
+      onBack();
     } catch (error) {
-      console.error("Error creating order:", error)
-      alert("Có lỗi xảy ra khi tạo đơn hàng!")
+      console.error("Error creating in-store order:", error);
+      toast.error(error.response?.data?.message || error.message || "Lỗi khi tạo đơn hàng tại quầy. Vui lòng thử lại.", {
+        toastId: "order-error",
+      });
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
-  // Close dropdowns when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (!event.target.closest(".customer-search-container")) {
-        setShowCustomerList(false)
-      }
-      if (!event.target.closest(".product-search-container")) {
-        setShowProductList(false)
-      }
-    }
-
-    document.addEventListener("click", handleClickOutside)
-    return () => document.removeEventListener("click", handleClickOutside)
-  }, [])
-
-  if (previewMode) {
-    return (
-      <div className="pm-create-order-container">
-        <div className="pm-page-header">
-          <button className="btn btn-secondary" onClick={() => setPreviewMode(false)}>
-            <ArrowLeft size={16} />
-            Quay lại chỉnh sửa
-          </button>
-          <h1>Xem trước đơn hàng</h1>
-          <button className="btn btn-primary" onClick={handleSubmit} disabled={isSubmitting}>
-            <Save size={16} />
-            {isSubmitting ? "Đang tạo..." : "Tạo đơn hàng"}
-          </button>
-        </div>
-
-        <div className="pm-order-preview">
-          <div className="pm-preview-card">
-            <div className="pm-preview-section">
-              <h3>
-                <User size={18} />
-                Thông tin khách hàng
-              </h3>
-              <div className="pm-customer-preview">
-                <p>
-                  <strong>Tên:</strong> {orderData.customer.name}
-                </p>
-                <p>
-                  <strong>Email:</strong> {orderData.customer.email}
-                </p>
-                <p>
-                  <strong>Điện thoại:</strong> {orderData.customer.phone}
-                </p>
-                <p>
-                  <strong>Địa chỉ:</strong> {orderData.customer.address}
-                </p>
-              </div>
-            </div>
-
-            <div className="pm-preview-section">
-              <h3>
-                <Package size={18} />
-                Sản phẩm đặt hàng
-              </h3>
-              <div className="pm-items-preview">
-                {orderData.items.map((item) => (
-                  <div key={item.id} className="pm-item-preview">
-                    <img src={item.image || "/placeholder.svg"} alt={item.name} />
-                    <div className="pm-item-details">
-                      <h4>{item.name}</h4>
-                      <p>Số lượng: {item.quantity}</p>
-                      <p>Đơn giá: ₫{item.price.toLocaleString()}</p>
-                      <p className="pm-item-total">Thành tiền: ₫{item.total.toLocaleString()}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="pm-preview-section">
-              <h3>
-                <CreditCard size={18} />
-                Thông tin thanh toán
-              </h3>
-              <div className="pm-payment-preview">
-                <p>
-                  <strong>Phương thức thanh toán:</strong>{" "}
-                  {paymentMethods.find((m) => m.value === orderData.paymentMethod)?.label}
-                </p>
-                <p>
-                  <strong>Phương thức vận chuyển:</strong>{" "}
-                  {shippingMethods.find((m) => m.value === orderData.shippingMethod)?.label}
-                </p>
-                {orderData.notes && (
-                  <p>
-                    <strong>Ghi chú:</strong> {orderData.notes}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            <div className="pm-preview-section">
-              <h3>Tổng kết đơn hàng</h3>
-              <div className="pm-order-summary">
-                <div className="pm-summary-row">
-                  <span>Tạm tính:</span>
-                  <span>₫{calculateSubtotal().toLocaleString()}</span>
-                </div>
-                {calculateDiscount() > 0 && (
-                  <div className="pm-summary-row">
-                    <span>Giảm giá:</span>
-                    <span>-₫{calculateDiscount().toLocaleString()}</span>
-                  </div>
-                )}
-                <div className="pm-summary-row">
-                  <span>Phí vận chuyển:</span>
-                  <span>₫{calculateShipping().toLocaleString()}</span>
-                </div>
-                <div className="pm-summary-row">
-                  <span>Thuế (10%):</span>
-                  <span>₫{calculateTax().toLocaleString()}</span>
-                </div>
-                <div className="pm-summary-row pm-total">
-                  <span>Tổng cộng:</span>
-                  <span>₫{calculateTotal().toLocaleString()}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
+  const filteredProducts = products.filter(
+      (product) =>
+          product.name.toLowerCase().includes(productSearch.toLowerCase()) ||
+          product.id.toString().includes(productSearch)
+  );
 
   return (
-    <div className="pm-create-order-container">
-      <div className="pm-page-header">
-        <button className="btn btn-secondary" onClick={onBack}>
-          <ArrowLeft size={16} />
-          Quay lại
-        </button>
-        <h1>Tạo đơn hàng mới</h1>
-        <div className="pm-header-actions">
-          <button
-            className="btn btn-secondary"
-            onClick={() => setPreviewMode(true)}
-            disabled={orderData.items.length === 0}
-          >
-            <Eye size={16} />
-            Xem trước
+      <div className="pm-create-order-container">
+        <ToastContainer position="top-right" autoClose={5000} />
+        <div className="pm-page-header">
+          <button className="btn btn-secondary" onClick={onBack}>
+            <ArrowLeft size={16} /> Quay lại
           </button>
-          <button
-            className="btn btn-primary"
-            onClick={handleSubmit}
-            disabled={isSubmitting || orderData.items.length === 0}
-          >
-            <Save size={16} />
-            {isSubmitting ? "Đang tạo..." : "Tạo đơn hàng"}
-          </button>
+          <h1>Tạo đơn hàng tại quầy</h1>
+          <div className="pm-header-actions">
+            <button
+                className="btn btn-secondary"
+                onClick={() => setPreviewMode(true)}
+                disabled={isSubmitting || orderData.items.length === 0 || !orderData.patient.id}
+            >
+              <Eye size={16} /> Xem trước
+            </button>
+            <button
+                className="btn btn-primary"
+                onClick={handleSubmit}
+                disabled={isSubmitting || orderData.items.length === 0 || !orderData.patient.id}
+            >
+              <Save size={16} /> {isSubmitting ? "Đang tạo..." : "Tạo đơn hàng"}
+            </button>
+          </div>
         </div>
-      </div>
 
-      <form onSubmit={handleSubmit} className="pm-create-order-form">
-        <div className="pm-form-grid">
-          {/* Customer Information */}
-          <div className="pm-form-section">
-            <h2>
-              <User size={20} />
-              Thông tin khách hàng
-            </h2>
+        {errors.general && <div className="pm-error-message">{errors.general}</div>}
+        {isLoading && <div className="pm-loading">Đang tải dữ liệu...</div>}
 
-            <div className="pm-customer-search-container">
-              <label className="pm-form-label">Tìm khách hàng</label>
-              <div className="pm-search-input-container">
-                <input
-                  type="text"
-                  className="pm-form-input"
-                  value={customerSearch}
-                  onChange={(e) => {
-                    setCustomerSearch(e.target.value)
-                    setShowCustomerList(true)
-                  }}
-                  placeholder="Tìm theo tên, email hoặc số điện thoại"
-                  onFocus={() => setShowCustomerList(true)}
-                />
-                <Search size={16} className="pm-search-icon" />
-              </div>
-
-              {showCustomerList && filteredCustomers.length > 0 && (
-                <div className="pm-dropdown-list">
-                  {filteredCustomers.map((customer) => (
-                    <div key={customer.id} className="pm-dropdown-item" onClick={() => selectCustomer(customer)}>
-                      <div className="pm-customer-item">
-                        <h4>{customer.name}</h4>
-                        <p>
-                          {customer.phone} • {customer.email}
-                        </p>
+        {previewMode ? (
+            <div className="pm-order-preview">
+              <div className="pm-preview-card">
+                <h3>
+                  <User size={18} /> Thông tin khách hàng
+                </h3>
+                <div className="pm-customer-preview">
+                  <p><strong>Tên:</strong> {orderData.patient.name}</p>
+                  <p><strong>Email:</strong> {orderData.patient.email}</p>
+                  <p><strong>Điện thoại:</strong> {orderData.patient.phone}</p>
+                </div>
+                <h3>
+                  <Package size={18} /> Sản phẩm đặt hàng
+                </h3>
+                <div className="pm-items-preview">
+                  {orderData.items.map((item) => (
+                      <div key={item.productId} className="pm-item-preview">
+                        <img
+                            src={getFullUrl(item.image)}
+                            alt={item.name}
+                            className="product-img"
+                            onError={handleImageError}
+                        />
+                        <div className="pm-item-details">
+                          <h4>{item.name}</h4>
+                          <p>Số lượng: {item.quantity}</p>
+                          <p>Đơn giá: ₫{item.price.toLocaleString()}</p>
+                          <p className="pm-item-total">Thành tiền: ₫{item.total.toLocaleString()}</p>
+                        </div>
                       </div>
-                    </div>
                   ))}
                 </div>
-              )}
-            </div>
-
-            <div className="pm-form-row">
-              <div className="pm-form-group">
-                <label className="pm-form-label required">Tên khách hàng</label>
-                <input
-                  type="text"
-                  className={`pm-form-input ${errors["customer.name"] ? "pm-error" : ""}`}
-                  value={orderData.customer.name}
-                  onChange={(e) => handleCustomerChange("name", e.target.value)}
-                  placeholder="Nhập tên khách hàng"
-                />
-                {errors["customer.name"] && <span className="pm-error-message">{errors["customer.name"]}</span>}
-              </div>
-
-              <div className="pm-form-group">
-                <label className="pm-form-label required">Email</label>
-                <input
-                  type="email"
-                  className={`pm-form-input ${errors["customer.email"] ? "pm-error" : ""}`}
-                  value={orderData.customer.email}
-                  onChange={(e) => handleCustomerChange("email", e.target.value)}
-                  placeholder="Nhập email"
-                />
-                {errors["customer.email"] && <span className="pm-error-message">{errors["customer.email"]}</span>}
+                <h3>
+                  <CreditCard size={18} /> Thông tin thanh toán
+                </h3>
+                <div className="pm-payment-preview">
+                  <p>
+                    <strong>Phương thức thanh toán:</strong>{" "}
+                    {paymentMethods.find((m) => m.value === orderData.paymentMethod)?.label}
+                  </p>
+                </div>
+                <h3>
+                  <Calculator size={18} /> Tổng kết đơn hàng
+                </h3>
+                <div className="pm-order-summary">
+                  <div className="pm-summary-row pm-total">
+                    <span>Tổng cộng:</span>
+                    <span>₫{calculateTotal().toLocaleString()}</span>
+                  </div>
+                </div>
+                <button className="btn btn-secondary" onClick={() => setPreviewMode(false)}>
+                  <ArrowLeft size={16} /> Quay lại chỉnh sửa
+                </button>
               </div>
             </div>
-
-            <div className="pm-form-row">
-              <div className="pm-form-group">
-                <label className="pm-form-label required">Số điện thoại</label>
-                <input
-                  type="tel"
-                  className={`pm-form-input ${errors["customer.phone"] ? "pm-error" : ""}`}
-                  value={orderData.customer.phone}
-                  onChange={(e) => handleCustomerChange("phone", e.target.value)}
-                  placeholder="Nhập số điện thoại"
-                />
-                {errors["customer.phone"] && <span className="pm-error-message">{errors["customer.phone"]}</span>}
-              </div>
-
-              <div className="pm-form-group">
-                <label className="pm-form-label required">Địa chỉ</label>
-                <input
-                  type="text"
-                  className={`pm-form-input ${errors["customer.address"] ? "pm-error" : ""}`}
-                  value={orderData.customer.address}
-                  onChange={(e) => handleCustomerChange("address", e.target.value)}
-                  placeholder="Nhập địa chỉ"
-                />
-                {errors["customer.address"] && <span className="pm-error-message">{errors["customer.address"]}</span>}
-              </div>
-            </div>
-          </div>
-
-          {/* Products */}
-          <div className="pm-form-section">
-            <h2>
-              <Package size={20} />
-              Sản phẩm
-            </h2>
-
-            <div className="pm-product-search-container">
-              <label className="pm-form-label">Thêm sản phẩm</label>
-              <div className="pm-search-input-container">
-                <input
-                  type="text"
-                  className="pm-form-input"
-                  value={productSearch}
-                  onChange={(e) => {
-                    setProductSearch(e.target.value)
-                    setShowProductList(true)
-                  }}
-                  placeholder="Tìm sản phẩm theo tên hoặc mã"
-                  onFocus={() => setShowProductList(true)}
-                />
-                <Search size={16} className="pm-search-icon" />
-              </div>
-
-              {showProductList && filteredProducts.length > 0 && (
-                <div className="pm-dropdown-list">
-                  {filteredProducts.map((product) => (
-                    <div
-                      key={product.id}
-                      className={`pm-dropdown-item ${product.quantity === 0 ? "pm-disabled" : ""}`}
-                      onClick={() => product.quantity > 0 && addProduct(product)}
-                    >
-                      <div className="pm-product-item">
-                        <img src={product.image || "/placeholder.svg"} alt={product.name} />
-                        <div className="pm-product-details">
-                          <h4>{product.name}</h4>
-                          <p>
-                            ₫{product.price.toLocaleString()} • Còn {product.quantity}
-                          </p>
+        ) : (
+            <form onSubmit={handleSubmit} className="pm-create-order-form">
+              <div className="pm-form-grid">
+                <div className="pm-form-section">
+                  <h2>
+                    <User size={20} /> Thông tin khách hàng
+                  </h2>
+                  <div className="pm-email-search-container">
+                    <label className="pm-form-label required">Email khách hàng</label>
+                    <div className="pm-search-input-container">
+                      <input
+                          type="email"
+                          className={`pm-form-input ${errors["patient.email"] ? "pm-error" : ""}`}
+                          value={emailInput}
+                          onChange={(e) => handleEmailInput(e.target.value)}
+                          placeholder="Nhập email khách hàng"
+                          onFocus={() => setShowEmailResults(true)}
+                      />
+                      <Search size={16} className="pm-search-icon" />
+                      {orderData.patient.id && (
+                          <button type="button" className="pm-clear-button" onClick={resetPatient}>
+                            <X size={16} />
+                          </button>
+                      )}
+                    </div>
+                    {errors["patient.email"] && <span className="pm-error-message">{errors["patient.email"]}</span>}
+                    {showEmailResults && emailSearchResults.length > 0 && (
+                        <div className="pm-dropdown-list">
+                          {emailSearchResults.map((user) => (
+                              <div key={user.id} className="pm-dropdown-item" onClick={() => selectUser(user)}>
+                                <div className="pm-customer-item">
+                                  <h4>{user.name}</h4>
+                                  <p>
+                                    {user.email} {user.phone ? `• ${user.phone}` : ""}
+                                  </p>
+                                </div>
+                              </div>
+                          ))}
+                        </div>
+                    )}
+                    {emailNotFound && emailInput.length > 2 && (
+                        <div className="pm-error-message">
+                          Thông tin khách hàng không tồn tại.{" "}
+                          <button
+                              type="button"
+                              className="btn btn-primary pm-inline-button"
+                              onClick={handleCreateNewUser}
+                          >
+                            <Plus size={16} /> Tạo thông tin khách hàng
+                          </button>
+                        </div>
+                    )}
+                  </div>
+                  {showNewUserForm && (
+                      <div className="pm-form-row">
+                        <div className="pm-form-group">
+                          <label className="pm-form-label required">Tên khách hàng</label>
+                          <input
+                              type="text"
+                              className={`pm-form-input ${errors["patient.name"] ? "pm-error" : ""}`}
+                              value={orderData.patient.name}
+                              onChange={(e) => handlePatientChange("name", e.target.value)}
+                              placeholder="Nhập tên khách hàng"
+                          />
+                          {errors["patient.name"] && <span className="pm-error-message">{errors["patient.name"]}</span>}
+                        </div>
+                        <div className="pm-form-group">
+                          <label className="pm-form-label required">Số điện thoại</label>
+                          <input
+                              type="tel"
+                              className={`pm-form-input ${errors["patient.phone"] ? "pm-error" : ""}`}
+                              value={orderData.patient.phone}
+                              onChange={(e) => handlePatientChange("phone", e.target.value)}
+                              placeholder="Nhập số điện thoại"
+                          />
+                          {errors["patient.phone"] && <span className="pm-error-message">{errors["patient.phone"]}</span>}
+                        </div>
+                        <div className="pm-form-actions pm-inline-actions">
+                          <button
+                              type="button"
+                              className="btn btn-primary"
+                              onClick={handleCreateUserProfile}
+                              disabled={isCreatingUser}
+                          >
+                            <Save size={16} /> {isCreatingUser ? "Đang tạo..." : "Tạo hồ sơ"}
+                          </button>
+                          <button
+                              type="button"
+                              className="btn btn-secondary"
+                              onClick={() => {
+                                setShowNewUserForm(false);
+                                setOrderData((prev) => ({
+                                  ...prev,
+                                  patient: { ...prev.patient, name: "", phone: "" },
+                                }));
+                                setErrors((prev) => ({ ...prev, "patient.name": "", "patient.phone": "" }));
+                              }}
+                          >
+                            Hủy
+                          </button>
+                        </div>
+                      </div>
+                  )}
+                  {orderData.patient.id && (orderData.patient.name || orderData.patient.phone) && (
+                      <div className="pm-form-row">
+                        {orderData.patient.name && (
+                            <div className="pm-form-group">
+                              <label className="pm-form-label">Tên khách hàng</label>
+                              <input type="text" className="pm-form-input" value={orderData.patient.name} readOnly />
+                            </div>
+                        )}
+                        {orderData.patient.phone && (
+                            <div className="pm-form-group">
+                              <label className="pm-form-label">Số điện thoại</label>
+                              <input type="tel" className="pm-form-input" value={orderData.patient.phone} readOnly />
+                            </div>
+                        )}
+                      </div>
+                  )}
+                </div>
+                <div className="pm-form-section">
+                  <h2>
+                    <Package size={20} /> Sản phẩm
+                  </h2>
+                  <div className="pm-product-search-container">
+                    <label className="pm-form-label">Thêm sản phẩm</label>
+                    <div className="pm-search-input-container">
+                      <input
+                          type="text"
+                          className="pm-form-input"
+                          value={productSearch}
+                          onChange={(e) => {
+                            setProductSearch(e.target.value);
+                            setShowProductList(true);
+                          }}
+                          placeholder="Tìm sản phẩm theo tên hoặc mã"
+                          onFocus={() => setShowProductList(true)}
+                      />
+                      <Search size={16} className="pm-search-icon" />
+                    </div>
+                    {showProductList && filteredProducts.length > 0 && (
+                        <div className="pm-dropdown-list">
+                          {filteredProducts.map((product) => (
+                              <div
+                                  key={product.id}
+                                  className={`pm-dropdown-item ${product.stockQuantity === 0 ? "pm-disabled" : ""}`}
+                                  onClick={() => product.stockQuantity > 0 && addProduct(product)}
+                              >
+                                <div className="pm-product-item">
+                                  <img
+                                      src={getFullUrl(product.imageUrl)}
+                                      alt={product.name}
+                                      className="product-img"
+                                      onError={handleImageError}
+                                  />
+                                  <div className="pm-product-details">
+                                    <h4>{product.name}</h4>
+                                    <p>₫{product.price.toLocaleString()} • Còn {product.stockQuantity}</p>
+                                  </div>
+                                </div>
+                              </div>
+                          ))}
+                        </div>
+                    )}
+                  </div>
+                  {errors.items && <span className="pm-error-message">{errors.items}</span>}
+                  {orderData.items.length > 0 && (
+                      <div className="pm-order-items">
+                        <h3>Sản phẩm đã chọn</h3>
+                        {orderData.items.map((item) => (
+                            <div key={item.productId} className="pm-order-item">
+                              <img
+                                  src={getFullUrl(item.image)}
+                                  alt={item.name}
+                                  className="product-img"
+                                  onError={handleImageError}
+                              />
+                              <div className="pm-item-info">
+                                <h4>{item.name}</h4>
+                                <p>₫{item.price.toLocaleString()}</p>
+                              </div>
+                              <div className="pm-quantity-controls">
+                                <button
+                                    type="button"
+                                    className="btn btn-sm btn-secondary"
+                                    onClick={() => updateItemQuantity(item.productId, item.quantity - 1)}
+                                >
+                                  -
+                                </button>
+                                <span className="pm-quantity">{item.quantity}</span>
+                                <button
+                                    type="button"
+                                    className="btn btn-sm btn-secondary"
+                                    onClick={() => updateItemQuantity(item.productId, item.quantity + 1)}
+                                >
+                                  +
+                                </button>
+                              </div>
+                              <div className="pm-item-total">₫{item.total.toLocaleString()}</div>
+                              <button
+                                  type="button"
+                                  className="btn btn-icon"
+                                  onClick={() => removeItem(item.productId)}
+                              >
+                                <X size={16} />
+                              </button>
+                            </div>
+                        ))}
+                      </div>
+                  )}
+                </div>
+                <div className="pm-form-section">
+                  <h2>
+                    <CreditCard size={20} /> Thanh toán
+                  </h2>
+                  <div className="pm-form-row">
+                    <div className="pm-form-group">
+                      <label className="pm-form-label required">Phương thức thanh toán</label>
+                      <select
+                          className="pm-form-select"
+                          value={orderData.paymentMethod}
+                          onChange={(e) => setOrderData((prev) => ({ ...prev, paymentMethod: e.target.value }))}
+                      >
+                        {paymentMethods.map((method) => (
+                            <option key={method.value} value={method.value}>
+                              {method.label}
+                            </option>
+                        ))}
+                      </select>
+                      {errors.paymentMethod && <span className="pm-error-message">{errors.paymentMethod}</span>}
+                    </div>
+                  </div>
+                </div>
+                {orderData.items.length > 0 && (
+                    <div className="pm-form-section">
+                      <h2>
+                        <Calculator size={20} /> Tổng kết đơn hàng
+                      </h2>
+                      <div className="pm-order-summary">
+                        <div className="pm-summary-row pm-total">
+                          <span>Tổng cộng:</span>
+                          <span>₫{calculateTotal().toLocaleString()}</span>
                         </div>
                       </div>
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {errors.items && <span className="pm-error-message">{errors.items}</span>}
-
-            {orderData.items.length > 0 && (
-              <div className="pm-order-items">
-                <h3>Sản phẩm đã chọn</h3>
-                {orderData.items.map((item) => (
-                  <div key={item.id} className="pm-order-item">
-                    <img src={item.image || "/placeholder.svg"} alt={item.name} />
-                    <div className="pm-item-info">
-                      <h4>{item.name}</h4>
-                      <p>₫{item.price.toLocaleString()}</p>
-                    </div>
-                    <div className="pm-quantity-controls">
-                      <button
-                        type="button"
-                        className="btn btn-sm btn-secondary"
-                        onClick={() => updateItemQuantity(item.id, item.quantity - 1)}
-                      >
-                        -
-                      </button>
-                      <span className="pm-quantity">{item.quantity}</span>
-                      <button
-                        type="button"
-                        className="btn btn-sm btn-secondary"
-                        onClick={() => updateItemQuantity(item.id, item.quantity + 1)}
-                      >
-                        +
-                      </button>
-                    </div>
-                    <div className="pm-item-total">₫{item.total.toLocaleString()}</div>
-                    <button type="button" className="btn btn-icon" onClick={() => removeItem(item.id)}>
-                      <X size={16} />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Payment & Shipping */}
-          <div className="pm-form-section">
-            <h2>
-              <CreditCard size={20} />
-              Thanh toán & Vận chuyển
-            </h2>
-
-            <div className="pm-form-row">
-              <div className="pm-form-group">
-                <label className="pm-form-label required">Phương thức thanh toán</label>
-                <select
-                  className="pm-form-select"
-                  value={orderData.paymentMethod}
-                  onChange={(e) => setOrderData((prev) => ({ ...prev, paymentMethod: e.target.value }))}
-                >
-                  {paymentMethods.map((method) => (
-                    <option key={method.value} value={method.value}>
-                      {method.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="pm-form-group">
-                <label className="pm-form-label required">Phương thức vận chuyển</label>
-                <select
-                  className="pm-form-select"
-                  value={orderData.shippingMethod}
-                  onChange={(e) => setOrderData((prev) => ({ ...prev, shippingMethod: e.target.value }))}
-                >
-                  {shippingMethods.map((method) => (
-                    <option key={method.value} value={method.value}>
-                      {method.label} {method.fee > 0 && `(+₫${method.fee.toLocaleString()})`}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div className="pm-form-row">
-              <div className="pm-form-group">
-                <label className="pm-form-label">Giảm giá</label>
-                <div className="pm-discount-input">
-                  <input
-                    type="number"
-                    className="pm-form-input"
-                    value={orderData.discount}
-                    onChange={(e) => setOrderData((prev) => ({ ...prev, discount: Number(e.target.value) || 0 }))}
-                    placeholder="0"
-                    min="0"
-                  />
-                  <select
-                    className="pm-form-select"
-                    value={orderData.discountType}
-                    onChange={(e) => setOrderData((prev) => ({ ...prev, discountType: e.target.value }))}
-                  >
-                    <option value="amount">₫</option>
-                    <option value="percentage">%</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="pm-form-group">
-                <label className="pm-form-label">Ghi chú</label>
-                <textarea
-                  className="pm-form-textarea"
-                  value={orderData.notes}
-                  onChange={(e) => setOrderData((prev) => ({ ...prev, notes: e.target.value }))}
-                  placeholder="Ghi chú đặc biệt cho đơn hàng"
-                  rows={3}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Order Summary */}
-          {orderData.items.length > 0 && (
-            <div className="pm-form-section">
-              <h2>
-                <Calculator size={20} />
-                Tổng kết đơn hàng
-              </h2>
-
-              <div className="pm-order-summary">
-                <div className="pm-summary-row">
-                  <span>Tạm tính:</span>
-                  <span>₫{calculateSubtotal().toLocaleString()}</span>
-                </div>
-                {calculateDiscount() > 0 && (
-                  <div className="pm-summary-row pm-discount">
-                    <span>Giảm giá:</span>
-                    <span>-₫{calculateDiscount().toLocaleString()}</span>
-                  </div>
                 )}
-                <div className="pm-summary-row">
-                  <span>Phí vận chuyển:</span>
-                  <span>₫{calculateShipping().toLocaleString()}</span>
-                </div>
-                <div className="pm-summary-row">
-                  <span>Thuế (10%):</span>
-                  <span>₫{calculateTax().toLocaleString()}</span>
-                </div>
-                <div className="pm-summary-row pm-total">
-                  <span>Tổng cộng:</span>
-                  <span>₫{calculateTotal().toLocaleString()}</span>
-                </div>
               </div>
-            </div>
-          )}
-        </div>
-      </form>
-    </div>
-  )
-}
+            </form>
+        )}
+      </div>
+  );
+};
 
-export default CreateOrderPage
+export default CreateOrderPage;

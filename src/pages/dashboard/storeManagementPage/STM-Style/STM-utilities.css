@@ -235,10 +235,11 @@
   display: grid;
   grid-template-columns: 350px 1fr;
   gap: 24px;
-  height: 600px;
+  height: 93vh;
 }
 
 .conversations-panel {
+  width: auto;
   background: white;
   border-radius: 8px;
   border: 1px solid #e2e8f0;
@@ -417,13 +418,13 @@
 .chat-user-name {
   font-size: 16px;
   font-weight: 600;
-  color: #1e293b;
+  color: #cbcdcf;
   margin: 0 0 4px 0;
 }
 
 .chat-user-status {
   font-size: 12px;
-  color: #64748b;
+  color: #cbcdcf;
 }
 
 .chat-user-status.online {
@@ -446,7 +447,9 @@
 
 .message {
   display: flex;
+  flex-direction: column;
   max-width: 70%;
+  align-items: flex-end;
 }
 
 .message.sent {
@@ -459,6 +462,7 @@
 
 .message.received {
   align-self: flex-start;
+  align-items: flex-start;
 }
 
 .message-content {
@@ -479,15 +483,33 @@
   line-height: 1.4;
 }
 
+.message-meta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 4px;
+}
+
 .message-time {
   font-size: 11px;
   opacity: 0.7;
+  color: #202224;
+}
+
+.message.sent .message-time {
+  color: #202224;
+}
+
+.message-status {
+  display: flex;
+  align-items: center;
 }
 
 .chat-input {
   padding: 20px;
   border-top: 1px solid #e2e8f0;
   display: flex;
+  max-height: max-content;
   align-items: center;
   gap: 12px;
 }
@@ -532,8 +554,6 @@
 }
 
 /* Profile Styles */
-
-
 .avatar-edit-btn {
   position: absolute;
   bottom: 8px;
@@ -643,7 +663,6 @@
   margin: 0;
 }
 
-
 /* Activity Timeline */
 .activity-timeline {
   display: flex;
@@ -719,13 +738,6 @@
   .messages-container {
     grid-template-columns: 1fr;
   }
-
-  /* 
-  .profile-info-header {
-    flex-direction: column;
-    gap: 16px;
-    align-items: flex-start;
-  } */
 
   .order-detail-grid {
     grid-template-columns: 1fr;
