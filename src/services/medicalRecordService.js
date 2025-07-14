@@ -5,7 +5,11 @@ const API_URL = 'http://localhost:8080/api';
 
 const axiosInstance = axios.create({
     baseURL: API_URL,
-    withCredentials: true
+    withCredentials: true,
+    headers: {
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Accept': 'application/json; charset=UTF-8'
+    }
 });
 
 axiosInstance.interceptors.request.use(
@@ -141,6 +145,50 @@ const medicalRecordService = {
             return response.data;
         } catch (error) {
             console.error('Lỗi khi tạo hồ sơ bệnh án:', {
+                status: error.response?.status,
+                data: error.response?.data,
+                message: error.message
+            });
+            throw new Error(error.response?.data?.message || 'Lỗi không xác định');
+        }
+    },
+
+    // NEW: JSON-based create medical record (UTF-8 safe)
+    createMedicalRecordJson: async (recordData) => {
+        try {
+            console.log("[JSON] Creating Medical Record with data:", JSON.stringify(recordData, null, 2));
+            
+            // Prepare JSON payload
+            const payload = {
+                patientId: Number(recordData.patientId),
+                doctorId: Number(recordData.doctorId),
+                diagnosis: recordData.diagnosis?.trim() || 'Chưa cập nhật',
+                notes: recordData.notes?.trim() || '',
+                appointmentId: recordData.appointmentId && !isNaN(recordData.appointmentId) ? Number(recordData.appointmentId) : null,
+                serviceIds: recordData.serviceId && !isNaN(recordData.serviceId) ? [Number(recordData.serviceId)] : [],
+                productQuantities: []
+            };
+
+            // Keep productQuantities as array format for backend compatibility
+            if (recordData.productQuantities && recordData.productQuantities.length > 0) {
+                const validProductQuantities = recordData.productQuantities.filter(pq =>
+                    pq.productId > 0 && pq.quantity > 0 && Number.isInteger(pq.productId) && Number.isInteger(pq.quantity)
+                ).map(pq => ({
+                    productId: Number(pq.productId),
+                    quantity: Number(pq.quantity)
+                }));
+                console.log("[JSON] Valid Product Quantities:", JSON.stringify(validProductQuantities, null, 2));
+                
+                payload.productQuantities = validProductQuantities;
+            }
+
+            console.log("[JSON] Final payload:", JSON.stringify(payload, null, 2));
+
+            const response = await axiosInstance.post('/medical-records/json', payload);
+            console.log("[JSON] Create Medical Record Response:", JSON.stringify(response.data, null, 2));
+            return response.data;
+        } catch (error) {
+            console.error('[JSON] Lỗi khi tạo hồ sơ bệnh án:', {
                 status: error.response?.status,
                 data: error.response?.data,
                 message: error.message
@@ -312,6 +360,61 @@ const medicalRecordService = {
             return response.data;
         } catch (error) {
             console.error("Lỗi khi cập nhật hồ sơ bệnh án:", {
+                status: error.response?.status,
+                data: error.response?.data,
+                message: error.message,
+            });
+            throw new Error(error.response?.data?.message || error.message || 'Lỗi không xác định');
+        }
+    },
+
+    updateMedicalRecordJson: async (recordId, updatedData) => {
+        try {
+            if (!recordId || !updatedData) {
+                throw new Error("Thiếu recordId hoặc updatedData");
+            }
+
+            console.log(`[JSON] Updating medical record with ID: ${recordId}`, JSON.stringify(updatedData, null, 2));
+
+            // Prepare JSON payload
+            const payload = {
+                diagnosis: updatedData.diagnosis?.trim() || '',
+                notes: updatedData.notes?.trim() || '',
+                serviceIds: updatedData.serviceId && !isNaN(updatedData.serviceId) && Number(updatedData.serviceId) > 0 ? [Number(updatedData.serviceId)] : [],
+                productQuantities: []
+            };
+
+            // Validation
+            if (!payload.diagnosis) {
+                throw new Error("Chẩn đoán không được để trống");
+            }
+
+            // Keep productQuantities as array format for backend compatibility
+            if (updatedData.recommendedProducts && updatedData.recommendedProducts.length > 0) {
+                const validProductQuantities = updatedData.recommendedProducts
+                    .filter(pq =>
+                        pq.productId > 0 &&
+                        pq.quantity > 0 &&
+                        Number.isInteger(Number(pq.productId)) &&
+                        Number.isInteger(Number(pq.quantity))
+                    )
+                    .map(pq => ({
+                        productId: Number(pq.productId),
+                        quantity: Number(pq.quantity)
+                    }));
+                console.log("[JSON] Valid Product Quantities for update:", JSON.stringify(validProductQuantities, null, 2));
+                
+                payload.productQuantities = validProductQuantities;
+            }
+
+            console.log("[JSON] Final update payload:", JSON.stringify(payload, null, 2));
+
+            // Send request
+            const response = await axiosInstance.put(`/medical-records/${recordId}/json`, payload);
+            console.log("[JSON] Update Medical Record Response:", JSON.stringify(response.data, null, 2));
+            return response.data;
+        } catch (error) {
+            console.error("[JSON] Lỗi khi cập nhật hồ sơ bệnh án:", {
                 status: error.response?.status,
                 data: error.response?.data,
                 message: error.message,

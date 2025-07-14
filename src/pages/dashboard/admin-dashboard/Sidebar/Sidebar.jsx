@@ -10,6 +10,7 @@ import {
     Clock,
     Stethoscope,
     Activity,
+    RefreshCw,
 } from "lucide-react";
 import { HiOutlineBars3 } from "react-icons/hi2";
 import "./sidebar.css";
@@ -32,6 +33,7 @@ export default function Sidebar({ activeTab, setActiveTab }) {
         { id: "staff", label: "Nhân viên", icon: <UserCircle size={18} /> },
         { id: "services", label: "Dịch vụ", icon: <Stethoscope size={18} /> },
         { id: "specialties", label: "Chuyên khoa", icon: <Activity size={18} /> },
+        { id: "refund-management", label: "Hoàn tiền", icon: <RefreshCw size={18} /> },
         { id: "inventory", label: "Kho hàng", icon: <Package size={18} /> },
     ];
 

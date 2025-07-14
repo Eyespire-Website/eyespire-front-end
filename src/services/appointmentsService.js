@@ -84,9 +84,13 @@ export const createAppointment = async (appointmentData) => {
     }
 }
 
-export const cancelAppointment = async (id) => {
+export const cancelAppointment = async (id, cancellationReason) => {
     try {
-        const response = await axios.put(`${API_URL}/appointments/${id}/cancel`)
+        const response = await axios.put(`${API_URL}/appointments/${id}/cancel`, {
+            cancellationReason: cancellationReason,
+            requiresManualRefund: true, // Đánh dấu cần hoàn tiền thủ công
+            createRefund: true // Tự động tạo refund record
+        })
         return response.data
     } catch (error) {
         console.error("Error cancelling appointment:", error)
@@ -120,10 +124,14 @@ export const getAllDoctors = async () => {
     }
 }
 
-export const getAvailableTimeSlots = async (doctorId, date) => {
+export const getAvailableTimeSlots = async (doctorId, date, excludeAppointmentId = null) => {
     try {
+        const params = { date };
+        if (excludeAppointmentId) {
+            params.excludeAppointmentId = excludeAppointmentId;
+        }
         const response = await axios.get(`${API_URL}/doctors/${doctorId}/available-slots`, {
-            params: { date },
+            params,
         })
         const slots = Array.isArray(response.data) ? response.data.filter((slot) => slot && typeof slot === "object") : []
         return slots.length > 0
@@ -209,10 +217,21 @@ export const getWaitingPaymentAppointments = async () => {
 // Xác nhận thanh toán cho cuộc hẹn
 export const markAppointmentAsPaid = async (appointmentId, paymentData) => {
     try {
-        const response = await axios.post(`${API_URL}/appointments/${appointmentId}/mark-paid`, paymentData)
+        const response = await axios.put(`${API_URL}/appointments/${appointmentId}/mark-paid`, paymentData)
         return response.data
     } catch (error) {
         console.error("Error marking appointment as paid:", error)
+        throw error
+    }
+}
+
+// Lấy danh sách cuộc hẹn cần hoàn tiền thủ công
+export const getRefundPendingAppointments = async () => {
+    try {
+        const response = await axios.get(`${API_URL}/appointments/refund-pending`)
+        return response.data
+    } catch (error) {
+        console.error("Error fetching refund pending appointments:", error)
         throw error
     }
 }

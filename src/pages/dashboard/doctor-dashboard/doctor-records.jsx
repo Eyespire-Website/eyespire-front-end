@@ -312,7 +312,7 @@ export default function CreateMedicalRecord() {
 
             console.log('RecordData to send:', JSON.stringify(recordDataToSend, null, 2))
 
-            const response = await medicalRecordService.createMedicalRecord(recordDataToSend, selectedFiles.map(fileObj => fileObj.file))
+            const response = await medicalRecordService.createMedicalRecordJson(recordDataToSend)
             console.log("Create Medical Record Response:", JSON.stringify(response, null, 2))
             await appointmentService.updateAppointmentStatus(appointmentId, "WAITING_PAYMENT")
             alert("Hồ sơ bệnh án đã được tạo thành công và cuộc hẹn đang chờ thanh toán!")

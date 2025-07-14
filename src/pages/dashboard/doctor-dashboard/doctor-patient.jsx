@@ -154,7 +154,7 @@ export default function PatientProfile() {
                             timeSlot: time,
                             services,
                             status: appointment.status,
-                            notes: appointment.notes || "Không có ghi chú",
+                            notes: appointment.notes || "Không có lý do khám",
                             patient: appointment.patient || {
                                 id: appointment.patientId || "N/A",
                                 name: appointment.patientName || "N/A",
@@ -215,7 +215,7 @@ export default function PatientProfile() {
                                         location: appointment.location || "Chưa xác định",
                                         service: services.map(s => s.name).join(", "), // For display in appointments table
                                         status: appointment.status,
-                                        notes: appointment.notes || "Không có ghi chú",
+                                        notes: appointment.notes || "Không có lý do khám",
                                         hasMedicalRecord: !!medicalRecord,
                                         createdAt: appointment.createdAt || new Date().toISOString(),
                                         updatedAt: appointment.updatedAt || new Date().toISOString(),
@@ -374,7 +374,7 @@ export default function PatientProfile() {
                             description: "N/A",
                         },
                     ],
-                    notes: appointment.notes || "Không có ghi chú",
+                    notes: appointment.notes || "Không có lý do khám",
                     status: appointment.status || "COMPLETED",
                     createdAt: appointment.createdAt || new Date().toISOString(),
                     updatedAt: appointment.updatedAt || new Date().toISOString(),

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
-import { Info, Eye, Clock, MapPin, Phone, Mail, User, Calendar, CreditCard, ChevronDown, ArrowLeft } from 'lucide-react'
+import { Info, Eye, Clock, MapPin, Phone, Mail, User, Calendar, CreditCard, ChevronDown, ArrowLeft, AlertCircle } from 'lucide-react'
 import "./CreateAppointment.css"
 import {
     createAppointment,
@@ -16,6 +16,7 @@ import {
     getAppointmentInvoice,
     markAppointmentAsPaid,
 } from "../../../../services/appointmentsService"
+import addressService from "../../../../services/addressService"
 import React from "react"
 import toast from "react-hot-toast"
 
@@ -128,22 +129,30 @@ export default function CreateAppointment() {
 
     const [phoneNumber, setPhoneNumber] = useState(appointmentData?.patient?.phone || appointmentData?.patientPhone || "")
     const [email, setEmail] = useState(appointmentData?.patient?.email || appointmentData?.patientEmail || "")
-    const [patientName, setPatientName] = useState(appointmentData?.patient?.name || appointmentData?.patientName || "")
-    const [selectedProvince, setSelectedProvince] = useState(appointmentData?.patient?.province || "")
-    const [selectedDistrict, setSelectedDistrict] = useState(appointmentData?.patient?.district || "")
-    const [selectedWard, setSelectedWard] = useState(appointmentData?.patient?.ward || "")
+    const [patientName, setPatientName] = useState(
+        (mode === "edit" && appointmentData?.status !== "PENDING") 
+            ? (appointmentData?.patient?.name || appointmentData?.patientName || "")
+            : (appointmentData?.patientName || "")
+    )
+    const [selectedProvince, setSelectedProvince] = useState(
+        appointmentData?.patient?.provinceCode || appointmentData?.patient?.province || ""
+    )
+    const [selectedWard, setSelectedWard] = useState(
+        appointmentData?.patient?.wardCode || appointmentData?.patient?.ward || ""
+    )
     const [detailedAddress, setDetailedAddress] = useState(appointmentData?.patient?.addressDetail || "")
-    const [village, setVillage] = useState(appointmentData?.patient?.village || "")
-    const [selectedService, setSelectedService] = useState(appointmentData?.serviceId?.toString() || "")
+    const [selectedService, setSelectedService] = useState(appointmentData?.serviceId?.toString() || "1")
     const [selectedDoctor, setSelectedDoctor] = useState(appointmentData?.doctorId?.toString() || "")
     const [reason, setReason] = useState(appointmentData?.notes || "")
     const [selectedDate, setSelectedDate] = useState(isValidDate ? initialDate.getDate() : null)
     const [selectedTime, setSelectedTime] = useState(appointmentData?.timeSlot || "")
     const [availableTimeSlots, setAvailableTimeSlots] = useState([])
+    const [allTimeSlotsForFiltering, setAllTimeSlotsForFiltering] = useState([])
     const [availableDates, setAvailableDates] = useState([])
     const [provinces, setProvinces] = useState([])
-    const [districts, setDistricts] = useState([])
     const [wards, setWards] = useState([])
+    const [provinceName, setProvinceName] = useState("")
+    const [wardName, setWardName] = useState("")
     const [currentMonth, setCurrentMonth] = useState(isValidDate ? initialDate.getMonth() : today.getMonth())
     const [currentYear, setCurrentYear] = useState(isValidDate ? initialDate.getFullYear() : today.getFullYear())
     const currentDay = today.getDate()
@@ -159,6 +168,8 @@ export default function CreateAppointment() {
     const [isEditingTime, setIsEditingTime] = useState(mode === "create")
     const [invoiceData, setInvoiceData] = useState(null)
     const [loadingInvoice, setLoadingInvoice] = useState(false)
+    const [showCancelModal, setShowCancelModal] = useState(false)
+    const [cancellationReason, setCancellationReason] = useState("")
 
     const isReadOnly = mode === "edit" && appointmentData?.status !== "PENDING"
 
@@ -180,62 +191,105 @@ export default function CreateAppointment() {
     useEffect(() => {
         const fetchProvinces = async () => {
             try {
-                const response = await fetch("https://provinces.open-api.vn/api/p/")
-                if (!response.ok) throw new Error("Failed to fetch provinces")
-                const data = await response.json()
-                setProvinces(data.map((p) => ({ code: p.code.toString(), name: p.name })))
+                const provincesData = await addressService.getProvinces()
+                setProvinces(provincesData)
             } catch (error) {
                 console.error("Error fetching provinces:", error)
-                setProvinces([
-                    { code: "1", name: "Hà Nội" },
-                    { code: "79", name: "TP. Hồ Chí Minh" },
-                    { code: "48", name: "Đà Nẵng" },
-                ])
+                toast.error("Không thể tải danh sách tỉnh/thành phố")
             }
         }
         fetchProvinces()
     }, [])
 
-    // Fetch districts
+    // Fetch wards by province
     useEffect(() => {
         if (!selectedProvince) {
-            setDistricts([])
             setWards([])
-            return
-        }
-        const fetchDistricts = async () => {
-            try {
-                const response = await fetch(`https://provinces.open-api.vn/api/p/${selectedProvince}?depth=2`)
-                if (!response.ok) throw new Error("Failed to fetch districts")
-                const data = await response.json()
-                setDistricts(data.districts.map((d) => ({ code: d.code.toString(), name: d.name })))
-            } catch (error) {
-                console.error("Error fetching districts:", error)
-                setDistricts([{ code: "4", name: "Hoàn Kiếm" }])
-            }
-        }
-        fetchDistricts()
-    }, [selectedProvince])
-
-    // Fetch wards
-    useEffect(() => {
-        if (!selectedDistrict) {
-            setWards([])
+            setSelectedWard("")
             return
         }
         const fetchWards = async () => {
             try {
-                const response = await fetch(`https://provinces.open-api.vn/api/d/${selectedDistrict}?depth=2`)
-                if (!response.ok) throw new Error("Failed to fetch wards")
-                const data = await response.json()
-                setWards(data.wards.map((w) => ({ code: w.code.toString(), name: w.name })))
+                const wardsData = await addressService.getWardsByProvince(selectedProvince)
+                setWards(wardsData)
             } catch (error) {
                 console.error("Error fetching wards:", error)
-                setWards([{ code: "127", name: "Phường Hàng Bông" }])
+                toast.error("Không thể tải danh sách phường/xã")
             }
         }
         fetchWards()
-    }, [selectedDistrict])
+    }, [selectedProvince])
+
+    // Resolve province and ward names from codes when data is loaded
+    useEffect(() => {
+        const resolveAddressNames = async () => {
+            if (selectedProvince && provinces.length > 0) {
+                const province = provinces.find(p => p.id === selectedProvince)
+                if (province) {
+                    setProvinceName(province.name)
+                }
+            }
+            
+            if (selectedWard && wards.length > 0) {
+                const ward = wards.find(w => w.id === selectedWard)
+                if (ward) {
+                    setWardName(ward.name)
+                }
+            }
+        }
+        resolveAddressNames()
+    }, [selectedProvince, selectedWard, provinces, wards])
+
+    // Migration logic for old address data format
+    useEffect(() => {
+        const migrateOldAddressData = async () => {
+            if (!appointmentData?.patient) return
+            
+            const patient = appointmentData.patient
+            console.log('Patient data for migration:', patient)
+            console.log('Provinces available:', provinces.length)
+            console.log('Wards available:', wards.length)
+            
+            // Check if this is old format data (has province/district/ward as numbers)
+            const hasOldFormat = patient.province && !patient.provinceCode
+            
+            if (hasOldFormat) {
+                try {
+                    // Convert old province ID to new format
+                    if (patient.province && provinces.length > 0) {
+                        const oldProvinceId = patient.province.toString()
+                        const province = provinces.find(p => p.id === oldProvinceId)
+                        if (province) {
+                            setSelectedProvince(province.id)
+                            setProvinceName(province.name)
+                        }
+                    }
+                    
+                    // Convert old ward format (like "11_9") to new format
+                    if (patient.ward && patient.ward.includes('_')) {
+                        const wardParts = patient.ward.split('_')
+                        if (wardParts.length === 2) {
+                            const provinceId = wardParts[0]
+                            const wardId = wardParts[1]
+                            
+                            // Fetch wards for the province and find matching ward
+                            if (provinceId && wards.length > 0) {
+                                const ward = wards.find(w => w.id.toString().endsWith(wardId))
+                                if (ward) {
+                                    setSelectedWard(ward.id)
+                                    setWardName(ward.name)
+                                }
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error migrating old address data:', error)
+                }
+            }
+        }
+        
+        migrateOldAddressData()
+    }, [appointmentData, provinces, wards])
 
     // Fetch available dates - now works without requiring a doctor to be selected first
     const fetchAvailableDates = useCallback(
@@ -295,7 +349,7 @@ export default function CreateAppointment() {
         [currentMonth, currentYear, selectedDate, appointmentData, today, currentDay],
     )
 
-    // Fetch time slots
+    // Fetch time slots for a specific doctor and date
     const fetchTimeSlots = useCallback(
         async (doctorId, date) => {
             if (!doctorId || !date || isNaN(currentMonth) || currentMonth < 0 || currentMonth > 11) {
@@ -325,6 +379,8 @@ export default function CreateAppointment() {
         [currentMonth, currentYear, appointmentData],
     )
 
+
+
     // Fetch available doctors for a specific date
     const fetchAvailableDoctorsForSelectedDate = useCallback(async () => {
         if (!selectedDate || isNaN(currentMonth) || currentMonth < 0 || currentMonth > 11) {
@@ -349,18 +405,81 @@ export default function CreateAppointment() {
         // Always fetch available dates (with or without doctor)
         fetchAvailableDates(selectedDoctor)
         
-        // If doctor is selected and we have a date, fetch time slots
+        // If doctor is selected and we have a date, fetch time slots for that doctor only
         if (selectedDoctor && selectedDate) {
             fetchTimeSlots(selectedDoctor, selectedDate)
+        } else {
+            // Clear time slots if no doctor selected
+            setAvailableTimeSlots([])
         }
     }, [selectedDoctor, currentMonth, currentYear, fetchAvailableDates, selectedDate, fetchTimeSlots])
     
-    // When a date is selected, fetch available doctors for that date
+    // When a date is selected, always fetch available doctors for that date
     useEffect(() => {
-        if (selectedDate && !selectedDoctor && mode === "create") {
+        if (selectedDate && mode === "create") {
             fetchAvailableDoctorsForSelectedDate()
         }
-    }, [selectedDate, selectedDoctor, fetchAvailableDoctorsForSelectedDate, mode])
+    }, [selectedDate, fetchAvailableDoctorsForSelectedDate, mode])
+    
+    // Fetch time slots for all doctors when appointment data is available (for filtering)
+    useEffect(() => {
+        console.log("=== useEffect fetchAllTimeSlotsForAppointment ===")
+        console.log("appointmentData?.appointmentDate:", appointmentData?.appointmentDate)
+        console.log("appointmentData?.timeSlot:", appointmentData?.timeSlot)
+        console.log("doctors.length:", doctors.length)
+        console.log("mode:", mode)
+        
+        const fetchAllTimeSlotsForAppointment = async () => {
+            if (!appointmentData?.appointmentDate || !appointmentData?.timeSlot || !doctors.length) {
+                console.log("useEffect early return - conditions not met")
+                return
+            }
+            
+            console.log("Starting to fetch time slots for all doctors...")
+            
+            try {
+                setLoading(true)
+                const appointmentDate = appointmentData.appointmentDate
+                console.log("Fetching time slots for appointment date:", appointmentDate)
+                
+                // Fetch time slots for all doctors on the appointment date
+                const allSlots = []
+                for (const doctor of doctors) {
+                    try {
+                        console.log(`Fetching slots for doctor ${doctor.name} (ID: ${doctor.id})...`)
+                        // Pass excludeAppointmentId in edit mode to exclude current appointment from availability check
+                        const excludeId = mode === 'edit' && appointmentData?.id ? appointmentData.id : null;
+                        const slots = await getAvailableTimeSlots(doctor.id, appointmentDate, excludeId)
+                        console.log(`Slots received for doctor ${doctor.name}:`, slots)
+                        
+                        if (slots && Array.isArray(slots)) {
+                            const doctorSlots = slots.map(slot => ({ ...slot, doctorId: doctor.id }))
+                            allSlots.push(...doctorSlots)
+                            console.log(`Added ${doctorSlots.length} slots for doctor ${doctor.name}`)
+                        } else {
+                            console.log(`No valid slots for doctor ${doctor.name}`)
+                        }
+                    } catch (error) {
+                        console.error(`Error fetching slots for doctor ${doctor.id}:`, error)
+                    }
+                }
+                
+                console.log("All time slots fetched for appointment:", allSlots)
+                // Store all slots for filtering purposes
+                setAllTimeSlotsForFiltering(allSlots)
+                // Also set availableTimeSlots for backward compatibility
+                setAvailableTimeSlots(allSlots)
+            } catch (error) {
+                console.error("Error fetching all time slots for appointment:", error)
+                setAllTimeSlotsForFiltering([])
+                setAvailableTimeSlots([])
+            } finally {
+                setLoading(false)
+            }
+        }
+        
+        fetchAllTimeSlotsForAppointment()
+    }, [appointmentData?.appointmentDate, appointmentData?.timeSlot, doctors])
     
     // Fetch invoice data if in edit mode
     useEffect(() => {
@@ -379,6 +498,73 @@ export default function CreateAppointment() {
         }
         fetchInvoiceData()
     }, [mode, appointmentData?.id])
+
+    // Filter doctors based on appointment time slot availability
+    const getFilteredDoctors = () => {
+        const appointmentTime = appointmentData?.timeSlot
+        const appointmentDate = appointmentData?.appointmentDate
+        
+        console.log("=== getFilteredDoctors Debug ===")
+        console.log("appointmentTime:", appointmentTime)
+        console.log("appointmentDate:", appointmentDate)
+        console.log("doctors.length:", doctors.length)
+        console.log("allTimeSlotsForFiltering.length:", allTimeSlotsForFiltering?.length)
+        console.log("allTimeSlotsForFiltering:", allTimeSlotsForFiltering)
+        
+        // If no appointment time or date, return all doctors
+        if (!appointmentTime || !appointmentDate || !doctors.length) {
+            console.log("Early return: missing appointmentTime, appointmentDate, or doctors")
+            return doctors
+        }
+        
+        // Use allTimeSlotsForFiltering instead of availableTimeSlots for filtering
+        const slotsToUse = allTimeSlotsForFiltering.length > 0 ? allTimeSlotsForFiltering : availableTimeSlots
+        
+        // If no time slots data available, return empty list to prevent incorrect display
+        if (!slotsToUse || slotsToUse.length === 0) {
+            console.log("No time slots data for filtering - returning empty list")
+            return []
+        }
+        
+        // Filter doctors who have AVAILABLE slots for the appointment time
+        // AVAILABLE means: doctor has working hours AND no appointment on that slot
+        const filteredDoctors = doctors.filter(doctor => {
+            // Check if this doctor has available slots for the appointment time
+            const doctorSlots = slotsToUse.filter(slot => 
+                slot.doctorId === doctor.id && slot.time === appointmentTime
+            )
+            
+            // Only show doctors with AVAILABLE status (has working hours + no conflicts)
+            const availableSlots = doctorSlots.filter(slot => slot.status === "AVAILABLE")
+            
+            console.log(`Doctor ${doctor.name} (ID: ${doctor.id}):`)
+            console.log(`  - All slots for time ${appointmentTime}:`, doctorSlots)
+            
+            // Debug chi tiết từng slot
+            doctorSlots.forEach((slot, index) => {
+                console.log(`    Slot ${index + 1}:`, {
+                    time: slot.time,
+                    status: slot.status,
+                    availableCount: slot.availableCount,
+                    doctorId: slot.doctorId
+                })
+            })
+            
+            console.log(`  - Available slots:`, availableSlots)
+            console.log(`  - Is available:`, availableSlots.length > 0)
+            
+            return availableSlots.length > 0
+        })
+        
+        console.log("Filtered available doctors:", filteredDoctors.map(d => d.name))
+        
+        // Return filtered list (can be empty if no doctors are available)
+        if (filteredDoctors.length === 0) {
+            console.log("No doctors available for selected time slot")
+        }
+        
+        return filteredDoctors
+    }
 
     const monthNames = [
         "Tháng 1",
@@ -466,11 +652,9 @@ export default function CreateAppointment() {
                 name: patientName,
                 email,
                 phone: phoneNumber,
-                province: selectedProvince,
-                district: selectedDistrict,
-                ward: selectedWard,
+                provinceCode: selectedProvince,
+                wardCode: selectedWard,
                 addressDetail: detailedAddress,
-                village: village || "",
                 dateOfBirth: appointmentData.patient?.dateOfBirth || "",
                 gender: selectedGender === "nu" ? "FEMALE" : "MALE",
             },
@@ -486,18 +670,31 @@ export default function CreateAppointment() {
         }
     }
 
-    const handleCancelAppointment = async () => {
+    const handleCancelAppointment = () => {
         if (!appointmentData?.id) return
-        const isConfirmed = window.confirm("Bạn có chắc chắn muốn hủy cuộc hẹn này?")
-        if (!isConfirmed) return
+        setShowCancelModal(true)
+    }
+
+    const confirmCancelAppointment = async () => {
+        if (!cancellationReason.trim()) {
+            alert("Vui lòng nhập lý do hủy cuộc hẹn")
+            return
+        }
 
         try {
-            await cancelAppointment(appointmentData.id)
+            await cancelAppointment(appointmentData.id, cancellationReason)
+            setShowCancelModal(false)
+            setCancellationReason("")
             navigate("/dashboard/receptionist/all-appointments")
         } catch (error) {
             console.error("Error cancelling appointment:", error)
             alert("Failed to cancel appointment: " + error.message)
         }
+    }
+
+    const closeCancelModal = () => {
+        setShowCancelModal(false)
+        setCancellationReason("")
     }
 
     const handleUnconfirmAppointment = async () => {
@@ -530,11 +727,9 @@ export default function CreateAppointment() {
                 name: patientName,
                 email,
                 phone: phoneNumber,
-                province: selectedProvince,
-                district: selectedDistrict,
-                ward: selectedWard,
+                provinceCode: selectedProvince,
+                wardCode: selectedWard,
                 addressDetail: detailedAddress,
-                village: village || "",
                 dateOfBirth: "",
                 gender: selectedGender === "nu" ? "FEMALE" : "MALE",
             },
@@ -603,7 +798,7 @@ export default function CreateAppointment() {
                                         disabled={mode === "edit" && appointmentData?.status !== "PENDING"}
                                     >
                                         <SelectTrigger>
-                                            <SelectValue />
+                                            <SelectValue placeholder="Chọn dịch vụ khám" />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {services.map((service) => (
@@ -613,6 +808,9 @@ export default function CreateAppointment() {
                                             ))}
                                         </SelectContent>
                                     </Select>
+                                    <div className="apt-pay-note">
+                                        * Mặc định là "Khám mắt tổng quát" nếu bệnh nhân không chọn dịch vụ
+                                    </div>
                                 </div>
                                 <div>
                                     <Label>
@@ -620,24 +818,23 @@ export default function CreateAppointment() {
                                     </Label>
                                     <Select
                                         value={selectedDoctor}
-                                        onValueChange={(value) => {
-                                            setSelectedDoctor(value)
-                                            setSelectedDate(null)
-                                            setSelectedTime("")
-                                        }}
+                                        onValueChange={setSelectedDoctor}
                                         disabled={mode === "edit" && appointmentData?.status !== "PENDING"}
                                     >
                                         <SelectTrigger>
-                                            <SelectValue />
+                                            <SelectValue placeholder="Chọn bác sĩ phù hợp" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {doctors.map((doctor) => (
+                                            {getFilteredDoctors().map((doctor) => (
                                                 <SelectItem key={doctor.id} value={doctor.id.toString()}>
                                                     {doctor.name}
                                                 </SelectItem>
                                             ))}
                                         </SelectContent>
                                     </Select>
+                                    <div className="apt-pay-note">
+                                        * Danh sách bác sĩ có sẵn trong khung giờ bệnh nhân đã chọn
+                                    </div>
                                 </div>
                             </div>
                         </CardContent>
@@ -709,156 +906,33 @@ export default function CreateAppointment() {
                     <Card>
                         <CardHeader className="apt-hdr-cal">
                             <CardTitle className="apt-card-title-sm">
-                                <Calendar size={16} /> Chọn thời gian khám
+                                <Calendar size={16} /> Thời gian khám đã chọn
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            {mode === "edit" && selectedDate && selectedTime && !isEditingTime ? (
+                            {selectedDate && selectedTime ? (
                                 <div className="apt-sum">
-                                    <h3 className="apt-sum-ttl">Lịch hẹn:</h3>
+                                    <h3 className="apt-sum-ttl">Lịch hẹn bệnh nhân đã chọn:</h3>
                                     <div className="apt-sum-body">
                                         <div className="apt-sum-item">
                                             <Calendar size={12} />
                                             <span>
-                        {selectedDate}/{Number.parseInt(currentMonth) + 1}/{currentYear}
-                      </span>
+                                                {selectedDate}/{Number.parseInt(currentMonth) + 1}/{currentYear}
+                                            </span>
                                         </div>
                                         <div className="apt-sum-item">
                                             <Clock size={12} />
                                             <span>{selectedTime}</span>
                                         </div>
                                     </div>
-                                    {!isReadOnly && (
-                                        <Button
-                                            className="apt-button-primary mt-2"
-                                            style={{ background: "#245EA8" }}
-                                            onClick={() => setIsEditingTime(true)}
-                                        >
-                                            thay đổi
-                                        </Button>
-                                    )}
+                                    <div className="apt-pay-note">
+                                        * Thời gian này đã được bệnh nhân chọn từ trang chủ
+                                    </div>
                                 </div>
                             ) : (
-                                <>
-                                    <div className="apt-cal-wrap">
-                                        <div className="apt-cal-sel apt-cal-yr">
-                                            <Select
-                                                value={currentYear.toString()}
-                                                onValueChange={(value) => setCurrentYear(Number.parseInt(value))}
-                                                disabled={isReadOnly}
-                                            >
-                                                <SelectTrigger>
-                                                    <SelectValue />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    {[2024, 2025, 2026].map((year) => (
-                                                        <SelectItem key={year} value={year.toString()}>
-                                                            {year}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                        <div className="apt-cal-sel apt-cal-mon">
-                                            <Select
-                                                value={currentMonth.toString()}
-                                                onValueChange={(value) => setCurrentMonth(Number.parseInt(value))}
-                                                disabled={isReadOnly}
-                                            >
-                                                <SelectTrigger>
-                                                    <SelectValue />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    {monthNames.map((month, index) => (
-                                                        <SelectItem key={index} value={index.toString()}>
-                                                            {month}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                    </div>
-                                    <div className="apt-cal-box">
-                                        <div className="apt-cal-days">
-                                            {["CN", "T2", "T3", "T4", "T5", "T6", "T7"].map((day) => (
-                                                <div key={day} className="apt-cal-day">
-                                                    {day}
-                                                </div>
-                                            ))}
-                                        </div>
-                                        <div className="apt-cal-dates">
-                                            {calendarDays.map((date, index) => (
-                                                <button
-                                                    key={index}
-                                                    onClick={() => {
-                                                        if (!date.disabled && !isReadOnly) {
-                                                            setSelectedDate(date.day)
-                                                            if (selectedDoctor) {
-                                                                fetchTimeSlots(selectedDoctor, date.day)
-                                                            } else if (mode === "create") {
-                                                                // When selecting a date without a doctor, reset doctor selection
-                                                                // and trigger fetching available doctors
-                                                                setSelectedDoctor("")
-                                                            }
-                                                        }
-                                                    }}
-                                                    className={getDateClassName(date)}
-                                                    disabled={date.disabled || isReadOnly}
-                                                >
-                                                    {date.day}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <Label className="apt-time-lbl">
-                                            <Clock size={12} /> Giờ khám{" "}
-                                            {selectedDate && `(${selectedDate}/${Number.parseInt(currentMonth) + 1})`}
-                                        </Label>
-                                        {selectedDate && selectedDoctor ? (
-                                            loading ? (
-                                                <div className="apt-empty">
-                                                    <p className="apt-empty-txt">Đang tải khung giờ...</p>
-                                                </div>
-                                            ) : (
-                                                <div className="apt-time-grid">
-                                                    {availableTimeSlots.map((slot, index) => (
-                                                        <button
-                                                            key={slot?.time || `slot-${index}`}
-                                                            onClick={() => !isReadOnly && slot?.status === "AVAILABLE" && setSelectedTime(slot?.time)}
-                                                            className={getTimeSlotClassName(slot?.time)}
-                                                            disabled={!slot || slot.status !== "AVAILABLE" || isReadOnly}
-                                                        >
-                                                            {slot?.time || "N/A"}
-                                                        </button>
-                                                    ))}
-                                                </div>
-                                            )
-                                        ) : (
-                                            <div className="apt-empty">
-                                                <Calendar className="apt-empty-ico" />
-                                                <p className="apt-empty-txt">Chọn bác sĩ và ngày để xem giờ khám</p>
-                                            </div>
-                                        )}
-                                    </div>
-                                </>
-                            )}
-
-                            {(mode !== "edit" || isEditingTime) && selectedDate && selectedTime && (
-                                <div className="apt-sum">
-                                    <h3 className="apt-sum-ttl">Lịch hẹn:</h3>
-                                    <div className="apt-sum-body">
-                                        <div className="apt-sum-item">
-                                            <Calendar size={12} />
-                                            <span>
-                        {selectedDate}/{Number.parseInt(currentMonth) + 1}/{currentYear}
-                      </span>
-                                        </div>
-                                        <div className="apt-sum-item">
-                                            <Clock size={12} />
-                                            <span>{selectedTime}</span>
-                                        </div>
-                                    </div>
+                                <div className="apt-empty">
+                                    <Calendar className="apt-empty-ico" />
+                                    <p className="apt-empty-txt">Chưa có thông tin thời gian khám</p>
                                 </div>
                             )}
                         </CardContent>
@@ -967,7 +1041,7 @@ export default function CreateAppointment() {
                                             </SelectTrigger>
                                             <SelectContent>
                                                 {provinces.map((p) => (
-                                                    <SelectItem key={p.code} value={p.code}>
+                                                    <SelectItem key={p.id} value={p.id}>
                                                         {p.name}
                                                     </SelectItem>
                                                 ))}
@@ -976,39 +1050,20 @@ export default function CreateAppointment() {
                                     </div>
                                     <div className="apt-address-field">
                                         <Label>
-                                            <span className="apt-req">*</span> Quận/Huyện
+                                            <span className="apt-req">*</span> Phường/Xã
                                         </Label>
                                         <Select
-                                            value={selectedDistrict}
-                                            onValueChange={setSelectedDistrict}
-                                            defaultLabel="Quận/Huyện"
+                                            value={selectedWard}
+                                            onValueChange={setSelectedWard}
+                                            defaultLabel="Phường/Xã"
                                             disabled
                                         >
                                             <SelectTrigger>
                                                 <SelectValue />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                {districts.map((d) => (
-                                                    <SelectItem key={d.code} value={d.code}>
-                                                        {d.name}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                </div>
-                                <div className="apt-g2 apt-mt-2">
-                                    <div className="apt-address-field">
-                                        <Label>
-                                            <span className="apt-req">*</span> Xã/Phường
-                                        </Label>
-                                        <Select value={selectedWard} onValueChange={setSelectedWard} defaultLabel="Xã/Phường" disabled>
-                                            <SelectTrigger>
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
                                                 {wards.map((w) => (
-                                                    <SelectItem key={w.code} value={w.code}>
+                                                    <SelectItem key={w.id} value={w.id}>
                                                         {w.name}
                                                     </SelectItem>
                                                 ))}
@@ -1016,6 +1071,28 @@ export default function CreateAppointment() {
                                         </Select>
                                     </div>
                                 </div>
+                                {/* Hiển thị địa chỉ đã chọn */}
+                                {(provinceName || wardName || appointmentData?.patient?.province || appointmentData?.patient?.ward) && (
+                                    <div className="apt-mt-2 apt-address-display">
+                                        <Label>Địa chỉ hiện tại:</Label>
+                                        <div className="apt-address-text">
+                                            {provinceName ? (
+                                                <span>{provinceName}</span>
+                                            ) : appointmentData?.patient?.province ? (
+                                                <span>Tỉnh/TP (ID: {appointmentData.patient.province})</span>
+                                            ) : null}
+                                            
+                                            {(provinceName || appointmentData?.patient?.province) && 
+                                             (wardName || appointmentData?.patient?.ward) && <span> - </span>}
+                                            
+                                            {wardName ? (
+                                                <span>{wardName}</span>
+                                            ) : appointmentData?.patient?.ward ? (
+                                                <span>Phường/Xã (ID: {appointmentData.patient.ward})</span>
+                                            ) : null}
+                                        </div>
+                                    </div>
+                                )}
                                 <div className="apt-mt-2 apt-address-field">
                                     <Label>Số nhà, tên đường</Label>
                                     <Input
@@ -1072,11 +1149,9 @@ export default function CreateAppointment() {
                                             !email ||
                                             !patientName ||
                                             !selectedProvince ||
-                                            !selectedDistrict ||
                                             !selectedWard ||
                                             !selectedService ||
-                                            !selectedDoctor ||
-                                            !validateTimeSlotAvailability()
+                                            !selectedDoctor
                                         }
                                         onClick={handleConfirmAppointment}
                                     >
@@ -1145,11 +1220,9 @@ export default function CreateAppointment() {
                                         !email ||
                                         !patientName ||
                                         !selectedProvince ||
-                                        !selectedDistrict ||
                                         !selectedWard ||
                                         !selectedService ||
-                                        !selectedDoctor ||
-                                        !validateTimeSlotAvailability()
+                                        !selectedDoctor
                                     }
                                     onClick={handleCreateAppointment}
                                 >
@@ -1162,8 +1235,60 @@ export default function CreateAppointment() {
                             )}
                         </CardContent>
                     </Card>
+                    
+                    {/* Hiển thị lý do hủy cuộc hẹn */}
+                    {mode === "edit" && appointmentData?.status === "CANCELED" && appointmentData?.cancellationReason && (
+                        <Card className="apt-cancellation-card">
+                            <CardHeader className="apt-hdr-cancel">
+                                <CardTitle className="apt-cancel-title">
+                                    <AlertCircle size={20} /> Lý do hủy cuộc hẹn
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="apt-cancel-reason">
+                                    <p>{appointmentData.cancellationReason}</p>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
                 </div>
             </div>
+            
+            {/* Modal hủy cuộc hẹn */}
+            {showCancelModal && (
+                <div className="apt-modal-overlay">
+                    <div className="apt-modal-content">
+                        <div className="apt-modal-header">
+                            <h3>Hủy cuộc hẹn</h3>
+                        </div>
+                        <div className="apt-modal-body">
+                            <p>Vui lòng nhập lý do hủy cuộc hẹn:</p>
+                            <Textarea
+                                value={cancellationReason}
+                                onChange={(e) => setCancellationReason(e.target.value)}
+                                placeholder="Nhập lý do hủy cuộc hẹn..."
+                                className="apt-cancel-reason-input"
+                                rows={4}
+                            />
+                        </div>
+                        <div className="apt-modal-footer">
+                            <Button
+                                className="apt-button-secondary"
+                                onClick={closeCancelModal}
+                            >
+                                Hủy bỏ
+                            </Button>
+                            <Button
+                                className="apt-button-danger"
+                                onClick={confirmCancelAppointment}
+                                disabled={!cancellationReason.trim()}
+                            >
+                                Xác nhận hủy
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

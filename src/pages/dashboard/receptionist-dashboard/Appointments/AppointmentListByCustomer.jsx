@@ -39,6 +39,11 @@ export default function AppointmentListByCustomer() {
     const [isLoading, setIsLoading] = useState(false)
     const [loadingDetail, setLoadingDetail] = useState(false)
     const [processingAction, setProcessingAction] = useState(false)
+    
+    // State cho modal hủy cuộc hẹn
+    const [showCancelModal, setShowCancelModal] = useState(false)
+    const [appointmentToCancel, setAppointmentToCancel] = useState(null)
+    const [cancellationReason, setCancellationReason] = useState('')
 
     useEffect(() => {
         const fetchData = async () => {
@@ -53,6 +58,7 @@ export default function AppointmentListByCustomer() {
                 ])
 
                 setCustomerInfo(customerResponse)
+                console.log('Appointments data from API:', appointmentsResponse);
                 setAllAppointments(appointmentsResponse || [])
             } catch (err) {
                 console.error("Error fetching data:", err)
@@ -130,28 +136,56 @@ export default function AppointmentListByCustomer() {
         }
     }
     
-    // Hủy cuộc hẹn
-    const handleCancelAppointment = async (appointmentId) => {
-        if (!window.confirm("Bạn có chắc chắn muốn hủy cuộc hẹn này không?")) return
+    // Mở modal hủy cuộc hẹn
+    const handleCancelAppointment = (appointmentId) => {
+        const appointment = allAppointments.find(app => app.id === appointmentId)
+        setAppointmentToCancel(appointment)
+        setShowCancelModal(true)
+        setCancellationReason('')
+    }
+    
+    // Xác nhận hủy cuộc hẹn
+    const confirmCancelAppointment = async () => {
+        if (!cancellationReason.trim()) {
+            alert('Vui lòng nhập lý do hủy cuộc hẹn')
+            return
+        }
         
         try {
             setProcessingAction(true)
-            await appointmentService.cancelAppointment(appointmentId)
+            const cancelResult = await appointmentService.cancelAppointment(appointmentToCancel.id, cancellationReason)
             
             // Cập nhật lại danh sách cuộc hẹn
             setAllAppointments(prev => 
-                prev.map(app => app.id === appointmentId ? {...app, status: "CANCELED"} : app)
+                prev.map(app => app.id === appointmentToCancel.id ? {
+                    ...app, 
+                    status: "CANCELED",
+                    cancellationReason: cancellationReason,
+                    requiresManualRefund: true,
+                    refundStatus: 'PENDING_MANUAL_REFUND'
+                } : app)
             )
             
-            alert("Hủy cuộc hẹn thành công!")
+            // Hiển thị thông báo về việc cần hoàn tiền thủ công
+            if (cancelResult?.paidAmount && cancelResult.paidAmount > 0) {
+                toast.success(`Hủy cuộc hẹn thành công! Lưu ý: Cần hoàn tiền thủ công ${cancelResult.paidAmount.toLocaleString('vi-VN')} VNĐ cho bệnh nhân.`)
+            } else {
+                toast.success("Hủy cuộc hẹn thành công!")
+            }
             
-            // Đóng modal nếu đang mở
-            if (showDetailModal && selectedAppointment?.id === appointmentId) {
+            // Đóng modal
+            setShowCancelModal(false)
+            setAppointmentToCancel(null)
+            setCancellationReason('')
+            
+            // Đóng modal chi tiết nếu đang mở
+            if (showDetailModal && selectedAppointment?.id === appointmentToCancel.id) {
                 setShowDetailModal(false)
             }
         } catch (err) {
             console.error("Lỗi khi hủy cuộc hẹn:", err)
-            alert("Không thể hủy cuộc hẹn. Vui lòng thử lại sau.")
+            const errorMessage = err.response?.data?.message || "Không thể hủy cuộc hẹn. Vui lòng thử lại sau."
+            toast.error(errorMessage)
         } finally {
             setProcessingAction(false)
         }
@@ -259,20 +293,48 @@ export default function AppointmentListByCustomer() {
         return pageNumbers
     }
 
-    // Format date and time from appointmentTime
-    const formatDateTime = (appointmentTime) => {
-        if (!appointmentTime) return { date: "N/A", time: "N/A" }
+    // Format date and time from appointment data
+    const formatDateTime = (appointment) => {
+        if (!appointment) return { date: "N/A", time: "N/A" }
+        
         try {
-            const date = new Date(appointmentTime)
+            let appointmentDateTime;
+            
+            // Try to use appointmentDate and timeSlot first (like patient page)
+            if (appointment.appointmentDate && appointment.timeSlot) {
+                const dateStr = appointment.appointmentDate; // "2025-07-15"
+                const timeStr = appointment.timeSlot; // "09:00"
+                appointmentDateTime = new Date(`${dateStr}T${timeStr}:00`);
+            }
+            // Fallback to appointmentTime if available
+            else if (appointment.appointmentTime) {
+                appointmentDateTime = new Date(appointment.appointmentTime);
+            }
+            // If appointment is a string (legacy format)
+            else if (typeof appointment === 'string') {
+                appointmentDateTime = new Date(appointment);
+            }
+            else {
+                return { date: "N/A", time: "N/A" };
+            }
+            
+            // Check if date is valid
+            if (isNaN(appointmentDateTime.getTime())) {
+                return { date: "N/A", time: "N/A" };
+            }
+            
+            const day = appointmentDateTime.getDate().toString().padStart(2, "0")
+            const month = (appointmentDateTime.getMonth() + 1).toString().padStart(2, "0")
+            const year = appointmentDateTime.getFullYear()
+            const hours = appointmentDateTime.getHours().toString().padStart(2, "0")
+            const minutes = appointmentDateTime.getMinutes().toString().padStart(2, "0")
+            
             return {
-                date: date.toLocaleDateString("vi-VN"),
-                time: date.toLocaleTimeString("vi-VN", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    hour12: false,
-                }),
+                date: `${day}/${month}/${year}`,
+                time: `${hours}:${minutes}`,
             }
         } catch (error) {
+            console.error('Error formatting date/time:', error);
             return { date: "N/A", time: "N/A" }
         }
     }
@@ -319,7 +381,7 @@ export default function AppointmentListByCustomer() {
                             <Search className="customer-appointments-detail__search-icon" />
                             <input
                                 type="text"
-                                placeholder="Tìm cuộc hẹn (Ngày hẹn, bác sĩ, dịch vụ, ghi chú, trạng thái...)"
+                                placeholder="Tìm cuộc hẹn (Ngày hẹn, bác sĩ, dịch vụ, lý do khám, trạng thái...)"
                                 value={searchQuery}
                                 onChange={handleSearch}
                                 className="customer-appointments-detail__search-input"
@@ -362,14 +424,14 @@ export default function AppointmentListByCustomer() {
                                 <th className="customer-appointments-detail__table-head">Bác sĩ</th>
                                 <th className="customer-appointments-detail__table-head">Dịch vụ</th>
                                 <th className="customer-appointments-detail__table-head">Trạng thái</th>
-                                <th className="customer-appointments-detail__table-head">Ghi chú</th>
+                                <th className="customer-appointments-detail__table-head">Lý do khám</th>
                                 <th className="customer-appointments-detail__table-head">Thao tác</th>
                             </tr>
                             </thead>
                             <tbody>
                             {paginatedAppointments.map((appointment, index) => {
                                 const status = statusConfig[appointment.status] || statusConfig.UNKNOWN
-                                const { date, time } = formatDateTime(appointment.appointmentTime)
+                                const { date, time } = formatDateTime(appointment)
 
                                 return (
                                     <tr key={appointment.id} className="customer-appointments-detail__table-row">
@@ -401,11 +463,15 @@ export default function AppointmentListByCustomer() {
                                         <td className="customer-appointments-detail__table-cell">
                                             <div className="customer-appointments-detail__service-info">
                                                 <div className="customer-appointments-detail__service-name">
-                                                    {appointment.service?.name || "Chưa xác định"}
+                                                    {appointment.services && appointment.services.length > 0
+                                                        ? appointment.services.map(service => service.name).join(", ")
+                                                        : appointment.service?.name || "Chưa xác định"}
                                                 </div>
                                                 <div className="customer-appointments-detail__service-price">
-                                                    {appointment.service?.price
-                                                        ? ``
+                                                    {appointment.services && appointment.services.length > 0
+                                                        ? appointment.services.reduce((total, service) => total + (service.price || 0), 0).toLocaleString('vi-VN') + ' VNĐ'
+                                                        : appointment.service?.price
+                                                        ? appointment.service.price.toLocaleString('vi-VN') + ' VNĐ'
                                                         : ""}
                                                 </div>
                                             </div>
@@ -539,27 +605,39 @@ export default function AppointmentListByCustomer() {
                                             <div className="appointment-detail-modal__info-item">
                                                 <div className="appointment-detail-modal__info-label">Ngày hẹn</div>
                                                 <div className="appointment-detail-modal__info-value">
-                                                    {selectedAppointment?.appointmentTime ? new Date(selectedAppointment.appointmentTime).toLocaleDateString("vi-VN") : "N/A"}
+                                                    {selectedAppointment ? formatDateTime(selectedAppointment).date : "N/A"}
                                                 </div>
                                             </div>
                                             <div className="appointment-detail-modal__info-item">
                                                 <div className="appointment-detail-modal__info-label">Giờ hẹn</div>
                                                 <div className="appointment-detail-modal__info-value">
-                                                    {selectedAppointment?.appointmentTime ? new Date(selectedAppointment.appointmentTime).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" }) : "N/A"}
+                                                    {selectedAppointment ? formatDateTime(selectedAppointment).time : "N/A"}
                                                 </div>
                                             </div>
                                             <div className="appointment-detail-modal__info-item">
                                                 <div className="appointment-detail-modal__info-label">Dịch vụ</div>
                                                 <div className="appointment-detail-modal__info-value">
-                                                    {appointmentDetail?.service?.name || "Chưa xác định"}
+                                                    {appointmentDetail?.services && appointmentDetail.services.length > 0
+                                                        ? appointmentDetail.services.map(service => service.name).join(", ")
+                                                        : appointmentDetail?.service?.name || "Chưa xác định"}
                                                 </div>
                                             </div>
                                             <div className="appointment-detail-modal__info-item">
-                                                <div className="appointment-detail-modal__info-label">Ghi chú</div>
+                                                <div className="appointment-detail-modal__info-label">Lý do khám</div>
                                                 <div className="appointment-detail-modal__info-value">
-                                                    {appointmentDetail?.notes || "Không có ghi chú"}
+                                                    {appointmentDetail?.notes || "Không có lý do khám"}
                                                 </div>
                                             </div>
+                                            
+                                            {/* Hiển thị lý do hủy nếu cuộc hẹn đã bị hủy */}
+                                            {selectedAppointment?.status === "CANCELED" && appointmentDetail?.cancellationReason && (
+                                                <div className="appointment-detail-modal__info-item appointment-detail-modal__info-item--cancellation">
+                                                    <div className="appointment-detail-modal__info-label">Lý do hủy</div>
+                                                    <div className="appointment-detail-modal__info-value appointment-detail-modal__info-value--cancellation">
+                                                        {appointmentDetail.cancellationReason}
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                     
@@ -631,9 +709,13 @@ export default function AppointmentListByCustomer() {
                                                     <div className="appointment-detail-modal__invoice-item">
                                                         <div>Phí dịch vụ khám</div>
                                                         <div>
-                                                            {appointmentDetail?.service?.price ? 
-                                                                new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(appointmentDetail.service.price) : 
-                                                                "0 đ"}
+                                                            {appointmentDetail?.services && appointmentDetail.services.length > 0
+                                                                ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(
+                                                                    appointmentDetail.services.reduce((total, service) => total + (service.price || 0), 0)
+                                                                  )
+                                                                : appointmentDetail?.service?.price 
+                                                                ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(appointmentDetail.service.price)
+                                                                : "0 đ"}
                                                         </div>
                                                     </div>
                                                     
@@ -655,7 +737,9 @@ export default function AppointmentListByCustomer() {
                                                         <div>
                                                             {(() => {
                                                                 // Tính lại tạm tính = phí dịch vụ khám + tiền thuốc
-                                                                const servicePrice = Number(appointmentDetail?.service?.price || 0);
+                                                                const servicePrice = appointmentDetail?.services && appointmentDetail.services.length > 0
+                                                                    ? appointmentDetail.services.reduce((total, service) => total + (service.price || 0), 0)
+                                                                    : Number(appointmentDetail?.service?.price || 0);
                                                                 const medicationAmount = Number(medicationDetails?.totalAmount || 0);
                                                                 const calculatedTotal = servicePrice + medicationAmount;
                                                                 
@@ -684,7 +768,9 @@ export default function AppointmentListByCustomer() {
                                                     <div>
                                                         {(() => {
                                                             // Tính lại số tiền cần thanh toán = phí dịch vụ + tiền thuốc - tiền cọc
-                                                            const servicePrice = Number(appointmentDetail?.service?.price || 0);
+                                                            const servicePrice = appointmentDetail?.services && appointmentDetail.services.length > 0
+                                                                ? appointmentDetail.services.reduce((total, service) => total + (service.price || 0), 0)
+                                                                : Number(appointmentDetail?.service?.price || 0);
                                                             const medicationAmount = Number(medicationDetails?.totalAmount || 0);
                                                             const depositAmount = Number(invoiceDetail?.depositAmount || 0);
                                                             
@@ -745,6 +831,93 @@ export default function AppointmentListByCustomer() {
                                 </div>
                             </>
                         )}
+                    </div>
+                </div>
+            )}
+            
+            {/* Modal hủy cuộc hẹn đơn giản */}
+            {showCancelModal && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(0,0,0,0.5)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1000
+                }}>
+                    <div style={{
+                        backgroundColor: 'white',
+                        padding: '20px',
+                        borderRadius: '8px',
+                        width: '400px',
+                        maxWidth: '90%'
+                    }}>
+                        <h3 style={{margin: '0 0 15px 0'}}>Hủy cuộc hẹn</h3>
+                        
+                        <div style={{marginBottom: '15px', padding: '10px', backgroundColor: '#f5f5f5', borderRadius: '4px'}}>
+                            <p style={{margin: '5px 0'}}><strong>Bệnh nhân:</strong> {appointmentToCancel?.patientName}</p>
+                            <p style={{margin: '5px 0'}}><strong>Ngày hẹn:</strong> {appointmentToCancel ? formatDateTime(appointmentToCancel).date : 'N/A'}</p>
+                            <p style={{margin: '5px 0'}}><strong>Giờ hẹn:</strong> {appointmentToCancel ? formatDateTime(appointmentToCancel).time : 'N/A'}</p>
+                        </div>
+                        
+                        <div style={{marginBottom: '20px'}}>
+                            <label style={{display: 'block', marginBottom: '5px', fontWeight: 'bold'}}>Lý do hủy cuộc hẹn *</label>
+                            <textarea
+                                value={cancellationReason}
+                                onChange={(e) => setCancellationReason(e.target.value)}
+                                placeholder="Vui lòng nhập lý do hủy cuộc hẹn..."
+                                rows={4}
+                                style={{
+                                    width: '100%',
+                                    padding: '10px',
+                                    border: '1px solid #ddd',
+                                    borderRadius: '4px',
+                                    fontSize: '14px',
+                                    resize: 'vertical',
+                                    boxSizing: 'border-box'
+                                }}
+                            />
+                        </div>
+                        
+                        <div style={{textAlign: 'right'}}>
+                            <button 
+                                onClick={() => {
+                                    setShowCancelModal(false)
+                                    setAppointmentToCancel(null)
+                                    setCancellationReason('')
+                                }}
+                                disabled={processingAction}
+                                style={{
+                                    padding: '8px 16px',
+                                    marginRight: '10px',
+                                    border: '1px solid #ddd',
+                                    backgroundColor: 'white',
+                                    borderRadius: '4px',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                Hủy bỏ
+                            </button>
+                            <button 
+                                onClick={confirmCancelAppointment}
+                                disabled={processingAction || !cancellationReason.trim()}
+                                style={{
+                                    padding: '8px 16px',
+                                    border: 'none',
+                                    backgroundColor: '#dc3545',
+                                    color: 'white',
+                                    borderRadius: '4px',
+                                    cursor: processingAction || !cancellationReason.trim() ? 'not-allowed' : 'pointer',
+                                    opacity: processingAction || !cancellationReason.trim() ? 0.6 : 1
+                                }}
+                            >
+                                {processingAction ? 'Đang xử lý...' : 'Xác nhận hủy'}
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

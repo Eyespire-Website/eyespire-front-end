@@ -9,6 +9,10 @@ import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLock, faCalendarAlt, faClock, faCheckCircle, faTimes } from "@fortawesome/free-solid-svg-icons";
 
+// Custom components for proper UTF-8 handling
+const Input = ({ className = "", ...props }) => <input className={`form-input ${className}`} {...props} />;
+const Textarea = ({ className = "", ...props }) => <textarea className={`form-textarea ${className}`} {...props} />;
+
 const Appointment = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -92,10 +96,10 @@ const Appointment = () => {
           let slots;
 
           if (formData.doctorId) {
-            // If doctor selected, fetch slots for that doctor
+            // If doctor selected, check availability for that specific doctor
             slots = await appointmentService.getAvailableTimeSlots(formData.doctorId, formData.appointmentDate);
           } else {
-            // If no doctor selected, fetch all slots for the date
+            // If no doctor selected, check global availability
             slots = await appointmentService.getAvailableTimeSlotsForDate(formData.appointmentDate);
           }
 
@@ -128,6 +132,23 @@ const Appointment = () => {
   // Handle input change
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    
+    // Debug UTF-8 encoding for text fields with Vietnamese characters
+    if (name === 'notes') {
+      console.log('[UTF-8 DEBUG] Homepage handleInputChange - notes value:', value);
+      console.log('[UTF-8 DEBUG] Homepage handleInputChange - notes length:', value ? value.length : 0);
+      if (value) {
+        console.log('[UTF-8 DEBUG] Homepage handleInputChange - notes bytes:', new TextEncoder().encode(value));
+      }
+    }
+    if (name === 'fullName') {
+      console.log('[UTF-8 DEBUG] Homepage handleInputChange - fullName value:', value);
+      console.log('[UTF-8 DEBUG] Homepage handleInputChange - fullName length:', value ? value.length : 0);
+      if (value) {
+        console.log('[UTF-8 DEBUG] Homepage handleInputChange - fullName bytes:', new TextEncoder().encode(value));
+      }
+    }
+    
     setFormData({
       ...formData,
       [name]: value
@@ -146,21 +167,41 @@ const Appointment = () => {
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.fullName.trim()) newErrors.fullName = 'Vui lòng nhập họ tên';
-    if (!formData.email.trim()) newErrors.email = 'Vui lòng nhập email';
-    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Email không hợp lệ';
+    // Validate required fields: name and phone (as specified in requirements)
+    if (!formData.fullName.trim()) {
+      newErrors.fullName = 'Vui lòng nhập họ tên';
+    }
 
-    if (!formData.phone.trim()) newErrors.phone = 'Vui lòng nhập số điện thoại';
-    else if (!/^[0-9]{10}$/.test(formData.phone)) newErrors.phone = 'Số điện thoại phải có 10 chữ số';
+    if (!formData.phone.trim()) {
+      newErrors.phone = 'Vui lòng nhập số điện thoại';
+    } else if (!/^[0-9]{10,11}$/.test(formData.phone.replace(/[\s-]/g, ''))) {
+      newErrors.phone = 'Số điện thoại phải có 10-11 chữ số';
+    }
 
-    // No validation for serviceId as it will default to "1"
-    // if (!formData.doctorId) newErrors.doctorId = 'Vui lòng chọn bác sĩ';
+    // Validate email if provided
+    if (formData.email.trim() && !/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = 'Email không hợp lệ';
+    }
 
-    if (!formData.appointmentDate) newErrors.appointmentDate = 'Vui lòng chọn ngày khám';
-    if (!formData.hourSlot) newErrors.hourSlot = 'Vui lòng chọn giờ khám';
+    // Validate appointment date and time
+    if (!formData.appointmentDate) {
+      newErrors.appointmentDate = 'Vui lòng chọn ngày khám';
+    } else {
+      // Check if selected date is not in the past
+      const selectedDate = new Date(formData.appointmentDate);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      if (selectedDate < today) {
+        newErrors.appointmentDate = 'Không thể chọn ngày trong quá khứ';
+      }
+    }
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    if (!formData.hourSlot) {
+      newErrors.hourSlot = 'Vui lòng chọn giờ khám';
+    }
+
+    return newErrors;
   };
 
   // Handle form submission
@@ -168,11 +209,26 @@ const Appointment = () => {
     e.preventDefault();
     
     // Validate form
-    const newErrors = validateForm();
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
+    const validationErrors = validateForm();
+    
+    // If there are validation errors, display them and prevent submission
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      
+      // Show toast message for validation errors
+      toast.error('Vui lòng điền đầy đủ thông tin bắt buộc (Họ tên và Số điện thoại)');
+      
+      // Scroll to first error field
+      const firstErrorField = document.querySelector('.form-input.error, .error-message');
+      if (firstErrorField) {
+        firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      
       return;
     }
+    
+    // Clear any existing errors
+    setErrors({});
     
     // Show confirmation modal instead of submitting directly
     setShowConfirmModal(true);
@@ -189,6 +245,19 @@ const Appointment = () => {
     setIsSubmitting(true);
     
     try {
+      // Debug UTF-8 encoding for Vietnamese characters
+      console.log('[UTF-8 DEBUG] Frontend fullName:', formData.fullName);
+      console.log('[UTF-8 DEBUG] Frontend fullName length:', formData.fullName ? formData.fullName.length : 0);
+      if (formData.fullName) {
+        console.log('[UTF-8 DEBUG] Frontend fullName bytes:', new TextEncoder().encode(formData.fullName));
+      }
+      
+      console.log('[UTF-8 DEBUG] Frontend notes:', formData.notes);
+      console.log('[UTF-8 DEBUG] Frontend notes length:', formData.notes ? formData.notes.length : 0);
+      if (formData.notes) {
+        console.log('[UTF-8 DEBUG] Frontend notes bytes:', new TextEncoder().encode(formData.notes));
+      }
+      
       // Prepare appointment data
       const appointmentData = {
         patientId: currentUser.id,
@@ -234,7 +303,12 @@ const Appointment = () => {
     const hourString = hourSlot < 10 ? `0${hourSlot}:00` : `${hourSlot}:00`;
 
     return availableTimeSlots.some(slot => {
-      return slot.time === hourString && slot.status === "AVAILABLE";
+      if (slot.time === hourString && slot.status === "AVAILABLE") {
+        // Ràng buộc mới: Đảm bảo số bác sĩ available > số appointment đã đặt
+        // Áp dụng cho cả 2 trường hợp: có chọn bác sĩ và không chọn bác sĩ
+        return slot.availableCount > 0;
+      }
+      return false;
     });
   };
 
@@ -485,83 +559,98 @@ const Appointment = () => {
                     <p>Để đảm bảo lịch hẹn, bạn cần đặt cọc <strong>10.000 VND</strong> qua PayOS. Số tiền này sẽ được trừ vào hóa đơn dịch vụ sau khi khám.</p>
                   </div>
                   <div className="form-row">
-                    <input
-                        type="text"
-                        name="fullName"
-                        value={formData.fullName}
-                        onChange={handleInputChange}
-                        placeholder="Họ và tên"
-                        className="form-input"
-                    />
-                    {errors.fullName && <span className="error-message">{errors.fullName}</span>}
-                    <input
-                        type="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleInputChange}
-                        placeholder="Địa chỉ email"
-                        className="form-input"
-                    />
-                    {errors.email && <span className="error-message">{errors.email}</span>}
+                    <div className="form-field">
+                      <Input
+                          type="text"
+                          name="fullName"
+                          value={formData.fullName}
+                          onChange={handleInputChange}
+                          placeholder="Họ và tên *"
+                          className={errors.fullName ? 'error' : ''}
+                          required
+                      />
+                      {errors.fullName && <span className="error-message">{errors.fullName}</span>}
+                    </div>
+                    <div className="form-field">
+                      <input
+                          type="email"
+                          name="email"
+                          value={formData.email}
+                          onChange={handleInputChange}
+                          placeholder="Địa chỉ email"
+                          className={`form-input ${errors.email ? 'error' : ''}`}
+                      />
+                      {errors.email && <span className="error-message">{errors.email}</span>}
+                    </div>
                   </div>
                   <div className="form-row">
-                    <input
-                        type="tel"
-                        name="phone"
-                        value={formData.phone}
-                        onChange={handleInputChange}
-                        placeholder="Số điện thoại"
-                        className="form-input"
-                    />
-                    {errors.phone && <span className="error-message">{errors.phone}</span>}
-                    <select
-                        className="form-input"
-                        name="serviceId"
-                        value={formData.serviceId}
-                        onChange={handleInputChange}
-                    >
-                      <option value="">Chọn dịch vụ (không bắt buộc)</option>
-                      {services.map(service => (
-                          <option key={service.id} value={service.id}>
-                            {service.name}
-                          </option>
-                      ))}
-                    </select>
+                    <div className="form-field">
+                      <input
+                          type="tel"
+                          name="phone"
+                          value={formData.phone}
+                          onChange={handleInputChange}
+                          placeholder="Số điện thoại *"
+                          className={`form-input ${errors.phone ? 'error' : ''}`}
+                          required
+                      />
+                      {errors.phone && <span className="error-message">{errors.phone}</span>}
+                    </div>
+                    <div className="form-field">
+                      <select
+                          className={`form-input ${errors.serviceId ? 'error' : ''}`}
+                          name="serviceId"
+                          value={formData.serviceId}
+                          onChange={handleInputChange}
+                      >
+                        <option value="">Chọn dịch vụ (không bắt buộc)</option>
+                        {services.map(service => (
+                            <option key={service.id} value={service.id}>
+                              {service.name}
+                            </option>
+                        ))}
+                      </select>
+                      {errors.serviceId && <span className="error-message">{errors.serviceId}</span>}
+                    </div>
                   </div>
                   <div className="form-row">
-                    <select
-                        className="form-input"
-                        name="doctorId"
-                        value={formData.doctorId}
-                        onChange={handleInputChange}
-                    >
-                      <option value="">Chọn bác sĩ (không bắt buộc)</option>
-                      {doctors.map(doctor => (
-                          <option key={doctor.id} value={doctor.id}>
-                            BS. {doctor.name} - {doctor.specialization}
-                          </option>
-                      ))}
-                    </select>
-                    {errors.doctorId && <span className="error-message">{errors.doctorId}</span>}
-                    <input
-                        type="date"
-                        name="appointmentDate"
-                        value={formData.appointmentDate}
-                        onChange={handleInputChange}
-                        min={today}
-                        className="form-input"
-                    />
-                    {errors.appointmentDate && <span className="error-message">{errors.appointmentDate}</span>}
+                    <div className="form-field">
+                      <select
+                          className={`form-input ${errors.doctorId ? 'error' : ''}`}
+                          name="doctorId"
+                          value={formData.doctorId}
+                          onChange={handleInputChange}
+                      >
+                        <option value="">Chọn bác sĩ (không bắt buộc)</option>
+                        {doctors.map(doctor => (
+                            <option key={doctor.id} value={doctor.id}>
+                              BS. {doctor.name} - {doctor.specialization}
+                            </option>
+                        ))}
+                      </select>
+                      {errors.doctorId && <span className="error-message">{errors.doctorId}</span>}
+                    </div>
+                    <div className="form-field">
+                      <input
+                          type="date"
+                          name="appointmentDate"
+                          value={formData.appointmentDate}
+                          onChange={handleInputChange}
+                          min={today}
+                          className={`form-input ${errors.appointmentDate ? 'error' : ''}`}
+                          required
+                      />
+                      {errors.appointmentDate && <span className="error-message">{errors.appointmentDate}</span>}
+                    </div>
                   </div>
                   {renderTimeSlots()}
                   {errors.hourSlot && <span className="error-message">{errors.hourSlot}</span>}
-                  <textarea
+                  <Textarea
                       placeholder="Thông tin bổ sung"
                       name="notes"
                       value={formData.notes}
                       onChange={handleInputChange}
-                      className="form-textarea"
-                  ></textarea>
+                  />
                   <button
                       type="submit"
                       className="appointment-button"

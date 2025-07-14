@@ -13,6 +13,7 @@ import UsersContent from "./pages/UsersContent";
 import SpecialtiesContent from "./pages/SpecialtiesContent";
 import AdminDashboard from "./AdminDashboard";
 import AppointmentListByCustomer from "./pages/Appointments/AppointmentListByCustomer";
+import RefundManagement from "./RefundManagement";
 
 
 export default function AdminRoutes() {
@@ -24,6 +25,7 @@ export default function AdminRoutes() {
                 <Route path="admin-overview" element={<AdminDashboard />} />
                 <Route path="appointments" element={<CustomerAppointments />} />
                 <Route path="appointments/customer/:customerId" element={<AppointmentListByCustomer />} />
+                <Route path="refund-management" element={<RefundManagement />} />
                 <Route path="schedule" element={<ScheduleContent />} />
                 <Route path="users" element={<UsersContent />} />
                 <Route path="staff" element={<StaffContent />} />

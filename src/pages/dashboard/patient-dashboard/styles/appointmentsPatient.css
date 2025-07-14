@@ -699,3 +699,198 @@
         flex-direction: column;
     }
 }
+
+/* Refund Status Styles */
+.column-refund {
+    min-width: 120px;
+    text-align: center;
+}
+
+.refund-status {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.875rem;
+}
+
+.refund-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.refund-badge.completed {
+    background-color: #dcfce7;
+    color: #15803d;
+    border: 1px solid #bbf7d0;
+}
+
+.refund-badge.pending {
+    background-color: #fef3c7;
+    color: #d97706;
+    border: 1px solid #fed7aa;
+}
+
+.refund-badge.unknown {
+    background-color: #f1f5f9;
+    color: #64748b;
+    border: 1px solid #cbd5e1;
+}
+
+.refund-amount {
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 0.875rem;
+}
+
+.refund-details {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.refund-details small {
+    font-size: 0.75rem;
+    color: #64748b;
+    text-align: center;
+}
+
+.refund-note small {
+    font-size: 0.75rem;
+    color: #64748b;
+    font-style: italic;
+}
+
+.refund-na {
+    color: #94a3b8;
+    font-size: 0.875rem;
+}
+
+/* Responsive adjustments for refund column */
+@media (max-width: 768px) {
+    .column-refund {
+        min-width: 100px;
+    }
+    
+    .refund-status {
+        font-size: 0.75rem;
+    }
+    
+    .refund-badge {
+        padding: 2px 6px;
+        font-size: 0.625rem;
+    }
+    
+    .refund-amount {
+        font-size: 0.75rem;
+    }
+}
+
+/* Table columns styling */
+.appointments-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #ffffff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.appointments-table th,
+.appointments-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.appointments-table th {
+    background-color: #f9fafb;
+    font-weight: 600;
+    color: #374151;
+    font-size: 14px;
+}
+
+.appointments-table td {
+    color: #6b7280;
+    font-size: 14px;
+}
+
+/* Column specific widths */
+.column-id {
+    width: 60px;
+    text-align: center;
+}
+
+.column-service {
+    width: 200px;
+}
+
+.column-date {
+    width: 150px;
+}
+
+.column-doctor {
+    width: 150px;
+}
+
+.column-status {
+    width: 120px;
+}
+
+.column-refund {
+    width: 150px;
+    text-align: center;
+}
+
+.column-notes {
+    width: 200px;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.column-actions {
+    width: 120px;
+    text-align: center;
+}
+
+/* Responsive table */
+@media (max-width: 1024px) {
+    .column-notes {
+        display: none;
+    }
+    
+    .column-refund {
+        width: 120px;
+    }
+}
+
+@media (max-width: 768px) {
+    .appointments-table th,
+    .appointments-table td {
+        padding: 8px 4px;
+        font-size: 12px;
+    }
+    
+    .column-service {
+        width: 150px;
+    }
+    
+    .column-date {
+        width: 120px;
+    }
+    
+    .column-doctor {
+        display: none;
+    }
+    
+    .column-refund {
+        width: 100px;
+    }
+}
