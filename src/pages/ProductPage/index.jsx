@@ -119,7 +119,7 @@ export default function ProductDetail() {
           <div className="pr-product-layout">
             {/* Product Gallery */}
             <ProductGallery
-              images={product.images || [product.imageUrl || "/placeholder.svg?height=400&width=400"]}
+              images={product.images && product.images.length > 0 ? product.images : [product.imageUrl]}
               selectedImage={selectedImage}
               onImageSelect={setSelectedImage}
               productName={product.name}

@@ -4,6 +4,9 @@ import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import "./doctor-feedback.css"
 import { ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Star } from "lucide-react"
+import serviceFeedbackService from "../../../services/serviceFeedbackService"
+import authService from "../../../services/authService"
+import { toast } from "react-toastify"
 
 export default function DoctorFeedback() {
     const navigate = useNavigate()
@@ -22,62 +25,68 @@ export default function DoctorFeedback() {
         const fetchFeedbacks = async () => {
             try {
                 setLoading(true)
-                // Simulate API call
-                await new Promise((resolve) => setTimeout(resolve, 500))
-
-                // Sample data
-                const sampleFeedbacks = [
-                    {
-                        id: 1,
-                        customerName: "Đỗ Văn Dũng",
-                        serviceName: "Tư vấn & Điều trị",
-                        date: "13/11/2024",
-                        rating: 5,
-                        comment: "Tư vấn điều trị nhanh chóng nhiệt tình, rất xứng với giá tiền!",
-                    },
-                    {
-                        id: 2,
-                        customerName: "Nguyễn Thị Hoa",
-                        serviceName: "Khám tổng quát",
-                        date: "10/11/2024",
-                        rating: 4,
-                        comment: "Bác sĩ tư vấn rất tận tình, cá của tôi đã khỏe hơn nhiều.",
-                    },
-                    {
-                        id: 3,
-                        customerName: "Trần Văn Minh",
-                        serviceName: "Điều trị bệnh da",
-                        date: "05/11/2024",
-                        rating: 5,
-                        comment: "Dịch vụ chuyên nghiệp, bác sĩ rất am hiểu về cá Koi.",
-                    },
-                    {
-                        id: 4,
-                        customerName: "Lê Thị Lan",
-                        serviceName: "Tư vấn dinh dưỡng",
-                        date: "01/11/2024",
-                        rating: 3,
-                        comment: "Tư vấn khá tốt, nhưng thời gian chờ đợi hơi lâu.",
-                    },
-                    {
-                        id: 5,
-                        customerName: "Phạm Văn Tuấn",
-                        serviceName: "Điều trị bệnh mang",
-                        date: "28/10/2024",
-                        rating: 5,
-                        comment: "Bác sĩ chẩn đoán chính xác và điều trị hiệu quả. Cá của tôi đã hồi phục hoàn toàn.",
-                    },
-                ]
-
-                setFeedbacks(sampleFeedbacks)
+                
+                // Lấy thông tin user hiện tại
+                const currentUser = authService.getCurrentUser();
+                if (!currentUser || !currentUser.id) {
+                    toast.error("Không tìm thấy thông tin người dùng");
+                    return;
+                }
+                
+                // Lấy thông tin bác sĩ từ user ID
+                const doctorId = currentUser.id;
+                console.log("Fetching feedbacks for doctor ID:", doctorId);
+                
+                // Gọi API lấy danh sách feedback cho bác sĩ
+                const response = await serviceFeedbackService.getAllFeedbacks();
+                console.log("Feedbacks response:", response);
+                
+                // Lọc và format dữ liệu feedback
+                const formattedFeedbacks = response
+                    .filter(feedback => {
+                        // Kiểm tra nếu feedback.appointment và feedback.appointment.doctor tồn tại
+                        if (feedback.appointment && feedback.appointment.doctor) {
+                            // Lấy userId của bác sĩ từ appointment (doctor.userId)
+                            const feedbackDoctorUserId = feedback.appointment.doctor.userId;
+                            console.log("Feedback doctor userId:", feedbackDoctorUserId, "Current user ID:", doctorId);
+                            return feedbackDoctorUserId == doctorId;
+                        }
+                        return false;
+                    })
+                    .map(feedback => {
+                        // Lấy tên bệnh nhân từ patientName trong appointment (từ form đặt lịch) thay vì name từ user profile
+                        const patientName = feedback.appointment?.patientName || 
+                                          feedback.patient?.name || 
+                                          "Khách hàng";
+                        
+                        // Lấy tên dịch vụ từ appointment.services nếu có
+                        let serviceName = "Dịch vụ";
+                        if (feedback.appointment && feedback.appointment.services && feedback.appointment.services.length > 0) {
+                            serviceName = feedback.appointment.services.map(s => s.name).join(", ");
+                        }
+                        
+                        return {
+                            id: feedback.id,
+                            customerName: patientName,
+                            serviceName: serviceName,
+                            date: serviceFeedbackService.formatFeedbackDate(feedback.createdAt),
+                            rating: feedback.rating,
+                            comment: feedback.comment || ""
+                        };
+                    });
+                
+                console.log("Formatted feedbacks:", formattedFeedbacks);
+                console.log("Original response structure:", JSON.stringify(response[0], null, 2));
+                setFeedbacks(formattedFeedbacks);
             } catch (error) {
-                console.error("Error fetching feedbacks:", error)
+                console.error("Error fetching feedbacks:", error);
+                toast.error("Không thể tải dữ liệu phản hồi: " + error);
             } finally {
-                setLoading(false)
+                setLoading(false);
             }
-        }
+        };
 
-        fetchFeedbacks()
+        fetchFeedbacks();
     }, [])
 
     const handleBackHome = () => {
@@ -162,7 +171,19 @@ export default function DoctorFeedback() {
         <div className="feedback-container">
             <div className="feedback-content">
                 <div className="feedback-header">
-                    <h1>Phản hồi khách hàng</h1>
+                    <h1>Phản hồi từ bệnh nhân</h1>
+                    <div className="feedback-summary">
+                        {!loading && (
+                            <div className="feedback-stats">
+                                <span>Tổng số phản hồi: <strong>{feedbacks.length}</strong></span>
+                                {feedbacks.length > 0 && (
+                                    <span>Đánh giá trung bình: <strong>
+                                        {(feedbacks.reduce((sum, item) => sum + item.rating, 0) / feedbacks.length).toFixed(1)}
+                                    </strong> / 5</span>
+                                )}
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 <div className="feedback-filters">
@@ -198,7 +219,7 @@ export default function DoctorFeedback() {
                         <thead>
                         <tr>
                             <th>#</th>
-                            <th>Tên khách hàng</th>
+                            <th>Tên bệnh nhân</th>
                             <th>Tên dịch vụ</th>
                             <th
                                 className={`sortable ${sortConfig.key === "date" ? "sorted" : ""}`}
@@ -235,7 +256,9 @@ export default function DoctorFeedback() {
                         ) : currentFeedbacks.length === 0 ? (
                             <tr>
                                 <td colSpan={6} className="empty-cell">
-                                    Không có phản hồi nào
+                                    {filterRating !== null ? 
+                                        `Không có phản hồi nào với ${filterRating} sao` : 
+                                        "Chưa có phản hồi nào từ bệnh nhân"}
                                 </td>
                             </tr>
                         ) : (

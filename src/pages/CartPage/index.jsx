@@ -7,6 +7,7 @@ import cartService from "../../services/cartService";
 import authService from "../../services/authService";
 import orderService from "../../services/orderService";
 import ChatBox from "../../components/ChatBox/ChatBox";
+import AddressSelector from "../../components/AddressSelector/AddressSelector";
 import "./index.css";
 
 export default function CartPage() {
@@ -14,7 +15,41 @@ export default function CartPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState(null);
+  const [shippingAddress, setShippingAddress] = useState('');
+  const [shippingFee, setShippingFee] = useState(0);
+  const [distanceInfo, setDistanceInfo] = useState(null);
   const navigate = useNavigate();
+
+  // Function to get proper image URL for cart items
+  const getImageUrl = (item) => {
+    const productName = item.productName || item.name;
+    const originalImageUrl = item.productImage || item.image || item.imageUrl;
+    
+    console.log('[CART IMAGE DEBUG] Product:', productName);
+    console.log('[CART IMAGE DEBUG] Original imageUrl:', originalImageUrl);
+    
+    const imageUrl = originalImageUrl 
+      ? (originalImageUrl.startsWith('http') 
+        ? originalImageUrl 
+        : `${process.env.REACT_APP_API_URL || 'http://localhost:8080'}${originalImageUrl}`)
+      : "/placeholder.svg";
+    
+    console.log('[CART IMAGE DEBUG] Constructed URL:', imageUrl);
+    return imageUrl;
+  };
+
+  // Handle address selection from AddressSelector
+  const handleAddressSelect = (addressData) => {
+    setShippingAddress(addressData.address);
+    console.log('Selected address:', addressData);
+  };
+
+  // Handle distance calculation and shipping fee
+  const handleDistanceCalculated = (distanceData) => {
+    setShippingFee(distanceData.shippingFee);
+    setDistanceInfo(distanceData);
+    console.log('Distance calculated:', distanceData);
+  };
 
   useEffect(() => {
     // Lấy dữ liệu giỏ hàng khi component được mount
@@ -61,10 +96,19 @@ export default function CartPage() {
   const handleRemoveItem = async (itemId) => {
     if (isProcessing) return;
     
+    console.log('handleRemoveItem called with itemId:', itemId);
+    console.log('Current cart before remove:', cart);
+    
     setIsProcessing(true);
     try {
       const updatedCart = await cartService.removeFromCart(itemId);
-      setCart(updatedCart);
+      console.log('Updated cart from API:', updatedCart);
+      // Force React re-render by creating new object with deep clone of items
+      setCart({ 
+        ...updatedCart, 
+        items: [...(updatedCart.items || [])] 
+      });
+      console.log('Cart state updated successfully');
       setError(null);
     } catch (err) {
       console.error("Lỗi khi xóa sản phẩm khỏi giỏ hàng:", err);
@@ -101,6 +145,12 @@ export default function CartPage() {
       return;
     }
     
+    // Kiểm tra địa chỉ giao hàng
+    if (!shippingAddress.trim()) {
+      alert("Vui lòng chọn địa chỉ giao hàng!");
+      return;
+    }
+    
     // Kiểm tra xem người dùng đã đăng nhập chưa
     if (!authService.isLoggedIn()) {
       // Lưu đường dẫn hiện tại để sau khi đăng nhập sẽ chuyển hướng lại
@@ -115,13 +165,6 @@ export default function CartPage() {
       
       // Lấy thông tin người dùng
       const user = authService.getCurrentUser();
-      
-      // Hiển thị dialog yêu cầu địa chỉ giao hàng
-      const shippingAddress = prompt("Vui lòng nhập địa chỉ giao hàng của bạn:", user.address || "");
-      if (!shippingAddress) {
-        setIsProcessing(false);
-        return; // Người dùng đã hủy
-      }
       
       // Tạo đơn hàng từ giỏ hàng
       const orderData = {
@@ -207,7 +250,15 @@ export default function CartPage() {
               {cart.items.map((item, index) => (
                 <div key={item.id || `cart-item-${index}`} className="crt-cart-item">
                   <div className="crt-cart-item-product">
-                    <img src={item.productImage || item.image} alt={item.productName || item.name} className="crt-cart-item-image" />
+                    <img 
+                      src={getImageUrl(item)} 
+                      alt={item.productName || item.name} 
+                      className="crt-cart-item-image"
+                      onError={(e) => {
+                        console.log('[CART IMAGE ERROR] Failed to load image for', item.productName || item.name, ':', e.target.src);
+                        e.target.src = "/placeholder.svg";
+                      }}
+                    />
                     <div className="crt-cart-item-details">
                       <Link to={`/product/${item.productId}`} className="crt-cart-item-name">
                         {item.productName || item.name}
@@ -274,6 +325,15 @@ export default function CartPage() {
             <div className="crt-cart-summary">
               <h2 className="crt-summary-title">Tóm tắt đơn hàng</h2>
               
+              {/* Address Selector */}
+              <div className="crt-address-section">
+                <AddressSelector
+                  onAddressSelect={handleAddressSelect}
+                  onDistanceCalculated={handleDistanceCalculated}
+                  defaultAddress={shippingAddress}
+                />
+              </div>
+              
               <div className="crt-summary-row">
                 <span>Tổng sản phẩm:</span>
                 <span>{cart.totalItems}</span>
@@ -281,17 +341,17 @@ export default function CartPage() {
               
               <div className="crt-summary-row">
                 <span>Tạm tính:</span>
-                <span>${cart.totalPrice.toFixed(2)}</span>
+                <span>{cart.totalPrice.toLocaleString('vi-VN')} VND</span>
               </div>
               
               <div className="crt-summary-row crt-shipping">
                 <span>Phí vận chuyển:</span>
-                <span>Miễn phí</span>
+                <span>{shippingFee > 0 ? `${shippingFee.toLocaleString('vi-VN')} VND` : 'Chưa tính'}</span>
               </div>
               
               <div className="crt-summary-row crt-total">
                 <span>Tổng cộng:</span>
-                <span>${cart.totalPrice.toFixed(2)}</span>
+                <span>{(cart.totalPrice + (shippingFee / 25000)).toLocaleString('vi-VN')} VND</span>
               </div>
               
               <button 

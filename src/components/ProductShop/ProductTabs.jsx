@@ -8,7 +8,6 @@ export default function ProductTabs({ description, specifications, reviews }) {
 
   const tabs = [
     { id: "description", label: "Description and Fitting guide", icon: "📋" },
-    { id: "specifications", label: "Additional Information", icon: "ℹ️" },
     { id: "reviews", label: "Reviews", icon: "⭐" },
   ]
 
@@ -48,21 +47,6 @@ export default function ProductTabs({ description, specifications, reviews }) {
             <div className="fitting-guide">
               <img src="/placeholder.svg?height=200&width=300" alt="Fitting Guide" className="fitting-image" />
             </div>
-          </div>
-        )}
-
-        {activeTab === "specifications" && (
-          <div className="specifications-content">
-            <table className="specs-table">
-              <tbody>
-                {Object.entries(specifications).map(([key, value]) => (
-                  <tr key={key}>
-                    <td className="spec-label">{key}</td>
-                    <td className="spec-value">{value}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
           </div>
         )}
 

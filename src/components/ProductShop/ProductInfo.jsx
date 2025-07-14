@@ -84,7 +84,7 @@ export default function ProductInfo({
         onClick={onAddToCart}
         disabled={addingToCart}
       >
-        {addingToCart ? 'Adding to Cart...' : 'Select Glasses'}
+        {addingToCart ? 'Đang thêm...' : 'Mua'}
       </button>
     </div>
   )
