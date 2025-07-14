@@ -184,48 +184,49 @@ const ChatBox = () => {
   };
 
   return (
-    <div className="chat-box-container">
+    <div className="aibox-chat-box-container">
       {/* Nút chat */}
       <button 
-        className={`chat-button ${isOpen ? 'active' : ''}`} 
+        className={`aibox-chat-button ${isOpen ? 'active' : ''}`} 
         onClick={toggleChat}
-        aria-label="Chat với trợ lý Eyespire"
+        aria-label={isOpen ? 'Đóng chat' : 'Mở chat'}
       >
-        {isOpen ? (
-          <i className="fas fa-times"></i>
-        ) : (
-          <div className="chat-button-content">
-            <span className="chat-button-text">Chat ngay</span>
-            <i className="fas fa-comment-dots"></i>
-          </div>
-        )}
+        <div className="aibox-chat-button-content">
+          {!isOpen && (
+            <>
+              <i className="fas fa-comments"></i>
+              <span className="aibox-chat-button-text">Chat với AI</span>
+            </>
+          )}
+          {isOpen && <i className="fas fa-times"></i>}
+        </div>
       </button>
 
       {/* Hộp chat */}
-      <div className={`chat-container ${isOpen ? 'open' : ''}`}>
-        <div className="chat-header">
-          <div className="chat-title">
-            <div className="chat-logo">
+      <div className={`aibox-chat-container ${isOpen ? 'open' : ''}`}>
+        <div className="aibox-chat-header">
+          <div className="aibox-chat-title">
+            <div className="aibox-chat-logo">
               <i className="fas fa-eye"></i>
             </div>
-            <div className="chat-title-text">
-              <h3>Trợ lý Eyespire</h3>
-              <span className="chat-status">
-                <span className="status-dot"></span>
+            <div className="aibox-chat-title-text">
+              <h3>Eyespire Assistant</h3>
+              <div className="aibox-chat-status">
+                <span className="aibox-status-dot"></span>
                 Đang hoạt động
-              </span>
+              </div>
             </div>
           </div>
-          <div className="header-actions">
+          <div className="aibox-header-actions">
             <button 
-              className="minimize-button" 
+              className="aibox-minimize-button" 
               onClick={toggleChat}
               aria-label="Thu nhỏ chat"
             >
               <i className="fas fa-minus"></i>
             </button>
             <button 
-              className="close-button" 
+              className="aibox-close-button" 
               onClick={toggleChat}
               aria-label="Đóng chat"
             >
@@ -234,28 +235,28 @@ const ChatBox = () => {
           </div>
         </div>
         
-        <div className="chat-messages" ref={chatContainerRef}>
+        <div className="aibox-chat-messages" ref={chatContainerRef}>
           {chatHistory.map((chat) => (
             <div 
               key={chat.id} 
-              className={`message ${chat.role === 'user' ? 'user-message' : 'bot-message'}`}
+              className={`aibox-message ${chat.role === 'user' ? 'aibox-user-message' : 'aibox-bot-message'}`}
             >
               {chat.role === 'bot' && (
-                <div className="bot-avatar">
+                <div className="aibox-bot-avatar">
                   <i className="fas fa-eye"></i>
                 </div>
               )}
-              <div className="message-bubble">
-                <div className="message-content">
+              <div className="aibox-message-bubble">
+                <div className="aibox-message-content">
                   {chat.content}
                 </div>
-                <div className="message-footer">
-                  <div className="message-time">
+                <div className="aibox-message-footer">
+                  <div className="aibox-message-time">
                     {getCurrentTime()}
                   </div>
                   {chat.role === 'bot' && (
                     <button 
-                      className={`message-speak-button ${speakingMessageId === chat.id ? 'speaking' : ''}`}
+                      className={`aibox-message-speak-button ${speakingMessageId === chat.id ? 'speaking' : ''}`}
                       onClick={() => speakMessage(chat.content, chat.id)}
                       aria-label={speakingMessageId === chat.id ? "Dừng đọc tin nhắn" : "Đọc tin nhắn này"}
                       title={speakingMessageId === chat.id ? "Dừng đọc tin nhắn" : "Đọc tin nhắn này"}
@@ -268,12 +269,12 @@ const ChatBox = () => {
             </div>
           ))}
           {isLoading && (
-            <div className="message bot-message">
-              <div className="bot-avatar">
+            <div className="aibox-message aibox-bot-message">
+              <div className="aibox-bot-avatar">
                 <i className="fas fa-eye"></i>
               </div>
-              <div className="message-bubble">
-                <div className="message-content typing-indicator">
+              <div className="aibox-message-bubble">
+                <div className="aibox-message-content aibox-typing-indicator">
                   <span></span>
                   <span></span>
                   <span></span>
@@ -283,8 +284,8 @@ const ChatBox = () => {
           )}
         </div>
         
-        <div className="chat-footer">
-          <form className="chat-input-container" onSubmit={handleSubmit}>
+        <div className="aibox-chat-footer">
+          <form className="aibox-chat-input-container" onSubmit={handleSubmit}>
             <input
               ref={inputRef}
               type="text"
@@ -292,11 +293,11 @@ const ChatBox = () => {
               value={message}
               onChange={handleInputChange}
               disabled={isLoading || isListening}
-              className="chat-input"
+              className="aibox-chat-input"
             />
             <button
               type="button"
-              className={`mic-button ${isListening ? 'listening' : ''}`}
+              className={`aibox-mic-button ${isListening ? 'listening' : ''}`}
               onClick={isListening ? stopListening : startListening}
               disabled={isLoading}
               aria-label={isListening ? 'Dừng ghi âm' : 'Bắt đầu ghi âm'}
@@ -307,13 +308,13 @@ const ChatBox = () => {
             <button 
               type="submit" 
               disabled={isLoading || !message.trim() || isListening} 
-              className="send-button"
+              className="aibox-send-button"
               aria-label="Gửi tin nhắn"
             >
               <i className="fas fa-paper-plane"></i>
             </button>
           </form>
-          <div className="chat-footer-text">
+          <div className="aibox-chat-footer-text">
             Powered by Eyespire Assistant
           </div>
         </div>

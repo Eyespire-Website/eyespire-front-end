@@ -1,4 +1,4 @@
-.chat-box-container {
+.aibox-chat-box-container {
   position: fixed;
   bottom: 20px;
   right: 20px;
@@ -7,7 +7,7 @@
 }
 
 /* Button styling */
-.chat-button {
+.aibox-chat-button {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -25,32 +25,32 @@
   overflow: hidden;
 }
 
-.chat-button-content {
+.aibox-chat-button-content {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-.chat-button-text {
+.aibox-chat-button-text {
   font-size: 16px;
   font-weight: 500;
   white-space: nowrap;
 }
 
-.chat-button:hover {
+.aibox-chat-button:hover {
   background-color: #021b4f;
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
 }
 
-.chat-button.active {
+.aibox-chat-button.active {
   width: 60px;
   padding: 0;
   background-color: #e74c3c;
 }
 
 /* Chat container */
-.chat-container {
+.aibox-chat-container {
   position: absolute;
   bottom: 80px;
   right: 0;
@@ -69,13 +69,13 @@
   border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
-.chat-container.open {
+.aibox-chat-container.open {
   transform: scale(1);
   opacity: 1;
 }
 
 /* Header styling */
-.chat-header {
+.aibox-chat-header {
   background: linear-gradient(135deg, #03246B, #0652DD);
   color: white;
   padding: 15px;
@@ -84,18 +84,18 @@
   align-items: center;
 }
 
-.chat-title {
+.aibox-chat-title {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.chat-title-text {
+.aibox-chat-title-text {
   display: flex;
   flex-direction: column;
 }
 
-.chat-logo {
+.aibox-chat-logo {
   width: 36px;
   height: 36px;
   border-radius: 50%;
@@ -108,13 +108,13 @@
   border: 2px solid rgba(255, 255, 255, 0.5);
 }
 
-.chat-title h3 {
+.aibox-chat-title h3 {
   margin: 0;
   font-size: 16px;
   font-weight: 600;
 }
 
-.chat-status {
+.aibox-chat-status {
   display: flex;
   align-items: center;
   font-size: 12px;
@@ -122,7 +122,7 @@
   gap: 5px;
 }
 
-.status-dot {
+.aibox-status-dot {
   width: 8px;
   height: 8px;
   background-color: #4cd137;
@@ -130,14 +130,14 @@
   display: inline-block;
 }
 
-.header-actions {
+.aibox-header-actions {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.close-button, 
-.minimize-button {
+.aibox-close-button, 
+.aibox-minimize-button {
   background: rgba(255, 255, 255, 0.2);
   border: none;
   border-radius: 50%;
@@ -151,14 +151,14 @@
   transition: all 0.2s ease;
 }
 
-.close-button:hover, 
-.minimize-button:hover {
+.aibox-close-button:hover, 
+.aibox-minimize-button:hover {
   background: rgba(255, 255, 255, 0.3);
   transform: scale(1.05);
 }
 
 /* Messages area */
-.chat-messages {
+.aibox-chat-messages {
   flex: 1;
   padding: 20px;
   overflow-y: auto;
@@ -170,21 +170,21 @@
   scrollbar-color: #ccc transparent;
 }
 
-.chat-messages::-webkit-scrollbar {
+.aibox-chat-messages::-webkit-scrollbar {
   width: 6px;
 }
 
-.chat-messages::-webkit-scrollbar-track {
+.aibox-chat-messages::-webkit-scrollbar-track {
   background: transparent;
 }
 
-.chat-messages::-webkit-scrollbar-thumb {
+.aibox-chat-messages::-webkit-scrollbar-thumb {
   background-color: #ccc;
   border-radius: 20px;
 }
 
 /* Message styling */
-.message {
+.aibox-message {
   display: flex;
   margin-bottom: 5px;
   max-width: 85%;
@@ -196,16 +196,16 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-.user-message {
+.aibox-user-message {
   align-self: flex-end;
   flex-direction: row-reverse;
 }
 
-.bot-message {
+.aibox-bot-message {
   align-self: flex-start;
 }
 
-.bot-avatar {
+.aibox-bot-avatar {
   width: 36px;
   height: 36px;
   border-radius: 50%;
@@ -221,18 +221,18 @@
   font-size: 18px;
 }
 
-.bot-avatar img {
+.aibox-bot-avatar img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.message-bubble {
+.aibox-message-bubble {
   display: flex;
   flex-direction: column;
 }
 
-.message-content {
+.aibox-message-content {
   padding: 12px 16px;
   border-radius: 18px;
   font-size: 14px;
@@ -240,28 +240,28 @@
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-.message-footer {
+.aibox-message-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
   width: 100%;
 }
 
-.message-time {
+.aibox-message-time {
   font-size: 10px;
   color: #888;
   margin-top: 4px;
 }
 
-.user-message .message-time {
+.aibox-user-message .aibox-message-time {
   margin-right: 8px;
 }
 
-.bot-message .message-time {
+.aibox-bot-message .aibox-message-time {
   margin-left: 8px;
 }
 
-.message-speak-button {
+.aibox-message-speak-button {
   background: transparent;
   border: none;
   color: #03246B;
@@ -279,26 +279,26 @@
   margin-left: 8px;
 }
 
-.message-speak-button:hover {
+.aibox-message-speak-button:hover {
   opacity: 1;
   background-color: rgba(3, 36, 107, 0.1);
 }
 
-.user-message .message-speak-button {
+.aibox-user-message .aibox-message-speak-button {
   color: white;
 }
 
-.user-message .message-speak-button:hover {
+.aibox-user-message .aibox-message-speak-button:hover {
   background-color: rgba(255, 255, 255, 0.2);
 }
 
-.user-message .message-content {
+.aibox-user-message .aibox-message-content {
   background: linear-gradient(135deg, #03246B, #0652DD);
   color: white;
   border-bottom-right-radius: 5px;
 }
 
-.bot-message .message-content {
+.aibox-bot-message .aibox-message-content {
   background-color: white;
   color: #343a40;
   border-bottom-left-radius: 5px;
@@ -306,14 +306,14 @@
 }
 
 /* Footer and input area */
-.chat-footer {
+.aibox-chat-footer {
   display: flex;
   flex-direction: column;
   background-color: white;
   border-top: 1px solid #eee;
 }
 
-.chat-input-container {
+.aibox-chat-input-container {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -324,7 +324,7 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.chat-input {
+.aibox-chat-input {
   flex: 1;
   border: none;
   background: transparent;
@@ -333,7 +333,7 @@
   padding: 8px 0;
 }
 
-.mic-button {
+.aibox-mic-button {
   background: #03246B;
   color: white;
   border: none;
@@ -348,12 +348,12 @@
   font-size: 14px;
 }
 
-.mic-button:hover {
+.aibox-mic-button:hover {
   background: #043584;
   transform: scale(1.05);
 }
 
-.mic-button.listening {
+.aibox-mic-button.listening {
   background: #e74c3c;
   animation: pulse 1.5s infinite;
 }
@@ -370,14 +370,14 @@
   }
 }
 
-.mic-button:disabled,
-.send-button:disabled {
+.aibox-mic-button:disabled,
+.aibox-send-button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
   transform: none;
 }
 
-.send-button {
+.aibox-send-button {
   width: 44px;
   height: 44px;
   border-radius: 50%;
@@ -392,18 +392,18 @@
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-.send-button:hover {
+.aibox-send-button:hover {
   transform: scale(1.05);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
-.send-button:disabled {
+.aibox-send-button:disabled {
   background: #e0e0e0;
   cursor: not-allowed;
   box-shadow: none;
 }
 
-.chat-footer-text {
+.aibox-chat-footer-text {
   text-align: center;
   font-size: 11px;
   color: #888;
@@ -411,7 +411,7 @@
 }
 
 /* Typing indicator */
-.typing-indicator {
+.aibox-typing-indicator {
   display: flex;
   align-items: center;
   justify-content: flex-start;
@@ -420,7 +420,7 @@
   min-width: 60px;
 }
 
-.typing-indicator span {
+.aibox-typing-indicator span {
   height: 8px;
   width: 8px;
   float: left;
@@ -431,15 +431,15 @@
   opacity: 0.4;
 }
 
-.typing-indicator span:nth-of-type(1) {
+.aibox-typing-indicator span:nth-of-type(1) {
   animation: 1s blink infinite 0.3333s;
 }
 
-.typing-indicator span:nth-of-type(2) {
+.aibox-typing-indicator span:nth-of-type(2) {
   animation: 1s blink infinite 0.6666s;
 }
 
-.typing-indicator span:nth-of-type(3) {
+.aibox-typing-indicator span:nth-of-type(3) {
   animation: 1s blink infinite 0.9999s;
 }
 
@@ -451,26 +451,26 @@
 
 /* Responsive styles */
 @media (max-width: 480px) {
-  .chat-container {
+  .aibox-chat-container {
     width: 320px;
     height: 450px;
     bottom: 80px;
     right: 0;
   }
   
-  .chat-button {
+  .aibox-chat-button {
     width: auto;
     min-width: 50px;
     height: 50px;
   }
   
-  .chat-button.active {
+  .aibox-chat-button.active {
     width: 50px;
   }
 }
 
 @media (max-width: 360px) {
-  .chat-container {
+  .aibox-chat-container {
     width: 300px;
     right: 0;
     bottom: 70px;

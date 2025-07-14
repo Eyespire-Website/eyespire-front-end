@@ -8,6 +8,7 @@ import {
   faSignOutAlt,
   faChevronDown,
   faCalendarAlt,
+  faComments,
 } from "@fortawesome/free-solid-svg-icons";
 import logo from "../../assets/logo.png";
 import { useNavigate } from "react-router-dom";
@@ -15,6 +16,7 @@ import authService from "../../services/authService";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import cartService from "../../services/cartService";
+import MessageModal from "../MessageModal/MessageModal";
 
 const Header = () => {
   const navigate = useNavigate();
@@ -27,6 +29,7 @@ const Header = () => {
     right: 0,
   });
   const [cartItemCount, setCartItemCount] = useState(0);
+  const [showMessageModal, setShowMessageModal] = useState(false);
 
   // Hàm xử lý URL avatar
   const getAvatarUrl = (url) => {
@@ -180,6 +183,16 @@ const Header = () => {
     navigate("/cart");
   };
 
+  // Xử lý khi người dùng click vào nút tin nhắn
+  const handleMessageClick = () => {
+    if (!user) {
+      toast.info("Vui lòng đăng nhập để sử dụng tính năng tin nhắn");
+      navigate("/login");
+      return;
+    }
+    setShowMessageModal(true);
+  };
+
   // Render dropdown portal
   const renderDropdownPortal = () => {
     if (!dropdownOpen) return null;
@@ -277,6 +290,11 @@ const Header = () => {
           <FontAwesomeIcon icon={faCalendarAlt} className="header-icon" />
         </div>
 
+        {/* Icon tin nhắn */}
+        <div className="message-icon-container" onClick={handleMessageClick}>
+          <FontAwesomeIcon icon={faComments} className="header-icon" />
+        </div>
+
         {user ? (
           <div className="user-profile">
             <div
@@ -305,6 +323,12 @@ const Header = () => {
           </button>
         )}
       </div>
+
+      {/* Message Modal */}
+      <MessageModal 
+        isOpen={showMessageModal} 
+        onClose={() => setShowMessageModal(false)} 
+      />
     </div>
   );
 };
