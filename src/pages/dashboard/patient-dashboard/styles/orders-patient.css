@@ -91,6 +91,87 @@
     border-radius: 50%;
 }
 
+/* Filter Tabs Container */
+.ptod-filter-tabs-container {
+    width: 100%;
+    padding: 0.5rem 0;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+/* Filter Tabs */
+.ptod-filter-tabs {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0 1rem;
+}
+
+/* Filter Tab Button */
+.ptod-filter-tab {
+    flex: 1;
+    padding: 0.75rem 0.5rem;
+    border: none;
+    background: none;
+    color: #4b5563;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-align: center;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    position: relative;
+}
+
+/* Filter Count Badge */
+.ptod-filter-count {
+    position: absolute;
+    top: -0.5rem;
+    right: -0.5rem;
+    background-color: #d32f2f;
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    min-width: 1.5rem;
+    height: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Hover State */
+.ptod-filter-tab:hover {
+    background-color: #eff6ff;
+    color: #03246b;
+}
+
+.ptod-filter-tab:hover .ptod-filter-count {
+    background-color: #b71c1c;
+}
+
+/* Active State */
+.ptod-filter-tab.ptod-filter-active {
+    background-color: #03246b;
+    color: white;
+}
+
+.ptod-filter-tab.ptod-filter-active .ptod-filter-count {
+    background-color: #d32f2f;
+    color: white;
+}
+
+/* Focus State for Accessibility */
+.ptod-filter-tab:focus {
+    outline: 2px solid #03246b;
+    outline-offset: 2px;
+}
+
 /* Main Content Styles */
 .ptod-orders-content {
     flex: 1;
@@ -155,7 +236,7 @@
     gap: 1rem;
 }
 
-/* Cải thiện card đơn hàng */
+/* Order Card */
 .ptod-order-card {
     background: white;
     border: 1px solid #e5e7eb;
@@ -228,6 +309,13 @@
     text-overflow: ellipsis;
     max-width: 100%;
     word-break: break-word;
+}
+
+.ptod-order-unreviewed {
+    color: #d32f2f;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin: 0 0 0.75rem 0;
 }
 
 .ptod-order-meta {
@@ -407,6 +495,27 @@
         right: 1rem;
     }
 
+    .ptod-filter-tabs {
+        flex-wrap: wrap;
+        gap: 0.25rem;
+        padding: 0 0.5rem;
+    }
+
+    .ptod-filter-tab {
+        flex: 1 1 30%;
+        padding: 0.5rem;
+        font-size: 0.75rem;
+    }
+
+    .ptod-filter-count {
+        top: -0.25rem;
+        right: -0.25rem;
+        min-width: 1.25rem;
+        height: 1.25rem;
+        font-size: 0.625rem;
+        padding: 0.2rem 0.4rem;
+    }
+
     .ptod-order-content {
         flex-direction: column;
         align-items: flex-start;
@@ -440,6 +549,22 @@
         font-size: 0.875rem;
     }
 
+    .ptod-filter-tabs {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .ptod-filter-tab {
+        flex: 1 1 100%;
+        padding: 0.5rem;
+        font-size: 0.75rem;
+    }
+
+    .ptod-filter-count {
+        top: 0.25rem;
+        right: 0.5rem;
+    }
+
     .ptod-pagination {
         flex-wrap: wrap;
     }
@@ -467,7 +592,8 @@
 
 .ptod-search-input:focus,
 .ptod-order-detail-btn:focus,
-.ptod-pagination-btn:focus {
+.ptod-pagination-btn:focus,
+.ptod-filter-tab:focus {
     outline: 2px solid #03246b;
     outline-offset: 2px;
 }
