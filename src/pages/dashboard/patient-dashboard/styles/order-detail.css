@@ -9,29 +9,45 @@
 /* Header */
 .ptod-header {
     display: flex;
-    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
     gap: 15px;
     margin-bottom: 30px;
     padding-bottom: 15px;
     border-bottom: 1px solid #e0e0e0;
 }
 
-.ptod-back-button {
+.ptod-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.ptod-back-button,
+.ptod-received-button,
+.ptod-feedback-button {
     display: flex;
     align-items: center;
     gap: 8px;
-    background: none;
-    border: none;
-    color: #03246b;
+    padding: 8px 16px;
+    border-radius: 6px;
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
-    padding: 0;
-    transition: color 0.2s;
+    transition: background-color 0.2s, opacity 0.2s;
 }
 
-.ptod-back-button:hover {
-    color: #021a4a;
+.ptod-back-button:hover,
+.ptod-received-button:hover,
+.ptod-feedback-button:hover {
+    opacity: 0.9;
+}
+
+.ptod-back-button:disabled,
+.ptod-received-button:disabled,
+.ptod-feedback-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 .ptod-title {
@@ -82,7 +98,7 @@
     text-transform: uppercase;
 }
 
-.status-processing {
+.status-pending {
     background-color: #fff8e1;
     color: #f57c00;
 }
@@ -92,17 +108,17 @@
     color: #0288d1;
 }
 
-.status-shipping {
+.status-shipped {
     background-color: #e8f5e9;
     color: #388e3c;
 }
 
-.status-delivered {
+.status-completed {
     background-color: #e8f5e9;
     color: #388e3c;
 }
 
-.status-cancelled {
+.status-canceled {
     background-color: #ffebee;
     color: #d32f2f;
 }
@@ -208,24 +224,6 @@
     margin: 0;
 }
 
-.ptod-payment-status {
-    display: inline-block;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 12px;
-    font-weight: 600;
-}
-
-.ptod-payment-paid {
-    background-color: #e8f5e9;
-    color: #388e3c;
-}
-
-.ptod-payment-pending {
-    background-color: #fff8e1;
-    color: #f57c00;
-}
-
 /* Products section */
 .ptod-products-list {
     margin-bottom: 20px;
@@ -318,6 +316,71 @@
     opacity: 0.7;
 }
 
+/* Image modal */
+.image-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.image-modal {
+    background-color: white;
+    border-radius: 8px;
+    padding: 20px;
+    max-width: 90%;
+    max-height: 90%;
+    overflow: hidden;
+    position: relative;
+}
+
+.image-modal-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #333;
+}
+
+.image-modal-content {
+    max-width: 100%;
+    max-height: 70vh;
+    overflow: auto;
+}
+
+.image-modal-content img {
+    width: 100%;
+    height: auto;
+}
+
+.image-modal-controls {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.image-modal-controls button {
+    background-color: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 8px;
+    cursor: pointer;
+}
+
+.image-modal-controls button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 /* Loading and error states */
 .ptod-loading-container,
 .ptod-error-container {
@@ -347,30 +410,109 @@
     margin: 0 0 20px 0;
 }
 
+/* Button colors */
+.eop-bg-gray-500 {
+    background-color: #6c757d;
+}
+
+.eop-hover:bg-gray-600:hover {
+    background-color: #5a6268;
+}
+
+.eop-bg-green-500 {
+    background-color: #28a745;
+}
+
+.eop-hover:bg-green-600:hover {
+    background-color: #218838;
+}
+
+.eop-bg-red-500 {
+    background-color: #d32f2f;
+}
+
+.eop-hover:bg-red-600:hover {
+    background-color: #b71c1c;
+}
+
+.eop-text-white {
+    color: white;
+}
+
+.eop-btn {
+    border: none;
+    outline: none;
+}
+
+.eop-flex {
+    display: flex;
+}
+
+.eop-items-center {
+    align-items: center;
+}
+
+.eop-gap-2 {
+    gap: 8px;
+}
+
+.eop-w-12 {
+    width: 48px;
+}
+
+.eop-h-12 {
+    height: 48px;
+}
+
+.eop-object-cover {
+    object-fit: cover;
+}
+
+.eop-rounded {
+    border-radius: 4px;
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
     .ptod-container {
         padding: 15px;
     }
-    
+
+    .ptod-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .ptod-header-actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+
+    .ptod-back-button,
+    .ptod-received-button,
+    .ptod-feedback-button {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+
     .ptod-status-header {
         flex-direction: column;
         align-items: flex-start;
         gap: 10px;
     }
-    
+
     .ptod-status-timeline {
         margin-top: 20px;
     }
-    
+
     .ptod-status-label {
         font-size: 10px;
     }
-    
+
     .ptod-product-item {
         flex-wrap: wrap;
     }
-    
+
     .ptod-product-subtotal {
         width: 100%;
         margin-top: 10px;

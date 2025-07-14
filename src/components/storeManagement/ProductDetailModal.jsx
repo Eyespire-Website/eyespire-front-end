@@ -184,9 +184,6 @@ const ProductDetailModal = ({ product, isOpen, onClose }) => {
                           <div className="stm-feedback-header">
                             <div className="stm-feedback-customer">
                               {feedback.customerName}
-                              {feedback.verified && (
-                                  <span className="stm-verified-badge">Đã xác thực</span>
-                              )}
                             </div>
                             <div className="stm-feedback-rating">
                               {[...Array(5)].map((_, i) => (

@@ -100,6 +100,19 @@
   margin-bottom: 0.75rem;
 }
 
+.reviewer-info {
+  display: flex;
+  align-items: center;
+}
+
+.reviewer-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 10px;
+}
+
 .reviewer-info h4 {
   margin: 0 0 0.25rem 0;
   font-weight: 600;
@@ -143,4 +156,17 @@
   .spec-label {
     width: auto;
   }
+}
+
+.review-item {
+  padding: 1.5rem;
+  border: 1px solid #e5e7eb; /* Thêm viền nhẹ để dễ nhận diện */
+  border-radius: 0.5rem; /* Bo góc cho thẩm mỹ */
+  margin-bottom: 1rem; /* Thêm khoảng cách giữa các review */
+  background-color: #ffffff; /* Nền trắng để nổi bật */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* Thêm bóng nhẹ */
+}
+
+.review-item:last-child {
+  border-bottom: none; /* Giữ nguyên để loại bỏ viền dưới của review cuối */
 }

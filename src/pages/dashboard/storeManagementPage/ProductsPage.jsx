@@ -67,25 +67,26 @@ const ProductsPage = () => {
               name: product.name || "Không có tên",
               category: mapProductTypeToCategory(product.type),
               price: Number(product.price) || 0,
-              rating: parseFloat(averageRating),
+              rating: parseFloat(averageRating) || 0,
               totalReviews: feedbacks.length,
-              sales: Number(product.sales) || 0, // Use sales from ProductDTO
+              sales: Number(product.sales) || 0,
               status: product.stockQuantity === 0 ? "inactive" : product.stockQuantity <= 5 ? "warning" : "active",
               statusText: product.stockQuantity === 0 ? "Hết hàng" : product.stockQuantity <= 5 ? "Sắp hết" : "Còn hàng",
               image: imageUrl,
               description: product.description || "Không có mô tả",
               gallery: [imageUrl],
-              supplier: "N/A", // Placeholder
+              supplier: "N/A",
               lastUpdated: product.updatedAt ? new Date(product.updatedAt).toLocaleDateString("vi-VN") : "N/A",
               tags: [mapProductTypeToCategory(product.type)],
               feedbacks: feedbacks.map((f) => ({
                 id: f.id.toString(),
                 customerName: f.patientName || "Khách hàng ẩn danh",
-                rating: f.rating,
+                rating: f.rating || 0,
                 comment: f.comment || "Không có bình luận",
                 date: f.createdAt ? new Date(f.createdAt).toLocaleDateString("vi-VN") : "N/A",
                 verified: f.verified || false,
               })),
+              quantity: product.stockQuantity || 0,
             };
           })
       );
@@ -251,9 +252,7 @@ const ProductsPage = () => {
             </div>
           </div>
           <div className="card-content">
-            <FilterBar
-                filters={filterOptions}
-            />
+            <FilterBar filters={filterOptions} />
 
             <div className="tbl-container">
               <table className="tbl">
@@ -378,9 +377,6 @@ const ProductsPage = () => {
                               <div className="stm-feedback-header">
                                 <div className="stm-customer-info">
                                   <span className="stm-customer-name">{feedback.customerName}</span>
-                                  {feedback.verified && (
-                                      <span className="stm-verified-badge">Đã xác minh</span>
-                                  )}
                                 </div>
                                 <div className="stm-feedback-meta">
                                   <div className="stars">{renderStars(feedback.rating)}</div>

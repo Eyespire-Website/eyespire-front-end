@@ -10,7 +10,7 @@ const OrderDetailModal = ({
                               isOpen,
                               onClose = () => {},
                               onStatusUpdate = () => {},
-                              onResetFilters = () => {}, // Add the new prop
+                              onResetFilters = () => {},
                           }) => {
     const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
     const [newStatus, setNewStatus] = useState(order?.status || "PENDING");
@@ -136,7 +136,7 @@ const OrderDetailModal = ({
                 updatedAt: new Date().toISOString(),
             };
             onStatusUpdate(updatedOrder);
-            onResetFilters(); // Call the reset callback after successful update
+            onResetFilters();
             alert(`Trạng thái đơn hàng đã được cập nhật thành "${statusOptions.find((s) => s.value === newStatus)?.label}"`);
             setShowStatusUpdate(false);
         } catch (error) {
@@ -151,6 +151,8 @@ const OrderDetailModal = ({
     };
 
     const handlePrintOrder = () => {
+        const subtotal = order.items ? order.items.reduce((sum, item) => sum + Number(item.total || 0), 0) : 0;
+        const shippingFee = calculateShippingFee();
         const totalAmount = (order.total || 0).toLocaleString();
         const printContent = `
       <div style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px;">
@@ -195,7 +197,9 @@ const OrderDetailModal = ({
         </div>
         <div style="border: 1px solid #ddd; padding: 20px; margin: 20px 0;">
           <h2>Tổng kết</h2>
-          <p style="font-size: 18px; color: #e74c3c;"><strong>Tổng cộng:</strong> ₫${totalAmount}</p>
+          <p><strong>Tổng tiền sản phẩm:</strong> ₫${subtotal.toLocaleString()}</p>
+          <p><strong>Phí vận chuyển:</strong> ₫${shippingFee.toLocaleString()}</p>
+          <p style="font-size: 18px; color: #e74c3c;"><strong>Tổng thanh toán:</strong> ₫${totalAmount}</p>
         </div>
       </div>
     `;
@@ -226,6 +230,12 @@ const OrderDetailModal = ({
       </html>
     `);
         printWindow.document.close();
+    };
+
+    const calculateShippingFee = () => {
+        if (!order || !order.items || order.items.length === 0) return 0;
+        const itemsTotal = order.items.reduce((sum, item) => sum + Number(item.total || 0), 0);
+        return Number(order.total || 0) - itemsTotal;
     };
 
     if (!isOpen || !order) return null;
@@ -329,11 +339,21 @@ const OrderDetailModal = ({
 
                     <div className="odm-detail-section">
                         <div className="odm-section-title">
-                            <h3 className="odm-title">Tổng kết đơn hàng</h3>
+                            <h3 className="odm-title">Tổng kết</h3>
                         </div>
                         <div className="odm-order-summary">
+                            <div className="odm-summary-row">
+                                <span>Tổng tiền sản phẩm:</span>
+                                <span>
+                  ₫{(order.items ? order.items.reduce((sum, item) => sum + Number(item.total || 0), 0) : 0).toLocaleString()}
+                </span>
+                            </div>
+                            <div className="odm-summary-row">
+                                <span>Phí vận chuyển:</span>
+                                <span>₫{calculateShippingFee().toLocaleString()}</span>
+                            </div>
                             <div className="odm-summary-row odm-total">
-                                <span>Tổng cộng:</span>
+                                <span>Tổng thanh toán:</span>
                                 <span>₫{(order.total || 0).toLocaleString()}</span>
                             </div>
                         </div>

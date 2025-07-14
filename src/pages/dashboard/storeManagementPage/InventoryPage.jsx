@@ -18,9 +18,10 @@ import {
   ZoomIn,
   ZoomOut,
   X,
-  TrendingUp, // Added for topSellingProducts StatCard
+  TrendingUp,
 } from "lucide-react";
 import productService from "../../../services/productService";
+import feedbackService from "../../../services/feedbackService";
 
 const InventoryPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -121,32 +122,46 @@ const InventoryPage = () => {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [selectedImage]);
 
-  // Fetch products
+  // Fetch products and feedback
   const fetchProducts = useCallback(async () => {
     try {
       setLoading(true);
       const data = await productService.getAllProducts();
-      const mappedProducts = data.map((product) => {
-        const imageUrl = getFullUrl(product.imageUrl);
-        return {
-          id: product.id.toString(),
-          name: product.name || "Không có tên",
-          category: mapProductTypeToCategory(product.type),
-          quantity: product.stockQuantity || 0,
-          price: Number(product.price) || 0,
-          sales: Number(product.sales) || 0, // Use sales from ProductDTO
-          status: product.stockQuantity === 0 ? "inactive" : product.stockQuantity <= 5 ? "warning" : "active",
-          statusText: product.stockQuantity === 0 ? "Hết hàng" : product.stockQuantity <= 5 ? "Sắp hết" : "Còn hàng",
-          lastUpdated: product.updatedAt ? new Date(product.updatedAt).toLocaleDateString("vi-VN") : "N/A",
-          image: imageUrl,
-          description: product.description || "Không có mô tả",
-          rating: 4.5, // Placeholder, as feedback isn't fetched here
-          totalReviews: 0, // Placeholder
-          tags: [mapProductTypeToCategory(product.type)],
-          gallery: [imageUrl],
-          feedbacks: [], // Placeholder
-        };
-      });
+      const mappedProducts = await Promise.all(
+          data.map(async (product) => {
+            const imageUrl = getFullUrl(product.imageUrl);
+            const feedbacks = await feedbackService.getFeedbackByProductId(product.id);
+            const averageRating = feedbacks.length
+                ? (feedbacks.reduce((sum, f) => sum + f.rating, 0) / feedbacks.length).toFixed(1)
+                : 0;
+
+            return {
+              id: product.id.toString(),
+              name: product.name || "Không có tên",
+              category: mapProductTypeToCategory(product.type),
+              quantity: product.stockQuantity || 0,
+              price: Number(product.price) || 0,
+              sales: Number(product.sales) || 0,
+              status: product.stockQuantity === 0 ? "inactive" : product.stockQuantity <= 5 ? "warning" : "active",
+              statusText: product.stockQuantity === 0 ? "Hết hàng" : product.stockQuantity <= 5 ? "Sắp hết" : "Còn hàng",
+              lastUpdated: product.updatedAt ? new Date(product.updatedAt).toLocaleDateString("vi-VN") : "N/A",
+              image: imageUrl,
+              description: product.description || "Không có mô tả",
+              rating: parseFloat(averageRating) || 0,
+              totalReviews: feedbacks.length,
+              tags: [mapProductTypeToCategory(product.type)],
+              gallery: [imageUrl],
+              feedbacks: feedbacks.map((f) => ({
+                id: f.id.toString(),
+                customerName: f.patientName || "Khách hàng ẩn danh",
+                rating: f.rating || 0,
+                comment: f.comment || "Không có bình luận",
+                date: f.createdAt ? new Date(f.createdAt).toLocaleDateString("vi-VN") : "N/A",
+                verified: f.verified || false,
+              })),
+            };
+          })
+      );
       setProducts(mappedProducts);
       const uniqueCategories = [...new Set(mappedProducts.map((p) => p.category))];
       setCategories(uniqueCategories.length > 0 ? uniqueCategories : ["Thiết bị"]);
@@ -336,6 +351,13 @@ const InventoryPage = () => {
               title="Giá trị kho"
               value={`₫${stats.inventoryValue.toLocaleString()}`}
               icon={<DollarSign size={24} />}
+              changeType="positive"
+          />
+          <StatCard
+              title="Sản phẩm bán chạy"
+              value={stats.topSellingProducts.toString()}
+              change="Dựa trên doanh số"
+              icon={<TrendingUp size={24} />}
               changeType="positive"
           />
         </div>
