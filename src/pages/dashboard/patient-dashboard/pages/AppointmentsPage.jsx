@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Calendar, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Search, History, FileText, User, Package } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Search, History, FileText, User, Package, Star } from "lucide-react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import appointmentService from "../../../../services/appointmentService";
 import medicalRecordService from '../../../../services/medicalRecordService';
 import authService from "../../../../services/authService";
+import serviceFeedbackService from "../../../../services/serviceFeedbackService";
+import FeedbackModal from "../../../../components/FeedbackModal";
 import "./AppointmentsPage.css";
 import '../styles/appointmentsPatient.css';
 
@@ -28,6 +30,11 @@ export default function AppointmentsPage() {
     // Thêm state để lưu trữ thông tin chi tiết cuộc hẹn
     const [appointmentDetails, setAppointmentDetails] = useState(null);
     const [showDetailsModal, setShowDetailsModal] = useState(false);
+
+    // State cho feedback modal
+    const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+    const [selectedAppointmentForFeedback, setSelectedAppointmentForFeedback] = useState(null);
+    const [appointmentFeedbacks, setAppointmentFeedbacks] = useState({});
 
     useEffect(() => {
         fetchUserData();
@@ -403,6 +410,46 @@ export default function AppointmentsPage() {
         navigate(`/patient/${route}`);
     };
 
+    // Hàm xử lý feedback
+    const loadAppointmentFeedback = async (appointmentId) => {
+        try {
+            const feedback = await serviceFeedbackService.getFeedbackByAppointmentId(appointmentId);
+            setAppointmentFeedbacks(prev => ({
+                ...prev,
+                [appointmentId]: feedback
+            }));
+            return feedback;
+        } catch (error) {
+            console.error('Error loading feedback:', error);
+            return null;
+        }
+    };
+
+    const openFeedbackModal = async (appointment) => {
+        setSelectedAppointmentForFeedback(appointment);
+        // Load existing feedback if any
+        await loadAppointmentFeedback(appointment.id);
+        setShowFeedbackModal(true);
+    };
+
+    const closeFeedbackModal = () => {
+        setShowFeedbackModal(false);
+        setSelectedAppointmentForFeedback(null);
+    };
+
+    const handleFeedbackSubmitted = async (feedbackData) => {
+        // Cập nhật feedback trong state
+        setAppointmentFeedbacks(prev => ({
+            ...prev,
+            [feedbackData.appointmentId]: feedbackData
+        }));
+        
+        toast.success('Đánh giá dịch vụ thành công!');
+        
+        // Refresh appointments để cập nhật trạng thái
+        await fetchAppointments();
+    };
+
     // Hàm để hiển thị chi tiết cuộc hẹn
     const viewAppointmentDetails = async (appointmentId) => {
         try {
@@ -766,6 +813,17 @@ export default function AppointmentsPage() {
                                                         <span>Hủy lịch</span>
                                                     </button>
                                                 )}
+                                                {appointment.status === "completed" && (
+                                                    <button
+                                                        className="appointment-feedback-button"
+                                                        onClick={() => openFeedbackModal(appointment)}
+                                                        disabled={loading}
+                                                        title={appointmentFeedbacks[appointment.id] ? "Đã đánh giá - Nhấp để xem/chỉnh sửa" : "Đánh giá dịch vụ"}
+                                                    >
+                                                        <Star size={16} />
+                                                        <span>{appointmentFeedbacks[appointment.id] ? "Xem đánh giá" : "Đánh giá"}</span>
+                                                    </button>
+                                                )}
                                             </div>
                                         </td>
                                     </tr>
@@ -1124,6 +1182,17 @@ export default function AppointmentsPage() {
                         </div>
                     </div>
                 </div>
+            )}
+            
+            {/* Modal đánh giá dịch vụ */}
+            {showFeedbackModal && selectedAppointmentForFeedback && (
+                <FeedbackModal
+                    show={showFeedbackModal}
+                    onHide={closeFeedbackModal}
+                    appointment={selectedAppointmentForFeedback}
+                    existingFeedback={appointmentFeedbacks[selectedAppointmentForFeedback.id]}
+                    onFeedbackSubmitted={handleFeedbackSubmitted}
+                />
             )}
         </div>
     );

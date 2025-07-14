@@ -7,6 +7,38 @@
     margin-bottom: 24px;
 }
 
+.feedback-header {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.feedback-header h1 {
+    margin-bottom: 12px;
+    color: #1e293b;
+}
+
+.feedback-summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+}
+
+.feedback-stats {
+    display: flex;
+    gap: 24px;
+    font-size: 14px;
+    color: #64748b;
+}
+
+.feedback-stats strong {
+    color: #1e293b;
+    font-weight: 600;
+}
+
 .feedback-filters {
     display: flex;
     justify-content: space-between;

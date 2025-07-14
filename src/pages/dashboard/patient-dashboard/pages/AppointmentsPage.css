@@ -521,3 +521,59 @@
     color: #007bff;
     font-weight: 600;
 }
+
+/* CSS cho nút đánh giá dịch vụ */
+.appointment-feedback-button {
+    background: linear-gradient(135deg, #ffd700, #ffb300);
+    color: #333;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(255, 179, 0, 0.2);
+    min-width: 100px;
+    justify-content: center;
+}
+
+.appointment-feedback-button:hover {
+    background: linear-gradient(135deg, #ffed4e, #ffc107);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(255, 179, 0, 0.3);
+}
+
+.appointment-feedback-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(255, 179, 0, 0.2);
+}
+
+.appointment-feedback-button:disabled {
+    background: #e0e0e0;
+    color: #999;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.appointment-feedback-button svg {
+    fill: currentColor;
+}
+
+/* Responsive cho action buttons */
+@media (max-width: 768px) {
+    .action-buttons {
+        flex-direction: column;
+        gap: 6px;
+    }
+    
+    .appointment-feedback-button {
+        font-size: 12px;
+        padding: 6px 10px;
+        min-width: 90px;
+    }
+}

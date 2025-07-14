@@ -211,9 +211,8 @@ const removeFromCart = async (cartItemId) => {
   console.log('removeFromCart called with cartItemId:', cartItemId, 'type:', typeof cartItemId);
   try {
     if (isUserLoggedIn()) {
-      const user = authService.getCurrentUser();
-      console.log('Sending DELETE request to:', `/api/cart/items/${cartItemId}?userId=${user.id}`);
-      const response = await axiosInstance.delete(`/api/cart/items/${cartItemId}?userId=${user.id}`);
+      console.log('Sending DELETE request to:', `/api/cart/items/${cartItemId}`);
+      const response = await axiosInstance.delete(`/api/cart/items/${cartItemId}`);
       console.log('API response:', response.data);
       return response.data;
     } else {
@@ -263,9 +262,8 @@ const updateQuantity = async (cartItemId, quantity) => {
     }
     
     if (isUserLoggedIn()) {
-      const user = authService.getCurrentUser();
-      console.log('Sending PUT request to:', `/api/cart/items/${cartItemId}?userId=${user.id}`);
-      const response = await axiosInstance.put(`/api/cart/items/${cartItemId}?userId=${user.id}`, 
+      console.log('Sending PUT request to:', `/api/cart/items/${cartItemId}`);
+      const response = await axiosInstance.put(`/api/cart/items/${cartItemId}`, 
         { quantity }
       );
       console.log('API response:', response.data);
