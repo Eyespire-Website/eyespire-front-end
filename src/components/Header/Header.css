@@ -367,6 +367,23 @@
   transform: scale(1.1);
 }
 
+/* CSS cho icon tin nhắn */
+.message-icon-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  font-size: 20px;
+  color: #FFFFFF;
+  margin-right: 10px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.message-icon-container:hover {
+  transform: scale(1.1);
+}
+
 .header-icon {
   color: #FFFFFF;
 }
