@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import SearchBox from "../../../components/storeManagement/SearchBox";
 import StatCard from "../../../components/storeManagement/StatCard";
 import FilterBar from "../../../components/storeManagement/FilterBar";
@@ -78,7 +80,7 @@ const OrdersPage = () => {
                 subtotal: parseFloat(
                     (order.items || []).reduce((sum, item) => sum + parseFloat(item.subtotal || 0), 0)
                 ),
-                shipping: 50000,
+                shipping: order.shippingAddress ? 50000 : 0, // Adjust for in-store orders
                 tax: parseFloat(order.totalAmount || 0) * 0.1,
                 total: parseFloat(order.totalAmount || 0),
                 notes: "N/A",
@@ -140,56 +142,57 @@ const OrdersPage = () => {
 
   const handleOrderCreated = async (orderData) => {
     try {
-      const response = await orderService.createOrder({
-        userId: orderData.userId || 1,
-        shippingAddress: orderData.shippingAddress,
-      });
-      const patient = await orderService.getPatientForOrder(response.userId);
+      // Use the orderData directly (from CreateOrderPage.jsx)
+      const patient = await orderService.getPatientForOrder(orderData.userId);
       const mappedOrder = {
-        id: `#${response.id.toString().padStart(3, "0")}`,
-        customerName: patient.name || `Khách hàng ${response.userId || "N/A"}`,
-        customerEmail: patient.email || `user${response.userId || "unknown"}@example.com`,
+        id: `#${orderData.id.toString().padStart(3, "0")}`,
+        customerName: patient.name || `Khách hàng ${orderData.userId || "N/A"}`,
+        customerEmail: patient.email || `user${orderData.userId || "unknown"}@example.com`,
         customerPhone: patient.phone || "N/A",
-        customerAddress: response.shippingAddress || "N/A",
-        orderDate: response.orderDate
-            ? new Date(response.orderDate).toLocaleDateString("vi-VN", {
+        customerAddress: orderData.shippingAddress || "N/A",
+        orderDate: orderData.orderDate
+            ? new Date(orderData.orderDate).toLocaleDateString("vi-VN", {
               timeZone: "Asia/Ho_Chi_Minh",
             })
             : "N/A",
-        status: response.status || "PENDING",
-        statusText: getStatusText(response.status || "PENDING"),
-        paymentMethod: response.payment?.transactionNo ? "Chuyển khoản" : "Tiền mặt",
-        paymentStatus: response.payment?.status || "PENDING",
+        status: orderData.status || "PAID",
+        statusText: getStatusText(orderData.status || "PAID"),
+        paymentMethod: orderData.payment?.transactionNo ? "Chuyển khoản" : "Tiền mặt",
+        paymentStatus: orderData.payment?.status || "COMPLETED",
         shippingMethod: "Giao hàng tiêu chuẩn",
-        items: (response.items || []).map((item) => ({
-          id: item.id?.toString() || "0",
+        items: (orderData.items || []).map((item) => ({
+          id: item.productId?.toString() || "0",
           name: item.productName || "Không xác định",
           image: item.image || "/placeholder.svg?height=60&width=60",
           quantity: item.quantity || 0,
           price: parseFloat(item.price || 0),
-          total: parseFloat(item.subtotal || 0),
+          total: parseFloat(item.subtotal || item.quantity * item.price || 0),
         })),
         subtotal: parseFloat(
-            (response.items || []).reduce((sum, item) => sum + parseFloat(item.subtotal || 0), 0)
+            (orderData.items || []).reduce((sum, item) => sum + parseFloat(item.subtotal || item.quantity * item.price || 0), 0)
         ),
-        shipping: 50000,
-        tax: parseFloat(response.totalAmount || 0) * 0.1,
-        total: parseFloat(response.totalAmount || 0),
+        shipping: orderData.shippingAddress ? 50000 : 0,
+        tax: parseFloat(orderData.totalAmount || 0) * 0.1,
+        total: parseFloat(orderData.totalAmount || 0),
         notes: "N/A",
-        createdAt: response.createdAt || new Date().toISOString(),
-        updatedAt: response.updatedAt || response.createdAt || new Date().toISOString(),
+        createdAt: orderData.createdAt || new Date().toISOString(),
+        updatedAt: orderData.updatedAt || orderData.createdAt || new Date().toISOString(),
       };
       setOrders((prevOrders) => [mappedOrder, ...prevOrders]);
       setShowCreateOrder(false);
-      alert(`Đơn hàng ${mappedOrder.id} đã được tạo thành công!`);
-      resetFilters(); // Reset filters after order creation
+      toast.success(`Đơn hàng ${mappedOrder.id} đã được tạo thành công!`, {
+        toastId: `order-created-${mappedOrder.id}`,
+      });
+      resetFilters();
     } catch (err) {
-      console.error("Error creating order:", {
+      console.error("Error processing order:", {
         message: err.message,
         status: err.response?.status,
         data: err.response?.data,
       });
-      alert(`Lỗi khi tạo đơn hàng: ${err.message}`);
+      toast.error(`Lỗi khi xử lý đơn hàng: ${err.message || "Vui lòng thử lại."}`, {
+        toastId: "order-error",
+      });
     }
   };
 
@@ -276,6 +279,7 @@ const OrdersPage = () => {
 
   return (
       <div>
+        <ToastContainer position="top-right" autoClose={5000} />
         <div className="stats-grid">
           <StatCard
               title="Tổng doanh thu"
@@ -397,7 +401,7 @@ const OrdersPage = () => {
             isOpen={isModalOpen}
             onClose={() => setIsModalOpen(false)}
             onStatusUpdate={handleStatusUpdate}
-            onResetFilters={resetFilters} // Pass the reset function
+            onResetFilters={resetFilters}
         />
       </div>
   );

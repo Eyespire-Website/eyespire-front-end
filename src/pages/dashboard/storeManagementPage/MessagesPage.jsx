@@ -1,672 +1,647 @@
 "use client";
-import placeholderImg from "../../../components/storeManagement/img/placeholder.svg";
+
 import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import SockJS from "sockjs-client";
+import { Client } from "@stomp/stompjs";
+import webSocketService from "../../../services/webSocketService";
+import userService from "../../../services/userService";
 import SearchBox from "../../../components/storeManagement/SearchBox";
-import StatCard from "../../../components/storeManagement/StatCard";
 import {
-  MessageSquare,
-  Send,
-  Users,
-  Clock,
-  Phone,
-  Video,
-  Paperclip,
-  Smile,
-  MoreVertical,
-  Search,
-  Check,
-  CheckCheck,
-  ImageIcon,
-  File,
+    MessageSquare,
+    Send,
+    Phone,
+    Video,
+    Smile,
+    MoreVertical,
+    Search,
+    Check,
+    CheckCheck,
+    Image as ImageIcon,
+    X,
+    ZoomIn,
+    ZoomOut,
 } from "lucide-react";
+import "./STM-Style/STM-MessagesPage.css";
+
+const placeholderImg = "/Uploads/avatar.jpg";
 
 const MessagesPage = () => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedConversation, setSelectedConversation] = useState("1");
-  const [newMessage, setNewMessage] = useState("");
-  const [activeTab, setActiveTab] = useState("all");
-  const [isTyping, setIsTyping] = useState(false);
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const messagesEndRef = useRef(null);
-  const fileInputRef = useRef(null);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [selectedConversation, setSelectedConversation] = useState(null);
+    const [newMessage, setNewMessage] = useState("");
+    const [selectedFiles, setSelectedFiles] = useState([]);
+    const [isTyping, setIsTyping] = useState(false);
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+    const [conversations, setConversations] = useState([]);
+    const [messages, setMessages] = useState({});
+    const [isConnected, setIsConnected] = useState(false);
+    const [selectedImage, setSelectedImage] = useState(null);
+    const [zoomLevel, setZoomLevel] = useState(1);
+    const messagesEndRef = useRef(null);
+    const fileInputRef = useRef(null);
+    const imageContainerRef = useRef(null);
+    const stompClient = useRef(null);
+    const navigate = useNavigate();
 
-  const [conversations, setConversations] = useState([
-    {
-      id: "1",
-      name: "Nguyễn Văn A",
-      avatar: placeholderImg,
-      lastMessage: "Cảm ơn bạn đã tư vấn cho tôi",
-      timestamp: "10:30",
-      unreadCount: 2,
-      status: "online",
-      type: "customer",
-      lastSeen: "Đang hoạt động",
-    },
-    {
-      id: "2",
-      name: "Trần Thị B",
-      avatar: placeholderImg,
-      lastMessage: "Khi nào có thể đặt hàng?",
-      timestamp: "09:45",
-      unreadCount: 0,
-      status: "offline",
-      type: "customer",
-      lastSeen: "5 phút trước",
-    },
-    {
-      id: "3",
-      name: "Nhóm Quản lý",
-      avatar: placeholderImg,
-      lastMessage: "Báo cáo doanh thu tuần này",
-      timestamp: "08:20",
-      unreadCount: 5,
-      status: "online",
-      type: "group",
-      lastSeen: "Đang hoạt động",
-    },
-    {
-      id: "4",
-      name: "Lê Văn C",
-      avatar: placeholderImg,
-      lastMessage: "Sản phẩm có còn hàng không?",
-      timestamp: "Hôm qua",
-      unreadCount: 1,
-      status: "away",
-      type: "customer",
-      lastSeen: "2 giờ trước",
-    },
-    {
-      id: "5",
-      name: "Nhân viên kho",
-      avatar: placeholderImg,
-      lastMessage: "Đã cập nhật số lượng tồn kho",
-      timestamp: "Hôm qua",
-      unreadCount: 0,
-      status: "offline",
-      type: "staff",
-      lastSeen: "1 ngày trước",
-    },
-  ]);
+    const baseUrl = process.env.REACT_APP_API_BASE_URL || "http://localhost:8080";
+    const fallbackImage = "https://placehold.co/50x50?text=Image";
 
-  const [messages, setMessages] = useState({
-    1: [
-      {
-        id: "1",
-        content: "Chào bạn, tôi muốn hỏi về sản phẩm thức ăn cá Koi",
-        timestamp: "10:25",
-        sender: "user",
-        type: "text",
-        status: "read",
-      },
-      {
-        id: "2",
-        content: "Chào anh! Tôi có thể giúp gì cho anh?",
-        timestamp: "10:26",
-        sender: "admin",
-        type: "text",
-        status: "read",
-      },
-      {
-        id: "3",
-        content: "Tôi muốn mua thức ăn cao cấp cho cá nhà mình",
-        timestamp: "10:27",
-        sender: "user",
-        type: "text",
-        status: "read",
-      },
-      {
-        id: "4",
-        content:
-          "Anh có thể xem sản phẩm SP001 - Thức ăn cá Koi cao cấp của chúng tôi",
-        timestamp: "10:28",
-        sender: "admin",
-        type: "text",
-        status: "read",
-      },
-      {
-        id: "5",
-        content: "Cảm ơn bạn đã tư vấn cho tôi",
-        timestamp: "10:30",
-        sender: "user",
-        type: "text",
-        status: "delivered",
-      },
-    ],
-    2: [
-      {
-        id: "6",
-        content: "Xin chào, tôi muốn đặt hàng",
-        timestamp: "09:40",
-        sender: "user",
-        type: "text",
-        status: "read",
-      },
-      {
-        id: "7",
-        content: "Chào chị! Chị muốn đặt sản phẩm gì ạ?",
-        timestamp: "09:42",
-        sender: "admin",
-        type: "text",
-        status: "read",
-      },
-      {
-        id: "8",
-        content: "Khi nào có thể đặt hàng?",
-        timestamp: "09:45",
-        sender: "user",
-        type: "text",
-        status: "delivered",
-      },
-    ],
-    3: [
-      {
-        id: "9",
-        content: "Báo cáo doanh thu tuần này",
-        timestamp: "08:20",
-        sender: "user",
-        type: "text",
-        status: "read",
-      },
-    ],
-    4: [
-      {
-        id: "10",
-        content: "Sản phẩm có còn hàng không?",
-        timestamp: "Hôm qua",
-        sender: "user",
-        type: "text",
-        status: "delivered",
-      },
-    ],
-    5: [
-      {
-        id: "11",
-        content: "Đã cập nhật số lượng tồn kho",
-        timestamp: "Hôm qua",
-        sender: "user",
-        type: "text",
-        status: "read",
-      },
-    ],
-  });
+    const emojis = ["😀", "😂", "😍", "👍", "❤️", "😊", "🎉", "👏", "🔥", "💯", "😎", "🤔", "😢", "😡", "🙏", "✨"];
 
-  const emojis = [
-    "😀",
-    "😂",
-    "😍",
-    "👍",
-    "❤️",
-    "😊",
-    "🎉",
-    "👏",
-    "🔥",
-    "💯",
-    "😎",
-    "🤔",
-    "😢",
-    "😡",
-    "🙏",
-    "✨",
-  ];
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const userId = user?.id;
 
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages, selectedConversation]);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  const filteredConversations = conversations.filter((conv) =>
-    conv.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "online":
-        return "#10b981";
-      case "away":
-        return "#f59e0b";
-      case "offline":
-        return "#6b7280";
-      default:
-        return "#6b7280";
-    }
-  };
-
-  const getConversationsByTab = () => {
-    switch (activeTab) {
-      case "customers":
-        return filteredConversations.filter((conv) => conv.type === "customer");
-      case "staff":
-        return filteredConversations.filter((conv) => conv.type === "staff");
-      case "groups":
-        return filteredConversations.filter((conv) => conv.type === "group");
-      default:
-        return filteredConversations;
-    }
-  };
-
-  const handleSendMessage = () => {
-    if (newMessage.trim()) {
-      const messageId = Date.now().toString();
-      const currentTime = new Date().toLocaleTimeString("vi-VN", {
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-
-      const newMsg = {
-        id: messageId,
-        content: newMessage.trim(),
-        timestamp: currentTime,
-        sender: "admin",
-        type: "text",
-        status: "sent",
-      };
-
-      // Thêm tin nhắn mới
-      setMessages((prev) => ({
-        ...prev,
-        [selectedConversation]: [...(prev[selectedConversation] || []), newMsg],
-      }));
-
-      // Cập nhật cuộc trò chuyện
-      setConversations((prev) =>
-        prev.map((conv) =>
-          conv.id === selectedConversation
-            ? {
-              ...conv,
-              lastMessage: newMessage.trim(),
-              timestamp: currentTime,
-              unreadCount: 0,
-            }
-            : conv
-        )
-      );
-
-      setNewMessage("");
-      setShowEmojiPicker(false);
-
-      // Mô phỏng phản hồi tự động sau 2-3 giây
-      setTimeout(() => {
-        simulateUserResponse();
-      }, Math.random() * 2000 + 1000);
-    }
-  };
-
-  const simulateUserResponse = () => {
-    const responses = [
-      "Cảm ơn bạn!",
-      "Tôi hiểu rồi",
-      "Được, tôi sẽ xem xét",
-      "Bạn có thể tư vấn thêm không?",
-      "Giá cả như thế nào?",
-      "Khi nào có hàng?",
-    ];
-
-    const randomResponse =
-      responses[Math.floor(Math.random() * responses.length)];
-    const messageId = Date.now().toString();
-    const currentTime = new Date().toLocaleTimeString("vi-VN", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-
-    const responseMsg = {
-      id: messageId,
-      content: randomResponse,
-      timestamp: currentTime,
-      sender: "user",
-      type: "text",
-      status: "delivered",
+    const getAvatarUrl = (url) => {
+        if (!url) return `${baseUrl}${placeholderImg}`;
+        return url.startsWith("http") ? url : `${baseUrl}${url.replace("/Uploads", "/images")}`;
     };
 
-    setMessages((prev) => ({
-      ...prev,
-      [selectedConversation]: [
-        ...(prev[selectedConversation] || []),
-        responseMsg,
-      ],
-    }));
+    const getStatusColor = (status) => {
+        switch (status) {
+            case "online": return "#10b981";
+            case "away": return "#f59e0b";
+            case "offline": return "#6b7280";
+            default: return "#6b7280";
+        }
+    };
 
-    setConversations((prev) =>
-      prev.map((conv) =>
-        conv.id === selectedConversation
-          ? {
-            ...conv,
-            lastMessage: randomResponse,
-            timestamp: currentTime,
-            unreadCount: conv.unreadCount + 1,
-          }
-          : conv
-      )
-    );
-  };
+    useEffect(() => {
+        if (!userId) {
+            navigate("/");
+            return;
+        }
 
-  const handleEmojiClick = (emoji) => {
-    setNewMessage((prev) => prev + emoji);
-    setShowEmojiPicker(false);
-  };
+        fetchConversations();
 
-  const handleFileUpload = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      const messageId = Date.now().toString();
-      const currentTime = new Date().toLocaleTimeString("vi-VN", {
-        hour: "2-digit",
-        minute: "2-digit",
-      });
+        const socket = new SockJS(`${baseUrl}/ws`);
+        stompClient.current = new Client({
+            webSocketFactory: () => socket,
+            debug: (str) => console.log("STOMP Debug: ", str),
+        });
 
-      const fileMsg = {
-        id: messageId,
-        content: file.name,
-        timestamp: currentTime,
-        sender: "admin",
-        type: file.type.startsWith("image/") ? "image" : "file",
-        status: "sent",
-        fileUrl: URL.createObjectURL(file),
-        fileSize: (file.size / 1024).toFixed(1) + " KB",
-      };
+        stompClient.current.onConnect = (frame) => {
+            setIsConnected(true);
+            stompClient.current.subscribe(`/user/${userId}/queue/messages`, (message) => {
+                const receivedMessage = JSON.parse(message.body);
+                handleNewMessage(receivedMessage);
+            });
 
-      setMessages((prev) => ({
-        ...prev,
-        [selectedConversation]: [
-          ...(prev[selectedConversation] || []),
-          fileMsg,
-        ],
-      }));
+            stompClient.current.subscribe(`/user/${userId}/queue/messages/read`, (message) => {
+                const updatedMessage = JSON.parse(message.body);
+                handleMessageRead(updatedMessage);
+            });
+        };
 
-      setConversations((prev) =>
-        prev.map((conv) =>
-          conv.id === selectedConversation
-            ? {
-              ...conv,
-              lastMessage: `📎 ${file.name}`,
-              timestamp: currentTime,
+        stompClient.current.onStompError = (error) => {
+            setIsConnected(false);
+            setTimeout(connectWebSocket, 5000);
+        };
+
+        const connectWebSocket = () => {
+            stompClient.current.activate();
+        };
+
+        connectWebSocket();
+
+        return () => {
+            if (stompClient.current?.active) {
+                stompClient.current.deactivate();
+                setIsConnected(false);
             }
-            : conv
-        )
-      );
-    }
-  };
+        };
+    }, [userId, navigate]);
 
-  const markAsRead = (conversationId) => {
-    setConversations((prev) =>
-      prev.map((conv) =>
-        conv.id === conversationId ? { ...conv, unreadCount: 0 } : conv
-      )
-    );
-  };
+    const fetchConversations = async () => {
+        try {
+            const messages = await webSocketService.getMessages(userId);
+            const uniqueUserIds = [...new Set(messages.map(msg =>
+                msg.sender.id === userId ? msg.receiver.id : msg.sender.id
+            ))];
 
-  const handleConversationSelect = (conversationId) => {
-    setSelectedConversation(conversationId);
-    markAsRead(conversationId);
-  };
+            const userDataPromises = uniqueUserIds.map(id => userService.getPatientById(id).catch(() => null));
+            const usersData = await Promise.all(userDataPromises);
+            const userDataMap = usersData.reduce((acc, data, index) => {
+                if (data) acc[uniqueUserIds[index]] = data;
+                return acc;
+            }, {});
 
-  const selectedConv = conversations.find(
-    (conv) => conv.id === selectedConversation
-  );
-  const currentMessages = messages[selectedConversation] || [];
+            const conversationsMap = messages.reduce((acc, msg) => {
+                const otherUserId = msg.sender.id === userId ? msg.receiver.id : msg.sender.id;
+                const otherUser = msg.sender.id === userId ? msg.receiver : msg.sender;
+                const userData = userDataMap[otherUserId] || {};
 
-  // Tính toán thống kê động
-  const totalMessages = Object.values(messages).flat().length;
-  const totalConversations = conversations.length;
-  const unreadMessages = conversations.reduce(
-    (sum, conv) => sum + conv.unreadCount,
-    0
-  );
-  const avgResponseTime = "2.5 phút";
+                if (!acc[otherUserId]) {
+                    const sentAt = new Date(msg.sentAt);
+                    acc[otherUserId] = {
+                        id: otherUserId.toString(),
+                        name: userData.name || otherUser.name || `User ${otherUserId}`,
+                        avatar: getAvatarUrl(userData.avatarUrl || otherUser.avatar),
+                        lastMessage: msg.content || (msg.imageUrls ? "Đã gửi hình ảnh" : ""),
+                        timestamp: sentAt.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" }),
+                        unreadCount: msg.isRead || msg.sender.id === userId ? 0 : 1,
+                        status: userData.status || otherUser.status || "offline",
+                        lastSeen: userData.status === "online" ? "Đang hoạt động" : sentAt.toLocaleTimeString("vi-VN", {
+                            hour: "2-digit", minute: "2-digit" }),
+                    };
+                } else {
+                    const sentAt = new Date(msg.sentAt);
+                    acc[otherUserId].lastMessage = msg.content || (msg.imageUrls ? "Đã gửi hình ảnh" : "");
+                    acc[otherUserId].timestamp = sentAt.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" });
+                    acc[otherUserId].lastSeen = userData.status === "online" ? "Đang hoạt động" : sentAt.toLocaleTimeString("vi-VN", {
+                        hour: "2-digit", minute: "2-digit" });
+                    if (!msg.isRead && msg.sender.id !== userId) {
+                        acc[otherUserId].unreadCount += 1;
+                    }
+                }
+                return acc;
+            }, {});
 
-  return (
-    <div>
-      <div className="messages-container">
-        <div className="conversations-panel">
-          <div className="conversations-header">
-            <h3>Tin nhắn</h3>
-            <SearchBox
-              value={searchTerm}
-              onChange={setSearchTerm}
-              placeholder="Tìm cuộc trò chuyện..."
-            />
-          </div>
+            const conversationsList = Object.values(conversationsMap);
+            setConversations(conversationsList);
 
-          <div className="conversation-tabs">
-            <button
-              className={`tab-btn ${activeTab === "all" ? "active" : ""}`}
-              onClick={() => setActiveTab("all")}
-            >
-              Tất cả ({filteredConversations.length})
-            </button>
-            <button
-              className={`tab-btn ${activeTab === "customers" ? "active" : ""}`}
-              onClick={() => setActiveTab("customers")}
-            >
-              Khách hàng (
-              {
-                filteredConversations.filter((c) => c.type === "customer")
-                  .length
-              }
-              )
-            </button>
-            <button
-              className={`tab-btn ${activeTab === "staff" ? "active" : ""}`}
-              onClick={() => setActiveTab("staff")}
-            >
-              Nhân viên (
-              {filteredConversations.filter((c) => c.type === "staff").length})
-            </button>
-            <button
-              className={`tab-btn ${activeTab === "groups" ? "active" : ""}`}
-              onClick={() => setActiveTab("groups")}
-            >
-              Nhóm (
-              {filteredConversations.filter((c) => c.type === "group").length})
-            </button>
-          </div>
+            const messagesByConversation = messages.reduce((acc, msg) => {
+                const convId = msg.sender.id === userId ? msg.receiver.id.toString() : msg.sender.id.toString();
+                if (!acc[convId]) acc[convId] = [];
+                acc[convId].push({
+                    id: msg.id.toString(),
+                    content: msg.content,
+                    imageUrls: msg.imageUrls ? msg.imageUrls.split(";").filter(url => url.trim() !== "") : [],
+                    timestamp: new Date(msg.sentAt).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" }),
+                    sender: msg.sender.id === userId ? "admin" : "user",
+                    status: msg.isRead ? "read" : msg.sender.id === userId ? "sent" : "delivered",
+                });
+                return acc;
+            }, {});
+            setMessages(messagesByConversation);
 
-          <div className="conversations-list">
-            {getConversationsByTab().map((conversation) => (
-              <div
-                key={conversation.id}
-                className={`conversation-item ${selectedConversation === conversation.id ? "active" : ""
-                  }`}
-                onClick={() => handleConversationSelect(conversation.id)}
-              >
-                <div className="conversation-avatar">
-                  <img
-                    src={conversation.avatar || "/placeholder.svg"}
-                    alt={conversation.name}
-                  />
-                  <div
-                    className="status-indicator"
-                    style={{
-                      backgroundColor: getStatusColor(conversation.status),
-                    }}
-                  ></div>
+            if (conversationsList.length > 0 && !selectedConversation) {
+                setSelectedConversation(conversationsList[0].id);
+            }
+        } catch (error) {
+            console.error("Error fetching conversations:", error);
+        }
+    };
+
+    const handleNewMessage = (message) => {
+        console.log("Received message:", message);
+        const convId = message.sender.id === userId ? message.receiver.id.toString() : message.sender.id.toString();
+        const sentAt = new Date(message.sentAt);
+        const newMsg = {
+            id: message.id.toString(),
+            content: message.content,
+            imageUrls: message.imageUrls ? message.imageUrls.split(";").filter(url => url.trim() !== "") : [],
+            timestamp: sentAt.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" }),
+            sender: message.sender.id === userId ? "admin" : "user",
+            status: message.isRead ? "read" : message.sender.id === userId ? "sent" : "delivered",
+        };
+
+        setMessages((prev) => ({
+            ...prev,
+            [convId]: [...(prev[convId] || []), newMsg],
+        }));
+
+        setConversations((prev) =>
+            prev.map((conv) =>
+                conv.id === convId
+                    ? {
+                        ...conv,
+                        lastMessage: message.content || (message.imageUrls ? "Đã gửi hình ảnh" : ""),
+                        timestamp: sentAt.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" }),
+                        lastSeen: conv.status === "online" ? "Đang hoạt động" : sentAt.toLocaleTimeString("vi-VN", {
+                            hour: "2-digit", minute: "2-digit" }),
+                        unreadCount: message.isRead || message.sender.id === userId ? conv.unreadCount : conv.unreadCount + 1,
+                    }
+                    : conv
+            )
+        );
+    };
+
+    const handleMessageRead = (message) => {
+        const convId = message.sender.id === userId ? message.receiver.id.toString() : message.sender.id.toString();
+        setMessages((prev) => ({
+            ...prev,
+            [convId]: (prev[convId] || []).map((msg) =>
+                msg.id === message.id.toString() ? { ...msg, status: "read" } : msg
+            ),
+        }));
+    };
+
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
+
+    useEffect(() => {
+        scrollToBottom();
+    }, [messages, selectedConversation]);
+
+    const handleFileChange = (e) => {
+        const files = Array.from(e.target.files);
+        if (files.length > 0) {
+            setSelectedFiles((prev) => [...prev, ...files]);
+        }
+    };
+
+    const handleSendMessage = async () => {
+        if (!newMessage.trim() && selectedFiles.length === 0) return;
+        if (!selectedConversation || !isConnected) return;
+
+        try {
+            const message = {
+                sender: { id: userId },
+                receiver: { id: parseInt(selectedConversation) },
+                content: newMessage.trim() || "",
+                sentAt: new Date().toISOString(),
+                isRead: false,
+            };
+
+            const formData = new FormData();
+            formData.append("message", JSON.stringify(message));
+            selectedFiles.forEach((file) => formData.append("images", file));
+
+            const savedMessage = await webSocketService.sendMessage(formData);
+            console.log("Saved message:", savedMessage);
+            if (stompClient.current?.active) {
+                const wsMessage = {
+                    id: savedMessage.id,
+                    sender: { id: savedMessage.sender.id },
+                    receiver: { id: savedMessage.receiver.id },
+                    content: savedMessage.content,
+                    imageUrls: savedMessage.imageUrls,
+                    sentAt: savedMessage.sentAt,
+                    isRead: savedMessage.isRead,
+                };
+                stompClient.current.publish({
+                    destination: "/app/chat",
+                    body: JSON.stringify(wsMessage),
+                    headers: { "content-type": "application/json" },
+                });
+            }
+            setNewMessage("");
+            setSelectedFiles([]);
+            setShowEmojiPicker(false);
+            handleNewMessage(savedMessage);
+        } catch (error) {
+            console.error("Error sending message:", error);
+        }
+    };
+
+    const markAsRead = async (conversationId) => {
+        const unreadMessages = (messages[conversationId] || []).filter(
+            (msg) => msg.sender === "user" && msg.status !== "read"
+        );
+        for (const msg of unreadMessages) {
+            try {
+                const updatedMessage = await webSocketService.markMessageAsRead(parseInt(msg.id));
+                if (stompClient.current?.active) {
+                    const wsMessage = {
+                        id: updatedMessage.id,
+                        sender: { id: updatedMessage.sender.id },
+                        receiver: { id: updatedMessage.receiver.id },
+                        content: updatedMessage.content,
+                        imageUrls: updatedMessage.imageUrls,
+                        sentAt: updatedMessage.sentAt,
+                        isRead: updatedMessage.isRead,
+                    };
+                    stompClient.current.publish({
+                        destination: "/app/chat.read",
+                        body: JSON.stringify(wsMessage),
+                        headers: { "content-type": "application/json" },
+                    });
+                }
+            } catch (error) {
+                console.error("Error marking message as read:", error);
+            }
+        }
+
+        setConversations((prev) =>
+            prev.map((conv) =>
+                conv.id === conversationId ? { ...conv, unreadCount: 0 } : conv
+            )
+        );
+    };
+
+    const handleConversationSelect = (conversationId) => {
+        setSelectedConversation(conversationId);
+        markAsRead(conversationId);
+    };
+
+    const handleEmojiClick = (emoji) => {
+        setNewMessage((prev) => prev + emoji);
+        setShowEmojiPicker(false);
+    };
+
+    const getFullUrl = (url) => {
+        if (!url || url.trim() === "") {
+            console.log("Image URL is null or empty, using fallback:", fallbackImage);
+            return fallbackImage;
+        }
+        return url.startsWith("http") ? url : `${baseUrl}${url.replace("/Uploads", "/images")}`;
+    };
+
+    const handleImageClick = (url) => {
+        const fullUrl = getFullUrl(url);
+        console.log("Clicked image URL:", fullUrl);
+        setSelectedImage(fullUrl);
+        setZoomLevel(1);
+    };
+
+    const handlePreviewImageClick = (file) => {
+        const previewUrl = URL.createObjectURL(file);
+        console.log("Clicked preview image URL:", previewUrl);
+        setSelectedImage(previewUrl);
+        setZoomLevel(1);
+    };
+
+    const handleCloseModal = () => {
+        setSelectedImage(null);
+        setZoomLevel(1);
+    };
+
+    const handleZoomIn = () => {
+        setZoomLevel((prev) => Math.min(prev + 0.2, 3));
+    };
+
+    const handleZoomOut = () => {
+        setZoomLevel((prev) => Math.max(prev - 0.2, 0.5));
+    };
+
+    useEffect(() => {
+        const handleWheel = (e) => {
+            e.preventDefault();
+            const delta = e.deltaY > 0 ? -0.1 : 0.1;
+            setZoomLevel((prev) => Math.min(Math.max(prev + delta, 0.5), 3));
+        };
+
+        const imageContainer = imageContainerRef.current;
+        if (selectedImage && imageContainer) {
+            imageContainer.addEventListener("wheel", handleWheel, { passive: false });
+        }
+
+        return () => {
+            if (imageContainer) {
+                imageContainer.removeEventListener("wheel", handleWheel);
+            }
+        };
+    }, [selectedImage]);
+
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (e.key === "Escape") handleCloseModal();
+        };
+        if (selectedImage) {
+            window.addEventListener("keydown", handleKeyDown);
+        }
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [selectedImage]);
+
+    const selectedConv = conversations.find((conv) => conv.id === selectedConversation);
+    const currentMessages = messages[selectedConversation] || [];
+
+    return (
+        <div className="messages-container">
+            <div className="conversations-panel">
+                <div className="conversations-header">
+                    <h3>Tin nhắn</h3>
+                    <SearchBox
+                        value={searchTerm}
+                        onChange={setSearchTerm}
+                        placeholder="Tìm cuộc trò chuyện..."
+                    />
                 </div>
-                <div className="conversation-content">
-                  <div className="conversation-header">
-                    <h4 className="conversation-name">{conversation.name}</h4>
-                    <span className="conversation-time">
-                      {conversation.timestamp}
-                    </span>
-                  </div>
-                  <div className="conversation-preview">
-                    <p className="last-message">{conversation.lastMessage}</p>
-                    {conversation.unreadCount > 0 && (
-                      <span className="unread-badge">
-                        {conversation.unreadCount}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="chat-panel">
-          {selectedConv ? (
-            <>
-              <div className="chat-header">
-                <div className="chat-user-info">
-                  <img
-                    src={selectedConv.avatar || "/placeholder.svg"}
-                    alt={selectedConv.name}
-                    className="chat-avatar"
-                  />
-                  <div>
-                    <h4 className="chat-user-name">{selectedConv.name}</h4>
-                    <span className={`chat-user-status ${selectedConv.status}`}>
-                      {selectedConv.lastSeen}
-                    </span>
-                  </div>
-                </div>
-                <div className="chat-actions">
-                  <button className="btn btn-icon" title="Gọi điện">
-                    <Phone size={18} />
-                  </button>
-                  <button className="btn btn-icon" title="Video call">
-                    <Video size={18} />
-                  </button>
-                  <button className="btn btn-icon" title="Tìm kiếm">
-                    <Search size={18} />
-                  </button>
-                  <button className="btn btn-icon" title="Thêm">
-                    <MoreVertical size={18} />
-                  </button>
-                </div>
-              </div>
-
-              <div className="chat-messages">
-                {currentMessages.map((message) => (
-                  <div
-                    key={message.id}
-                    className={`message ${message.sender === "admin" ? "sent" : "received"
-                      }`}
-                  >
-                    <div className="message-content">
-                      {message.type === "image" ? (
-                        <div className="message-image">
-                          <ImageIcon
-                            src={message.fileUrl || "/placeholder.svg"}
-                            alt={message.content}
-                          />
-                          <p>{message.content}</p>
+                <div className="conversations-list">
+                    {conversations.filter((conv) => conv.name.toLowerCase().includes(searchTerm.toLowerCase())).map((conversation) => (
+                        <div
+                            key={conversation.id}
+                            className={`conversation-item ${selectedConversation === conversation.id ? "active" : ""}`}
+                            onClick={() => handleConversationSelect(conversation.id)}
+                        >
+                            <div className="conversation-avatar">
+                                <img src={getAvatarUrl(conversation.avatar)} alt={conversation.name} />
+                                <div className="status-indicator" style={{ backgroundColor: getStatusColor(conversation.status) }}></div>
+                            </div>
+                            <div className="conversation-content">
+                                <div className="conversation-header">
+                                    <h4 className="conversation-name">{conversation.name}</h4>
+                                    <span className="conversation-time">{conversation.lastSeen}</span>
+                                </div>
+                                <div className="conversation-preview">
+                                    <p className="last-message">{conversation.lastMessage}</p>
+                                    {conversation.unreadCount > 0 && (
+                                        <span className="unread-badge">{conversation.unreadCount}</span>
+                                    )}
+                                </div>
+                            </div>
                         </div>
-                      ) : message.type === "file" ? (
-                        <div className="message-file">
-                          <File size={20} />
-                          <div>
-                            <p>{message.content}</p>
-                            <span className="file-size">
-                              {message.fileSize}
-                            </span>
-                          </div>
-                        </div>
-                      ) : (
-                        <p>{message.content}</p>
-                      )}
-                      <div className="message-meta">
-                        <span className="message-time">
-                          {message.timestamp}
-                        </span>
-                        {message.sender === "admin" && (
-                          <span className="message-status">
-                            {message.status === "sent" && <Check size={14} />}
-                            {message.status === "delivered" && (
-                              <CheckCheck size={14} />
-                            )}
-                            {message.status === "read" && (
-                              <CheckCheck size={14} className="read" />
-                            )}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                {isTyping && (
-                  <div className="message received">
-                    <div className="message-content typing">
-                      <div className="typing-indicator">
-                        <span></span>
-                        <span></span>
-                        <span></span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                <div ref={messagesEndRef} />
-              </div>
-
-              <div className="chat-input">
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleFileUpload}
-                  style={{ display: "none" }}
-                  accept="image/*,.pdf,.doc,.docx,.txt"
-                />
-                <button
-                  className="btn btn-icon"
-                  onClick={() => fileInputRef.current?.click()}
-                  title="Đính kèm file"
-                >
-                  <Paperclip size={18} />
-                </button>
-                <div className="input-container">
-                  <input
-                    type="text"
-                    placeholder="Nhập tin nhắn..."
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-                  />
-                  <div className="emoji-picker-container">
-                    <button
-                      className="btn btn-icon"
-                      onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                      title="Emoji"
-                    >
-                      <Smile size={18} />
-                    </button>
-                    {showEmojiPicker && (
-                      <div className="emoji-picker">
-                        {emojis.map((emoji, index) => (
-                          <button
-                            key={index}
-                            className="emoji-btn"
-                            onClick={() => handleEmojiClick(emoji)}
-                          >
-                            {emoji}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                    ))}
                 </div>
-                <button
-                  className="btn btn-primary"
-                  onClick={handleSendMessage}
-                  disabled={!newMessage.trim()}
-                  title="Gửi tin nhắn"
-                >
-                  <Send size={18} />
-                </button>
-              </div>
-            </>
-          ) : (
-            <div className="no-conversation">
-              <MessageSquare size={64} />
-              <h3>Chọn một cuộc trò chuyện</h3>
-              <p>Chọn một cuộc trò chuyện từ danh sách để bắt đầu nhắn tin</p>
             </div>
-          )}
+
+            <div className="chat-panel">
+                {selectedConv ? (
+                    <>
+                        <div className="chat-header">
+                            <div className="chat-user-info">
+                                <img
+                                    src={getAvatarUrl(selectedConv.avatar)}
+                                    alt={selectedConv.name}
+                                    className="chat-avatar"
+                                />
+                                <div>
+                                    <h4 className="chat-user-name">{selectedConv.name}</h4>
+                                    <span className={`chat-user-status ${selectedConv.status}`}>
+                                        {selectedConv.lastSeen}
+                                    </span>
+                                </div>
+                            </div>
+                            <div className="chat-actions">
+                                <button className="btn btn-icon" title="Gọi điện">
+                                    <Phone size={18} />
+                                </button>
+                                <button className="btn btn-icon" title="Video call">
+                                    <Video size={18} />
+                                </button>
+                                <button className="btn btn-icon" title="Tìm kiếm">
+                                    <Search size={18} />
+                                </button>
+                                <button className="btn btn-icon" title="Thêm">
+                                    <MoreVertical size={18} />
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="chat-messages">
+                            {currentMessages.map((message) => (
+                                <div
+                                    key={message.id}
+                                    className={`message ${message.sender === "admin" ? "sent" : "received"}`}
+                                >
+                                    <div className="message-content">
+                                        {message.imageUrls && message.imageUrls.length > 0 && (
+                                            <div className="image-grid">
+                                                {message.imageUrls.map((url, index) => (
+                                                    <div key={index} className="message-image-wrapper">
+                                                        <img
+                                                            src={getFullUrl(url)}
+                                                            alt="Message attachment"
+                                                            className="message-image"
+                                                            onClick={() => handleImageClick(url)}
+                                                            onError={(e) => {
+                                                                console.error("Image failed to load:", url);
+                                                                e.target.src = fallbackImage;
+                                                            }}
+                                                        />
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                        {message.content && <p>{message.content}</p>}
+                                    </div>
+                                    <div className="message-meta">
+                                        <span className="message-time">{message.timestamp}</span>
+                                        {message.sender === "admin" && (
+                                            <span className="message-status">
+                                                {message.status === "sent" && <Check size={14} />}
+                                                {message.status === "delivered" && <CheckCheck size={14} />}
+                                                {message.status === "read" && <CheckCheck size={14} className="read" />}
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                            {isTyping && (
+                                <div className="message received">
+                                    <div className="message-content typing">
+                                        <div className="typing-indicator">
+                                            <span></span>
+                                            <span></span>
+                                            <span></span>
+                                        </div>
+                                    </div>
+                                    <div className="message-meta">
+                                        <span className="message-time"></span>
+                                    </div>
+                                </div>
+                            )}
+                            <div ref={messagesEndRef} />
+                        </div>
+
+                        <div className="chat-input">
+                            <div className="input-container">
+                                <input
+                                    type="text"
+                                    placeholder="Nhập tin nhắn..."
+                                    value={newMessage}
+                                    onChange={(e) => setNewMessage(e.target.value)}
+                                    onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+                                />
+                                <div className="emoji-picker-container">
+                                    <button
+                                        className="btn btn-icon"
+                                        onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                                        title="Emoji"
+                                    >
+                                        <Smile size={18} />
+                                    </button>
+                                    {showEmojiPicker && (
+                                        <div className="emoji-picker">
+                                            {emojis.map((emoji, index) => (
+                                                <button
+                                                    key={index}
+                                                    className="emoji-btn"
+                                                    onClick={() => handleEmojiClick(emoji)}
+                                                >
+                                                    {emoji}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                                <input
+                                    type="file"
+                                    ref={fileInputRef}
+                                    style={{ display: "none" }}
+                                    onChange={handleFileChange}
+                                    multiple
+                                    accept="image/*"
+                                />
+                                <button
+                                    className="btn btn-icon"
+                                    onClick={() => fileInputRef.current.click()}
+                                    title="Gửi hình ảnh"
+                                >
+                                    <ImageIcon size={18} />
+                                </button>
+                            </div>
+                            <button
+                                className="btn btn-primary"
+                                onClick={handleSendMessage}
+                                disabled={(!newMessage.trim() && selectedFiles.length === 0) || !isConnected}
+                                title="Gửi tin nhắn"
+                            >
+                                <Send size={18} />
+                            </button>
+                        </div>
+                        {selectedFiles.length > 0 && (
+                            <div className="selected-files-preview">
+                                {selectedFiles.map((file, index) => (
+                                    <div key={index} className="file-preview">
+                                        <img
+                                            src={URL.createObjectURL(file)}
+                                            alt="Preview"
+                                            className="file-preview-image"
+                                            onClick={() => handlePreviewImageClick(file)}
+                                        />
+                                        <button
+                                            className="file-remove"
+                                            onClick={() => setSelectedFiles(prev => prev.filter((_, i) => i !== index))}
+                                        >
+                                            ×
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </>
+                ) : (
+                    <div className="no-conversation">
+                        <MessageSquare size={64} />
+                        <h3>Chọn một cuộc trò chuyện</h3>
+                        <p>Chọn một cuộc trò chuyện từ danh sách để bắt đầu nhắn tin</p>
+                    </div>
+                )}
+            </div>
+
+            {selectedImage && (
+                <div className="stm-modal-overlay" onClick={handleCloseModal}>
+                    <div className="stm-image-modal" onClick={(e) => e.stopPropagation()}>
+                        <button className="stm-image-modal-close" onClick={handleCloseModal}>
+                            <X size={24} />
+                        </button>
+                        <div className="stm-image-modal-content" ref={imageContainerRef}>
+                            <img
+                                src={selectedImage}
+                                alt="Zoomed message image"
+                                style={{ transform: `scale(${zoomLevel})`, transition: "transform 0.2s" }}
+                                onError={(e) => {
+                                    console.error("Modal image failed to load:", selectedImage);
+                                    e.target.src = fallbackImage;
+                                }}
+                            />
+                        </div>
+                        <div className="stm-image-modal-controls">
+                            <button onClick={handleZoomIn} disabled={zoomLevel >= 3}>
+                                <ZoomIn size={20} />
+                            </button>
+                            <button onClick={handleZoomOut} disabled={zoomLevel <= 0.5}>
+                                <ZoomOut size={20} />
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default MessagesPage;
