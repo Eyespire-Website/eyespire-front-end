@@ -169,7 +169,8 @@ export default function CartPage() {
       // Tạo đơn hàng từ giỏ hàng
       const orderData = {
         userId: user.id,
-        shippingAddress: shippingAddress
+        shippingAddress: shippingAddress,
+        shippingFee: shippingFee
       };
       
       const order = await orderService.createOrder(orderData);
@@ -177,6 +178,7 @@ export default function CartPage() {
       // Tạo thanh toán PayOS
       const paymentData = {
         orderId: order.id,
+        userId: user.id,
         amount: order.totalAmount,
         description: `Thanh toán đơn hàng #${order.id}`,
         returnUrl: `${window.location.origin}/payment/order-return`
@@ -238,141 +240,148 @@ export default function CartPage() {
           </div>
         ) : (
           <div className="crt-cart-content">
-            <div className="crt-cart-items">
-              <div className="crt-cart-header-row">
-                <div className="crt-cart-header-product">Sản phẩm</div>
-                <div className="crt-cart-header-price">Đơn giá</div>
-                <div className="crt-cart-header-quantity">Số lượng</div>
-                <div className="crt-cart-header-total">Thành tiền</div>
-                <div className="crt-cart-header-actions">Thao tác</div>
-              </div>
-              
-              {cart.items.map((item, index) => (
-                <div key={item.id || `cart-item-${index}`} className="crt-cart-item">
-                  <div className="crt-cart-item-product">
-                    <img 
-                      src={getImageUrl(item)} 
-                      alt={item.productName || item.name} 
-                      className="crt-cart-item-image"
-                      onError={(e) => {
-                        console.log('[CART IMAGE ERROR] Failed to load image for', item.productName || item.name, ':', e.target.src);
-                        e.target.src = "/placeholder.svg";
-                      }}
-                    />
-                    <div className="crt-cart-item-details">
-                      <Link to={`/product/${item.productId}`} className="crt-cart-item-name">
-                        {item.productName || item.name}
-                      </Link>
-                      {item.color && (
-                        <div className="crt-cart-item-color">
-                          <span>Màu: </span>
-                          <span 
-                            className="crt-color-dot" 
-                            style={{ backgroundColor: item.color.color }}
-                            title={item.color.name}
-                          ></span>
-                          <span>{item.color.name}</span>
-                        </div>
-                      )}
+            {/* Left side: Products and Checkout Summary */}
+            <div className="crt-cart-left">
+              <div className="crt-cart-items">
+                <div className="crt-cart-header-row">
+                  <div className="crt-cart-header-product">Sản phẩm</div>
+                  <div className="crt-cart-header-price">Đơn giá</div>
+                  <div className="crt-cart-header-quantity">Số lượng</div>
+                  <div className="crt-cart-header-total">Thành tiền</div>
+                  <div className="crt-cart-header-actions">Thao tác</div>
+                </div>
+                
+                {cart.items.map((item, index) => (
+                  <div key={item.id || `cart-item-${index}`} className="crt-cart-item">
+                    <div className="crt-cart-item-product">
+                      <img 
+                        src={getImageUrl(item)} 
+                        alt={item.productName || item.name} 
+                        className="crt-cart-item-image"
+                        onError={(e) => {
+                          console.log('[CART IMAGE ERROR] Failed to load image for', item.productName || item.name, ':', e.target.src);
+                          e.target.src = "/placeholder.svg";
+                        }}
+                      />
+                      <div className="crt-cart-item-details">
+                        <Link to={`/product/${item.productId}`} className="crt-cart-item-name">
+                          {item.productName || item.name}
+                        </Link>
+                        {item.color && (
+                          <div className="crt-cart-item-color">
+                            <span>Màu: </span>
+                            <span 
+                              className="crt-color-dot" 
+                              style={{ backgroundColor: item.color.color }}
+                              title={item.color.name}
+                            ></span>
+                            <span>{item.color.name}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="crt-cart-item-price">{item.price}₫</div>
+                    
+                    <div className="crt-cart-item-quantity">
+                      <button 
+                        className="crt-quantity-btn"
+                        onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
+                        disabled={item.quantity <= 1 || isProcessing}
+                      >
+                        <FaMinus />
+                      </button>
+                      <input
+                        type="number"
+                        min="1"
+                        value={item.quantity}
+                        onChange={(e) => handleUpdateQuantity(item.id, parseInt(e.target.value) || 1)}
+                        className="crt-quantity-input"
+                        disabled={isProcessing}
+                      />
+                      <button 
+                        className="crt-quantity-btn"
+                        onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
+                        disabled={isProcessing}
+                      >
+                        <FaPlus />
+                      </button>
+                    </div>
+                    
+                    <div className="crt-cart-item-total">
+                      {(item.price * item.quantity).toFixed(2)}₫
+                    </div>
+                    
+                    <div className="crt-cart-item-actions">
+                      <button 
+                        className="crt-remove-item-btn"
+                        onClick={() => handleRemoveItem(item.id)}
+                        title="Xóa sản phẩm"
+                        disabled={isProcessing}
+                      >
+                        <FaTrash />
+                      </button>
                     </div>
                   </div>
-                  
-                  <div className="crt-cart-item-price">${item.price}</div>
-                  
-                  <div className="crt-cart-item-quantity">
-                    <button 
-                      className="crt-quantity-btn"
-                      onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
-                      disabled={item.quantity <= 1 || isProcessing}
-                    >
-                      <FaMinus />
-                    </button>
-                    <input
-                      type="number"
-                      min="1"
-                      value={item.quantity}
-                      onChange={(e) => handleUpdateQuantity(item.id, parseInt(e.target.value) || 1)}
-                      className="crt-quantity-input"
-                      disabled={isProcessing}
-                    />
-                    <button 
-                      className="crt-quantity-btn"
-                      onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
-                      disabled={isProcessing}
-                    >
-                      <FaPlus />
-                    </button>
-                  </div>
-                  
-                  <div className="crt-cart-item-total">
-                    ${(item.price * item.quantity).toFixed(2)}
-                  </div>
-                  
-                  <div className="crt-cart-item-actions">
-                    <button 
-                      className="crt-remove-item-btn"
-                      onClick={() => handleRemoveItem(item.id)}
-                      title="Xóa sản phẩm"
-                      disabled={isProcessing}
-                    >
-                      <FaTrash />
-                    </button>
-                  </div>
+                ))}
+              </div>
+              
+              {/* Checkout Summary */}
+              <div className="crt-checkout-summary">
+                <h2 className="crt-summary-title">Tóm tắt đơn hàng</h2>
+                
+                <div className="crt-summary-row">
+                  <span>Tổng sản phẩm:</span>
+                  <span>{cart.totalItems}</span>
                 </div>
-              ))}
+                
+                <div className="crt-summary-row">
+                  <span>Tạm tính:</span>
+                  <span>{cart.totalPrice.toLocaleString('vi-VN')} VND</span>
+                </div>
+                
+                <div className="crt-summary-row crt-shipping">
+                  <span>Phí vận chuyển:</span>
+                  <span>{shippingFee > 0 ? `${shippingFee.toLocaleString('vi-VN')} VND` : 'Chưa tính'}</span>
+                </div>
+                
+                <div className="crt-summary-row crt-total">
+                  <span>Tổng cộng:</span>
+                  <span>{(cart.totalPrice + shippingFee).toLocaleString('vi-VN')} VND</span>
+                </div>
+                
+                <button 
+                  className="crt-checkout-btn" 
+                  onClick={handleCheckout}
+                  disabled={isProcessing}
+                >
+                  {isProcessing ? "Đang xử lý..." : "Tiến hành thanh toán"}
+                </button>
+                
+                <Link to="/shop" className="crt-continue-shopping-link">
+                  Tiếp tục mua sắm
+                </Link>
+                
+                <button 
+                  className="crt-clear-cart-btn" 
+                  onClick={handleClearCart}
+                  disabled={isProcessing}
+                >
+                  {isProcessing ? "Đang xử lý..." : "Xóa giỏ hàng"}
+                </button>
+              </div>
             </div>
             
-            <div className="crt-cart-summary">
-              <h2 className="crt-summary-title">Tóm tắt đơn hàng</h2>
-              
-              {/* Address Selector */}
+            {/* Right side: Address Selector with Map */}
+            <div className="crt-cart-right">
               <div className="crt-address-section">
+                <h3 className="crt-address-title">Địa chỉ giao hàng</h3>
                 <AddressSelector
                   onAddressSelect={handleAddressSelect}
                   onDistanceCalculated={handleDistanceCalculated}
                   defaultAddress={shippingAddress}
                 />
               </div>
-              
-              <div className="crt-summary-row">
-                <span>Tổng sản phẩm:</span>
-                <span>{cart.totalItems}</span>
-              </div>
-              
-              <div className="crt-summary-row">
-                <span>Tạm tính:</span>
-                <span>{cart.totalPrice.toLocaleString('vi-VN')} VND</span>
-              </div>
-              
-              <div className="crt-summary-row crt-shipping">
-                <span>Phí vận chuyển:</span>
-                <span>{shippingFee > 0 ? `${shippingFee.toLocaleString('vi-VN')} VND` : 'Chưa tính'}</span>
-              </div>
-              
-              <div className="crt-summary-row crt-total">
-                <span>Tổng cộng:</span>
-                <span>{(cart.totalPrice + (shippingFee / 25000)).toLocaleString('vi-VN')} VND</span>
-              </div>
-              
-              <button 
-                className="crt-checkout-btn" 
-                onClick={handleCheckout}
-                disabled={isProcessing}
-              >
-                {isProcessing ? "Đang xử lý..." : "Tiến hành thanh toán"}
-              </button>
-              
-              <Link to="/shop" className="crt-continue-shopping-link">
-                Tiếp tục mua sắm
-              </Link>
-              
-              <button 
-                className="crt-clear-cart-btn" 
-                onClick={handleClearCart}
-                disabled={isProcessing}
-              >
-                {isProcessing ? "Đang xử lý..." : "Xóa giỏ hàng"}
-              </button>
             </div>
           </div>
         )}

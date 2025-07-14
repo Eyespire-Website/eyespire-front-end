@@ -290,6 +290,46 @@ class OrderService {
     }
 
     /**
+     * Tạo thanh toán PayOS
+     * @param {Object} paymentData Dữ liệu thanh toán
+     * @returns {Promise<Object>} Thông tin thanh toán PayOS
+     */
+    async createPayOSPayment(paymentData) {
+        try {
+            const token = authService.getToken();
+            const response = await axios.post(`${API_URL}/orders/payment/payos`, paymentData, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+            });
+            return response.data;
+        } catch (error) {
+            throw new Error(error.response?.data?.message || 'Lỗi khi tạo thanh toán PayOS. Vui lòng thử lại.');
+        }
+    }
+
+    /**
+     * Xác thực thanh toán PayOS cho đơn hàng
+     * @param {Object} verifyData Dữ liệu xác thực từ PayOS callback
+     * @returns {Promise<Object>} Kết quả xác thực
+     */
+    async verifyPayOSPayment(verifyData) {
+        try {
+            const token = authService.getToken();
+            const response = await axios.post(`${API_URL}/orders/payment/payos/verify`, verifyData, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+            });
+            return response.data;
+        } catch (error) {
+            throw new Error(error.response?.data?.message || 'Lỗi khi xác thực thanh toán PayOS. Vui lòng thử lại.');
+        }
+    }
+
+    /**
      * Format số tiền thành định dạng tiền tệ VND
      * @param {number} amount - Số tiền
      * @returns {string} - Chuỗi tiền tệ đã format

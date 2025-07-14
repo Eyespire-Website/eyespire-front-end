@@ -51,8 +51,8 @@ export default function ProductInfo({
 
       {/* Price */}
       <div className="pi-price-section">
+      <span className="pi-current-price">{product.price}₫</span>
         {product.originalPrice && <span className="pi-original-price">${product.originalPrice}</span>}
-        <span className="pi-current-price">${product.price}</span>
       </div>
 
       {/* Quantity */}
