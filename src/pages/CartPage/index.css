@@ -52,7 +52,15 @@
 /* Cart Content */
 .crt-cart-content {
   display: grid;
-  grid-template-columns: 1fr 350px;
+  grid-template-columns: 2fr 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+/* Left Column: Products + Checkout */
+.crt-cart-left {
+  display: flex;
+  flex-direction: column;
   gap: 2rem;
 }
 
@@ -188,20 +196,34 @@
   background-color: rgba(220, 53, 69, 0.1);
 }
 
-/* Cart Summary */
-.crt-cart-summary {
+/* Checkout Summary (moved to left column) */
+.crt-checkout-summary {
   background: white;
   border-radius: 8px;
   padding: 24px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  height: fit-content;
+}
+
+/* Right Column: Address & Map */
+.crt-cart-right {
   position: sticky;
   top: 100px;
+  height: fit-content;
 }
 
 .crt-address-section {
-  margin-bottom: 20px;
-  padding-bottom: 20px;
+  background: white;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.crt-address-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 0 0 1.5rem 0;
+  color: #333;
+  padding-bottom: 1rem;
   border-bottom: 1px solid #e9ecef;
 }
 
@@ -376,7 +398,7 @@ button:disabled {
     grid-template-columns: 1fr;
   }
   
-  .crt-cart-summary {
+  .crt-cart-right {
     position: static;
     margin-top: 2rem;
   }

@@ -7,21 +7,21 @@ const Products = () => {
     {
       id: 1,
       name: "Glasses RX 6462 (2502)",
-      price: "$120.00",
+      price: "2.800.000₫",
       imageUrl: "https://storage.googleapis.com/tagjs-prod.appspot.com/v1/VY3PPTks6o/jormflwm_expires_30_days.png",
       isSale: true
     },
     {
       id: 2,
       name: "Sunglasses Classic",
-      price: "$95.00",
+      price: "2.200.000₫",
       imageUrl: "https://storage.googleapis.com/tagjs-prod.appspot.com/v1/VY3PPTks6o/jormflwm_expires_30_days.png",
       isSale: false
     },
     {
       id: 3,
       name: "Contact Lenses Monthly",
-      price: "$65.00",
+      price: "1.500.000₫",
       imageUrl: "https://storage.googleapis.com/tagjs-prod.appspot.com/v1/VY3PPTks6o/jormflwm_expires_30_days.png",
       isSale: false
     }
