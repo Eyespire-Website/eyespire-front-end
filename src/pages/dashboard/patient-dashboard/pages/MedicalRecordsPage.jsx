@@ -74,9 +74,14 @@ export default function MedicalRecordsPage() {
                 // Xử lý chẩn đoán
                 const diagnosis = record.diagnosis || "Chưa có chẩn đoán";
                 
-                // Xử lý dịch vụ y tế từ cuộc hẹn
+                // Xử lý dịch vụ y tế từ cuộc hẹn (hỗ trợ nhiều dịch vụ)
                 let serviceName = "Khám mắt";
-                if (record.appointment && record.appointment.service) {
+                if (record.appointment && record.appointment.services && record.appointment.services.length > 0) {
+                    // Nếu có nhiều dịch vụ, hiển thị tất cả
+                    const serviceNames = record.appointment.services.map(service => service.name).filter(name => name);
+                    serviceName = serviceNames.length > 0 ? serviceNames.join(", ") : "Khám mắt";
+                } else if (record.appointment && record.appointment.service) {
+                    // Fallback cho trường hợp chỉ có một dịch vụ (backward compatibility)
                     serviceName = record.appointment.service.name || "Khám mắt";
                 }
                 
@@ -165,6 +170,44 @@ export default function MedicalRecordsPage() {
         navigate(route);
     };
 
+    // Hàm render nhiều dịch vụ với UI đẹp
+    const renderServices = (serviceName) => {
+        if (!serviceName) return "Khám mắt";
+        
+        // Nếu có dấu phẩy, nghĩa là có nhiều dịch vụ
+        if (serviceName.includes(",")) {
+            const services = serviceName.split(",").map(s => s.trim()).filter(s => s);
+            
+            // Nếu có nhiều hơn 2 dịch vụ, hiển thị 2 dịch vụ đầu + tooltip
+            if (services.length > 2) {
+                return (
+                    <div className="services-tooltip">
+                        <div className="services-list">
+                            <span className="service-tag">{services[0]}</span>
+                            <span className="service-tag">{services[1]}</span>
+                            <span className="services-count">+{services.length - 2}</span>
+                        </div>
+                        <div className="tooltip-content">
+                            {services.join(", ")}
+                        </div>
+                    </div>
+                );
+            } else {
+                // Hiển thị tất cả nếu <= 2 dịch vụ
+                return (
+                    <div className="services-list">
+                        {services.map((service, index) => (
+                            <span key={index} className="service-tag">{service}</span>
+                        ))}
+                    </div>
+                );
+            }
+        }
+        
+        // Chỉ có 1 dịch vụ
+        return <span className="service-tag">{serviceName}</span>;
+    };
+
     return (
         <div className="main-content" style={{ margin: 0, width: '100%', boxSizing: 'border-box' }}>
             <ToastContainer position="top-right" autoClose={3000} />
@@ -251,7 +294,7 @@ export default function MedicalRecordsPage() {
                             currentRecords.map((record, index) => (
                                 <tr key={record.id} onClick={() => handleViewDetails(record)}>
                                     <td className="text-center font-medium">{startIndex + index + 1}</td>
-                                    <td className="font-medium">{record.serviceName}</td>
+                                    <td className="font-medium">{renderServices(record.serviceName)}</td>
                                     <td>{record.diagnosis}</td>
                                     <td>{record.doctor}</td>
                                     <td>{record.date}</td>

@@ -124,7 +124,7 @@ export default function ViewAppointmentPage() {
                         id: state.appointmentData.doctor?.id || state.appointmentData.doctorId || "N/A",
                     },
                     services: state.appointmentData.services || [],
-                    notes: state.appointmentData.notes || "Không có ghi chú",
+                    notes: state.appointmentData.notes || "Không có lý do khám",
                     status: state.appointmentData.status || "CONFIRMED",
                     createdAt: state.appointmentData.createdAt || new Date().toISOString(),
                     updatedAt: state.appointmentData.updatedAt || new Date().toISOString(),

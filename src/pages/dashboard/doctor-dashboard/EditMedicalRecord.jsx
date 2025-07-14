@@ -421,7 +421,7 @@ export default function EditMedicalRecord() {
 
             console.log("Sending updatedData to backend:", JSON.stringify(updatedData, null, 2));
 
-            const response = await medicalRecordService.updateMedicalRecord(medicalRecord.id, updatedData);
+            const response = await medicalRecordService.updateMedicalRecordJson(medicalRecord.id, updatedData);
             console.log("Update response:", JSON.stringify(response, null, 2));
 
             if (

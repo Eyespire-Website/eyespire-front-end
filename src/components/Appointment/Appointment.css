@@ -760,3 +760,62 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   background-color: #cccccc;
   cursor: not-allowed;
 }
+
+/* Error Styling for Form Validation */
+.error-message {
+  color: #dc3545;
+  font-size: 12px;
+  margin-top: 4px;
+  display: block;
+  font-weight: 500;
+}
+
+.form-input.error {
+  border-color: #dc3545 !important;
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+}
+
+.form-input:focus.error {
+  border-color: #dc3545 !important;
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+}
+
+/* Form field container for better error display */
+.form-field {
+  position: relative;
+  margin-bottom: 15px;
+}
+
+.form-field .error-message {
+  position: absolute;
+  bottom: -18px;
+  left: 0;
+  width: 100%;
+}
+
+/* Adjust form row spacing when errors are present */
+.form-row:has(.error-message) {
+  margin-bottom: 25px;
+}
+
+/* Toast notification styling adjustments */
+.Toastify__toast--error {
+  background-color: #dc3545;
+}
+
+.Toastify__toast--success {
+  background-color: #28a745;
+}
+
+/* Required field indicator */
+.required-field::after {
+  content: ' *';
+  color: #dc3545;
+  font-weight: bold;
+}
+
+/* Validation success styling */
+.form-input.valid {
+  border-color: #28a745 !important;
+  box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25) !important;
+}

@@ -7,7 +7,8 @@ import {
     HiOutlineUserAdd,
     HiOutlineUserGroup,
     HiOutlineChat,
-    HiOutlineChevronLeft
+    HiOutlineChevronLeft,
+    HiOutlineRefresh
 } from "react-icons/hi";
 import {HiOutlineBars3} from "react-icons/hi2";
 import "../../admin-dashboard/Sidebar/sidebar.css";
@@ -21,6 +22,7 @@ export default function Sidebar({ activeTab, setActiveTab }) {
         { id: "schedule", label: "Lịch làm việc của bác sĩ", icon: <HiOutlineCalendar size={18} /> },
         { id: "appointments", label: "Lịch hẹn khách hàng", icon: <HiOutlineUserGroup size={18} /> },
         { id: "create", label: "Tạo cuộc hẹn", icon: <HiOutlineUserAdd size={18} /> },
+        { id: "refund-management", label: "Quản lý hoàn tiền", icon: <HiOutlineRefresh size={18} /> },
         { id: "messages", label: "Tin nhắn", icon: <HiOutlineChat size={18} /> },
         { id: "profile", label: "Hồ sơ cá nhân", icon: <HiOutlineUser size={18} /> },
     ];

@@ -222,7 +222,7 @@ export default function AppointmentListByCustomer() {
                                 <th className="customer-appointments-detail__table-head">Bác sĩ</th>
                                 <th className="customer-appointments-detail__table-head">Dịch vụ</th>
                                 <th className="customer-appointments-detail__table-head">Trạng thái</th>
-                                <th className="customer-appointments-detail__table-head">Ghi chú</th>
+                                <th className="customer-appointments-detail__table-head">Lý do khám</th>
                             </tr>
                             </thead>
                             <tbody>

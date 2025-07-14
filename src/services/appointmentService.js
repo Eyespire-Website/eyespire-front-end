@@ -104,9 +104,11 @@ const appointmentService = {
   },
 
   // Hủy lịch hẹn
-  cancelAppointment: async (appointmentId) => {
+  cancelAppointment: async (appointmentId, cancellationReason) => {
     try {
-      const response = await axiosInstance.put(`/appointments/${appointmentId}/cancel`);
+      const response = await axiosInstance.put(`/appointments/${appointmentId}/cancel`, {
+        cancellationReason: cancellationReason
+      });
       return response.data;
     } catch (error) {
       console.error('Lỗi khi hủy lịch hẹn:', error);

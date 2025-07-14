@@ -13,6 +13,7 @@ export default function SidebarLayout() {
             "schedule": "schedule",
             "appointments": "appointments",
             "all-appointments": "create",
+            "refund-management": "refund-management",
             "messages": "messages",
             "profile": "profile",
         };
@@ -25,6 +26,7 @@ export default function SidebarLayout() {
             schedule: "schedule",
             appointments: "appointments",
             create: "all-appointments",
+            "refund-management": "refund-management",
             messages: "messages",
             profile: "profile",
         };

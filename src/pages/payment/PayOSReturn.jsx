@@ -41,31 +41,16 @@ const PayOSReturn = () => {
         const result = await paymentService.verifyPayOSReturn(payosParams);
         setPaymentResult(result);
         
-        // Nếu thanh toán thành công, tiến hành đặt lịch
-        if (result.success && result.appointmentData) {
-          try {
-            // Thêm paymentId vào dữ liệu đặt lịch
-            const appointmentDataWithPayment = {
-              ...result.appointmentData,
-              paymentId: result.paymentId
-            };
-            
-            console.log('Dữ liệu đặt lịch với paymentId:', appointmentDataWithPayment);
-            
-            // Gọi API đặt lịch
-            const appointmentResponse = await appointmentService.bookAppointment(appointmentDataWithPayment);
-            setAppointmentData(appointmentResponse);
-            
-            toast.success('Đặt lịch khám thành công!');
-            
-            // Sau 3 giây, chuyển hướng đến trang lịch hẹn
-            setTimeout(() => {
-              navigate('/dashboard/patient/appointments');
-            }, 3000);
-          } catch (error) {
-            console.error('Lỗi khi đặt lịch khám:', error);
-            toast.error('Đặt lịch khám không thành công. Vui lòng liên hệ hỗ trợ.');
-          }
+        // Nếu thanh toán thành công, hiển thị thông báo
+        if (result.success) {
+          toast.success(result.message || 'Đã đặt lịch thành công!');
+          
+          // Sau 3 giây, chuyển hướng đến trang lịch hẹn
+          setTimeout(() => {
+            navigate('/dashboard/patient/appointments');
+          }, 3000);
+        } else {
+          toast.error(result.message || 'Thanh toán không thành công');
         }
       } catch (error) {
         console.error('Lỗi khi xác thực thanh toán:', error);
@@ -81,7 +66,6 @@ const PayOSReturn = () => {
   return (
     <div className="payos-return-container">
       <ToastContainer position="top-right" autoClose={5000} />
-      
       <div className="payos-return-content">
         <div className="payos-return-header">
           <h1>Kết quả thanh toán</h1>
@@ -97,22 +81,12 @@ const PayOSReturn = () => {
             {paymentResult?.success ? (
               <div className="payment-success">
                 <div className="success-icon">✓</div>
-                <h2>Thanh toán thành công!</h2>
+                <h2>{paymentResult.message || 'Đã đặt lịch thành công!'}</h2>
                 <div className="payment-details">
                   <p><strong>Mã giao dịch:</strong> {paymentResult.transactionNo}</p>
                   <p><strong>Số tiền:</strong> {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(paymentResult.amount)}</p>
                   <p><strong>Thời gian:</strong> {new Date(paymentResult.paymentDate).toLocaleString('vi-VN')}</p>
                 </div>
-                
-                {appointmentData && (
-                  <div className="appointment-details">
-                    <h3>Thông tin lịch hẹn</h3>
-                    <p><strong>Bác sĩ:</strong> BS. {appointmentData.doctorName}</p>
-                    <p><strong>Dịch vụ:</strong> {appointmentData.serviceName}</p>
-                    <p><strong>Ngày khám:</strong> {new Date(appointmentData.appointmentDate).toLocaleDateString('vi-VN')}</p>
-                    <p><strong>Giờ khám:</strong> {appointmentData.timeSlot}</p>
-                  </div>
-                )}
                 
                 <p className="redirect-message">Bạn sẽ được chuyển hướng đến trang lịch hẹn sau 3 giây...</p>
               </div>

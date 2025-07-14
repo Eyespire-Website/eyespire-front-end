@@ -61,16 +61,42 @@ export default function AppointmentsPage() {
             
             // Chuyển đổi dữ liệu từ API sang định dạng hiển thị
             const formattedAppointments = data.map(appointment => {
-                const appointmentDate = new Date(appointment.appointmentTime);
+                // Xử lý ngày và giờ hẹn từ appointmentDate và timeSlot
+                let appointmentDateTime;
+                try {
+                    // Kết hợp appointmentDate và timeSlot để tạo datetime hoàn chỉnh
+                    const dateStr = appointment.appointmentDate; // "2025-07-15"
+                    const timeStr = appointment.timeSlot; // "09:00"
+                    
+                    if (dateStr && timeStr) {
+                        appointmentDateTime = new Date(`${dateStr}T${timeStr}:00`);
+                    } else {
+                        console.warn('Missing appointmentDate or timeSlot:', { dateStr, timeStr });
+                        appointmentDateTime = new Date(); // Fallback to current date
+                    }
+                    
+                    // Kiểm tra xem date có hợp lệ không
+                    if (isNaN(appointmentDateTime.getTime())) {
+                        console.warn('Invalid appointment date/time:', { dateStr, timeStr });
+                        appointmentDateTime = new Date(); // Fallback to current date
+                    }
+                } catch (error) {
+                    console.error('Error parsing appointment date/time:', error);
+                    appointmentDateTime = new Date(); // Fallback to current date
+                }
                 
                 // Debug: Kiểm tra từng appointment
                 console.log("Processing appointment:", appointment);
                 
-                // Xử lý tên dịch vụ - thử nhiều cách tiếp cận khác nhau
+                // Xử lý tên dịch vụ từ array services (áp dụng cách của MedicalRecordsPage)
                 let serviceName = "Tư vấn & Điều trị";
                 
-                // Kiểm tra tất cả các trường có thể chứa thông tin dịch vụ
-                if (appointment.service && appointment.service.name) {
+                if (appointment.services && Array.isArray(appointment.services) && appointment.services.length > 0) {
+                    // Nếu có nhiều dịch vụ, hiển thị tất cả tên dịch vụ cách nhau bởi dấu phẩy
+                    const serviceNames = appointment.services.map(service => service.name).filter(name => name);
+                    serviceName = serviceNames.length > 0 ? serviceNames.join(", ") : "Tư vấn & Điều trị";
+                } else if (appointment.service && appointment.service.name) {
+                    // Fallback cho trường hợp chỉ có một dịch vụ (backward compatibility)
                     serviceName = appointment.service.name;
                 } else if (appointment.service && typeof appointment.service === 'string') {
                     serviceName = appointment.service;
@@ -80,31 +106,35 @@ export default function AppointmentsPage() {
                     serviceName = appointment.serviceName;
                 }
                 
-                // Ánh xạ ID dịch vụ sang tên cố định (tạm thởi)
-                if (appointment.serviceId === 1 || appointment.service_id === 1) {
-                    serviceName = "Khám mắt tổng quát";
-                } else if (appointment.serviceId === 2 || appointment.service_id === 2) {
-                    serviceName = "Đo khúc xạ";
-                } else if (appointment.serviceId === 3 || appointment.service_id === 3) {
-                    serviceName = "Khám & điều trị bệnh về mắt";
-                }
-                
                 return {
                     id: appointment.id,
                     service: serviceName,
-                    date: formatDate(appointmentDate),
-                    time: formatTime(appointmentDate),
+                    date: appointmentDateTime.toLocaleDateString('vi-VN'),
+                    time: appointmentDateTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
                     doctor: appointment.doctor && appointment.doctor.name ? `BS. ${appointment.doctor.name}` : "Chưa xác định",
                     status: mapAppointmentStatus(appointment.status),
                     reason: appointment.reason || "Không có thông tin",
-                    notes: appointment.notes || "Quý khách vui lòng tới trước giờ hẹn 15 phút!",
+                    notes: appointment.notes || "",
                     canCancel: mapAppointmentStatus(appointment.status) === "pending" || mapAppointmentStatus(appointment.status) === "confirmed",
                     location: appointment.location || "Trung tâm Mắt EyeSpire",
                     room: appointment.room || "Phòng 101",
                     duration: appointment.duration || "30 phút",
                     cancellationTime: appointment.cancellationTime || null,
                     cancellationReason: appointment.cancellationReason || "",
-                    appointmentTime: appointment.appointmentTime
+                    appointmentTime: appointmentDateTime.toISOString(),
+                    originalDate: appointment.appointmentDate,
+                    originalTimeSlot: appointment.timeSlot,
+                    // Thêm các trường liên quan đến hoàn tiền
+                    requiresManualRefund: appointment.requiresManualRefund || false,
+                    refundStatus: appointment.refundStatus || null,
+                    refundAmount: appointment.refundAmount || 10000,
+                    refundCompletedBy: appointment.refundCompletedBy || null,
+                    refundCompletedByRole: appointment.refundCompletedByRole || null,
+                    refundCompletedAt: appointment.refundCompletedAt || null,
+                    // Thêm thông tin bệnh nhân từ form đặt hẹn
+                    patientName: appointment.patientName || null,
+                    patientEmail: appointment.patientEmail || null,
+                    patientPhone: appointment.patientPhone || null
                 };
             });
             
@@ -212,6 +242,72 @@ export default function AppointmentsPage() {
         }
     };
 
+    // Hàm hiển thị trạng thái hoàn tiền
+    const getRefundStatus = (appointment) => {
+        // Chỉ hiển thị thông tin hoàn tiền cho cuộc hẹn đã hủy
+        if (appointment.status !== "cancelled") {
+            return <span className="refund-status refund-na">-</span>;
+        }
+
+        // Kiểm tra trạng thái hoàn tiền từ dữ liệu appointment
+        const refundStatus = appointment.refundStatus;
+        const refundAmount = appointment.refundAmount || 10000; // Mặc định 10k VNĐ
+        
+        if (refundStatus === 'COMPLETED') {
+            return (
+                <div className="refund-status refund-completed">
+                    <span className="refund-badge completed">Đã hoàn tiền</span>
+                    <div className="refund-amount">{formatCurrency(refundAmount)}</div>
+                    {appointment.refundCompletedBy && (
+                        <div className="refund-details">
+                            <small>Bởi: {appointment.refundCompletedBy}</small>
+                            {appointment.refundCompletedAt && (
+                                <small>{formatRefundDate(appointment.refundCompletedAt)}</small>
+                            )}
+                        </div>
+                    )}
+                </div>
+            );
+        } else if (refundStatus === 'PENDING_MANUAL_REFUND' || appointment.requiresManualRefund) {
+            return (
+                <div className="refund-status refund-pending">
+                    <span className="refund-badge pending">Đang xử lý</span>
+                    <div className="refund-amount">{formatCurrency(refundAmount)}</div>
+                    <div className="refund-note">
+                        <small>Chờ xử lý thủ công</small>
+                    </div>
+                </div>
+            );
+        } else {
+            // Cuộc hẹn đã hủy nhưng không có thông tin hoàn tiền
+            return (
+                <div className="refund-status refund-unknown">
+                    <span className="refund-badge unknown">Chưa xác định</span>
+                </div>
+            );
+        }
+    };
+
+    // Hàm định dạng ngày hoàn tiền
+    const formatRefundDate = (dateString) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('vi-VN', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    };
+
+    // Hàm định dạng tiền tệ
+    const formatCurrency = (amount) => {
+        return new Intl.NumberFormat('vi-VN', {
+            style: 'currency',
+            currency: 'VND'
+        }).format(amount);
+    };
+
     const getAppointmentIcon = (status) => {
         return <Calendar className={`appointment-icon ${status}`} />;
     };
@@ -221,6 +317,35 @@ export default function AppointmentsPage() {
             ...prev,
             [appointmentId]: !prev[appointmentId]
         }));
+    };
+
+    // Hàm tính toán chính sách hoàn tiền
+    const calculateRefundPolicy = (appointmentDate, currentDate) => {
+        const timeDiff = appointmentDate.getTime() - currentDate.getTime();
+        const hoursDiff = timeDiff / (1000 * 3600);
+        
+        if (hoursDiff >= 24) {
+            return {
+                canRefund: true,
+                refundAmount: 10000,
+                refundPercentage: 100,
+                message: "Hoàn tiền đầy đủ (hủy trước 24h)"
+            };
+        } else if (hoursDiff >= 2) {
+            return {
+                canRefund: true,
+                refundAmount: 5000,
+                refundPercentage: 50,
+                message: "Hoàn tiền 50% (hủy trước 2h)"
+            };
+        } else {
+            return {
+                canRefund: false,
+                refundAmount: 0,
+                refundPercentage: 0,
+                message: "Không được hoàn tiền (hủy trong vòng 2h)"
+            };
+        }
     };
 
     const openCancelDialog = (appointment) => {
@@ -278,20 +403,6 @@ export default function AppointmentsPage() {
         navigate(`/patient/${route}`);
     };
 
-    // Hàm tính toán chính sách hoàn tiền dựa trên thời gian hủy
-    const calculateRefundPolicy = (appointmentDate, cancellationTime) => {
-        if (!appointmentDate || !cancellationTime) return null;
-        
-        const appointmentTime = new Date(appointmentDate).getTime();
-        const cancelTime = new Date(cancellationTime).getTime();
-        const hoursDifference = (appointmentTime - cancelTime) / (1000 * 60 * 60);
-        
-        return {
-            isRefundable: hoursDifference >= 24,
-            hoursRemaining: Math.floor(hoursDifference)
-        };
-    };
-
     // Hàm để hiển thị chi tiết cuộc hẹn
     const viewAppointmentDetails = async (appointmentId) => {
         try {
@@ -310,13 +421,22 @@ export default function AppointmentsPage() {
                 // Không throw lỗi ở đây để vẫn hiển thị thông tin cuộc hẹn nếu không có hóa đơn
             }
             
-            // Xử lý dữ liệu dịch vụ - có thể là mảng hoặc đối tượng đơn lẻ
+            // Xử lý dữ liệu dịch vụ - tính tổng phí của tất cả dịch vụ (giống logic tiếp tân)
             let serviceName = "Khám mắt tổng quát";
             let servicePrice = 0;
             
             if (details.services && Array.isArray(details.services) && details.services.length > 0) {
-                serviceName = details.services[0].name;
-                servicePrice = Number(details.services[0].price || 0);
+                // Tính tổng phí của tất cả dịch vụ
+                servicePrice = details.services.reduce((total, service) => {
+                    return total + Number(service.price || 0);
+                }, 0);
+                
+                // Hiển thị tên dịch vụ đầu tiên hoặc tất cả nếu có nhiều
+                if (details.services.length === 1) {
+                    serviceName = details.services[0].name;
+                } else {
+                    serviceName = details.services.map(s => s.name).join(", ");
+                }
             } else if (details.service && typeof details.service === 'object') {
                 serviceName = details.service.name;
                 servicePrice = Number(details.service.price || 0);
@@ -392,108 +512,83 @@ export default function AppointmentsPage() {
             // Lấy phí dịch vụ khám - đảm bảo là số
             console.log("Phí dịch vụ khám:", servicePrice);
             
-            // Lấy thông tin thuốc từ API riêng (giống bên tiếp tân)
+            // Lấy thông tin thuốc từ API riêng (giống logic tiếp tân)
             let medicationDetails = { products: [], totalAmount: 0 };
             try {
                 medicationDetails = await medicalRecordService.getMedicationsByAppointmentId(appointmentId);
-                console.log("Medication details from API:", medicationDetails);
+                console.log("Medication details:", medicationDetails);
             } catch (medicationError) {
                 console.log("Không có thông tin thuốc hoặc lỗi khi lấy thông tin thuốc:", medicationError);
                 medicationDetails = { products: [], totalAmount: 0 };
             }
             
-            // Lấy phí thuốc từ API riêng (giống bên tiếp tân)
-            let medicationAmount = Number(medicationDetails?.totalAmount || 0);
-            console.log("Phí thuốc từ API riêng:", medicationAmount);
+            // Kiểm tra trạng thái thanh toán
+            const isCancelled = details.status === 'CANCELED';
             
-            // Nếu không có dữ liệu từ API riêng, thử lấy từ hóa đơn
-            if (medicationAmount === 0 && invoiceDetails) {
-                console.log("Không có dữ liệu thuốc từ API riêng, thử lấy từ hóa đơn...");
-                
-                // Kiểm tra nếu có thông tin về sản phẩm thuốc trong hóa đơn
-                if (invoiceDetails?.products && Array.isArray(invoiceDetails.products)) {
-                    medicationAmount = invoiceDetails.products.reduce((total, product) => {
-                        const price = Number(product.price || 0);
-                        const quantity = Number(product.quantity || 1);
-                        return total + (price * quantity);
-                    }, 0);
-                } 
-                // Kiểm tra các trường khác có thể chứa thông tin về phí thuốc
-                else if (invoiceDetails?.medicationProducts && Array.isArray(invoiceDetails.medicationProducts)) {
-                    medicationAmount = invoiceDetails.medicationProducts.reduce((total, product) => {
-                        const price = Number(product.price || 0);
-                        const quantity = Number(product.quantity || 1);
-                        return total + (price * quantity);
-                    }, 0);
-                }
-                else if (invoiceDetails?.medications && Array.isArray(invoiceDetails.medications)) {
-                    medicationAmount = invoiceDetails.medications.reduce((total, med) => {
-                        const price = Number(med.price || 0);
-                        const quantity = Number(med.quantity || 1);
-                        return total + (price * quantity);
-                    }, 0);
-                }
-                // Nếu không có thông tin chi tiết, kiểm tra các trường tổng hợp
-                else if (invoiceDetails?.medicationAmount) {
-                    medicationAmount = Number(invoiceDetails.medicationAmount);
-                } else if (invoiceDetails?.medicationCost) {
-                    medicationAmount = Number(invoiceDetails.medicationCost);
-                } else if (invoiceDetails?.medicationFee) {
-                    medicationAmount = Number(invoiceDetails.medicationFee);
-                } else if (invoiceDetails?.medicationTotal) {
-                    medicationAmount = Number(invoiceDetails.medicationTotal);
-                }
-                
-                // Đặc biệt kiểm tra trường totalAmount trong medicationDetails của hóa đơn
-                if (invoiceDetails?.medicationDetails?.totalAmount) {
-                    medicationAmount = Number(invoiceDetails.medicationDetails.totalAmount);
-                }
-            }
-            
-            console.log("Phí thuốc đã tính toán:", medicationAmount);
-            
-            // Tính tổng tiền tạm tính (dịch vụ + thuốc) - đảm bảo là số
-            const totalAmount = Number(servicePrice) + Number(medicationAmount);
-            console.log("Tạm tính (dịch vụ + thuốc):", totalAmount);
-            
-            // Lấy tiền đặt cọc - đảm bảo là số
+            // Tính toán thông tin thanh toán (giống logic tiếp tân)
+            const medicationAmount = medicationDetails?.totalAmount || 0;
+            const invoiceTotalAmount = invoiceDetails?.totalAmount || 0;
+            const treatmentCost = Math.max(0, invoiceTotalAmount - servicePrice - medicationAmount);
             const depositAmount = Number(invoiceDetails?.depositAmount || details.depositAmount || 0);
-            console.log("Tiền cọc đã thanh toán:", depositAmount);
             
-            // Tính số tiền còn lại cần thanh toán
-            const remainingAmount = Math.max(0, totalAmount - depositAmount);
-            console.log("Số tiền cần thanh toán:", remainingAmount);
+            // Với cuộc hẹn đã hủy: không tính phí dịch vụ, thuốc, điều trị
+            const actualServicePrice = isCancelled ? 0 : servicePrice;
+            const actualMedicationAmount = isCancelled ? 0 : medicationAmount;
+            const actualTreatmentCost = isCancelled ? 0 : treatmentCost;
+            
+            // Tạm tính = phí dịch vụ + tiền thuốc + phí điều trị
+            const totalAmount = actualServicePrice + actualMedicationAmount + actualTreatmentCost;
+            
+            // Số tiền cần thanh toán = tạm tính - tiền cọc (cuộc hẹn hủy = 0đ)
+            const remainingAmount = isCancelled ? 0 : Math.max(0, totalAmount - depositAmount);
+            
+            console.log("Payment calculation:", {
+                servicePrice,
+                medicationAmount,
+                treatmentCost,
+                totalAmount,
+                depositAmount,
+                remainingAmount,
+                invoiceTotalAmount,
+                calculation: `${servicePrice} + ${medicationAmount} + ${treatmentCost} = ${totalAmount}, remaining: ${totalAmount} - ${depositAmount} = ${remainingAmount}`
+            });
             
             // Kiểm tra trạng thái thanh toán
             const isFullyPaid = invoiceDetails?.paymentStatus === 'PAID' || 
-                              invoiceDetails?.status === 'PAID' || 
-                              details.status === "COMPLETED" || 
-                              remainingAmount <= 0;
+                              details.status === "COMPLETED";
             
-            // Chuyển đổi trạng thái từ API sang định dạng hiển thị
+            // Debug: Kiểm tra thông tin bệnh nhân từ API
+            console.log("Patient info from API:", {
+                patientName: details.patientName,
+                patientEmail: details.patientEmail,
+                patientPhone: details.patientPhone
+            });
+            console.log("User info:", {
+                name: user?.name,
+                email: user?.email,
+                phone: user?.phone
+            });
+            
+            // Chuyển đổi trạng thái từ API sang định dạng hiển thị (giống logic tiếp tân)
             const formattedDetails = {
                 ...details,
                 id: details.id,
-                patientName: user?.name || "Không có thông tin",
-                patientEmail: user?.email || "Không có thông tin",
-                patientPhone: user?.phone || "Không có thông tin",
+                date: formattedDate, // Thêm ngày đã format
+                time: formattedTime, // Thêm giờ đã format
+                patientName: details.patientName || user?.name || "Không có thông tin",
+                patientEmail: details.patientEmail || user?.email || "Không có thông tin",
+                patientPhone: details.patientPhone || user?.phone || "Không có thông tin",
                 doctorName: doctorName,
                 serviceName: serviceName,
-                servicePrice: servicePrice,
-                date: formattedDate,
-                time: formattedTime,
-                status: details.status || "PENDING",
-                statusText: getStatusText(details.status),
-                statusClass: getStatusClass(details.status),
-                note: details.note || details.notes || "Không có ghi chú",
-                medicationAmount: Number(medicationAmount),
+                servicePrice: actualServicePrice,
+                medicationAmount: actualMedicationAmount,
                 medicationDetails: medicationDetails,
-                depositAmount: Number(depositAmount),
-                totalAmount: Number(totalAmount),
-                remainingAmount: Number(remainingAmount),
+                treatmentCost: actualTreatmentCost,
+                totalAmount: totalAmount,
+                depositAmount: depositAmount,
+                remainingAmount: remainingAmount,
                 isFullyPaid: isFullyPaid,
-                paidAt: invoiceDetails?.paidAt || null,
-                invoiceId: invoiceDetails?.id || details.id,
+                invoiceDetails: invoiceDetails,
                 paymentStatus: isFullyPaid ? 'Đã thanh toán' : 'Chờ thanh toán',
                 cancellationReason: details.cancellationReason || "",
                 cancellationTime: details.cancellationTime || null,
@@ -501,6 +596,10 @@ export default function AppointmentsPage() {
             };
             
             console.log("Formatted details:", formattedDetails);
+            console.log("Date and time in formattedDetails:", {
+                date: formattedDetails.date,
+                time: formattedDetails.time
+            });
             setAppointmentDetails(formattedDetails);
             setShowDetailsModal(true);
             setLoading(false);
@@ -517,11 +616,6 @@ export default function AppointmentsPage() {
         setAppointmentDetails(null);
     };
 
-    // Hàm định dạng tiền tệ
-    const formatCurrency = (amount) => {
-        if (!amount) return "0 VNĐ";
-        return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
-    };
     
     // Hàm chuyển đổi trạng thái cuộc hẹn sang text hiển thị
     const getStatusText = (status) => {
@@ -638,6 +732,7 @@ export default function AppointmentsPage() {
                                     </th>
                                     <th className="column-doctor">Bác sĩ</th>
                                     <th className="column-status">Trạng thái cuộc hẹn</th>
+                                    <th className="column-refund">Hoàn tiền</th>
                                     <th className="column-notes">Lý do khám</th>
                                     <th className="column-actions">Hành động</th>
                                 </tr>
@@ -650,6 +745,7 @@ export default function AppointmentsPage() {
                                         <td className="column-date">{appointment.date} - {appointment.time}</td>
                                         <td className="column-doctor">{appointment.doctor}</td>
                                         <td className="column-status">{getStatusBadge(appointment.status)}</td>
+                                        <td className="column-refund">{getRefundStatus(appointment)}</td>
                                         <td className="column-notes">{appointment.notes}</td>
                                         <td className="column-actions">
                                             <div className="action-buttons">
@@ -794,7 +890,19 @@ export default function AppointmentsPage() {
                                         <div className="details-row">
                                             <span className="details-label">Dịch vụ:</span>
                                             <span className="details-value">
-                                                {appointmentDetails.serviceName || "Khám mắt tổng quát"}
+                                                {(() => {
+                                                    if (appointmentDetails.services && appointmentDetails.services.length > 0) {
+                                                        // Hiển thị tất cả tên dịch vụ cách nhau bởi dấu phẩy
+                                                        const serviceNames = appointmentDetails.services.map(service => 
+                                                            service.serviceName || service.name
+                                                        ).filter(name => name);
+                                                        return serviceNames.length > 0 ? serviceNames.join(", ") : "Khám mắt tổng quát";
+                                                    } else if (appointmentDetails.serviceName) {
+                                                        return appointmentDetails.serviceName;
+                                                    } else {
+                                                        return "Khám mắt tổng quát";
+                                                    }
+                                                })()}
                                             </span>
                                         </div>
                                         <div className="details-row">
@@ -820,9 +928,68 @@ export default function AppointmentsPage() {
                                             </span>
                                         </div>
                                         <div className="details-row full-width">
-                                            <span className="details-label">Ghi chú:</span>
+                                            <span className="details-label">Lý do khám:</span>
                                             <span className="details-value notes-text">{appointmentDetails.notes || 'Không có'}</span>
                                         </div>
+                                        
+                                        {/* Hiển thị lý do hủy nếu cuộc hẹn đã bị hủy */}
+                                        {appointmentDetails.status === 'CANCELED' && appointmentDetails.cancellationReason && (
+                                            <div className="details-row full-width cancellation-reason">
+                                                <span className="details-label cancellation-label">Lý do hủy:</span>
+                                                <span className="details-value cancellation-text">{appointmentDetails.cancellationReason}</span>
+                                            </div>
+                                        )}
+                                        
+                                        {/* Hiển thị thông tin hoàn tiền chi tiết nếu cuộc hẹn đã bị hủy */}
+                                        {appointmentDetails.status === 'CANCELED' && (
+                                            <div className="details-section refund-info">
+                                                <div className="section-header">
+                                                    <div className="icon-container">
+                                                        <Package size={20} />
+                                                    </div>
+                                                    <h4>Thông tin hoàn tiền</h4>
+                                                </div>
+                                                <div className="details-grid">
+                                                    <div className="details-row">
+                                                        <span className="details-label">Trạng thái hoàn tiền:</span>
+                                                        <div className="details-value refund-status-container">
+                                                            {getRefundStatus(appointmentDetails)}
+                                                        </div>
+                                                    </div>
+                                                    <div className="details-row">
+                                                        <span className="details-label">Số tiền hoàn:</span>
+                                                        <span className="details-value highlight">
+                                                            {formatCurrency(appointmentDetails.refundAmount || 10000)}
+                                                        </span>
+                                                    </div>
+                                                    <div className="details-row">
+                                                        <span className="details-label">Phương thức hoàn tiền:</span>
+                                                        <span className="details-value">
+                                                            Hoàn tiền thủ công (Chuyển khoản)
+                                                        </span>
+                                                    </div>
+                                                    {appointmentDetails.refundCompletedBy && (
+                                                        <div className="details-row">
+                                                            <span className="details-label">Người xử lý:</span>
+                                                            <span className="details-value">
+                                                                {appointmentDetails.refundCompletedBy}
+                                                                {appointmentDetails.refundCompletedByRole && (
+                                                                    <span className="role-badge"> ({appointmentDetails.refundCompletedByRole})</span>
+                                                                )}
+                                                            </span>
+                                                        </div>
+                                                    )}
+                                                    {appointmentDetails.refundCompletedAt && (
+                                                        <div className="details-row">
+                                                            <span className="details-label">Thời gian hoàn tất:</span>
+                                                            <span className="details-value">
+                                                                {formatRefundDate(appointmentDetails.refundCompletedAt)}
+                                                            </span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 
@@ -837,15 +1004,15 @@ export default function AppointmentsPage() {
                                     <div className="details-grid">
                                         <div className="details-row">
                                             <span className="details-label">Họ tên:</span>
-                                            <span className="details-value">{user?.name || appointmentDetails.patientName}</span>
+                                            <span className="details-value">{appointmentDetails.patientName || user?.name || "Không có thông tin"}</span>
                                         </div>
                                         <div className="details-row">
                                             <span className="details-label">Email:</span>
-                                            <span className="details-value">{user?.email || appointmentDetails.patientEmail}</span>
+                                            <span className="details-value">{user?.email || appointmentDetails.patientEmail || "Không có thông tin"}</span>
                                         </div>
                                         <div className="details-row">
                                             <span className="details-label">Số điện thoại:</span>
-                                            <span className="details-value">{user?.phone || appointmentDetails.patientPhone}</span>
+                                            <span className="details-value">{appointmentDetails.patientPhone || user?.phone || "Không có thông tin"}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -858,7 +1025,7 @@ export default function AppointmentsPage() {
                                         </div>
                                         <h4>Thông tin thanh toán</h4>
                                     </div>
-                                    {appointmentDetails.totalAmount ? (
+                                    {(appointmentDetails.totalAmount || appointmentDetails.depositAmount) ? (
                                         <div className="appointment-detail-modal__invoice">
                                             <div className="appointment-detail-modal__invoice-header">
                                                 <div className="appointment-detail-modal__invoice-title">Hóa đơn #{appointmentDetails.id}</div>
@@ -876,13 +1043,23 @@ export default function AppointmentsPage() {
                                                     </div>
                                                 </div>
                                                 
-                                                {/* Tiền thuốc nếu có - luôn hiển thị để đồng bộ với tiếp tân */}
+                                                {/* Tiền thuốc */}
                                                 <div className="appointment-detail-modal__invoice-item">
                                                     <div>Tiền thuốc</div>
                                                     <div>
                                                         {formatCurrency(appointmentDetails.medicationAmount || 0)}
                                                     </div>
                                                 </div>
+                                                
+                                                {/* Phí điều trị (nếu có) */}
+                                                {appointmentDetails.treatmentCost > 0 && (
+                                                    <div className="appointment-detail-modal__invoice-item">
+                                                        <div>Phí điều trị</div>
+                                                        <div>
+                                                            {formatCurrency(appointmentDetails.treatmentCost)}
+                                                        </div>
+                                                    </div>
+                                                )}
                                                 
                                                 {/* Tạm tính */}
                                                 <div className="appointment-detail-modal__invoice-subtotal">
@@ -892,13 +1069,14 @@ export default function AppointmentsPage() {
                                                     </div>
                                                 </div>
                                                 
-                                                {/* Tiền cọc */}
+                                                {/* Tiền cọc đã thanh toán */}
                                                 {appointmentDetails.depositAmount > 0 && (
                                                     <div className="appointment-detail-modal__invoice-item appointment-detail-modal__invoice-item--deposit">
                                                         <div>Tiền cọc đã thanh toán</div>
                                                         <div className="deposit-amount">-{formatCurrency(appointmentDetails.depositAmount)}</div>
                                                     </div>
                                                 )}
+                                                
                                             </div>
                                             
                                             <div className="appointment-detail-modal__invoice-total">
@@ -908,11 +1086,11 @@ export default function AppointmentsPage() {
                                                 </div>
                                             </div>
                                             
-                                            {appointmentDetails.isFullyPaid && appointmentDetails.paidAt && (
+                                            {appointmentDetails.isFullyPaid && appointmentDetails.invoiceDetails?.paidAt && (
                                                 <div className="payment-time">
                                                     <span>Thời gian thanh toán: </span>
                                                     <span>
-                                                        {new Date(appointmentDetails.paidAt).toLocaleString('vi-VN')}
+                                                        {new Date(appointmentDetails.invoiceDetails.paidAt).toLocaleString('vi-VN')}
                                                     </span>
                                                 </div>
                                             )}

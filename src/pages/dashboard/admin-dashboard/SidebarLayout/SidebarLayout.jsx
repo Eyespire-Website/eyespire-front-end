@@ -16,6 +16,7 @@ export default function SidebarLayout() {
             "users": "users",
             "staff": "staff",
             "services": "services",
+            "refund-management": "refund-management",
             "inventory": "inventory",
             "profile": "profile"
         };

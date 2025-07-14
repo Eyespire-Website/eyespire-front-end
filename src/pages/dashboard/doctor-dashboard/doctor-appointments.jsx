@@ -106,7 +106,7 @@ export default function DoctorAppointmentsPage() {
                     doctor: appointment.doctor || { id: appointment.doctorId || userId },
                     services, // Store array of services
                     serviceIds, // Store array of service IDs
-                    notes: appointment.notes || "Không có ghi chú",
+                    notes: appointment.notes || "Không có lý do khám",
                     status: appointment.status,
                     createdAt: appointment.createdAt || new Date().toISOString(),
                     updatedAt: appointment.updatedAt || new Date().toISOString(),

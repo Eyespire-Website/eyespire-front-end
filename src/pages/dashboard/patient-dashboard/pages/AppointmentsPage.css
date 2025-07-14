@@ -316,3 +316,208 @@
 .close-button-secondary:hover {
     background-color: #bdbdbd;
 }
+
+/* CSS cho hiển thị lý do hủy cuộc hẹn */
+.cancellation-reason {
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    padding: 12px;
+    margin-top: 12px;
+}
+
+.cancellation-label {
+    color: #dc2626 !important;
+    font-weight: 600 !important;
+}
+
+.cancellation-text {
+    color: #991b1b !important;
+    font-style: italic;
+    line-height: 1.5;
+    background-color: #ffffff;
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid #f3f4f6;
+    margin-top: 8px;
+    display: block;
+}
+
+/* CSS cho hiển thị trạng thái hoàn tiền */
+.refund-status-detail {
+    background-color: #f0f9ff;
+    border: 1px solid #bae6fd;
+    border-radius: 8px;
+    padding: 12px;
+    margin-top: 12px;
+}
+
+.refund-label {
+    color: #0369a1 !important;
+    font-weight: 600 !important;
+}
+
+.refund-status-container {
+    margin-top: 8px;
+}
+
+.refund-status {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.refund-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.refund-badge.completed {
+    background-color: #dcfce7;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+}
+
+.refund-badge.pending {
+    background-color: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fde68a;
+}
+
+.refund-badge.unknown {
+    background-color: #f3f4f6;
+    color: #6b7280;
+    border: 1px solid #d1d5db;
+}
+
+.refund-amount {
+    font-weight: 600;
+    color: #059669;
+    font-size: 14px;
+    margin-top: 4px;
+}
+
+.refund-details {
+    margin-top: 8px;
+    padding: 8px;
+    background-color: #ffffff;
+    border-radius: 6px;
+    border: 1px solid #e5e7eb;
+}
+
+.refund-details small {
+    display: block;
+    color: #6b7280;
+    font-size: 11px;
+    margin-bottom: 2px;
+}
+
+.refund-note small {
+    color: #92400e;
+    font-style: italic;
+    margin-top: 4px;
+    display: block;
+}
+
+.refund-na {
+    color: #9ca3af;
+    font-style: italic;
+    font-size: 14px;
+}
+
+/* Responsive cho refund status */
+@media (max-width: 768px) {
+    .refund-status-detail {
+        padding: 8px;
+    }
+    
+    .refund-badge {
+        font-size: 11px;
+        padding: 3px 8px;
+    }
+    
+    .refund-amount {
+        font-size: 13px;
+    }
+}
+
+/* Refund info section in modal */
+.refund-info {
+    margin-top: 20px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #007bff;
+}
+
+.refund-info .section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.refund-info .section-header h4 {
+    margin: 0;
+    color: #333;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.refund-info .icon-container {
+    width: 32px;
+    height: 32px;
+    background: #007bff;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.refund-info .details-grid {
+    display: grid;
+    gap: 12px;
+}
+
+.refund-info .details-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.refund-info .details-row:last-child {
+    border-bottom: none;
+}
+
+.refund-info .details-label {
+    font-weight: 500;
+    color: #666;
+    min-width: 140px;
+}
+
+.refund-info .details-value {
+    color: #333;
+    font-weight: 500;
+}
+
+.refund-info .role-badge {
+    background: #e9ecef;
+    color: #666;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: normal;
+}
+
+.refund-info .highlight {
+    color: #007bff;
+    font-weight: 600;
+}
