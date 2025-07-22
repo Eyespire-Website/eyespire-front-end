@@ -11,6 +11,7 @@ import {
 import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
 import webSocketService from '../../services/webSocketService';
+import userService from '../../services/userService';
 import './MessageModal.css';
 
 
@@ -24,7 +25,7 @@ const MessageModal = ({ isOpen, onClose }) => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
-  const [avatarErrors, setAvatarErrors] = useState({});
+
   
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -42,8 +43,7 @@ const MessageModal = ({ isOpen, onClose }) => {
       document.body.style.overflow = 'hidden';
     } else {
       disconnectWebSocket();
-      // Reset avatar errors khi đóng modal
-      setAvatarErrors({});
+
       // Unlock body scroll
       document.body.style.overflow = 'unset';
     }
@@ -52,8 +52,7 @@ const MessageModal = ({ isOpen, onClose }) => {
       disconnectWebSocket();
       // Cleanup: unlock body scroll
       document.body.style.overflow = 'unset';
-      // Reset avatar errors
-      setAvatarErrors({});
+
     };
   }, [isOpen]);
 
@@ -69,12 +68,44 @@ const MessageModal = ({ isOpen, onClose }) => {
       // Lấy store managers
       const managersData = await webSocketService.getStoreManagers();
       console.log('Fetched store managers:', managersData);
-      setStoreManagers(managersData);
+      
+      // Lấy user profiles để có Google avatars
+      const managersWithAvatars = await Promise.all(
+        managersData.map(async (manager) => {
+          try {
+            const userProfile = await userService.getPatientById(manager.id);
+            return {
+              ...manager,
+              avatarUrl: userProfile?.avatarUrl || manager.avatarUrl
+            };
+          } catch (error) {
+            console.log(`Could not fetch profile for manager ${manager.id}:`, error);
+            return manager;
+          }
+        })
+      );
+      setStoreManagers(managersWithAvatars);
       
       // Lấy receptionists
       const receptionistsData = await webSocketService.getReceptionists();
       console.log('Fetched receptionists:', receptionistsData);
-      setReceptionists(receptionistsData);
+      
+      // Lấy user profiles để có Google avatars
+      const receptionistsWithAvatars = await Promise.all(
+        receptionistsData.map(async (receptionist) => {
+          try {
+            const userProfile = await userService.getPatientById(receptionist.id);
+            return {
+              ...receptionist,
+              avatarUrl: userProfile?.avatarUrl || receptionist.avatarUrl
+            };
+          } catch (error) {
+            console.log(`Could not fetch profile for receptionist ${receptionist.id}:`, error);
+            return receptionist;
+          }
+        })
+      );
+      setReceptionists(receptionistsWithAvatars);
       
     } catch (error) {
       console.error('Error fetching staff:', error);
@@ -244,36 +275,14 @@ const MessageModal = ({ isOpen, onClose }) => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const getAvatarUrl = (managerId, url) => {
-    // Nếu avatar đã lỗi, trả về fallback ngay
-    if (avatarErrors[managerId]) {
-      return '/default-avatar.svg'; // Sử dụng local SVG fallback
-    }
-    
-    if (!url) return '/default-avatar.svg';
-    
-    // Nếu là URL đầy đủ, kiểm tra xem có phải từ cùng domain không
-    if (url.startsWith('http')) {
-      // Chỉ cho phép load từ cùng domain để tránh CORS/ORB issues
-      if (url.includes(window.location.hostname)) {
-        return url;
-      } else {
-        return '/default-avatar.svg';
-      }
-    }
-    
-    return `${baseUrl}${url}`;
+  const placeholderImg = "/Uploads/avatar.jpg";
+
+  const getAvatarUrl = (url) => {
+    if (!url) return `${baseUrl}${placeholderImg}`;
+    return url.startsWith("http") ? url : `${baseUrl}${url.replace("/Uploads", "/images")}`;
   };
 
-  const handleAvatarError = (managerId) => {
-    console.log(`Avatar error for manager ${managerId}, switching to fallback`);
-    setAvatarErrors(prev => {
-      if (!prev[managerId]) {
-        return { ...prev, [managerId]: true };
-      }
-      return prev; // Tránh update không cần thiết
-    });
-  };
+
 
   const formatTime = (timestamp) => {
     return new Date(timestamp).toLocaleTimeString('vi-VN', {
@@ -332,9 +341,8 @@ const MessageModal = ({ isOpen, onClose }) => {
                           >
                             <div className="webchat-manager-avatar">
                               <img 
-                                src={getAvatarUrl(manager.id, manager.avatarUrl)} 
+                                src={getAvatarUrl(manager.avatarUrl)} 
                                 alt={manager.name}
-                                onError={() => handleAvatarError(manager.id)}
                               />
                               <div className="webchat-online-status">
                                 <FontAwesomeIcon icon={faCircle} className="webchat-online-dot" />
@@ -367,9 +375,8 @@ const MessageModal = ({ isOpen, onClose }) => {
                           >
                             <div className="webchat-manager-avatar">
                               <img 
-                                src={getAvatarUrl(receptionist.id, receptionist.avatarUrl)} 
+                                src={getAvatarUrl(receptionist.avatarUrl)} 
                                 alt={receptionist.name}
-                                onError={() => handleAvatarError(receptionist.id)}
                               />
                               <div className="webchat-online-status">
                                 <FontAwesomeIcon icon={faCircle} className="webchat-online-dot" />
@@ -400,7 +407,7 @@ const MessageModal = ({ isOpen, onClose }) => {
                 </button>
                 <div className="webchat-chat-user-info">
                   <img 
-                    src={getAvatarUrl(selectedContact.id, selectedContact.avatarUrl)} 
+                    src={getAvatarUrl(selectedContact.avatarUrl)} 
                     alt={selectedContact.name}
                     className="webchat-chat-avatar"
                   />

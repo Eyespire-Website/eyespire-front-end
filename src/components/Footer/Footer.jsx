@@ -1,4 +1,5 @@
 import React from "react";
+import logo from "../../assets/logo.png";
 import "./Footer.css";
 
 const Footer = () => {
@@ -8,7 +9,7 @@ const Footer = () => {
         <div className="footer-section">
           <div className="footer-logo">
             <img
-              src="https://storage.googleapis.com/tagjs-prod.appspot.com/v1/VY3PPTks6o/e8ggwzic_expires_30_days.png"
+              src={logo}
               alt="Eyespire Logo"
               className="logo-image"
             />

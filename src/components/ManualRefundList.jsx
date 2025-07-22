@@ -31,24 +31,19 @@ const ManualRefundList = () => {
             console.error('Error fetching refund list:', error);
             toast.error('Không thể tải danh sách hoàn tiền');
             
-            // Fallback: sử dụng appointmentService nếu refunds API chưa sẵn sàng
+            // Endpoint /api/appointments/refund-pending không tồn tại, fallback trực tiếp sang getAllAppointments
             try {
-                const refundPending = await appointmentService.getRefundPendingAppointments();
-                setRefundList(refundPending);
-            } catch (fallbackError) {
-                console.error('Fallback error:', fallbackError);
-                // Final fallback
-                try {
-                    const appointments = await appointmentService.getAllAppointments();
-                    const filtered = appointments.filter(app => 
-                        app.status === 'CANCELED' && 
-                        app.requiresManualRefund === true &&
-                        (!app.refundStatus || app.refundStatus === 'PENDING_MANUAL_REFUND')
-                    );
-                    setRefundList(filtered);
-                } catch (finalError) {
-                    console.error('Final fallback error:', finalError);
-                }
+                console.log('Fallback to getAllAppointments');
+                const appointments = await appointmentService.getAllAppointments();
+                const filtered = appointments.filter(app => 
+                    app.status === 'CANCELED' && 
+                    app.requiresManualRefund === true &&
+                    (!app.refundStatus || app.refundStatus === 'PENDING_MANUAL_REFUND')
+                );
+                console.log('Filtered appointments for refund:', filtered.length);
+                setRefundList(filtered);
+            } catch (finalError) {
+                console.error('Final fallback error:', finalError);
             }
         } finally {
             setLoading(false);
@@ -150,7 +145,7 @@ const ManualRefundList = () => {
                                     Bệnh nhân: {refund.patientName || refund.appointment?.patientName || 'N/A'}
                                 </h4>
                                 <p style={{ margin: '5px 0' }}>
-                                    <strong>Ngày hẹn:</strong> {refund.appointment?.appointmentDate || refund.appointmentDate || 'N/A'}
+                                    <strong>Ngày hẹn:</strong> {refund.appointmentTime ? new Date(refund.appointmentTime).toLocaleDateString('vi-VN') : 'N/A'}
                                 </p>
                                 <p style={{ margin: '5px 0' }}>
                                     <strong>Số tiền hoàn:</strong> <span style={{ color: '#d63384', fontWeight: 'bold' }}>

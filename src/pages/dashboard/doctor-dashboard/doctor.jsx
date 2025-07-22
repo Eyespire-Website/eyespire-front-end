@@ -14,7 +14,7 @@ export default function DoctorDashboard() {
         name: "",
         email: "",
         phone: "",
-        gender: "male",
+        gender: "MALE",
         username: "",
         fullname: "",
         address: "",
@@ -86,7 +86,7 @@ export default function DoctorDashboard() {
                 name: userData.name || "",
                 email: userData.email || "",
                 phone: userData.phone || "",
-                gender: userData.gender || "male",
+                gender: userData.gender || "MALE",
                 username: userData.username || "",
                 fullname: userData.name || "",
                 address: userData.addressDetail || "",
@@ -126,7 +126,7 @@ export default function DoctorDashboard() {
                     name: currentUser.name || "",
                     email: currentUser.email || "",
                     phone: currentUser.phone || "",
-                    gender: currentUser.gender || "male",
+                    gender: currentUser.gender || "MALE",
                     username: currentUser.username || "",
                     fullname: currentUser.name || "",
                     address: currentUser.address || "",
@@ -436,9 +436,9 @@ export default function DoctorDashboard() {
                                     onChange={handleChange}
                                     className="form-control"
                                 >
-                                    <option value="male">Nam</option>
-                                    <option value="female">Nữ</option>
-                                    <option value="other">Khác</option>
+                                    <option value="MALE">Nam</option>
+                                    <option value="FEMALE">Nữ</option>
+                                    <option value="OTHER">Khác</option>
                                 </select>
                             </div>
                             <div className="form-group">

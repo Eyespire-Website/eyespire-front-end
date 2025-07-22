@@ -30,9 +30,9 @@ export default function ProfileForm({ user, onSave, fields = [] }) {
             type: "select",
             required: true,
             options: [
-                { value: "male", label: "Nam" },
-                { value: "female", label: "Nữ" },
-                { value: "other", label: "Khác" },
+                { value: "MALE", label: "Nam" },
+                { value: "FEMALE", label: "Nữ" },
+                { value: "OTHER", label: "Khác" },
             ],
         },
         { id: "username", label: "Tên tài khoản", type: "text", required: true },

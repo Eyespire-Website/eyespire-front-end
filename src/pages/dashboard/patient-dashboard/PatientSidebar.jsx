@@ -12,6 +12,7 @@ import {
     MessageSquare, // Import MessageSquare for messaging icon
 } from "lucide-react";
 import { HiOutlineBars3 } from "react-icons/hi2";
+import logo from '../../../assets/logo.png';
 import authService from '../../../services/authService';
 import './PatientSidebar.css';
 
@@ -50,7 +51,7 @@ export default function PatientSidebar({ activeTab, setActiveTab }) {
                 <div className="sidebar-logo-container">
                     <div className="sidebar-logo-content" onClick={() => navigate('/')}>
                         <img
-                            src="https://storage.googleapis.com/tagjs-prod.appspot.com/v1/VY3PPTks6o/e8ggwzic_expires_30_days.png"
+                            src={logo}
                             alt="Eyespire Logo"
                             className="sidebar-logo-image"
                         />

@@ -5,6 +5,7 @@ import "./login.css"
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import {faEye, faEyeSlash, faShoppingCart} from '@fortawesome/free-solid-svg-icons'
 import login_image from '../../../assets/login-image.jpg'
+import logo from '../../../assets/logo.png'
 import authService from "../../../services/authService"
 import { useNavigate } from "react-router-dom"
 import { FcGoogle } from 'react-icons/fc'
@@ -95,7 +96,7 @@ export default function LoginPage() {
                     <div className="lgin-header">
                         <div className="lgin-logo" onClick={() => navigate("/")}>
                             <img
-                                src={"https://storage.googleapis.com/tagjs-prod.appspot.com/v1/VY3PPTks6o/e8ggwzic_expires_30_days.png"}
+                                src={logo}
                                 className="lgin-logo-image"
                                 alt="Eyespire Logo"
                             />

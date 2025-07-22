@@ -108,6 +108,28 @@ const Appointment = () => {
             toast.info("Không thể tải thông tin khung giờ. Vui lòng thử lại sau.");
             setAvailableTimeSlots([]);
           } else {
+            // Debug: Log API response to understand structure
+            console.log('=== API RESPONSE DEBUG ===');
+            console.log('Doctor ID:', formData.doctorId);
+            console.log('Date:', formData.appointmentDate);
+            console.log('Slots received:', slots);
+            
+            // Log detailed slot structure
+            if (slots && slots.length > 0) {
+              console.log('=== DETAILED SLOT ANALYSIS ===');
+              slots.forEach((slot, index) => {
+                console.log(`Slot ${index + 1}:`, {
+                  time: slot.time,
+                  status: slot.status,
+                  availableCount: slot.availableCount,
+                  doctorId: slot.doctorId,
+                  allFields: slot
+                });
+              });
+              console.log('================================');
+            }
+            console.log('========================');
+            
             // Hiển thị tất cả các slot, bất kể trạng thái
             setAvailableTimeSlots(slots);
             
@@ -262,7 +284,7 @@ const Appointment = () => {
       const appointmentData = {
         patientId: currentUser.id,
         doctorId: formData.doctorId || null,
-        serviceId: formData.serviceId || "1", // Mặc định là "Khám tổng quát" nếu không chọn
+        serviceId: formData.serviceId || "2", // Mặc định là service ID = 2 nếu không chọn
         appointmentDate: formData.appointmentDate,
         hourSlot: formData.hourSlot,
         fullName: formData.fullName,
@@ -301,15 +323,26 @@ const Appointment = () => {
   // Check if time slot is available
   const isTimeSlotAvailable = (hourSlot) => {
     const hourString = hourSlot < 10 ? `0${hourSlot}:00` : `${hourSlot}:00`;
-
-    return availableTimeSlots.some(slot => {
+    
+    // Debug logging
+    const slotsForTime = availableTimeSlots.filter(slot => slot.time === hourString);
+    console.log(`=== AVAILABILITY CHECK for ${hourString} ===`);
+    console.log('Doctor selected:', formData.doctorId);
+    console.log('Slots for this time:', slotsForTime);
+    
+    const result = availableTimeSlots.some(slot => {
       if (slot.time === hourString && slot.status === "AVAILABLE") {
+        console.log('Found AVAILABLE slot:', slot);
         // Ràng buộc mới: Đảm bảo số bác sĩ available > số appointment đã đặt
         // Áp dụng cho cả 2 trường hợp: có chọn bác sĩ và không chọn bác sĩ
         return slot.availableCount > 0;
       }
       return false;
     });
+    
+    console.log('Final result:', result);
+    console.log('=====================================');
+    return result;
   };
 
   // Check if time slot is unavailable (not working or booked)
