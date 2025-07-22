@@ -16,6 +16,7 @@ import {
   User,
 } from "lucide-react"
 import adminService from "../../../../services/adminService"
+import userService from "../../../../services/userService"
 import "../styles/ScheduleModal.css"
 
 const ScheduleContent = () => {
@@ -48,6 +49,24 @@ const ScheduleContent = () => {
 
   const timeSlots = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"]
 
+  // Hàm xử lý URL avatar
+  const getAvatarUrl = (url) => {
+    if (!url) return null;
+
+    // Nếu là URL đầy đủ (bắt đầu bằng http hoặc https)
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+
+    // Nếu là đường dẫn tương đối, thêm base URL
+    if (url.startsWith('/')) {
+      return `http://localhost:8080${url}`;
+    }
+
+    // Trường hợp khác
+    return url;
+  };
+
   // Load initial data
   useEffect(() => {
     loadInitialData()
@@ -66,16 +85,66 @@ const ScheduleContent = () => {
       const doctorsData = await adminService.getAllDoctors()
       console.log("Doctors data from API:", doctorsData)
 
+      // Lấy thông tin user đầy đủ cho từng bác sĩ
+      const doctorsWithUserInfo = await Promise.all(
+        doctorsData.map(async (doctor) => {
+          try {
+            // Lấy thông tin user từ userId bằng cách gọi API trực tiếp
+            const userResponse = await fetch(`http://localhost:8080/api/users/${doctor.userId}`, {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              credentials: 'include'
+            })
+            
+            if (userResponse.ok) {
+              const userData = await userResponse.json()
+              return {
+                ...doctor,
+                color: getRandomColor(),
+                specialty: doctor.specialization,
+                // Thêm thông tin user
+                email: userData.email,
+                phone: userData.phone,
+                gender: userData.gender,
+                avatarUrl: userData.avatarUrl,
+                address: userData.addressDetail,
+                dateOfBirth: userData.dateOfBirth
+              }
+            } else {
+              console.warn(`Could not fetch user info for doctor ${doctor.id}:`, userResponse.status)
+              return {
+                ...doctor,
+                color: getRandomColor(),
+                specialty: doctor.specialization,
+                email: null,
+                phone: null,
+                gender: null,
+                avatarUrl: null
+              }
+            }
+          } catch (error) {
+            console.error(`Error fetching user info for doctor ${doctor.id}:`, error)
+            return {
+              ...doctor,
+              color: getRandomColor(),
+              specialty: doctor.specialization,
+              email: null,
+              phone: null,
+              gender: null,
+              avatarUrl: null
+            }
+          }
+        })
+      )
+
       const processedDoctors = [
         { id: "all", name: "Tất cả bác sĩ", color: "#3b82f6" },
-        ...doctorsData.map((doctor) => ({
-          ...doctor,
-          color: getRandomColor(),
-          specialty: doctor.specialization,
-        })),
+        ...doctorsWithUserInfo,
       ]
 
-      console.log("Processed doctors:", processedDoctors)
+      console.log("Processed doctors with user info:", processedDoctors)
       setDoctors(processedDoctors)
     } catch (err) {
       console.error("Error loading doctors:", err)
@@ -727,29 +796,29 @@ const ScheduleContent = () => {
     }
 
     return (
-      <div className="week-view">
-        <div className="week-header">
-          <div className="time-column-header">Giờ</div>
+      <div className="schct-week-view">
+        <div className="schct-week-header">
+          <div className="schct-time-column-header">Giờ</div>
           {weekDays.map((day, index) => (
-            <div key={index} className={`day-header ${isToday(day) ? "today" : ""}`}>
-              <div className="day-name">{dayNames[index]}</div>
-              <div className="day-date">
+            <div key={index} className={`schct-day-header ${isToday(day) ? "schct-today" : ""}`}>
+              <div className="schct-day-name">{dayNames[index]}</div>
+              <div className="schct-day-date">
                 {day.getDate()}/{day.getMonth() + 1}
               </div>
             </div>
           ))}
         </div>
-        <div className="week-body">
+        <div className="schct-week-body">
           {timeSlots.map((time) => (
-            <div key={time} className="time-row">
-              <div className="time-label">{time}</div>
+            <div key={time} className="schct-time-row">
+              <div className="schct-time-label">{time}</div>
               {weekDays.map((day, dayIndex) => {
                 const dayAvailabilities = getAvailabilitiesForDateTime(day, time)
 
                 return (
-                  <div key={dayIndex} className="time-cell">
+                  <div key={dayIndex} className="schct-time-cell">
                     {dayAvailabilities.length > 0 && (
-                      <div className="appointment-group">
+                      <div className="schct-appointment-group">
                         {dayAvailabilities.map((avail) => {
                           const doctor = doctors.find((d) => d.id === avail.doctorId)
                           const durationHours = parseInt(avail.endTime.split(':')[0]) - parseInt(avail.startTime.split(':')[0])
@@ -802,37 +871,37 @@ const ScheduleContent = () => {
     const MAX_VISIBLE_APPOINTMENTS = 1
 
     return (
-        <div className="week-view">
-          <div className="week-header">
-            <div className="time-column-header">Giờ</div>
+        <div className="schct-week-view">
+          <div className="schct-week-header">
+            <div className="schct-time-column-header">Giờ</div>
             {weekDays.map((day, index) => (
-                <div key={index} className={`day-header ${isToday(day) ? "today" : ""}`}>
-                  <div className="day-name">{dayNames[index]}</div>
-                  <div className="day-date">
+                <div key={index} className={`schct-day-header ${isToday(day) ? "schct-today" : ""}`}>
+                  <div className="schct-day-name">{dayNames[index]}</div>
+                  <div className="schct-day-date">
                     {day.getDate()}/{day.getMonth() + 1}
                   </div>
                 </div>
             ))}
           </div>
-          <div className="week-body">
+          <div className="schct-week-body">
             {timeSlots.map((time) => (
-                <div key={time} className="time-row">
-                  <div className="time-label">{time}</div>
+                <div key={time} className="schct-time-row">
+                  <div className="schct-time-label">{time}</div>
                   {weekDays.map((day, dayIndex) => {
                     const dayAppointments = getAppointmentsForDateTime(day, time)
                     const visibleAppointments = dayAppointments.slice(0, MAX_VISIBLE_APPOINTMENTS)
                     const hiddenAppointments = dayAppointments.slice(MAX_VISIBLE_APPOINTMENTS)
 
                     return (
-                        <div key={dayIndex} className="time-cell">
+                        <div key={dayIndex} className="schct-time-cell">
                           {dayAppointments.length > 0 && (
-                              <div className="appointment-group">
+                              <div className="schct-appointment-group">
                                 {visibleAppointments.map((apt) => {
                                   const doctor = doctors.find((d) => d.id === apt.doctorId)
                                   return (
                                       <div
                                           key={apt.id}
-                                          className={`appointment-block ${apt.status}`}
+                                          className={`schct-appointment-block ${apt.status}`}
                                           style={{
                                             backgroundColor: doctor?.color + "20",
                                             borderLeft: `4px solid ${doctor?.color}`,
@@ -843,16 +912,16 @@ const ScheduleContent = () => {
                                           onClick={() => handleViewAppointment(apt)}
                                           title={`${doctor?.name}: ${apt.patient} - ${typeof apt.service === 'string' ? apt.service : apt.service?.name || "Chưa xác định"}`}
                                       >
-                                        <div className="apt-time">{apt.time}</div>
-                                        <div className="apt-patient">{apt.patient}</div>
-                                        <div className="apt-service">{typeof apt.service === 'string' ? apt.service : apt.service?.name || "Chưa xác định"}</div>
-                                        <div className="apt-doctor">{doctor?.name}</div>
+                                        <div className="schct-apt-time">{apt.time}</div>
+                                        <div className="schct-apt-patient">{apt.patient}</div>
+                                        <div className="schct-apt-service">{typeof apt.service === 'string' ? apt.service : apt.service?.name || "Chưa xác định"}</div>
+                                        <div className="schct-apt-doctor">{doctor?.name}</div>
                                       </div>
                                   )
                                 })}
                                 {hiddenAppointments.length > 0 && (
                                     <div
-                                        className="appointment-block more"
+                                        className="schct-appointment-block schct-more"
                                         style={{
                                           height: `${visibleAppointments[0]?.duration || 60}px`,
                                           flex: `1 1 ${100 / Math.min(dayAppointments.length, MAX_VISIBLE_APPOINTMENTS)}%`,
@@ -892,52 +961,52 @@ const ScheduleContent = () => {
         .sort((a, b) => a.time.localeCompare(b.time))
 
     return (
-        <div className="day-view">
-          <div className="day-header-single">
+        <div className="schct-day-view">
+          <div className="schct-day-header-single">
             <h3>
               {dayNames[currentDate.getDay() === 0 ? 6 : currentDate.getDay() - 1]} - {currentDate.getDate()}/
               {currentDate.getMonth() + 1}/{currentDate.getFullYear()}
             </h3>
           </div>
-          <div className="day-schedule">
+          <div className="schct-day-schedule">
             {timeSlots.map((time) => {
               const timeAppointments = dayAppointments.filter((apt) => apt.time === time)
               return (
-                  <div key={time} className="day-time-slot">
-                    <div className="day-time-label">{time}</div>
-                    <div className="day-time-content">
+                  <div key={time} className="schct-day-time-slot">
+                    <div className="schct-day-time-label">{time}</div>
+                    <div className="schct-day-time-content">
                       {timeAppointments.length > 0 ? (
                           timeAppointments.map((apt) => {
                             const doctor = doctors.find((d) => d.id === apt.doctorId)
                             return (
                                 <div
                                     key={apt.id}
-                                    className={`day-appointment ${apt.status}`}
+                                    className={`schct-day-appointment ${apt.status}`}
                                     style={{ borderLeft: `4px solid ${doctor?.color}` }}
                                     onClick={() => handleViewAppointment(apt)}
                                 >
-                                  <div className="day-apt-header">
-                            <span className="day-apt-time">
+                                  <div className="schct-day-apt-header">
+                            <span className="schct-day-apt-time">
                               {apt.time} - {addMinutesToTime(apt.time, Number.parseInt(apt.duration))}
                             </span>
-                                    <span className={`day-apt-status ${apt.status}`}>
+                                    <span className={`schct-day-apt-status ${apt.status}`}>
                               {getStatusIcon(apt.status)}
                                       {getStatusText(apt.status)}
                             </span>
                                   </div>
-                                  <div className="day-apt-patient">{apt.patient}</div>
-                                  <div className="day-apt-service">{typeof apt.service === 'string' ? apt.service : apt.service?.name || "Chưa xác định"}</div>
-                                  <div className="day-apt-doctor" style={{ color: doctor?.color }}>
+                                  <div className="schct-day-apt-patient">{apt.patient}</div>
+                                  <div className="schct-day-apt-service">{typeof apt.service === 'string' ? apt.service : apt.service?.name || "Chưa xác định"}</div>
+                                  <div className="schct-day-apt-doctor" style={{ color: doctor?.color }}>
                                     {doctor?.name}
                                   </div>
-                                  <div className="day-apt-phone">
+                                  <div className="schct-day-apt-phone">
                                     <Phone size={14} /> {apt.phone}
                                   </div>
                                 </div>
                             )
                           })
                       ) : (
-                          <div className="empty-slot">Trống</div>
+                          <div className="schct-empty-slot">Trống</div>
                       )}
                     </div>
                   </div>
@@ -950,6 +1019,12 @@ const ScheduleContent = () => {
 
   // Hàm render trang danh sách bác sĩ
   const renderDoctorsPage = () => {
+    const filteredDoctors = doctors.filter(doctor => 
+      doctor.id !== "all" && 
+      (doctor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+       (doctor.email && doctor.email.toLowerCase().includes(searchTerm.toLowerCase())))
+    );
+
     return (
       <div>
         <div className="admin-content-header">
@@ -963,38 +1038,207 @@ const ScheduleContent = () => {
 
         <div className="card">
           <div className="card-hdr">
-            <h3 className="card-title">Danh sách bác sĩ</h3>
+            <h3 className="card-title">Danh sách bác sĩ ({filteredDoctors.length})</h3>
           </div>
           <div className="card-content">
-            <div className="search-box doctor-search-box" style={{ marginBottom: "16px" }}>
+            <div className="search-box doctor-search-box" style={{ marginBottom: "20px" }}>
               <Search size={16} className="search-icon" />
               <input
                 type="text"
                 className="search-input"
-                placeholder="Tìm kiếm bác sĩ..."
+                placeholder="Tìm kiếm bác sĩ theo tên, email..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 disabled={loading}
               />
             </div>
-            <div className="doctor-legend">
-              {doctors
-                .filter(doctor => doctor.id !== "all" && doctor.name.toLowerCase().includes(searchTerm.toLowerCase()))
-                .map((doctor) => (
-                  <div
-                    key={doctor.id}
-                    className="legend-item"
-                    onClick={() => handleSelectDoctor(doctor.id)}
-                    style={{ cursor: "pointer" }}
-                  >
-                    <div className="legend-color" style={{ backgroundColor: doctor.color }}></div>
-                    <div className="legend-info">
-                      <div className="legend-name">{doctor.name}</div>
-                      {doctor.specialty && <div className="legend-specialty">{doctor.specialty}</div>}
+            
+            {filteredDoctors.length === 0 ? (
+              <div className="empty-state" style={{ textAlign: "center", padding: "40px", color: "#666" }}>
+                <User size={48} style={{ marginBottom: "16px", opacity: 0.5 }} />
+                <p>Không tìm thấy bác sĩ nào phù hợp</p>
+              </div>
+            ) : (
+              <div className="doctors-grid" style={{ 
+                display: "grid", 
+                gridTemplateColumns: "repeat(auto-fill, minmax(400px, 1fr))", 
+                gap: "20px",
+                marginTop: "20px"
+              }}>
+                {filteredDoctors.map((doctor) => {
+                  return (
+                    <div
+                      key={doctor.id}
+                      className="doctor-card"
+                      onClick={() => handleSelectDoctor(doctor.id)}
+                      style={{
+                        border: "1px solid #e0e0e0",
+                        borderRadius: "12px",
+                        padding: "20px",
+                        backgroundColor: "#fff",
+                        cursor: "pointer",
+                        transition: "all 0.3s ease",
+                        boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                        position: "relative",
+                        overflow: "hidden"
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = "translateY(-2px)";
+                        e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.15)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = "translateY(0)";
+                        e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.1)";
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "flex-start", marginBottom: "16px" }}>
+                        <div style={{
+                          width: "60px",
+                          height: "60px",
+                          borderRadius: "50%",
+                          backgroundColor: doctor.color || "#3b82f6",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          marginRight: "16px",
+                          flexShrink: 0,
+                          overflow: "hidden",
+                          position: "relative"
+                        }}>
+                          {getAvatarUrl(doctor.avatarUrl) ? (
+                            <img 
+                              src={getAvatarUrl(doctor.avatarUrl)} 
+                              alt={doctor.name}
+                              style={{
+                                width: "100%",
+                                height: "100%",
+                                objectFit: "cover",
+                                borderRadius: "50%"
+                              }}
+                              onError={(e) => {
+                                e.target.style.display = 'none';
+                                e.target.nextSibling.style.display = 'flex';
+                              }}
+                            />
+                          ) : null}
+                          <div style={{
+                            width: "100%",
+                            height: "100%",
+                            display: getAvatarUrl(doctor.avatarUrl) ? "none" : "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontSize: "20px",
+                            fontWeight: "600",
+                            color: "white",
+                            position: getAvatarUrl(doctor.avatarUrl) ? "absolute" : "static",
+                            top: 0,
+                            left: 0
+                          }}>
+                            {doctor.name ? doctor.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'BS'}
+                          </div>
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                            <div>
+                              <h4 style={{ 
+                                margin: "0 0 4px 0", 
+                                fontSize: "16px", 
+                                fontWeight: "600",
+                                color: "#1a1a1a"
+                              }}>
+                                Họ và tên: {doctor.name}
+                              </h4>
+                              {doctor.specialty && (
+                                <span style={{
+                                  fontSize: "12px",
+                                  color: "#666",
+                                  backgroundColor: "#f0f0f0",
+                                  padding: "2px 8px",
+                                  borderRadius: "12px"
+                                }}>
+                                  {doctor.specialty}
+                                </span>
+                              )}
+                            </div>
+                            <button
+                              style={{
+                                backgroundColor: "#3b82f6",
+                                color: "white",
+                                border: "none",
+                                borderRadius: "6px",
+                                padding: "6px 12px",
+                                fontSize: "12px",
+                                fontWeight: "500",
+                                cursor: "pointer"
+                              }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleSelectDoctor(doctor.id);
+                              }}
+                            >
+                              Xem chi tiết
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div style={{ marginBottom: "16px" }}>
+                        <div style={{ marginBottom: "8px", fontSize: "14px", color: "#333" }}>
+                          <strong>Email:</strong> {doctor.email || "Chưa cập nhật"}
+                        </div>
+                        <div style={{ marginBottom: "8px", fontSize: "14px", color: "#333" }}>
+                          <strong>Giới tính:</strong> 
+                          <span style={{
+                            marginLeft: "8px",
+                            padding: "2px 8px",
+                            borderRadius: "4px",
+                            fontSize: "12px",
+                            backgroundColor: doctor.gender === "MALE" ? "#e3f2fd" : "#fce4ec",
+                            color: doctor.gender === "MALE" ? "#1976d2" : "#c2185b"
+                          }}>
+                            {doctor.gender === "MALE" ? "Nam" : doctor.gender === "FEMALE" ? "Nữ" : "Chưa cập nhật"}
+                          </span>
+                        </div>
+                        <div style={{ marginBottom: "8px", fontSize: "14px", color: "#333" }}>
+                          <Phone size={14} style={{ marginRight: "6px", verticalAlign: "middle" }} />
+                          <strong>Di động:</strong> {doctor.phone || "Chưa cập nhật"}
+                        </div>
+                      </div>
+
+                      <div style={{ 
+                        borderTop: "1px solid #f0f0f0", 
+                        paddingTop: "12px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between"
+                      }}>
+                        <div style={{ fontSize: "14px", color: "#333" }}>
+                          <Clock size={14} style={{ marginRight: "6px", verticalAlign: "middle" }} />
+                          <strong>Lịch làm việc:</strong>
+                        </div>
+                        <div style={{ display: "flex", gap: "4px" }}>
+                          {["22/11", "24/11", "+21 Ngày"].map((day, index) => (
+                            <span
+                              key={index}
+                              style={{
+                                fontSize: "11px",
+                                padding: "2px 6px",
+                                borderRadius: "4px",
+                                backgroundColor: index < 2 ? "#e8f5e8" : "#fff3cd",
+                                color: index < 2 ? "#2e7d32" : "#856404",
+                                border: index < 2 ? "1px solid #c8e6c9" : "1px solid #ffeaa7"
+                              }}
+                            >
+                              {day}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                ))}
-            </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -1450,9 +1694,9 @@ const ScheduleContent = () => {
 
   // Return chính của component
   return (
-    <div className="schedule-content" style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column" }}>
-      {loading && <div className="loading">Loading...</div>}
-      {error && <div className="error-message">{error}</div>}
+    <div className="schct-schedule-content" style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column" }}>
+      {loading && <div className="schct-loading">Loading...</div>}
+      {error && <div className="schct-error-message">{error}</div>}
 
       {!loading && !error && (
         currentPage === "doctors" ? renderDoctorsPage() : renderSchedulePage()

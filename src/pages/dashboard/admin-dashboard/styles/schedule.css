@@ -1,11 +1,11 @@
 /* Schedule Styles */
-.schedule-container {
+.schct-schedule-container {
     display: grid;
     grid-template-columns: 3fr 1fr;
     gap: 24px;
 }
 
-.schedule-controls {
+.schct-schedule-controls {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -13,28 +13,28 @@
     margin-bottom: 16px;
 }
 
-.view-controls {
+.schct-view-controls {
     display: flex;
     gap: 8px;
 }
 
-.date-navigation {
+.schct-date-navigation {
     display: flex;
     align-items: center;
     gap: 16px;
 }
-.day-apt-status.canceled {
+.schct-day-apt-status.schct-canceled {
     background-color: #fee2e2;
     color: #991b1b;
 }
 
-.date-picker-container {
+.schct-date-picker-container {
     display: flex;
     align-items: center;
     gap: 12px;
 }
 
-.date-picker {
+.schct-date-picker {
     padding: 8px 12px;
     border: 1px solid #d1d5db;
     border-radius: 6px;
@@ -43,7 +43,7 @@
     cursor: pointer;
 }
 
-.current-period {
+.schct-current-period {
     font-weight: 600;
     color: #1e293b;
     min-width: 200px;
@@ -51,20 +51,20 @@
 }
 
 /* Week View */
-.week-view {
+.schct-week-view {
     border: 1px solid #e2e8f0;
     border-radius: 8px;
     overflow: hidden;
 }
 
-.week-header {
+.schct-week-header {
     display: grid;
     grid-template-columns: 80px repeat(7, 1fr);
     background: #f8fafc;
     border-bottom: 1px solid #e2e8f0;
 }
 
-.time-column-header {
+.schct-time-column-header {
     padding: 16px 8px;
     font-weight: 600;
     color: #64748b;
@@ -72,41 +72,41 @@
     text-align: center;
 }
 
-.day-header {
+.schct-day-header {
     padding: 16px 8px;
     text-align: center;
     border-right: 1px solid #e2e8f0;
 }
 
-.day-header.today {
+.schct-day-header.schct-today {
     background: #eff6ff;
     color: #3b82f6;
 }
 
-.day-name {
+.schct-day-name {
     font-weight: 600;
     font-size: 14px;
 }
 
-.day-date {
+.schct-day-date {
     font-size: 12px;
     color: #64748b;
     margin-top: 4px;
 }
 
-.week-body {
+.schct-week-body {
     max-height: 600px;
     overflow-y: auto;
 }
 
-.time-row {
+.schct-time-row {
     display: grid;
     grid-template-columns: 80px repeat(7, 1fr);
     border-bottom: 1px solid #f1f5f9;
     min-height: 60px;
 }
 
-.time-label {
+.schct-time-label {
     padding: 8px;
     font-size: 12px;
     color: #64748b;
@@ -117,7 +117,7 @@
     justify-content: center;
 }
 
-.time-cell {
+.schct-time-cell {
     border-right: 1px solid #f1f5f9;
     padding: 4px;
     position: relative;
@@ -127,7 +127,7 @@
     box-sizing: border-box; /* Bao gồm padding trong chiều rộng */
 }
 
-.appointment-group {
+.schct-appointment-group {
     display: flex;
     flex-direction: row;
     gap: 4px;
@@ -136,7 +136,7 @@
     box-sizing: border-box;
 }
 
-.appointment-block {
+.schct-appointment-block {
     border-radius: 4px;
     padding: 4px 6px;
     font-size: 11px;
@@ -150,12 +150,12 @@
     box-sizing: border-box;
 }
 
-.appointment-block:hover {
+.schct-appointment-block:hover {
     transform: translateY(-1px);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.appointment-block.more {
+.schct-appointment-block.schct-more {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -169,60 +169,60 @@
     box-sizing: border-box;
 }
 
-.apt-time {
+.schct-apt-time {
     font-weight: 600;
     color: #1e293b;
 }
 
-.apt-patient {
+.schct-apt-patient {
     font-weight: 500;
     color: #374151;
     margin-top: 2px;
 }
 
-.apt-service {
+.schct-apt-service {
     color: #64748b;
     font-size: 10px;
 }
 
-.apt-doctor {
+.schct-apt-doctor {
     color: #64748b;
     font-size: 10px;
     margin-top: 2px;
 }
 
 /* Day View */
-.day-view {
+.schct-day-view {
     border: 1px solid #e2e8f0;
     border-radius: 8px;
     overflow: hidden;
 }
 
-.day-header-single {
+.schct-day-header-single {
     background: #f8fafc;
     padding: 20px;
     border-bottom: 1px solid #e2e8f0;
     text-align: center;
 }
 
-.day-header-single h3 {
+.schct-day-header-single h3 {
     margin: 0;
     color: #1e293b;
     font-size: 18px;
 }
 
-.day-schedule {
+.schct-day-schedule {
     max-height: 600px;
     overflow-y: auto;
 }
 
-.day-time-slot {
+.schct-day-time-slot {
     display: flex;
     border-bottom: 1px solid #f1f5f9;
     min-height: 80px;
 }
 
-.day-time-label {
+.schct-day-time-label {
     width: 80px;
     padding: 16px 8px;
     font-size: 14px;
@@ -235,7 +235,7 @@
     justify-content: center;
 }
 
-.day-time-content {
+.schct-day-appointments {
     flex: 1;
     padding: 8px;
     display: flex;
@@ -243,78 +243,80 @@
     gap: 8px;
 }
 
-.day-appointment {
+.schct-day-appointment {
     background: white;
     border: 1px solid #e2e8f0;
-    border-radius: 8px;
+    border-radius: 6px;
     padding: 12px;
+    border-left: 4px solid;
     transition: all 0.2s;
+    cursor: pointer;
 }
 
-.day-appointment:hover {
+.schct-day-appointment:hover {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     transform: translateY(-1px);
 }
 
-.day-apt-header {
+.schct-day-apt-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 8px;
 }
 
-.day-apt-time {
+.schct-day-apt-time {
     font-weight: 600;
     color: #1e293b;
     font-size: 14px;
 }
 
-.day-apt-status {
+.schct-day-apt-status {
     font-size: 12px;
     padding: 2px 6px;
     border-radius: 4px;
 }
 
-.day-apt-status.confirmed {
+.schct-day-apt-status.schct-confirmed {
     background: #dcfce7;
     color: #166534;
 }
 
-.day-apt-status.pending {
+.schct-day-apt-status.schct-pending {
     background: #fef3c7;
     color: #92400b;
 }
 
-.day-apt-status.completed {
+.schct-day-apt-status.schct-completed {
     background: #dbeafe;
     color: #1e40af;
 }
 
-.day-apt-patient {
+.schct-day-apt-patient {
     font-weight: 600;
     color: #1e293b;
     font-size: 16px;
     margin-bottom: 4px;
 }
 
-.day-apt-service {
+.schct-day-apt-service {
     color: #64748b;
     font-size: 14px;
     margin-bottom: 4px;
 }
 
-.day-apt-doctor {
+.schct-day-apt-doctor {
     font-weight: 500;
     font-size: 14px;
     margin-bottom: 4px;
 }
 
-.day-apt-phone {
+.schct-day-apt-phone {
     color: #64748b;
     font-size: 12px;
 }
 
-.empty-slot {
+.schct-empty-slot {
     color: #94a3b8;
     font-style: italic;
     text-align: center;
@@ -322,17 +324,17 @@
 }
 
 /* Doctor Legend */
-.doctor-legend {
+.schct-doctor-legend {
     display: flex;
     flex-direction: column;
     gap: 12px;
 }
 
-.search-box {
+.schct-search-box {
     position: relative;
 }
 
-.search-input {
+.schct-search-input {
     width: 100%;
     padding: 8px 12px 8px 36px;
     border: 1px solid #d1d5db;
@@ -341,13 +343,13 @@
     transition: border-color 0.2s;
 }
 
-.search-input:focus {
+.schct-search-input:focus {
     outline: none;
     border-color: #3b82f6;
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-.search-icon {
+.schct-search-icon {
     position: absolute;
     left: 12px;
     top: 50%;
@@ -356,7 +358,7 @@
     font-size: 14px;
 }
 
-.legend-item {
+.schct-legend-item {
     display: flex;
     align-items: center;
     gap: 12px;
@@ -367,40 +369,40 @@
     transition: all 0.2s ease;
 }
 
-.legend-item:hover {
+.schct-legend-item:hover {
     background-color: #f1f5f9;
 }
 
-.legend-item.active {
+.schct-legend-item.schct-active {
     background-color: #eff6ff;
     border-left: 3px solid #3b82f6;
 }
 
-.legend-color {
+.schct-legend-color {
     width: 16px;
     height: 16px;
     border-radius: 4px;
     flex-shrink: 0;
 }
 
-.legend-info {
+.schct-legend-info {
     flex: 1;
 }
 
-.legend-name {
+.schct-legend-name {
     font-weight: 500;
     color: #1e293b;
     font-size: 14px;
 }
 
-.legend-specialty {
+.schct-legend-specialty {
     color: #64748b;
     font-size: 12px;
     margin-top: 2px;
 }
 
 /* Modal Styles */
-.modal-overlay {
+.schct-modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -413,7 +415,7 @@
     z-index: 1000;
 }
 
-.modal-content {
+.schct-modal-content {
     background: white;
     border-radius: 8px;
     width: 100%;
@@ -423,7 +425,7 @@
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.modal-header {
+.schct-modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -431,14 +433,14 @@
     border-bottom: 1px solid #e2e8f0;
 }
 
-.modal-header h3 {
+.schct-modal-header h3 {
     margin: 0;
     font-size: 18px;
     font-weight: 600;
     color: #1e293b;
 }
 
-.modal-close {
+.schct-modal-close {
     background: none;
     border: none;
     cursor: pointer;
@@ -447,15 +449,15 @@
     transition: color 0.2s;
 }
 
-.modal-close:hover {
+.schct-modal-close:hover {
     color: #1e293b;
 }
 
-.modal-body {
+.schct-modal-body {
     padding: 24px;
 }
 
-.modal-footer {
+.schct-modal-footer {
     display: flex;
     justify-content: flex-end;
     gap: 12px;
@@ -463,32 +465,32 @@
     border-top: 1px solid #e2e8f0;
 }
 
-.form {
+.schct-form {
     display: flex;
     flex-direction: column;
     gap: 16px;
 }
 
-.form-row {
+.schct-form-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 16px;
 }
 
-.form-group {
+.schct-form-group {
     display: flex;
     flex-direction: column;
     gap: 8px;
 }
 
-.form-label {
+.schct-form-label {
     font-size: 14px;
     font-weight: 500;
     color: #1e293b;
 }
 
-.form-input,
-.form-select {
+.schct-form-input,
+.schct-form-select {
     padding: 8px 12px;
     border: 1px solid #d1d5db;
     border-radius: 6px;
@@ -496,14 +498,14 @@
     transition: border-color 0.2s;
 }
 
-.form-input:focus,
-.form-select:focus {
+.schct-form-input:focus,
+.schct-form-select:focus {
     outline: none;
     border-color: #3b82f6;
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-.btn {
+.schct-btn {
     padding: 8px 16px;
     border-radius: 6px;
     font-size: 14px;
@@ -512,44 +514,44 @@
     transition: all 0.2s ease;
 }
 
-.btn-primary {
+.schct-btn-primary {
     background-color: #3b82f6;
     color: white;
     border: none;
 }
 
-.btn-primary:hover {
+.schct-btn-primary:hover {
     background-color: #2563eb;
 }
 
-.btn-secondary {
+.schct-btn-secondary {
     background-color: #f1f5f9;
     color: #1e293b;
     border: 1px solid #d1d5db;
 }
 
-.btn-secondary:hover {
+.schct-btn-secondary:hover {
     background-color: #e2e8f0;
 }
 
-.btn-danger {
+.schct-btn-danger {
     background-color: #ef4444;
     color: white;
     border: none;
 }
 
-.btn-danger:hover {
+.schct-btn-danger:hover {
     background-color: #dc2626;
 }
 
 /* Appointment List for More Modal */
-.appointment-list {
+.schct-appointment-list {
     display: flex;
     flex-direction: column;
     gap: 12px;
 }
 
-.appointment-item {
+.schct-appointment-item {
     background: white;
     border: 1px solid #e2e8f0;
     border-radius: 8px;
@@ -558,45 +560,45 @@
     transition: all 0.2s;
 }
 
-.appointment-item:hover {
+.schct-appointment-item:hover {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     transform: translateY(-1px);
 }
 
-.apt-header {
+.schct-apt-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 8px;
 }
 
-.apt-status {
+.schct-apt-status {
     font-size: 12px;
     padding: 2px 6px;
     border-radius: 4px;
 }
 
-.apt-status.confirmed {
+.schct-apt-status.schct-confirmed {
     background: #dcfce7;
     color: #166534;
 }
 
-.apt-status.pending {
+.schct-apt-status.schct-pending {
     background: #fef3c7;
     color: #92400b;
 }
 
-.apt-status.completed {
+.schct-apt-status.schct-completed {
     background: #dbeafe;
     color: #1e40af;
 }
 
 /* Detail Section Styles */
-.admin-detail-section {
+.schct-admin-detail-section {
     margin-bottom: 24px;
 }
 
-.admin-detail-section-title {
+.schct-admin-detail-section-title {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -606,30 +608,30 @@
     margin-bottom: 16px;
 }
 
-.admin-detail-grid {
+.schct-admin-detail-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 16px;
 }
 
-.admin-detail-item {
+.schct-admin-detail-item {
     display: flex;
     flex-direction: column;
     gap: 4px;
 }
 
-.admin-detail-label {
+.schct-admin-detail-label {
     font-size: 14px;
     font-weight: 500;
     color: #64748b;
 }
 
-.admin-detail-value {
+.schct-admin-detail-value {
     font-size: 14px;
     color: #1e293b;
 }
 
-.status {
+.schct-status {
     display: inline-flex;
     align-items: center;
     gap: 6px;
@@ -638,40 +640,40 @@
     font-size: 12px;
 }
 
-.status.confirmed {
+.schct-status.schct-confirmed {
     background: #dcfce7;
     color: #166534;
 }
 
-.status.pending {
+.schct-status.schct-pending {
     background: #fef3c7;
     color: #92400b;
 }
 
-.status.completed {
+.schct-status.schct-completed {
     background: #dbeafe;
     color: #1e40af;
 }
 
-.loading {
+.schct-loading {
     text-align: center;
     padding: 20px;
     color: #64748b;
 }
 
-.error-message {
+.schct-error-message {
     text-align: center;
     padding: 20px;
     color: #ef4444;
 }
 
 /* Form Error Styles */
-.form-input--error,
-.form-select--error {
+.schct-form-input--error,
+.schct-form-select--error {
     border-color: #ef4444;
 }
 
-.form-error-message {
+.schct-form-error-message {
     color: #ef4444;
     font-size: 12px;
     margin-top: 4px;

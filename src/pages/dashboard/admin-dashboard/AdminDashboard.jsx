@@ -1,6 +1,7 @@
 import React, { useState } from "react"
 import { Stethoscope, Users, Calendar, Package, UserCircle, LogOut, Home, Clock as ClockIcon, ChevronLeft, ChevronRight, Menu, Activity } from "lucide-react"
 import "./styles/index.css"
+import logo from "../../../assets/logo.png"
 
 import {
   Sidebar,
@@ -102,7 +103,7 @@ const AdminDashboard = () => {
                 className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
                 <div className="flex aspect-square size-6 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
                   <img
-                      src="https://storage.googleapis.com/tagjs-prod.appspot.com/v1/VY3PPTks6o/e8ggwzic_expires_30_days.png"
+                      src={logo}
                     alt="Eyespire Logo"
                     className="size-4"
                   />

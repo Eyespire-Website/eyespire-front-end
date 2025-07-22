@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import authService from "../../../services/authService";
 import "../login/login.css";
 import "./forgot-password.css";
+import logo from "../../../assets/logo.png";
 import login_image from "../../../assets/login-image.jpg";
 
 export default function ForgotPasswordPage() {
@@ -47,7 +48,7 @@ export default function ForgotPasswordPage() {
                     <div className="header">
                         <div className="logo" onClick={() => navigate("/")}>
                             <img
-                                src="https://storage.googleapis.com/tagjs-prod.appspot.com/v1/VY3PPTks6o/e8ggwzic_expires_30_days.png"
+                                src={logo}
                                 className="logo-image"
                                 alt="Eyespire Logo"
                             />

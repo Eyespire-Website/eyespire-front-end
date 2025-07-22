@@ -476,3 +476,244 @@
     bottom: 70px;
   }
 }
+
+/* AI Suggestions Panel */
+.aibox-suggestions-panel {
+  position: absolute;
+  bottom: 80px;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px 12px 0 0;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 1000;
+  animation: slideUpFadeIn 0.3s ease-out;
+}
+
+.aibox-suggestions-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+  color: white;
+  border-radius: 12px 12px 0 0;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.aibox-suggestions-close {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.aibox-suggestions-close:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.aibox-suggestions-content {
+  padding: 16px;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.aibox-suggestion-category {
+  margin-bottom: 20px;
+}
+
+.aibox-suggestion-category:last-child {
+  margin-bottom: 0;
+}
+
+.aibox-category-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  margin: 0 0 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.aibox-category-title::before {
+  content: '';
+  width: 3px;
+  height: 16px;
+  background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+  border-radius: 2px;
+}
+
+.aibox-suggestion-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.aibox-suggestion-item {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 10px 12px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 13px;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.aibox-suggestion-item:hover {
+  background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+  color: white;
+  border-color: #3b82f6;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+.aibox-suggestion-item i {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.aibox-suggestion-item:hover i {
+  opacity: 1;
+}
+
+/* Input Actions */
+.aibox-input-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding: 8px 16px 4px;
+  gap: 8px;
+}
+
+.aibox-suggestions-button {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 12px;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.aibox-suggestions-button:hover {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.aibox-suggestions-button.active {
+  background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+  color: white;
+  border-color: #3b82f6;
+}
+
+.aibox-suggestions-button i {
+  font-size: 11px;
+}
+
+/* Enhanced Message Styling */
+.aibox-message-content {
+  white-space: pre-wrap;
+  line-height: 1.5;
+}
+
+.aibox-bot-message .aibox-message-bubble {
+  position: relative;
+}
+
+.aibox-bot-message.ai-query .aibox-message-bubble {
+  background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+  border-left: 3px solid #0ea5e9;
+}
+
+.aibox-bot-message.ai-query .aibox-message-bubble::before {
+  content: '🤖';
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background: #0ea5e9;
+  color: white;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+}
+
+/* Animations */
+@keyframes slideUpFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Scrollbar for suggestions */
+.aibox-suggestions-content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.aibox-suggestions-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 2px;
+}
+
+.aibox-suggestions-content::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 2px;
+}
+
+.aibox-suggestions-content::-webkit-scrollbar-thumb:hover {
+  background: #a0aec0;
+}
+
+/* Mobile Responsive for AI Features */
+@media (max-width: 480px) {
+  .aibox-suggestions-panel {
+    max-height: 250px;
+  }
+  
+  .aibox-suggestions-content {
+    padding: 12px;
+    max-height: 190px;
+  }
+  
+  .aibox-suggestion-item {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+  
+  .aibox-category-title {
+    font-size: 12px;
+  }
+  
+  .aibox-input-actions {
+    padding: 6px 12px 3px;
+  }
+  
+  .aibox-suggestions-button {
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+}

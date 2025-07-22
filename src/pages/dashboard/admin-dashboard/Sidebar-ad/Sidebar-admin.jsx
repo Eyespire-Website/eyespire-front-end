@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FaUser, FaCalendar, FaClock, FaUsers, FaBox, FaCog, FaSignOutAlt, FaUserCircle, FaBars } from 'react-icons/fa';
+import logo from '../../../../assets/logo.png';
 import './Sidebar-admin.css';
 
 export const SidebarProvider = ({ children }) => (
@@ -70,7 +71,7 @@ const SidebarAdmin = () => {
       <aside className={`sidebar ${isOpen ? '' : 'collapsed'}`}>
         <div className="sidebar-header">
           <div className="branding" >
-            <img src="https://storage.googleapis.com/tagjs-prod.appspot.com/v1/VY3PPTks6o/e8ggwzic_expires_30_days.png" alt="Eyespire" className="sidebar-logo" />
+            <img src={logo} alt="Eyespire" className="sidebar-logo" />
             <span className="sidebar-title">Eyespire</span>
           </div>
           <div className="dashboard-name">Admin Dashboard</div>

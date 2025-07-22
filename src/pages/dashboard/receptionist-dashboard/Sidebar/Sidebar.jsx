@@ -12,6 +12,7 @@ import {
 } from "react-icons/hi";
 import {HiOutlineBars3} from "react-icons/hi2";
 import "../../admin-dashboard/Sidebar/sidebar.css";
+import logo from "../../../../assets/logo.png";
 import authService from "../../../../services/authService";
 import {useNavigate} from "react-router-dom";
 
@@ -42,7 +43,7 @@ export default function Sidebar({ activeTab, setActiveTab }) {
                 <div className="sidebar-logo-container">
                     <div className="sidebar-logo-content">
                         <img
-                            src="https://storage.googleapis.com/tagjs-prod.appspot.com/v1/VY3PPTks6o/e8ggwzic_expires_30_days.png"
+                            src={logo}
                             alt="Project Logo"
                             className="sidebar-logo-image"
                         />

@@ -5,6 +5,7 @@ import "../login/login.css"
 import {useNavigate} from "react-router-dom"
 import {FcGoogle} from 'react-icons/fc'
 import signup_image from "../../../assets/login-image.jpg"
+import logo from "../../../assets/logo.png"
 import authService from "../../../services/authService"
 
 export default function SignupPage() {
@@ -76,7 +77,7 @@ export default function SignupPage() {
                     <div className="header">
                         <div className="logo" onClick={() => navigate("/")}>
                             <img
-                                src="https://storage.googleapis.com/tagjs-prod.appspot.com/v1/VY3PPTks6o/e8ggwzic_expires_30_days.png"
+                                src={logo}
                                 className="logo-image"
                                 alt="Eyespire Logo"
                             />

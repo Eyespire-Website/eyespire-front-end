@@ -1,11 +1,31 @@
 import axios from 'axios'
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api'
+const API_URL = "http://localhost:8080/api"
+
+// Hàm tiện ích để lấy headers xác thực
+const getAuthHeaders = () => {
+    const token = localStorage.getItem('token')
+    const userId = localStorage.getItem('userId')
+    
+    const headers = {
+        'Content-Type': 'application/json'
+    }
+    
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+    }
+    
+    if (userId) {
+        headers['X-User-ID'] = userId
+    }
+    
+    return headers
+}
 
 // Lấy danh sách refunds đang pending
 export const getPendingRefunds = async () => {
     try {
-        const response = await axios.get(`${API_URL}/refunds/pending`)
+        const response = await axios.get(`${API_URL}/refunds/pending`, { headers: getAuthHeaders() })
         return response.data
     } catch (error) {
         console.error("Error fetching pending refunds:", error)
@@ -16,7 +36,7 @@ export const getPendingRefunds = async () => {
 // Lấy lịch sử refunds của một user
 export const getUserRefundHistory = async (userId) => {
     try {
-        const response = await axios.get(`${API_URL}/refunds/user/${userId}`)
+        const response = await axios.get(`${API_URL}/refunds/user/${userId}`, { headers: getAuthHeaders() })
         return response.data
     } catch (error) {
         console.error("Error fetching user refund history:", error)
@@ -27,7 +47,7 @@ export const getUserRefundHistory = async (userId) => {
 // Lấy tất cả refunds (cho admin)
 export const getAllRefunds = async () => {
     try {
-        const response = await axios.get(`${API_URL}/refunds`)
+        const response = await axios.get(`${API_URL}/refunds`, { headers: getAuthHeaders() })
         return response.data
     } catch (error) {
         console.error("Error fetching all refunds:", error)
@@ -38,7 +58,10 @@ export const getAllRefunds = async () => {
 // Đánh dấu refund hoàn tất
 export const completeRefund = async (refundId, completionData) => {
     try {
+        // Kết hợp headers xác thực và headers cụ thể cho API này
+        const authHeaders = getAuthHeaders();
         const headers = {
+            ...authHeaders,
             'X-User-Name': completionData.completedBy || 'Unknown',
             'X-User-Role': completionData.completedByRole || 'RECEPTIONIST'
         };
@@ -59,7 +82,7 @@ export const completeRefund = async (refundId, completionData) => {
 // Tạo refund mới (khi hủy appointment)
 export const createRefund = async (refundData) => {
     try {
-        const response = await axios.post(`${API_URL}/refunds`, refundData)
+        const response = await axios.post(`${API_URL}/refunds`, refundData, { headers: getAuthHeaders() })
         return response.data
     } catch (error) {
         console.error("Error creating refund:", error)
@@ -70,7 +93,7 @@ export const createRefund = async (refundData) => {
 // Lấy chi tiết một refund
 export const getRefundById = async (refundId) => {
     try {
-        const response = await axios.get(`${API_URL}/refunds/${refundId}`)
+        const response = await axios.get(`${API_URL}/refunds/${refundId}`, { headers: getAuthHeaders() })
         return response.data
     } catch (error) {
         console.error("Error fetching refund details:", error)
@@ -81,7 +104,7 @@ export const getRefundById = async (refundId) => {
 // Cập nhật thông tin refund
 export const updateRefund = async (refundId, updateData) => {
     try {
-        const response = await axios.put(`${API_URL}/refunds/${refundId}`, updateData)
+        const response = await axios.put(`${API_URL}/refunds/${refundId}`, updateData, { headers: getAuthHeaders() })
         return response.data
     } catch (error) {
         console.error("Error updating refund:", error)
@@ -93,6 +116,7 @@ export const updateRefund = async (refundId, updateData) => {
 export const getRefundStats = async (startDate, endDate) => {
     try {
         const response = await axios.get(`${API_URL}/refunds/stats`, {
+            headers: getAuthHeaders(),
             params: { startDate, endDate }
         })
         return response.data

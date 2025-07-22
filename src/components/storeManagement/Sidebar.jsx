@@ -10,6 +10,7 @@ import {
   Home,
   Menu
 } from 'lucide-react';
+import logo from '../../assets/logo.png';
 import './stmStyle/STM-Sidebar.css';
 
 const Sidebar = ({ activeSection, onSectionChange }) => {
@@ -27,7 +28,7 @@ const Sidebar = ({ activeSection, onSectionChange }) => {
       <div className="stm-sidebar-header">
         <div className="stm-logo">
           <img
-            src="https://storage.googleapis.com/tagjs-prod.appspot.com/v1/VY3PPTks6o/e8ggwzic_expires_30_days.png"
+            src={logo}
             alt="Eyespire Logo"
             className="stm-logo-img"
           />

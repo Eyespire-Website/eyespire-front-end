@@ -141,7 +141,7 @@ export default function CreateAppointment() {
         appointmentData?.patient?.wardCode || appointmentData?.patient?.ward || ""
     )
     const [detailedAddress, setDetailedAddress] = useState(appointmentData?.patient?.addressDetail || "")
-    const [selectedService, setSelectedService] = useState(appointmentData?.serviceId?.toString() || "1")
+    const [selectedService, setSelectedService] = useState(appointmentData?.serviceId?.toString() || "2")
     const [selectedDoctor, setSelectedDoctor] = useState(appointmentData?.doctorId?.toString() || "")
     const [reason, setReason] = useState(appointmentData?.notes || "")
     const [selectedDate, setSelectedDate] = useState(isValidDate ? initialDate.getDate() : null)
