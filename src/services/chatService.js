@@ -121,42 +121,43 @@ const chatService = {
     }
   },
 
-  // Gợi ý câu hỏi thông minh
+  // Gợi ý câu hỏi thông minh cho bệnh nhân
   getSuggestedQueries: () => {
     return [
       {
-        category: 'Lịch hẹn',
+        category: 'Lịch hẹn của tôi',
         queries: [
-          'Tìm lịch hẹn hôm nay',
-          'Có bao nhiêu cuộc hẹn tuần này?',
-          'Danh sách lịch hẹn đã hoàn thành',
-          'Lịch hẹn nào bị hủy?'
+          'Lịch hẹn của tôi hôm nay',
+          'Lịch hẹn sắp tới của tôi',
+          'Lịch sử khám bệnh của tôi',
+          'Khi nào tôi cần tái khám?'
         ]
       },
       {
-        category: 'Bệnh nhân',
+        category: 'Hồ sơ bệnh án',
         queries: [
-          'Tìm bệnh nhân có triệu chứng mờ mắt',
-          'Danh sách bệnh nhân khám hôm nay',
-          'Bệnh nhân nào cần tái khám?'
+          'Kết quả khám bệnh gần nhất',
+          'Đơn thuốc của tôi',
+          'Lịch sử điều trị của tôi',
+          'Tình trạng sức khỏe mắt hiện tại'
         ]
       },
       {
-        category: 'Sản phẩm',
+        category: 'Sản phẩm & Thuốc',
         queries: [
-          'Thuốc nhỏ mắt nào có sẵn?',
-          'Kính mắt giá dưới 500k',
-          'Sản phẩm bán chạy nhất',
-          'Thuốc điều trị viêm kết mạc'
+          'Thuốc nhỏ mắt nào phù hợp với tôi?',
+          'Hiển thị các đơn hàng gần đây',
+          'Sản phẩm chăm sóc mắt tốt nhất',
+          'Giá thuốc điều trị bao nhiêu?'
         ]
       },
       {
-        category: 'Thống kê',
+        category: 'Tư vấn sức khỏe',
         queries: [
-          'Doanh thu tháng này',
-          'Báo cáo cuộc hẹn tuần này',
-          'Thống kê bệnh nhân mới',
-          'Sản phẩm bán chạy'
+          'Cách chăm sóc mắt hàng ngày',
+          'Triệu chứng mờ mắt có nguy hiểm không?',
+          'Khi nào cần đi khám mắt?',
+          'Cách phòng ngừa bệnh về mắt'
         ]
       }
     ];

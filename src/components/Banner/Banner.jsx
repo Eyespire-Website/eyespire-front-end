@@ -52,11 +52,11 @@ const Banner = () => {
         
         {/* Phần thống kê */}
         <div className="stats-container">
-          <div className="stat-item">
+          <div className="homepage_stat-item">
             <span className="stat-number">8+</span>
             <span className="stat-text">High Qualified Doctors</span>
           </div>
-          <div className="stat-item">
+          <div className="homepage_stat-item">
             <span className="stat-number">99%</span>
             <span className="stat-text">Positive Feedback</span>
           </div>

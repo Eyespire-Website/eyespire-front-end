@@ -1,6 +1,6 @@
 "use client"
 
-import {useState} from "react"
+import {useState, useEffect} from "react"
 import "./login.css"
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import {faEye, faEyeSlash, faShoppingCart} from '@fortawesome/free-solid-svg-icons'
@@ -13,7 +13,7 @@ import { FcGoogle } from 'react-icons/fc'
 
 
 export default function LoginPage() {
-    const [email, setEmail] = useState("")
+    const [username, setUsername] = useState("")
     const [password, setPassword] = useState("")
     const [rememberMe, setRememberMe] = useState(false)
     const [loading, setLoading] = useState(false)
@@ -22,6 +22,15 @@ export default function LoginPage() {
     const navigate = useNavigate()
 
     const [errors, setErrors] = useState({});
+
+    // Load remembered username on component mount
+    useEffect(() => {
+        const rememberedUsername = localStorage.getItem("rememberedUsername");
+        if (rememberedUsername) {
+            setUsername(rememberedUsername);
+            setRememberMe(true);
+        }
+    }, []);
 
     const handleLogin = async (e) => {
         e.preventDefault()
@@ -32,16 +41,16 @@ export default function LoginPage() {
         setLoading(true)
 
         try {
-            const result = await authService.login(email, password)
+            const result = await authService.login(username, password)
             
             if (result.success) {
                 console.log("Login successful:", result.data)
                 
                 // Lưu thông tin "Remember me" nếu được chọn
                 if (rememberMe) {
-                    localStorage.setItem("rememberedEmail", email)
+                    localStorage.setItem("rememberedUsername", username)
                 } else {
-                    localStorage.removeItem("rememberedEmail")
+                    localStorage.removeItem("rememberedUsername")
                 }
                 
                 // Chuyển hướng dựa trên vai trò người dùng
@@ -95,11 +104,11 @@ export default function LoginPage() {
     }
 
     const validateForm = () => {
-        validateEmail();
+        validateUsername();
         validatePassword();
 
         return (
-            /\S+@\S+\.\S+/.test(email) &&
+            username.trim().length > 0 &&
             password &&
             password.length >= 6
         );
@@ -107,13 +116,11 @@ export default function LoginPage() {
 
 
     // THÊM HAI HÀM validate riêng:
-    const validateEmail = () => {
-        if (!email.trim()) {
-            setErrors((prev) => ({ ...prev, email: "Email is required" }));
-        } else if (!/\S+@\S+\.\S+/.test(email)) {
-            setErrors((prev) => ({ ...prev, email: "Invalid email format" }));
+    const validateUsername = () => {
+        if (!username.trim()) {
+            setErrors((prev) => ({ ...prev, username: "Username or email is required" }));
         } else {
-            setErrors((prev) => ({ ...prev, email: "" }));
+            setErrors((prev) => ({ ...prev, username: "" }));
         }
     };
 
@@ -154,17 +161,17 @@ export default function LoginPage() {
                     {/* Login Form */}
                     <form onSubmit={handleLogin} className="login-form">
                         <div className="form-group">
-                            <label htmlFor="email">Email or Username</label>
+                            <label htmlFor="username">Username or Email</label>
                             <input
                                 type="text"
-                                id="email"
-                                placeholder="Enter Email or Username"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                onBlur={validateEmail}
+                                id="username"
+                                placeholder="Enter Username or Email"
+                                value={username}
+                                onChange={(e) => setUsername(e.target.value)}
+                                onBlur={validateUsername}
                             />
 
-                            {errors.email && <div className="error-message-valid">{errors.email}</div>}
+                            {errors.username && <div className="error-message-valid">{errors.username}</div>}
 
 
                         </div>

@@ -1,214 +1,186 @@
 "use client"
 
-import { useState } from "react"
-import { Users, Calendar, DollarSign, Package, Search } from "lucide-react"
-import RevenueChart from "../charts/RevenueChart"
-import AppointmentStatusChart from "../charts/AppointmentStatusChart"
-import ServicesChart from "../charts/ServicesChart"
-import CustomerGrowthChart from "../charts/CustomerGrowthChart"
-
+import React, { useState, useEffect } from 'react';
+import { Users, Calendar, DollarSign, Package, AlertTriangle } from 'lucide-react';
+import StatCard from '../components/StatCard';
+import OrderRevenueCard from '../components/OrderRevenueCard';
+import AppointmentRevenueCard from '../components/AppointmentRevenueCard';
+import AppointmentStatsCard from '../components/AppointmentStatsCard';
+import ServicesChart from '../charts/ServicesChart';
+import VipCustomersChart from '../charts/VipCustomersChart';
+import TopProductsChart from '../charts/TopProductsChart';
+import dashboardService from '../../../../services/dashboardService';
+import '../styles/dashboard.css';
 
 const DashboardContent = () => {
-  const [searchTerm, setSearchTerm] = useState("")
+  const [dashboardData, setDashboardData] = useState({
+    staff: { total: 0, change: '' },
+    appointments: { total: 0, change: '' },
+    revenue: { total: '', change: '' },
+    products: { total: 0, change: '' }
+  })
+  
+  const [revenueCardsData, setRevenueCardsData] = useState({
+    orderRevenue: { total: '', change: '' },
+    appointmentRevenue: { total: '', change: '' }
+  });
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
-  const activities = [
-    {
-      id: 1,
-      time: "10:30 AM",
-      activity: "Thêm sản phẩm mới vào kho",
-      person: "Nguyễn Văn A",
-      status: "active",
-      statusText: "Hoàn thành",
-    },
-    {
-      id: 2,
-      time: "09:15 AM",
-      activity: "Cập nhật thông tin khách hàng",
-      person: "Trần Thị B",
-      status: "active",
-      statusText: "Hoàn thành",
-    },
-    {
-      id: 3,
-      time: "08:45 AM",
-      activity: "Xuất kho 50 sản phẩm",
-      person: "Lê Văn C",
-      status: "pending",
-      statusText: "Đang xử lý",
-    },
-    {
-      id: 4,
-      time: "08:30 AM",
-      activity: "Nhập kho thiết bị mới",
-      person: "Phạm Thị D",
-      status: "active",
-      statusText: "Hoàn thành",
-    },
-    {
-      id: 5,
-      time: "08:00 AM",
-      activity: "Kiểm tra chất lượng sản phẩm",
-      person: "Hoàng Văn E",
-      status: "active",
-      statusText: "Hoàn thành",
-    },
-  ]
+  // Load dữ liệu dashboard khi component mount
+  useEffect(() => {
+    const loadDashboardData = async () => {
+      try {
+        setLoading(true)
+        const [dashboardData, orderRevenueData, appointmentRevenueData] = await Promise.all([
+          dashboardService.getAllDashboardData(),
+          dashboardService.getOrderRevenueCard(),
+          dashboardService.getAppointmentRevenueCard()
+        ]);
+        
+        setDashboardData(dashboardData)
+        setRevenueCardsData({
+          orderRevenue: orderRevenueData,
+          appointmentRevenue: appointmentRevenueData
+        });
+        setError(null)
+      } catch (err) {
+        console.error('Lỗi khi tải dữ liệu dashboard:', err)
+        setError('Không thể tải dữ liệu dashboard')
+        // Sử dụng dữ liệu fallback nếu có lỗi
+        setDashboardData({
+          staff: { total: 24, change: '+2 từ tháng trước' },
+          appointments: { total: 18, change: '+5 từ hôm qua' },
+          revenue: { total: '₫45.2M', change: '+12% từ tháng trước' },
+          products: { total: 156, change: '-8 từ tuần trước' }
+        })
+        setRevenueCardsData({
+          orderRevenue: { total: '₫20.2M', change: '+8% từ tháng trước' },
+          appointmentRevenue: { total: '₫25.0M', change: '+15% từ tháng trước' }
+        });
+      } finally {
+        setLoading(false)
+      }
+    }
 
-  const filteredActivities = activities.filter(
-      (activity) =>
-          activity.activity.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          activity.person.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          activity.statusText.toLowerCase().includes(searchTerm.toLowerCase()),
-  )
+    loadDashboardData()
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="dashboard-loading">
+        <div className="loading-spinner"></div>
+        <p>Đang tải dữ liệu dashboard...</p>
+      </div>
+    )
+  }
 
   return (
       <div>
-        <div className="stats-grid">
-          <div className="stat-card">
-            <div className="stat-hdr">
-              <span className="stat-title">Tổng nhân viên</span>
-              <Users size={24} className="stat-icon" />
-            </div>
-            <div className="stat-value">24</div>
-            <div className="stat-change positive">+2 từ tháng trước</div>
+        {error && (
+          <div className="error-banner">
+            <p>⚠️ {error} - Hiển thị dữ liệu mẫu</p>
           </div>
-
-          <div className="stat-card">
-            <div className="stat-hdr">
-              <span className="stat-title">Cuộc hẹn hôm nay</span>
-              <Calendar size={24} className="stat-icon" />
-            </div>
-            <div className="stat-value">18</div>
-            <div className="stat-change positive">+5 từ hôm qua</div>
-          </div>
-
-          <div className="stat-card">
-            <div className="stat-hdr">
-              <span className="stat-title">Doanh thu tháng</span>
-              <DollarSign size={24} className="stat-icon" />
-            </div>
-            <div className="stat-value">₫45.2M</div>
-            <div className="stat-change positive">+12% từ tháng trước</div>
-          </div>
-
-          <div className="stat-card">
-            <div className="stat-hdr">
-              <span className="stat-title">Sản phẩm trong kho</span>
-              <Package size={24} className="stat-icon" />
-            </div>
-            <div className="stat-value">156</div>
-            <div className="stat-change negative">-8 từ tuần trước</div>
-          </div>
+        )}
+        
+        <div className="admin-stats-grid">
+          <StatCard
+            title="Tổng nhân viên"
+            value={dashboardData.staff.total.toString()}
+            change={dashboardData.staff.change}
+            icon={<Users size={24} />}
+            changeType={dashboardData.staff.change.includes('+') ? 'positive' : 'negative'}
+          />
+          <StatCard
+            title="Cuộc hẹn hôm nay"
+            value={dashboardData.appointments.total.toString()}
+            change={dashboardData.appointments.change}
+            icon={<Calendar size={24} />}
+            changeType={dashboardData.appointments.change.includes('+') ? 'positive' : 'negative'}
+          />
+          <StatCard
+            title="Doanh thu tháng"
+            value={dashboardData.revenue.total}
+            change={dashboardData.revenue.change}
+            icon={<DollarSign size={24} />}
+            changeType={dashboardData.revenue.change.includes('+') ? 'positive' : 'negative'}
+          />
+          <StatCard
+            title="Sản phẩm trong kho"
+            value={dashboardData.products.total.toLocaleString('vi-VN')}
+            change={dashboardData.products.change}
+            icon={<Package size={24} />}
+            changeType={dashboardData.products.change.includes('+') ? 'positive' : dashboardData.products.total <= 50 ? 'negative' : 'neutral'}
+          />
         </div>
 
         {/* Charts Section */}
         <div className="charts-grid">
-          {/* Revenue Chart */}
-          <div className="chart-card large">
-            <div className="chart-header">
-              <h3 className="chart-title">Doanh thu theo tháng</h3>
-              <div className="chart-controls">
-                <select className="chart-select">
-                  <option value="6months">6 tháng qua</option>
-                  <option value="12months">12 tháng qua</option>
-                  <option value="year">Năm nay</option>
-                </select>
+          {/* Top Row: Revenue Cards + Services Chart */}
+          <div className="top-row-container">
+            <div className="revenue-cards-container">
+              <OrderRevenueCard data={revenueCardsData.orderRevenue} />
+              <AppointmentRevenueCard data={revenueCardsData.appointmentRevenue} />
+            </div>
+            
+            {/* Services Chart */}
+            <div className="chart-card services-chart-card">
+              <div className="chart-header">
+                <h3 className="chart-title">Dịch vụ phổ biến</h3>
+              </div>
+              <div className="chart-content">
+                <ServicesChart />
               </div>
             </div>
-            <div className="chart-content">
-              <RevenueChart />
-            </div>
           </div>
 
-          {/* Appointments Chart */}
-          <div className="chart-card medium">
-            <div className="chart-header">
-              <h3 className="chart-title">Cuộc hẹn theo trạng thái</h3>
-            </div>
-            <div className="chart-content">
-              <AppointmentStatusChart />
-            </div>
+          {/* Appointment Stats Card - Full Width */}
+          <div className="chart-card full-width">
+            <AppointmentStatsCard />
           </div>
-
-          {/* Services Chart */}
-          <div className="chart-card medium">
-            <div className="chart-header">
-              <h3 className="chart-title">Dịch vụ phổ biến</h3>
-            </div>
-            <div className="chart-content">
-              <ServicesChart />
-            </div>
-          </div>
-
-          {/* Customer Growth Chart */}
-          <div className="chart-card large">
-            <div className="chart-header">
-              <h3 className="chart-title">Tăng trưởng khách hàng</h3>
-              <div className="chart-legend">
-                <div className="legend-item">
-                  <div className="legend-color" style={{ backgroundColor: "#3b82f6" }}></div>
-                  <span>Khách hàng mới</span>
-                </div>
-                <div className="legend-item">
-                  <div className="legend-color" style={{ backgroundColor: "#10b981" }}></div>
-                  <span>Khách hàng quay lại</span>
+          
+          {/* Customer Ranking Row */}
+          <div className="customer-ranking-row">
+            <div className="chart-card full-width">
+              <div className="chart-header">
+                <h3 className="chart-title">Xếp hạng khách hàng</h3>
+                <div className="chart-legend">
+                  <div className="legend-item">
+                    <div className="legend-color" style={{ backgroundColor: "#FFD700" }}></div>
+                    <span>Vàng</span>
+                  </div>
+                  <div className="legend-item">
+                    <div className="legend-color" style={{ backgroundColor: "#C0C0C0" }}></div>
+                    <span>Bạc</span>
+                  </div>
+                  <div className="legend-item">
+                    <div className="legend-color" style={{ backgroundColor: "#CD7F32" }}></div>
+                    <span>Đồng</span>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className="chart-content">
-              <CustomerGrowthChart />
-            </div>
-          </div>
-        </div>
-
-        <div className="card">
-          <div className="card-hdr">
-            <div className="card-hdr-content">
-              <h3 className="card-title">Hoạt động gần đây</h3>
-              <div className="search-box">
-                <input
-                    type="text"
-                    placeholder="Tìm kiếm..."
-                    className="search-input"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                />
-                <Search size={16} className="search-icon" />
+              <div className="chart-content">
+                <VipCustomersChart />
               </div>
             </div>
           </div>
-          <div className="card-content">
-            <div className="tbl-container">
-              <table className="tbl">
-                <thead>
-                <tr>
-                  <th>Thời gian</th>
-                  <th>Hoạt động</th>
-                  <th>Người thực hiện</th>
-                  <th>Trạng thái</th>
-                </tr>
-                </thead>
-                <tbody>
-                {filteredActivities.length > 0 ? (
-                    filteredActivities.map((activity) => (
-                        <tr key={activity.id}>
-                          <td>{activity.time}</td>
-                          <td>{activity.activity}</td>
-                          <td>{activity.person}</td>
-                          <td>
-                            <span className={`status ${activity.status}`}>{activity.statusText}</span>
-                          </td>
-                        </tr>
-                    ))
-                ) : (
-                    <tr>
-                      <td colSpan="4" className="no-results">
-                        Không tìm thấy hoạt động nào phù hợp
-                      </td>
-                    </tr>
-                )}
-                </tbody>
-              </table>
+          
+          {/* Top Products Row */}
+          <div className="top-products-row">
+            <div className="chart-card full-width">
+              <div className="chart-header">
+                <h3 className="chart-title">Top sản phẩm bán chạy</h3>
+                <div className="chart-controls">
+                  <select className="chart-select">
+                    <option value="30days">30 ngày qua</option>
+                    <option value="7days">7 ngày qua</option>
+                    <option value="90days">90 ngày qua</option>
+                  </select>
+                </div>
+              </div>
+              <div className="chart-content">
+                <TopProductsChart />
+              </div>
             </div>
           </div>
         </div>

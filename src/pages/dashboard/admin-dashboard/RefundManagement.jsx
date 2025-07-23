@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import ManualRefundList from '../../../components/ManualRefundList';
 import RefundStats from '../../../components/RefundStats';
 import UserRefundHistory from '../../../components/UserRefundHistory';
+import PatientSelector from '../../../components/PatientSelector';
 
 const RefundManagement = () => {
     const [activeTab, setActiveTab] = useState('pending');
@@ -23,48 +24,41 @@ const RefundManagement = () => {
             case 'history':
                 return (
                     <div>
-                        <div style={{ marginBottom: '20px' }}>
-                            <input
-                                type="text"
-                                placeholder="Nhập ID bệnh nhân để xem lịch sử hoàn tiền..."
-                                value={selectedUserId || ''}
-                                onChange={(e) => setSelectedUserId(e.target.value)}
-                                style={{
-                                    padding: '10px',
-                                    borderRadius: '4px',
-                                    border: '1px solid #ddd',
-                                    width: '300px',
-                                    marginRight: '10px'
+                        <div style={{ 
+                            marginBottom: '20px',
+                            padding: '20px',
+                            backgroundColor: '#f8f9fa',
+                            borderRadius: '8px'
+                        }}>
+                            <h4 style={{ margin: '0 0 15px 0', color: '#333' }}>
+                                Chọn bệnh nhân để xem lịch sử hoàn tiền
+                            </h4>
+                            <PatientSelector 
+                                onPatientSelect={(patient) => {
+                                    setSelectedUserId(patient.id);
+                                    setSelectedPatientName(patient.name);
                                 }}
-                            />
-                            <input
-                                type="text"
-                                placeholder="Tên bệnh nhân (tùy chọn)"
-                                value={selectedPatientName}
-                                onChange={(e) => setSelectedPatientName(e.target.value)}
-                                style={{
-                                    padding: '10px',
-                                    borderRadius: '4px',
-                                    border: '1px solid #ddd',
-                                    width: '200px'
-                                }}
+                                selectedPatientId={selectedUserId}
                             />
                         </div>
+                        
                         {selectedUserId && (
                             <UserRefundHistory 
                                 userId={selectedUserId} 
                                 patientName={selectedPatientName}
                             />
                         )}
+                        
                         {!selectedUserId && (
                             <div style={{
                                 textAlign: 'center',
                                 padding: '40px',
                                 color: '#666',
-                                backgroundColor: '#f8f9fa',
-                                borderRadius: '8px'
+                                backgroundColor: '#fff',
+                                borderRadius: '8px',
+                                border: '1px solid #dee2e6'
                             }}>
-                                Nhập ID bệnh nhân để xem lịch sử hoàn tiền
+                                👥 Chọn bệnh nhân từ danh sách ở trên để xem lịch sử hoàn tiền
                             </div>
                         )}
                     </div>
