@@ -9,13 +9,16 @@ import FilterBar from "../../../components/storeManagement/FilterBar";
 import Pagination from "../../../components/storeManagement/Pagination";
 import OrderDetailModal from "../../../components/storeManagement/OrderDetailModal";
 import CreateOrderPage from "./CreateOrderPage";
+import CreateMedicationOrderPage from "./CreateMedicationOrderPage";
 import orderService from "../../../services/orderService";
+import appointmentService from "../../../services/appointmentService";
 import {
   ShoppingCart,
   CheckCircle,
   DollarSign,
   Eye,
   Package,
+  Pill,
 } from "lucide-react";
 
 const OrdersPage = () => {
@@ -25,6 +28,7 @@ const OrdersPage = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showCreateOrder, setShowCreateOrder] = useState(false);
+  const [showCreateMedicationOrder, setShowCreateMedicationOrder] = useState(false);
   const [orders, setOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -32,20 +36,49 @@ const OrdersPage = () => {
   const statuses = ["PAID", "SHIPPED", "COMPLETED", "CANCELED"];
   const itemsPerPage = 10;
 
-  // Function to reset filters and pagination
+  const getStatusText = (status) => {
+    switch (status.toUpperCase()) {
+      case "PAID":
+        return "Đã thanh toán";
+      case "SHIPPED":
+        return "Đã gửi hàng";
+      case "COMPLETED":
+        return "Đã hoàn thành";
+      case "CANCELED":
+        return "Đã hủy";
+      default:
+        return "Không xác định";
+    }
+  };
+
+  const filterOptions = [
+    {
+      label: "Trạng thái",
+      value: statusFilter,
+      options: [
+        { value: "all", label: "Tất cả" },
+        ...statuses.map((status) => ({
+          value: status,
+          label: getStatusText(status),
+        })),
+      ],
+      onChange: setStatusFilter,
+    },
+  ];
+
   const resetFilters = () => {
     setSearchTerm("");
     setStatusFilter("all");
     setCurrentPage(1);
   };
 
-  // Fetch all orders from backend on mount
   useEffect(() => {
     const fetchOrders = async () => {
       setIsLoading(true);
       setError(null);
       try {
         const fetchedOrders = await orderService.getAllOrders();
+        console.log("Fetched Orders:", fetchedOrders); // Debug log
         const mappedOrders = await Promise.all(
             fetchedOrders.map(async (order) => {
               if (!order || !order.id) {
@@ -80,12 +113,13 @@ const OrdersPage = () => {
                 subtotal: parseFloat(
                     (order.items || []).reduce((sum, item) => sum + parseFloat(item.subtotal || 0), 0)
                 ),
-                shipping: order.shippingAddress ? 50000 : 0, // Adjust for in-store orders
+                shipping: order.shippingAddress ? 50000 : 0,
                 tax: parseFloat(order.totalAmount || 0) * 0.1,
                 total: parseFloat(order.totalAmount || 0),
                 notes: "N/A",
                 createdAt: order.createdAt || new Date().toISOString(),
                 updatedAt: order.updatedAt || order.createdAt || new Date().toISOString(),
+                appointmentId: order.appointmentId,
               };
             })
         );
@@ -105,6 +139,28 @@ const OrdersPage = () => {
     fetchOrders();
   }, []);
 
+  const totalOrders = orders.filter((order) => order.status !== "PENDING").length;
+  const completedOrders = orders.filter((order) => order.status === "COMPLETED").length;
+  const totalRevenue = orders
+      .filter((order) => order.status === "COMPLETED")
+      .reduce((sum, order) => sum + order.total, 0);
+  const newOrders = orders.filter((order) => {
+    if (!order.createdAt) {
+      console.warn(`Order ${order.id} missing createdAt`);
+      return false;
+    }
+    try {
+      return (
+          new Date(order.createdAt).toLocaleDateString("vi-VN", {
+            timeZone: "Asia/Ho_Chi_Minh",
+          }) === new Date().toLocaleDateString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" })
+      );
+    } catch (e) {
+      console.warn(`Invalid createdAt for order ${order.id}:`, order.createdAt);
+      return false;
+    }
+  }).length;
+
   const filteredOrders = orders.filter((order) => {
     const matchesSearch =
         order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -120,21 +176,6 @@ const OrdersPage = () => {
       currentPage * itemsPerPage
   );
 
-  const getStatusText = (status) => {
-    switch (status.toUpperCase()) {
-      case "PAID":
-        return "Đã thanh toán";
-      case "SHIPPED":
-        return "Đã gửi hàng";
-      case "COMPLETED":
-        return "Đã hoàn thành";
-      case "CANCELED":
-        return "Đã hủy";
-      default:
-        return "Không xác định";
-    }
-  };
-
   const handleViewOrder = (order) => {
     setSelectedOrder(order);
     setIsModalOpen(true);
@@ -142,7 +183,6 @@ const OrdersPage = () => {
 
   const handleOrderCreated = async (orderData) => {
     try {
-      // Use the orderData directly (from CreateOrderPage.jsx)
       const patient = await orderService.getPatientForOrder(orderData.userId);
       const mappedOrder = {
         id: `#${orderData.id.toString().padStart(3, "0")}`,
@@ -196,43 +236,67 @@ const OrdersPage = () => {
     }
   };
 
-  // Calculate statistics excluding PENDING orders
-  const totalOrders = filteredOrders.length;
-  const completedOrders = filteredOrders.filter((order) => order.status === "COMPLETED").length;
-  const totalRevenue = orders
-      .filter((order) => order.status === "COMPLETED")
-      .reduce((sum, order) => sum + order.total, 0);
-  const newOrders = orders.filter((order) => {
-    if (!order.createdAt) {
-      console.warn(`Order ${order.id} missing createdAt`);
-      return false;
-    }
-    try {
-      return (
-          new Date(order.createdAt).toLocaleDateString("vi-VN", {
-            timeZone: "Asia/Ho_Chi_Minh",
-          }) === new Date().toLocaleDateString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" })
-      );
-    } catch (e) {
-      console.warn(`Invalid createdAt for order ${order.id}:`, order.createdAt);
-      return false;
-    }
-  }).length;
+  const handleCreateMedicationOrder = () => {
+    console.log("Lấy thuốc button clicked in FilterBar"); // Debug log
+    setSelectedOrder(null); // Clear selected order
+    setShowCreateMedicationOrder(true);
+  };
 
-  const filterOptions = [
-    {
-      label: "Trạng thái",
-      value: statusFilter,
-      options: [
-        { value: "all", label: "Tất cả" },
-        ...statuses.map((status) => ({
-          value: status,
-          label: getStatusText(status),
+  const handleMedicationOrderCreated = async (orderData) => {
+    try {
+      const patient = await orderService.getPatientForOrder(orderData.userId);
+      const mappedOrder = {
+        id: `#${orderData.id.toString().padStart(3, "0")}`,
+        customerName: patient.name || `Khách hàng ${orderData.userId || "N/A"}`,
+        customerEmail: patient.email || `user${orderData.userId || "unknown"}@example.com`,
+        customerPhone: patient.phone || "N/A",
+        customerAddress: orderData.shippingAddress || "N/A",
+        orderDate: orderData.orderDate
+            ? new Date(orderData.orderDate).toLocaleDateString("vi-VN", {
+              timeZone: "Asia/Ho_Chi_Minh",
+            })
+            : "N/A",
+        status: orderData.status || "PAID",
+        statusText: getStatusText(orderData.status || "PAID"),
+        paymentMethod: orderData.payment?.transactionNo ? "Chuyển khoản" : "Tiền mặt",
+        paymentStatus: orderData.payment?.status || "COMPLETED",
+        shippingMethod: "Giao hàng tiêu chuẩn",
+        items: (orderData.items || []).map((item) => ({
+          id: item.productId?.toString() || "0",
+          name: item.productName || "Không xác định",
+          image: item.image || "/placeholder.svg?height=60&width=60",
+          quantity: item.quantity || 0,
+          price: parseFloat(item.price || 0),
+          total: parseFloat(item.subtotal || item.quantity * item.price || 0),
         })),
-      ],
-      onChange: setStatusFilter,
-    },
-  ];
+        subtotal: parseFloat(
+            (orderData.items || []).reduce((sum, item) => sum + parseFloat(item.subtotal || item.quantity * item.price || 0), 0)
+        ),
+        shipping: orderData.shippingAddress ? 50000 : 0,
+        tax: parseFloat(orderData.totalAmount || 0) * 0.1,
+        total: parseFloat(orderData.totalAmount || 0),
+        notes: "N/A",
+        createdAt: orderData.createdAt || new Date().toISOString(),
+        updatedAt: orderData.updatedAt || orderData.createdAt || new Date().toISOString(),
+        appointmentId: orderData.appointmentId,
+      };
+      setOrders((prevOrders) => [mappedOrder, ...prevOrders]);
+      setShowCreateMedicationOrder(false);
+      toast.success(`Đơn hàng thuốc ${mappedOrder.id} đã được tạo thành công!`, {
+        toastId: `medication-order-created-${mappedOrder.id}`,
+      });
+      resetFilters();
+    } catch (err) {
+      console.error("Error processing medication order:", {
+        message: err.message,
+        status: err.response?.status,
+        data: err.response?.data,
+      });
+      toast.error(`Lỗi khi xử lý đơn hàng thuốc: ${err.message || "Vui lòng thử lại."}`, {
+        toastId: "medication-order-error",
+      });
+    }
+  };
 
   const handleStatusUpdate = (updatedOrder) => {
     setOrders((prevOrders) =>
@@ -277,6 +341,16 @@ const OrdersPage = () => {
     );
   }
 
+  if (showCreateMedicationOrder) {
+    console.log("Rendering CreateMedicationOrderPage"); // Debug log
+    return (
+        <CreateMedicationOrderPage
+            onBack={() => setShowCreateMedicationOrder(false)}
+            onOrderCreated={handleMedicationOrderCreated}
+        />
+    );
+  }
+
   return (
       <div>
         <ToastContainer position="top-right" autoClose={5000} />
@@ -315,11 +389,13 @@ const OrdersPage = () => {
             </div>
           </div>
           <div className="card-content">
-            <FilterBar
-                filters={filterOptions}
-                onAddNew={() => setShowCreateOrder(true)}
-                addButtonText="Tạo đơn hàng"
-            />
+            <div className="filter-bar-container">
+              <FilterBar
+                  filters={filterOptions}
+                  onAddNew={() => setShowCreateOrder(true)}
+                  addButtonText="Tạo đơn hàng"
+              />
+            </div>
 
             <div className="tbl-container">
               <table className="tbl">

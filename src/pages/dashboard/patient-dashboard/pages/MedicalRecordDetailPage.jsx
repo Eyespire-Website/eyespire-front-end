@@ -5,17 +5,12 @@ import medicalRecordService from "../../../../services/medicalRecordService";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import '../styles/medical-records-detail.css';
-import { Calendar, Package, FileText, History, User, Camera, ArrowLeft } from 'lucide-react';
+import { Calendar, FileText, Camera, ArrowLeft } from 'lucide-react';
 
 const MedicalRecordDetailPage = () => {
     const navigate = useNavigate();
     const { id: recordId } = useParams();
-    const [user, setUser] = useState({
-        name: "Đỗ Quang Dũng",
-        email: "doquangdung1782004@gmail.com",
-        role: "patient",
-    });
-
+    const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [recordDetail, setRecordDetail] = useState(null);
     const [error, setError] = useState(null);
@@ -28,8 +23,8 @@ const MedicalRecordDetailPage = () => {
         }
 
         setUser({
-            name: currentUser.name || "Đỗ Quang Dũng",
-            email: currentUser.email || "doquangdung1782004@gmail.com",
+            name: currentUser.name || "Người dùng",
+            email: currentUser.email || "",
             role: currentUser.role || "patient",
             avatar: currentUser.avatarUrl || null,
             id: currentUser.id
@@ -43,53 +38,35 @@ const MedicalRecordDetailPage = () => {
         setError(null);
         try {
             const data = await medicalRecordService.getMedicalRecordById(id);
-            console.log("Chi tiết hồ sơ điều trị từ API:", data);
-            
-            // Xử lý tên bác sĩ
+
             let doctorName = "Bác sĩ";
             if (data.doctor) {
-                if (data.doctor.user && data.doctor.user.fullName) {
-                    doctorName = "BS. " + data.doctor.user.fullName;
-                } else if (data.doctor.fullName) {
-                    doctorName = "BS. " + data.doctor.fullName;
-                } else if (data.doctor.name) {
-                    doctorName = "BS. " + data.doctor.name;
-                }
+                doctorName = "BS. " + (data.doctor.user?.fullName || data.doctor.fullName || data.doctor.name || "Bác sĩ");
             }
-            
-            // Xử lý tên bệnh nhân
-            let patientName = user.name;
+
+            let patientName = user?.name || "Bệnh nhân";
             if (data.patient) {
-                if (data.patient.fullName) {
-                    patientName = data.patient.fullName;
-                } else if (data.patient.name) {
-                    patientName = data.patient.name;
-                }
+                patientName = data.patient.fullName || data.patient.name || patientName;
             }
-            
-            // Xử lý dịch vụ y tế từ cuộc hẹn
+
             let serviceName = "Khám mắt";
-            if (data.appointment && data.appointment.service) {
-                serviceName = data.appointment.service.name || "Khám mắt";
+            if (data.appointment?.service) {
+                serviceName = data.appointment.service.name || serviceName;
             }
-            
-            // Xử lý toa thuốc
+
             let prescriptions = [];
-            if (data.recommendedProducts && data.recommendedProducts.length > 0) {
+            if (data.recommendedProducts?.length > 0) {
                 prescriptions = data.recommendedProducts.map(item => ({
-                    name: item.product ? item.product.name : "Thuốc",
+                    name: item.product?.name || "Thuốc",
                     dosage: item.dosage || "Theo chỉ định",
                     frequency: item.frequency || "Theo chỉ định",
                     duration: item.quantity ? `${item.quantity} viên` : "Theo chỉ định",
                     note: item.note || ""
                 }));
             }
-            
-            // Xử lý hình ảnh và tệp đính kèm
+
             let images = [];
             let otherFiles = [];
-            
-            // Xử lý recordFileUrl nếu có
             if (data.recordFileUrl) {
                 const url = getImageUrl(data.recordFileUrl);
                 if (url.match(/\.(jpeg|jpg|gif|png|webp)$/i)) {
@@ -98,9 +75,7 @@ const MedicalRecordDetailPage = () => {
                     otherFiles.push(url);
                 }
             }
-            
-            // Xử lý mảng recordFiles nếu có
-            if (data.recordFiles && Array.isArray(data.recordFiles)) {
+            if (data.recordFiles?.length > 0) {
                 data.recordFiles.forEach(file => {
                     const url = getImageUrl(file.url || file);
                     if (url.match(/\.(jpeg|jpg|gif|png|webp)$/i)) {
@@ -110,12 +85,11 @@ const MedicalRecordDetailPage = () => {
                     }
                 });
             }
-            
-            // Xử lý ngày tạo
-            const createdDate = data.createdAt 
+
+            const createdDate = data.createdAt
                 ? new Date(data.createdAt).toLocaleDateString('vi-VN')
                 : "Không xác định";
-            
+
             const formattedRecord = {
                 id: data.id,
                 recordId: data.id,
@@ -137,8 +111,7 @@ const MedicalRecordDetailPage = () => {
                 intraocularPressure: data.intraocularPressure || "Không có thông tin",
                 refraction: data.refraction || "Không có thông tin"
             };
-            
-            console.log("Dữ liệu đã format:", formattedRecord);
+
             setRecordDetail(formattedRecord);
         } catch (err) {
             console.error("Error fetching medical record detail:", err);
@@ -151,52 +124,35 @@ const MedicalRecordDetailPage = () => {
 
     const getImageUrl = (url) => {
         if (!url) return null;
-
         if (url.startsWith('http://') || url.startsWith('https://')) {
             return url;
         }
-
-        if (url.startsWith('/')) {
-            return `http://localhost:8080${url}`;
-        }
-
-        return `http://localhost:8080/${url}`;
+        return `${process.env.REACT_APP_API_URL || 'http://localhost:8080'}${url.startsWith('/') ? url : `/${url}`}`;
     };
 
     const getAvatarUrl = (url) => {
         if (!url) return null;
-
         if (url.startsWith('http://') || url.startsWith('https://')) {
             return url;
         }
-
-        if (url.startsWith('/')) {
-            return `http://localhost:8080${url}`;
-        }
-
-        return url;
+        return `${process.env.REACT_APP_API_URL || 'http://localhost:8080'}${url.startsWith('/') ? url : `/${url}`}`;
     };
 
     const handleBackToList = () => {
-        console.log('Going back to medical records list');
         navigate('/dashboard/patient/medical-records');
-    };
-
-    const handleMenuClick = (route) => {
-        navigate(route);
     };
 
     const handleImageClick = (image, index) => {
         console.log('Open image:', image, index);
     };
 
-    if (!recordDetail) {
+    if (!recordDetail && !loading) {
         return (
-            <div className="dashboard-container">
+            <div className="mrd-container">
                 <ToastContainer position="top-right" autoClose={3000} />
-                <div className="main-content">
-                    <div className="loading-container">
-                        <div className="loading-text">Đang tải...</div>
+                <div className="mrd-content">
+                    <div className="mrd-loading-container">
+                        <div className="mrd-loading-spinner">Không có dữ liệu</div>
                     </div>
                 </div>
             </div>
@@ -204,169 +160,149 @@ const MedicalRecordDetailPage = () => {
     }
 
     return (
-        <div className="dashboard-container">
+        <div className="mrd-container">
             <ToastContainer position="top-right" autoClose={3000} />
-            <div className="main-content" style={{ width: '100%', marginLeft: 0 }}>
-                <header className="content-header">
-                    <div className="header-left">
-                        <button
-                            className="back-button"
-                            onClick={handleBackToList}
-                        >
-                            <ArrowLeft size={16} />
-                        </button>
-                        <h1>Chi tiết hồ sơ</h1>
-                    </div>
-
-                    <div className="header-right">
-                        <div className="user-avatar">
-                            {user.avatar ? (
-                                <img src={getAvatarUrl(user.avatar)} alt={user.name} className="avatar-image" />
-                            ) : (
-                                <div className="avatar-fallback">
-                                    {user.name?.charAt(0) || "U"}
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </header>
-
-                <div className="breadcrumb-container">
-                    <nav className="breadcrumb">
-                        <div className="breadcrumb-item">
-                            <FileText size={16} />
-                            <span>Hồ sơ điều trị</span>
-                        </div>
-                        <span className="breadcrumb-separator">/</span>
-                        <div className="breadcrumb-item">
-                            <span onClick={handleBackToList} className="breadcrumb-link">
-                                Danh sách hồ sơ bệnh án
-                            </span>
-                        </div>
-                        <span className="breadcrumb-separator">/</span>
-                        <div className="breadcrumb-item active">
-                            <span>Chi tiết hồ sơ</span>
-                        </div>
-                    </nav>
+            <header className="mrd-header">
+                <div className="mrd-header-left">
+                    <button className="mrd-back-button" onClick={handleBackToList}>
+                        <ArrowLeft size={16} />
+                    </button>
+                    <h1 className="mrd-title">Chi tiết hồ sơ</h1>
                 </div>
+                <div className="mrd-header-right">
+                    <div className="mrd-user-avatar">
+                        {user?.avatar ? (
+                            <img src={getAvatarUrl(user.avatar)} alt={user.name} className="mrd-avatar-image" />
+                        ) : (
+                            user?.name?.charAt(0) || "U"
+                        )}
+                    </div>
+                </div>
+            </header>
 
-                <div className="medical-record-detail-content">
-                    {loading ? (
-                        <div className="loading-container">
-                            <div className="loading-text">Đang tải...</div>
-                        </div>
-                    ) : (
-                        <div className="detail-grid">
-                            <div className="detail-card">
-                                <h2 className="card-title">Thông tin chung</h2>
-                                <div className="card-content">
-                                    <div className="info-row">
-                                        <span className="info-label">Mã hồ sơ:</span>
-                                        <p className="info-value">{recordDetail.id}</p>
-                                    </div>
-                                    <div className="info-row">
-                                        <span className="info-label">Tên khách:</span>
-                                        <p className="info-value">{recordDetail.patient}</p>
-                                    </div>
-                                    <div className="info-row">
-                                        <span className="info-label">Dịch vụ:</span>
-                                        <p className="info-value">{recordDetail.serviceName}</p>
-                                    </div>
-                                    <div className="info-row">
-                                        <span className="info-label">Ngày khám:</span>
-                                        <p className="info-value">{recordDetail.date}</p>
-                                    </div>
-                                    <div className="info-row">
-                                        <span className="info-label">Bác sĩ:</span>
-                                        <p className="info-value">{recordDetail.doctor}</p>
-                                    </div>
-                                    {recordDetail.images && recordDetail.images.length > 0 && (
-                                        <div className="info-row">
-                                            <span className="info-label">Hình ảnh:</span>
-                                            <div className="images-grid">
-                                                {recordDetail.images.map((image, index) => (
-                                                    <div
-                                                        key={index}
-                                                        className="image-item"
-                                                        onClick={() => handleImageClick(image, index)}
-                                                    >
-                                                        <img
-                                                            src={image || "/placeholder.svg"}
-                                                            alt={`Hình ảnh khám mắt ${index + 1}`}
-                                                            className="medical-image"
-                                                        />
-                                                        <div className="image-overlay">
-                                                            <Camera size={16} />
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
+            <div className="mrd-breadcrumb-container">
+                <nav className="mrd-breadcrumb">
+                    <div className="mrd-breadcrumb-item">
+                        <FileText size={16} />
+                        <span>Hồ sơ điều trị</span>
+                    </div>
+                    <span className="mrd-breadcrumb-separator">/</span>
+                    <div className="mrd-breadcrumb-item">
+                        <span onClick={handleBackToList} className="mrd-breadcrumb-link">
+                            Danh sách hồ sơ bệnh án
+                        </span>
+                    </div>
+                    <span className="mrd-breadcrumb-separator">/</span>
+                    <div className="mrd-breadcrumb-item active">
+                        <span>Chi tiết hồ sơ</span>
+                    </div>
+                </nav>
+            </div>
+
+            <div className="mrd-content">
+                {loading ? (
+                    <div className="mrd-loading-container">
+                        <div className="mrd-loading-spinner">Đang tải...</div>
+                    </div>
+                ) : (
+                    <div className="mrd-detail-grid">
+                        <div className="mrd-detail-card">
+                            <h2 className="mrd-card-title">Thông tin chung</h2>
+                            <div className="mrd-card-content">
+                                <div className="mrd-info-row">
+                                    <span className="mrd-info-label">Mã hồ sơ:</span>
+                                    <p className="mrd-info-value">{recordDetail.id}</p>
                                 </div>
-                            </div>
-
-                            <div className="detail-card">
-                                <h2 className="card-title">Chẩn đoán và điều trị</h2>
-                                <div className="card-content">
-                                    <div className="info-row">
-                                        <span className="info-label">Chẩn đoán:</span>
-                                        <p className="info-value">{recordDetail.diagnosis}</p>
-                                    </div>
-                                    <div className="info-row">
-                                        <span className="info-label">Phác đồ điều trị:</span>
-                                        <p className="info-value">{recordDetail.treatment}</p>
-                                    </div>
+                                <div className="mrd-info-row">
+                                    <span className="mrd-info-label">Tên khách:</span>
+                                    <p className="mrd-info-value">{recordDetail.patient}</p>
                                 </div>
-                            </div>
-
-                            {recordDetail.prescription && recordDetail.prescription.length > 0 && (
-                                <div className="detail-card">
-                                    <h2 className="card-title">Đơn thuốc</h2>
-                                    <div className="card-content">
-                                        <div className="prescription-list">
-                                            {recordDetail.prescription.map((item, index) => (
-                                                <div key={index} className="prescription-item">
-                                                    <div className="prescription-header">
-                                                        <h4 className="prescription-name">{item.name}</h4>
-                                                        <span className="prescription-duration">{item.duration}</span>
-                                                    </div>
-                                                    <div className="prescription-details">
-                                                        <p className="prescription-detail">
-                                                            <span className="detail-label">Liều dùng:</span> {item.dosage}
-                                                        </p>
-                                                        <p className="prescription-detail">
-                                                            <span className="detail-label">Tần suất:</span> {item.frequency}
-                                                        </p>
-                                                        {item.note && (
-                                                            <p className="prescription-detail">
-                                                                <span className="detail-label">Ghi chú:</span> {item.note}
-                                                            </p>
-                                                        )}
+                                <div className="mrd-info-row">
+                                    <span className="mrd-info-label">Dịch vụ:</span>
+                                    <p className="mrd-info-value">{recordDetail.serviceName}</p>
+                                </div>
+                                <div className="mrd-info-row">
+                                    <span className="mrd-info-label">Ngày khám:</span>
+                                    <p className="mrd-info-value">{recordDetail.date}</p>
+                                </div>
+                                <div className="mrd-info-row">
+                                    <span className="mrd-info-label">Bác sĩ:</span>
+                                    <p className="mrd-info-value">{recordDetail.doctor}</p>
+                                </div>
+                                {recordDetail.images?.length > 0 && (
+                                    <div className="mrd-info-row">
+                                        <span className="mrd-info-label">Hình ảnh:</span>
+                                        <div className="mrd-images-grid">
+                                            {recordDetail.images.map((image, index) => (
+                                                <div
+                                                    key={index}
+                                                    className="mrd-image-item"
+                                                    onClick={() => handleImageClick(image, index)}
+                                                >
+                                                    <img
+                                                        src={image || "/placeholder.svg"}
+                                                        alt={`Hình ảnh khám mắt ${index + 1}`}
+                                                        className="mrd-medical-image"
+                                                    />
+                                                    <div className="mrd-image-overlay">
+                                                        <Camera size={16} />
                                                     </div>
                                                 </div>
                                             ))}
                                         </div>
                                     </div>
-                                </div>
-                            )}
+                                )}
+                            </div>
                         </div>
-                    )}
-                </div>
 
-                <footer className="content-footer">
-                    <div className="footer-content">
-                        <div className="footer-left">
-                            2025 EyeSpire. All rights reserved.
+                        <div className="mrd-detail-card">
+                            <h2 className="mrd-card-title">Chẩn đoán và điều trị</h2>
+                            <div className="mrd-card-content">
+                                <div className="mrd-info-row">
+                                    <span className="mrd-info-label">Chẩn đoán:</span>
+                                    <p className="mrd-info-value">{recordDetail.diagnosis}</p>
+                                </div>
+                                <div className="mrd-info-row">
+                                    <span className="mrd-info-label">Phác đồ điều trị:</span>
+                                    <p className="mrd-info-value">{recordDetail.treatment}</p>
+                                </div>
+                            </div>
                         </div>
-                        <div className="footer-right">
-                            <a href="#" className="footer-link">Privacy Policy</a>
-                            <a href="#" className="footer-link">Terms of Service</a>
-                            <a href="#" className="footer-link">Support</a>
-                        </div>
+
+                        {recordDetail.prescription?.length > 0 && (
+                            <div className="mrd-detail-card">
+                                <h2 className="mrd-card-title">Đơn thuốc</h2>
+                                <div className="mrd-card-content">
+                                    <div className="mrd-prescription-list">
+                                        {recordDetail.prescription.map((item, index) => (
+                                            <div key={index} className="mrd-prescription-item">
+                                                <div className="mrd-prescription-header">
+                                                    <h4 className="mrd-prescription-name">{item.name}</h4>
+                                                    <span className="mrd-prescription-duration">{item.duration}</span>
+                                                </div>
+                                                <div className="mrd-prescription-details">
+                                                    <p className="mrd-prescription-detail">
+                                                        <span className="mrd-detail-label">Liều dùng:</span> {item.dosage}
+                                                    </p>
+                                                    <p className="mrd-prescription-detail">
+                                                        <span className="mrd-detail-label">Tần suất:</span> {item.frequency}
+                                                    </p>
+                                                    {item.note && (
+                                                        <p className="mrd-prescription-detail">
+                                                            <span className="mrd-detail-label">Ghi chú:</span> {item.note}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
-                </footer>
+                )}
             </div>
+
         </div>
     );
 };

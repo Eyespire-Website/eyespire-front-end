@@ -1,6 +1,6 @@
 "use client"
 import { useState } from 'react';
-import { Home, ShoppingBag, Box, MessageSquare, User, LogOut } from 'lucide-react';
+import { Home, ShoppingBag, Box, MessageSquare, User, LogOut, Pill } from 'lucide-react';
 import { HiOutlineBars3 } from 'react-icons/hi2';
 import "../admin-dashboard/Sidebar/sidebar.css";
 import logo from "../../../assets/logo.png";
@@ -14,6 +14,7 @@ export default function SideBar({ activeTab, setActiveTab }) {
     const menuItems = [
         { id: "dashboard", label: "Tổng quan", icon: <Home size={18} /> },
         { id: "orders", label: "Quản lý đơn hàng", icon: <ShoppingBag size={18} /> },
+        { id: "medication-pickup", label: "Lấy thuốc", icon: <Pill size={18} /> },
         { id: "inventory", label: "Quản lý kho hàng", icon: <Box size={18} /> },
         { id: "products", label: "Đánh giá sản phẩm", icon: <MessageSquare size={18} /> },
         { id: "messages", label: "Tin nhắn", icon: <MessageSquare size={18} /> },

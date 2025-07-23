@@ -314,7 +314,7 @@ export default function CreateMedicalRecord() {
 
             const response = await medicalRecordService.createMedicalRecordJson(recordDataToSend)
             console.log("Create Medical Record Response:", JSON.stringify(response, null, 2))
-            await appointmentService.updateAppointmentStatus(appointmentId, "WAITING_PAYMENT")
+            await appointmentService.updateAppointmentStatus(appointmentId, "DOCTOR_FINISHED")
             alert("Hồ sơ bệnh án đã được tạo thành công và cuộc hẹn đang chờ thanh toán!")
             setRecordData({ patientId: "", diagnosis: "", serviceIds: [], notes: "" })
             setSelectedFiles([])

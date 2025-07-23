@@ -1,25 +1,34 @@
 "use client"
 
-import { useParams, useNavigate, useLocation } from "react-router-dom"
-import { useEffect, useState, useMemo } from "react"
-import { ArrowLeft, Calendar, Search, Clock, Eye, XCircle, CheckCircle } from "lucide-react"
+import {useParams, useNavigate, useLocation} from "react-router-dom"
+import {useEffect, useState, useMemo} from "react"
+import {ArrowLeft, Calendar, Search, Clock, Eye, XCircle, CheckCircle, FileText} from "lucide-react"
 import appointmentService from "../../../../services/appointmentService"
 import userService from "../../../../services/userService"
 import medicalRecordService from "../../../../services/medicalRecordService"
-import { toast } from "react-toastify"
+import {toast} from "react-toastify"
 import "./AppointmentListByCustomer.css"
 
 const statusConfig = {
-    PENDING: { label: "Chờ xác nhận", className: "customer-appointments-status-pending" },
-    CONFIRMED: { label: "Đã xác nhận", className: "customer-appointments-status-confirmed" },
-    CANCELED: { label: "Đã hủy", className: "customer-appointments-status-cancelled" },
-    COMPLETED: { label: "Hoàn thành", className: "customer-appointments-status-completed" },
-    WAITING_PAYMENT: { label: "Chờ thanh toán", className: "customer-appointments-status-waiting-payment" },
-    UNKNOWN: { label: "Không xác định", className: "customer-appointments-status-unknown" },
+    PENDING: {label: "Chờ xác nhận", className: "customer-appointments-status-pending"},
+    CONFIRMED: {label: "Đã xác nhận", className: "customer-appointments-status-confirmed"},
+    DOCTOR_FINISHED: {label: "Bác sĩ đã khám xong", className: "customer-appointments-status-doctor-finished"},
+    WAITING_PAYMENT: {label: "Chờ thanh toán", className: "customer-appointments-status-waiting-payment"},
+    COMPLETED: {label: "Hoàn thành", className: "customer-appointments-status-completed"},
+    CANCELED: {label: "Đã hủy", className: "customer-appointments-status-cancelled"},
+    NO_SHOW: {label: "Không đến", className: "customer-appointments-status-no-show"},
+    UNKNOWN: {label: "Không xác định", className: "customer-appointments-status-unknown"},
+}
+
+const prescriptionStatusConfig = {
+    NOT_BUY: {label: "Không mua thuốc", className: "prescription-status-not-buy"},
+    PENDING: {label: "Chờ nhận thuốc", className: "prescription-status-pending"},
+    DELIVERED: {label: "Đã nhận thuốc", className: "prescription-status-delivered"},
+    UNKNOWN: {label: "Không xác định", className: "prescription-status-unknown"},
 }
 
 export default function AppointmentListByCustomer() {
-    const { customerId } = useParams()
+    const {customerId} = useParams()
     const navigate = useNavigate()
     const location = useLocation()
     const [allAppointments, setAllAppointments] = useState([])
@@ -29,21 +38,32 @@ export default function AppointmentListByCustomer() {
     const [searchQuery, setSearchQuery] = useState("")
     const [currentPage, setCurrentPage] = useState(1)
     const itemsPerPage = 8
-    
+
     // State cho modal chi tiết cuộc hẹn
     const [showDetailModal, setShowDetailModal] = useState(false)
     const [selectedAppointment, setSelectedAppointment] = useState(null)
     const [appointmentDetail, setAppointmentDetail] = useState(null)
     const [invoiceDetail, setInvoiceDetail] = useState(null)
-    const [medicationDetails, setMedicationDetails] = useState({ products: [], totalAmount: 0 })
-    const [isLoading, setIsLoading] = useState(false)
+    const [medicationDetails, setMedicationDetails] = useState({
+        products: [],
+        totalAmount: 0,
+        prescriptionStatus: "UNKNOWN"
+    })
     const [loadingDetail, setLoadingDetail] = useState(false)
     const [processingAction, setProcessingAction] = useState(false)
-    
+
     // State cho modal hủy cuộc hẹn
     const [showCancelModal, setShowCancelModal] = useState(false)
     const [appointmentToCancel, setAppointmentToCancel] = useState(null)
     const [cancellationReason, setCancellationReason] = useState('')
+
+    // State cho modal tạo hóa đơn
+    const [showCreateInvoiceModal, setShowCreateInvoiceModal] = useState(false)
+    const [appointmentToCreateInvoice, setAppointmentToCreateInvoice] = useState(null)
+    const [includeMedications, setIncludeMedications] = useState(false)
+    const [availableMedications, setAvailableMedications] = useState([])
+    const [selectedMedications, setSelectedMedications] = useState([])
+    const [loadingMedications, setLoadingMedications] = useState(false)
 
     useEffect(() => {
         const fetchData = async () => {
@@ -51,14 +71,13 @@ export default function AppointmentListByCustomer() {
                 setLoading(true)
                 setError(null)
 
-                // Fetch customer info and appointments in parallel
                 const [customerResponse, appointmentsResponse] = await Promise.all([
                     userService.getPatientById(customerId),
                     appointmentService.getAppointmentsByPatientId(customerId),
                 ])
 
                 setCustomerInfo(customerResponse)
-                console.log('Appointments data from API:', appointmentsResponse);
+                console.log('Appointments data from API:', appointmentsResponse)
                 setAllAppointments(appointmentsResponse || [])
             } catch (err) {
                 console.error("Error fetching data:", err)
@@ -77,65 +96,204 @@ export default function AppointmentListByCustomer() {
         setCurrentPage(1)
     }, [searchQuery])
 
-    const handleBack = () => {
-        const fromPage = location.state?.fromPage || 1
-        navigate("/dashboard/receptionist/appointments", { state: { fromPage } })
-    }
-    
-    // Xem chi tiết cuộc hẹn và thông tin thanh toán
-    const handleViewDetail = async (appointment) => {
+    // Fetch medications when opening create invoice modal
+    const fetchMedicationsForAppointment = async (appointmentId) => {
         try {
-            setSelectedAppointment(appointment)
-            setLoadingDetail(true)
-            setShowDetailModal(true)
-            
-            // Lấy chi tiết cuộc hẹn
-            const detail = await appointmentService.getAppointmentById(appointment.id)
-            setAppointmentDetail(detail)
-            
-            // Lấy thông tin hóa đơn
-            try {
-                const invoice = await appointmentService.getAppointmentInvoice(appointment.id)
-                setInvoiceDetail(invoice)
-            } catch (err) {
-                console.error("Lỗi khi lấy hóa đơn:", err)
-                setInvoiceDetail(null)
+            setLoadingMedications(true)
+            const medications = await medicalRecordService.getMedicationsByAppointmentId(appointmentId)
+            console.log("Medications from API:", medications)
+
+            if (!medications || !medications.products || medications.products.length === 0) {
+                console.warn("No medications found for appointment ID:", appointmentId)
+                setAvailableMedications([])
+                setSelectedMedications([])
+                setMedicationDetails({products: [], totalAmount: 0, prescriptionStatus: "NOT_BUY"})
+                return
             }
-            
-            // Lấy thông tin thuốc từ hồ sơ y tế
-            try {
-                const medications = await medicalRecordService.getMedicationsByAppointmentId(appointment.id)
-                setMedicationDetails(medications)
-                console.log("Medication details:", medications)
-            } catch (medicationError) {
-                console.log("Không có thông tin thuốc hoặc lỗi khi lấy thông tin thuốc:", medicationError)
-                setMedicationDetails({ products: [], totalAmount: 0 })
-            }
-            
-            // Log ra để kiểm tra tính toán
-            setTimeout(() => {
-                if (detail && invoiceDetail) {
-                    const servicePrice = detail.service?.price || 0;
-                    const medicationAmount = medicationDetails?.totalAmount || 0;
-                    const totalAmount = invoiceDetail.totalAmount || 0;
-                    const treatmentCost = totalAmount - servicePrice - medicationAmount;
-                    
-                    console.log("Tính toán hóa đơn:", {
-                        servicePrice,
-                        medicationAmount,
-                        totalAmount,
-                        treatmentCost
-                    });
-                }
-            }, 500);
+
+            const productDetails = medications.products.map((med) => ({
+                id: med.id,
+                name: med.name,
+                price: med.price,
+                quantity: med.quantity || 1,
+            }))
+
+            setAvailableMedications(productDetails)
+            setSelectedMedications(
+                productDetails.map((med) => ({
+                    id: med.id,
+                    name: med.name,
+                    quantity: med.quantity || 1,
+                }))
+            )
+            setMedicationDetails({
+                products: medications.products,
+                totalAmount: medications.totalAmount,
+                prescriptionStatus: medications.prescriptionStatus || "NOT_BUY"
+            })
         } catch (err) {
-            console.error("Lỗi khi lấy chi tiết cuộc hẹn:", err)
-            setError("Không thể tải chi tiết cuộc hẹn. Vui lòng thử lại sau.")
+            console.error("Lỗi khi lấy danh sách thuốc:", err)
+            setAvailableMedications([])
+            setSelectedMedications([])
+            setMedicationDetails({products: [], totalAmount: 0, prescriptionStatus: "UNKNOWN"})
+            toast.error(
+                err.response?.status === 400
+                    ? "Dữ liệu thuốc không hợp lệ. Vui lòng kiểm tra lại."
+                    : "Không thể tải danh sách thuốc. Vui lòng thử lại."
+            )
         } finally {
-            setLoadingDetail(false)
+            setLoadingMedications(false)
         }
     }
-    
+
+    const handleBack = () => {
+        const fromPage = location.state?.fromPage || 1
+        navigate("/dashboard/receptionist/appointments", {state: {fromPage}})
+    }
+
+    const handleViewDetail = async (appointment) => {
+        try {
+            setSelectedAppointment(appointment);
+            setLoadingDetail(true);
+            setShowDetailModal(true);
+
+            // Fetch appointment details
+            const detail = await appointmentService.getAppointmentById(appointment.id);
+            setAppointmentDetail(detail);
+
+            let invoice = null;
+            let medications = {products: [], totalAmount: 0, prescriptionStatus: "NOT_BUY"};
+
+            // Fetch invoice details if applicable
+            if (appointment.status === "WAITING_PAYMENT" || appointment.status === "COMPLETED") {
+                try {
+                    invoice = await appointmentService.getAppointmentInvoice(appointment.id);
+                    setInvoiceDetail(invoice);
+                } catch (err) {
+                    console.error("Lỗi khi lấy hóa đơn:", err);
+                    setInvoiceDetail(null);
+                }
+            } else {
+                setInvoiceDetail(null);
+            }
+
+            // Fetch medication details
+            try {
+                const medicationData = await medicalRecordService.getMedicationsByAppointmentId(appointment.id);
+                console.log("Medication response:", medicationData);
+                const prescriptionStatus = invoice?.prescriptionStatus || medicationData.prescriptionStatus || "NOT_BUY";
+                medications = {
+                    products: prescriptionStatus === "NOT_BUY" ? [] : (medicationData.products || []),
+                    totalAmount: prescriptionStatus === "NOT_BUY" ? 0 : (medicationData.totalAmount || 0),
+                    prescriptionStatus
+                };
+                console.log("Invoice response:", invoice);
+            } catch (medicationError) {
+                console.log("Không có thông tin thuốc hoặc lỗi:", medicationError);
+                // Fallback to invoice's prescriptionStatus if available
+                medications.prescriptionStatus = invoice?.prescriptionStatus || "NOT_BUY";
+                medications.products = [];
+                medications.totalAmount = 0;
+            }
+
+            setMedicationDetails(medications);
+        } catch (err) {
+            console.error("Lỗi khi lấy chi tiết cuộc hẹn:", err);
+            setError("Không thể tải chi tiết cuộc hẹn. Vui lòng thử lại sau.");
+        } finally {
+            setLoadingDetail(false);
+        }
+    };
+
+    // Mở modal tạo hóa đơn
+    const handleCreateInvoice = async (appointment) => {
+        setAppointmentToCreateInvoice(appointment)
+        setIncludeMedications(false)
+        setAvailableMedications([])
+        setSelectedMedications([])
+        setShowCreateInvoiceModal(true)
+        await fetchMedicationsForAppointment(appointment.id)
+    }
+
+    // Xác nhận tạo hóa đơn
+    const confirmCreateInvoice = async () => {
+        if (!appointmentToCreateInvoice) {
+            toast.error("Không tìm thấy thông tin cuộc hẹn để tạo hóa đơn.")
+            return
+        }
+
+        try {
+            const existingInvoice = await appointmentService.getAppointmentInvoice(appointmentToCreateInvoice.id)
+            if (existingInvoice) {
+                toast.error("Hóa đơn đã tồn tại cho cuộc hẹn này.")
+                return
+            }
+        } catch (err) {
+            if (err.response?.status !== 404) {
+                toast.error("Lỗi khi kiểm tra hóa đơn. Vui lòng thử lại.")
+                return
+            }
+        }
+
+        if (!window.confirm("Bạn có chắc muốn tạo hóa đơn cho cuộc hẹn này?")) return
+
+        try {
+            setProcessingAction(true)
+            const serviceIds = appointmentToCreateInvoice.services?.map(service => service.id) || []
+            const medications = includeMedications ? selectedMedications.map(med => {
+                const medInfo = availableMedications.find(m => m.id === med.id)
+                return {
+                    id: med.id,
+                    quantity: med.quantity,
+                    price: medInfo?.price || 0
+                }
+            }) : []
+
+            console.log("Creating invoice with payload:", {
+                appointmentId: appointmentToCreateInvoice.id,
+                serviceIds,
+                includeMedications,
+                medications
+            })
+
+            const updatedAppointment = await appointmentService.createInvoiceAndSetWaitingPayment(
+                appointmentToCreateInvoice.id,
+                serviceIds,
+                includeMedications,
+                medications
+            )
+
+            setAllAppointments(prev =>
+                prev.map(app => app.id === appointmentToCreateInvoice.id ? {
+                    ...app,
+                    status: "WAITING_PAYMENT",
+                    ...updatedAppointment
+                } : app)
+            )
+
+            toast.success(
+                `Tạo hóa đơn thành công! Tổng chi phí: ${formatCurrency(totalCost)}`
+            )
+            setShowCreateInvoiceModal(false)
+            setAppointmentToCreateInvoice(null)
+            setSelectedMedications([])
+            setIncludeMedications(false)
+            if (showDetailModal && selectedAppointment?.id === appointmentToCreateInvoice.id) {
+                setShowDetailModal(false)
+            }
+        } catch (err) {
+            console.error("Lỗi khi tạo hóa đơn:", err)
+            const errorMessage = err.response?.status === 500
+                ? "Lỗi server khi tạo hóa đơn. Vui lòng kiểm tra cấu hình server hoặc liên hệ quản trị viên."
+                : err.response?.status === 409
+                    ? "Hóa đơn đã tồn tại cho cuộc hẹn này."
+                    : err.response?.data?.message || "Không thể tạo hóa đơn. Vui lòng thử lại sau."
+            toast.error(errorMessage)
+        } finally {
+            setProcessingAction(false)
+        }
+    }
+
     // Mở modal hủy cuộc hẹn
     const handleCancelAppointment = (appointmentId) => {
         const appointment = allAppointments.find(app => app.id === appointmentId)
@@ -143,109 +301,96 @@ export default function AppointmentListByCustomer() {
         setShowCancelModal(true)
         setCancellationReason('')
     }
-    
+
     // Xác nhận hủy cuộc hẹn
     const confirmCancelAppointment = async () => {
         if (!cancellationReason.trim()) {
-            alert('Vui lòng nhập lý do hủy cuộc hẹn')
+            toast.error('Vui lòng nhập lý do hủy cuộc hẹn')
             return
         }
-        
+
         try {
             setProcessingAction(true)
             const cancelResult = await appointmentService.cancelAppointment(appointmentToCancel.id, cancellationReason)
-            
-            // Cập nhật lại danh sách cuộc hẹn
-            setAllAppointments(prev => 
+
+            setAllAppointments(prev =>
                 prev.map(app => app.id === appointmentToCancel.id ? {
-                    ...app, 
+                    ...app,
                     status: "CANCELED",
                     cancellationReason: cancellationReason,
                     requiresManualRefund: true,
                     refundStatus: 'PENDING_MANUAL_REFUND'
                 } : app)
             )
-            
-            // Hiển thị thông báo về việc cần hoàn tiền thủ công
+
             if (cancelResult?.paidAmount && cancelResult.paidAmount > 0) {
-                toast.success(`Hủy cuộc hẹn thành công! Lưu ý: Cần hoàn tiền thủ công ${cancelResult.paidAmount.toLocaleString('vi-VN')} VNĐ cho bệnh nhân.`)
+                toast.success(`Hủy cuộc hẹn thành công! Cần hoàn tiền thủ công ${cancelResult.paidAmount.toLocaleString('vi-VN')} VNĐ.`)
             } else {
                 toast.success("Hủy cuộc hẹn thành công!")
             }
-            
-            // Đóng modal
+
             setShowCancelModal(false)
             setAppointmentToCancel(null)
             setCancellationReason('')
-            
-            // Đóng modal chi tiết nếu đang mở
+
             if (showDetailModal && selectedAppointment?.id === appointmentToCancel.id) {
                 setShowDetailModal(false)
             }
         } catch (err) {
             console.error("Lỗi khi hủy cuộc hẹn:", err)
-            const errorMessage = err.response?.data?.message || "Không thể hủy cuộc hẹn. Vui lòng thử lại sau."
-            toast.error(errorMessage)
+            toast.error(err.response?.data?.message || "Không thể hủy cuộc hẹn. Vui lòng thử lại sau.")
         } finally {
             setProcessingAction(false)
         }
     }
-    
-    // Xác nhận hoàn thành cuộc hẹn (đã thanh toán)
+
+    // Xác nhận hoàn thành cuộc hẹn
     const handleCompleteAppointment = async (appointmentId) => {
         if (!window.confirm("Xác nhận bệnh nhân đã thanh toán và hoàn thành cuộc hẹn?")) return
-        
+
         try {
             setProcessingAction(true)
-            // Tạo một transactionId tạm thời cho thanh toán trực tiếp
-            // Format: CASH-{appointmentId}-{timestamp}
             const transactionId = `CASH-${appointmentId}-${Date.now()}`
-            
-            // Gọi API với transactionId đã tạo
             await appointmentService.markAppointmentAsPaid(appointmentId, transactionId)
-            
-            // Cập nhật lại danh sách cuộc hẹn
-            setAllAppointments(prev => 
+
+            setAllAppointments(prev =>
                 prev.map(app => app.id === appointmentId ? {...app, status: "COMPLETED"} : app)
             )
-            
-            alert("Xác nhận thanh toán và hoàn thành cuộc hẹn thành công!")
-            
-            // Đóng modal nếu đang mở
+
+            toast.success("Xác nhận thanh toán và hoàn thành cuộc hẹn thành công!")
             if (showDetailModal && selectedAppointment?.id === appointmentId) {
                 setShowDetailModal(false)
             }
         } catch (err) {
-            console.error("Lỗi khi xác nhận hoàn thành cuộc hẹn:", err)
-            alert("Không thể xác nhận hoàn thành cuộc hẹn. Vui lòng thử lại sau.")
+            console.error("Lỗi khi xác nhận hoàn thành:", err)
+            toast.error("Không thể xác nhận hoàn thành cuộc hẹn. Vui lòng thử lại sau.")
         } finally {
             setProcessingAction(false)
         }
     }
-    
+
     // Đóng modal chi tiết
     const handleCloseModal = () => {
         setShowDetailModal(false)
         setSelectedAppointment(null)
         setAppointmentDetail(null)
         setInvoiceDetail(null)
+        setMedicationDetails({products: [], totalAmount: 0, prescriptionStatus: "UNKNOWN"})
     }
 
-    // Filter appointments based on search query and exclude PENDING status
+    // Filter appointments
     const filteredAppointments = useMemo(() => {
-        // First filter to exclude appointments with PENDING status
-        const nonPendingAppointments = allAppointments.filter(appointment => 
-            appointment.status !== 'PENDING' && 
-            appointment.status !== 'CHỜ XÁC NHẬN' && 
+        const nonPendingAppointments = allAppointments.filter(appointment =>
+            appointment.status !== 'PENDING' &&
+            appointment.status !== 'CHỜ XÁC NHẬN' &&
             statusConfig[appointment.status]?.label !== "Chờ xác nhận"
-        );
-        
-        // Then apply search query if any
+        )
+
         if (!searchQuery.trim()) {
-            return nonPendingAppointments;
+            return nonPendingAppointments
         }
 
-        const query = searchQuery.toLowerCase().trim();
+        const query = searchQuery.toLowerCase().trim()
         return nonPendingAppointments.filter((appointment) => {
             return (
                 appointment.notes?.toLowerCase().includes(query) ||
@@ -253,10 +398,10 @@ export default function AppointmentListByCustomer() {
                 appointment.appointmentTime?.includes(query) ||
                 appointment.doctor?.name?.toLowerCase().includes(query) ||
                 appointment.doctor?.specialization?.toLowerCase().includes(query) ||
-                appointment.service?.name?.toLowerCase().includes(query) ||
+                appointment.services?.some(service => service.name?.toLowerCase().includes(query)) ||
                 statusConfig[appointment.status]?.label.toLowerCase().includes(query)
-            );
-        });
+            )
+        })
     }, [allAppointments, searchQuery])
 
     // Pagination logic
@@ -275,7 +420,6 @@ export default function AppointmentListByCustomer() {
         setCurrentPage(newPage)
     }
 
-    // Generate page numbers for pagination
     const getPageNumbers = () => {
         const pageNumbers = []
         const maxPagesToShow = 5
@@ -293,51 +437,54 @@ export default function AppointmentListByCustomer() {
         return pageNumbers
     }
 
-    // Format date and time from appointment data
     const formatDateTime = (appointment) => {
-        if (!appointment) return { date: "N/A", time: "N/A" }
-        
+        if (!appointment) return {date: "N/A", time: "N/A"}
+
         try {
-            let appointmentDateTime;
-            
-            // Try to use appointmentDate and timeSlot first (like patient page)
+            let appointmentDateTime
             if (appointment.appointmentDate && appointment.timeSlot) {
-                const dateStr = appointment.appointmentDate; // "2025-07-15"
-                const timeStr = appointment.timeSlot; // "09:00"
-                appointmentDateTime = new Date(`${dateStr}T${timeStr}:00`);
+                const dateStr = appointment.appointmentDate
+                const timeStr = appointment.timeSlot
+                appointmentDateTime = new Date(`${dateStr}T${timeStr}:00`)
+            } else if (appointment.appointmentTime) {
+                appointmentDateTime = new Date(appointment.appointmentTime)
+            } else {
+                return {date: "N/A", time: "N/A"}
             }
-            // Fallback to appointmentTime if available
-            else if (appointment.appointmentTime) {
-                appointmentDateTime = new Date(appointment.appointmentTime);
-            }
-            // If appointment is a string (legacy format)
-            else if (typeof appointment === 'string') {
-                appointmentDateTime = new Date(appointment);
-            }
-            else {
-                return { date: "N/A", time: "N/A" };
-            }
-            
-            // Check if date is valid
+
             if (isNaN(appointmentDateTime.getTime())) {
-                return { date: "N/A", time: "N/A" };
+                return {date: "N/A", time: "N/A"}
             }
-            
+
             const day = appointmentDateTime.getDate().toString().padStart(2, "0")
             const month = (appointmentDateTime.getMonth() + 1).toString().padStart(2, "0")
             const year = appointmentDateTime.getFullYear()
             const hours = appointmentDateTime.getHours().toString().padStart(2, "0")
             const minutes = appointmentDateTime.getMinutes().toString().padStart(2, "0")
-            
+
             return {
                 date: `${day}/${month}/${year}`,
                 time: `${hours}:${minutes}`,
             }
         } catch (error) {
-            console.error('Error formatting date/time:', error);
-            return { date: "N/A", time: "N/A" }
+            console.error('Error formatting date/time:', error)
+            return {date: "N/A", time: "N/A"}
         }
     }
+
+    const formatCurrency = (amount) => {
+        return new Intl.NumberFormat('vi-VN', {
+            style: 'currency',
+            currency: 'VND'
+        }).format(amount)
+    }
+
+    const totalServiceCost = appointmentToCreateInvoice?.services?.reduce((total, service) => total + (service.price || 0), 0) || 0
+    const totalMedicationCost = includeMedications ? selectedMedications.reduce((total, med) => {
+        const medInfo = availableMedications.find(m => m.id === med.id)
+        return total + (medInfo?.price || 0) * med.quantity
+    }, 0) : 0
+    const totalCost = totalServiceCost + totalMedicationCost - 10000
 
     if (loading) {
         return (
@@ -355,7 +502,8 @@ export default function AppointmentListByCustomer() {
             <div className="customer-appointments-detail">
                 <div className="customer-appointments-detail__error">
                     <p>{error}</p>
-                    <button onClick={() => window.location.reload()} className="customer-appointments-detail__retry-button">
+                    <button onClick={() => window.location.reload()}
+                            className="customer-appointments-detail__retry-button">
                         Thử lại
                     </button>
                 </div>
@@ -368,7 +516,7 @@ export default function AppointmentListByCustomer() {
             <div className="customer-appointments-detail__header">
                 <div className="customer-appointments-detail__header-top">
                     <button onClick={handleBack} className="customer-appointments-detail__back-button">
-                        <ArrowLeft className="customer-appointments-detail__back-icon" />
+                        <ArrowLeft className="customer-appointments-detail__back-icon"/>
                         Quay lại
                     </button>
                 </div>
@@ -378,7 +526,7 @@ export default function AppointmentListByCustomer() {
                     </h1>
                     <div className="customer-appointments-detail__search-container">
                         <div className="customer-appointments-detail__search-wrapper">
-                            <Search className="customer-appointments-detail__search-icon" />
+                            <Search className="customer-appointments-detail__search-icon"/>
                             <input
                                 type="text"
                                 placeholder="Tìm cuộc hẹn (Ngày hẹn, bác sĩ, dịch vụ, lý do khám, trạng thái...)"
@@ -395,7 +543,7 @@ export default function AppointmentListByCustomer() {
                 <div className="customer-appointments-detail__table-container">
                     <div className="customer-appointments-detail__table-header">
                         <div className="customer-appointments-detail__table-header-content">
-                            <Calendar className="customer-appointments-detail__table-header-icon" />
+                            <Calendar className="customer-appointments-detail__table-header-icon"/>
                             <span className="customer-appointments-detail__table-header-text">Danh sách lịch hẹn (0 cuộc hẹn)</span>
                         </div>
                     </div>
@@ -407,10 +555,10 @@ export default function AppointmentListByCustomer() {
                 <div className="customer-appointments-detail__table-container">
                     <div className="customer-appointments-detail__table-header">
                         <div className="customer-appointments-detail__table-header-content">
-                            <Calendar className="customer-appointments-detail__table-header-icon" />
+                            <Calendar className="customer-appointments-detail__table-header-icon"/>
                             <span className="customer-appointments-detail__table-header-text">
-                Danh sách lịch hẹn ({filteredAppointments.length} cuộc hẹn)
-              </span>
+                                Danh sách lịch hẹn ({filteredAppointments.length} cuộc hẹn)
+                            </span>
                         </div>
                     </div>
 
@@ -431,7 +579,7 @@ export default function AppointmentListByCustomer() {
                             <tbody>
                             {paginatedAppointments.map((appointment, index) => {
                                 const status = statusConfig[appointment.status] || statusConfig.UNKNOWN
-                                const { date, time } = formatDateTime(appointment)
+                                const {date, time} = formatDateTime(appointment)
 
                                 return (
                                     <tr key={appointment.id} className="customer-appointments-detail__table-row">
@@ -440,13 +588,13 @@ export default function AppointmentListByCustomer() {
                                         </td>
                                         <td className="customer-appointments-detail__table-cell">
                                             <div className="customer-appointments-detail__icon-text">
-                                                <Calendar className="customer-appointments-detail__icon" />
+                                                <Calendar className="customer-appointments-detail__icon"/>
                                                 <span>{date}</span>
                                             </div>
                                         </td>
                                         <td className="customer-appointments-detail__table-cell">
                                             <div className="customer-appointments-detail__icon-text">
-                                                <Clock className="customer-appointments-detail__icon" />
+                                                <Clock className="customer-appointments-detail__icon"/>
                                                 <span>{time}</span>
                                             </div>
                                         </td>
@@ -469,17 +617,18 @@ export default function AppointmentListByCustomer() {
                                                 </div>
                                                 <div className="customer-appointments-detail__service-price">
                                                     {appointment.services && appointment.services.length > 0
-                                                        ? appointment.services.reduce((total, service) => total + (service.price || 0), 0).toLocaleString('vi-VN') + ' VNĐ'
+                                                        ? formatCurrency(appointment.services.reduce((total, service) => total + (service.price || 0), 0))
                                                         : appointment.service?.price
-                                                        ? appointment.service.price.toLocaleString('vi-VN') + ' VNĐ'
-                                                        : ""}
+                                                            ? formatCurrency(appointment.service.price)
+                                                            : ""}
                                                 </div>
                                             </div>
                                         </td>
                                         <td className="customer-appointments-detail__table-cell">
-                        <span className={`customer-appointments-detail__status-badge ${status.className}`}>
-                          {status.label}
-                        </span>
+                                            <span
+                                                className={`customer-appointments-detail__status-badge ${status.className}`}>
+                                                {status.label}
+                                            </span>
                                         </td>
                                         <td className="customer-appointments-detail__table-cell">
                                             <div className="customer-appointments-detail__reason-text">
@@ -488,36 +637,41 @@ export default function AppointmentListByCustomer() {
                                         </td>
                                         <td className="customer-appointments-detail__table-cell">
                                             <div className="customer-appointments-detail__action-buttons">
-                                                {/* Nút xem chi tiết - luôn hiển thị */}
-                                                <button 
+                                                <button
                                                     onClick={() => handleViewDetail(appointment)}
                                                     className="customer-appointments-detail__action-button customer-appointments-detail__action-button--view"
                                                     title="Xem chi tiết"
                                                 >
-                                                    <Eye size={16} />
+                                                    <Eye size={16}/>
                                                 </button>
-                                                
-                                                {/* Nút hủy cuộc hẹn - chỉ hiển thị khi trạng thái là CONFIRMED */}
                                                 {appointment.status === "CONFIRMED" && (
-                                                    <button 
+                                                    <button
                                                         onClick={() => handleCancelAppointment(appointment.id)}
                                                         className="customer-appointments-detail__action-button customer-appointments-detail__action-button--cancel"
                                                         title="Hủy cuộc hẹn"
                                                         disabled={processingAction}
                                                     >
-                                                        <XCircle size={16} />
+                                                        <XCircle size={16}/>
                                                     </button>
                                                 )}
-                                                
-                                                {/* Nút xác nhận hoàn thành - chỉ hiển thị khi trạng thái là WAITING_PAYMENT */}
+                                                {appointment.status === "DOCTOR_FINISHED" && (
+                                                    <button
+                                                        onClick={() => handleCreateInvoice(appointment)}
+                                                        className="customer-appointments-detail__action-button customer-appointments-detail__action-button--create-invoice"
+                                                        title="Tạo hóa đơn"
+                                                        disabled={processingAction}
+                                                    >
+                                                        <FileText size={16}/>
+                                                    </button>
+                                                )}
                                                 {appointment.status === "WAITING_PAYMENT" && (
-                                                    <button 
+                                                    <button
                                                         onClick={() => handleCompleteAppointment(appointment.id)}
                                                         className="customer-appointments-detail__action-button customer-appointments-detail__action-button--complete"
                                                         title="Xác nhận thanh toán và hoàn thành"
                                                         disabled={processingAction}
                                                     >
-                                                        <CheckCircle size={16} />
+                                                        <CheckCircle size={16}/>
                                                     </button>
                                                 )}
                                             </div>
@@ -532,12 +686,12 @@ export default function AppointmentListByCustomer() {
                     {totalPages > 1 && (
                         <div className="customer-appointments-detail__pagination">
                             <div className="customer-appointments-detail__pagination-info">
-                                Hiển thị {Math.min((currentPage - 1) * itemsPerPage + 1, filteredAppointments.length)} -{" "}
+                                Hiển
+                                thị {Math.min((currentPage - 1) * itemsPerPage + 1, filteredAppointments.length)} -{" "}
                                 {Math.min(currentPage * itemsPerPage, filteredAppointments.length)} trong tổng số{" "}
                                 {filteredAppointments.length} cuộc hẹn
                             </div>
                             <div className="customer-appointments-detail__pagination-controls">
-                                {/* Nút Trước */}
                                 <button
                                     onClick={() => handlePageChange(currentPage - 1)}
                                     disabled={currentPage === 1}
@@ -545,8 +699,6 @@ export default function AppointmentListByCustomer() {
                                 >
                                     Trước
                                 </button>
-
-                                {/* Các số trang */}
                                 {getPageNumbers().map((pageNum) => (
                                     <button
                                         key={pageNum}
@@ -558,8 +710,6 @@ export default function AppointmentListByCustomer() {
                                         {pageNum}
                                     </button>
                                 ))}
-
-                                {/* Nút Sau */}
                                 <button
                                     onClick={() => handlePageChange(currentPage + 1)}
                                     disabled={currentPage === totalPages}
@@ -572,13 +722,12 @@ export default function AppointmentListByCustomer() {
                     )}
                 </div>
             )}
-            
+
             {/* Modal chi tiết cuộc hẹn */}
             {showDetailModal && (
                 <div className="appointment-detail-modal-overlay" onClick={handleCloseModal}>
                     <div className="appointment-detail-modal" onClick={(e) => e.stopPropagation()}>
                         <button className="appointment-detail-modal__close" onClick={handleCloseModal}>×</button>
-                        
                         {loadingDetail ? (
                             <div className="appointment-detail-modal__loading">
                                 <div className="appointment-detail-modal__spinner"></div>
@@ -589,17 +738,29 @@ export default function AppointmentListByCustomer() {
                                 <div className="appointment-detail-modal__header">
                                     <h2 className="appointment-detail-modal__title">Chi tiết cuộc hẹn</h2>
                                     <p className="appointment-detail-modal__subtitle">
-                                        Mã cuộc hẹn: #{selectedAppointment?.id} - 
-                                        <span className={`customer-appointments-detail__status-badge ${statusConfig[selectedAppointment?.status]?.className || statusConfig.UNKNOWN.className}`}>
+                                        Mã cuộc hẹn: #{selectedAppointment?.id} -
+                                        <span
+                                            className={`customer-appointments-detail__status-badge ${statusConfig[selectedAppointment?.status]?.className || statusConfig.UNKNOWN.className}`}
+                                        >
                                             {statusConfig[selectedAppointment?.status]?.label || statusConfig.UNKNOWN.label}
                                         </span>
+                                        {selectedAppointment?.status === 'COMPLETED' &&
+                                            medicationDetails?.prescriptionStatus && (
+                                                <>
+                                                    {" - "}
+                                                    <span
+                                                        className={`prescription-status-badge ${prescriptionStatusConfig[medicationDetails.prescriptionStatus]?.className || prescriptionStatusConfig.UNKNOWN.className}`}
+                                                    >
+                {prescriptionStatusConfig[medicationDetails.prescriptionStatus]?.label || prescriptionStatusConfig.UNKNOWN.label}
+            </span>
+                                                </>
+                                            )}
                                     </p>
                                 </div>
-                                
                                 <div className="appointment-detail-modal__content">
                                     <div className="appointment-detail-modal__section">
                                         <h3 className="appointment-detail-modal__section-title">
-                                            <Calendar size={18} /> Thông tin cuộc hẹn
+                                            <Calendar size={18}/> Thông tin cuộc hẹn
                                         </h3>
                                         <div className="appointment-detail-modal__info-grid">
                                             <div className="appointment-detail-modal__info-item">
@@ -628,32 +789,34 @@ export default function AppointmentListByCustomer() {
                                                     {appointmentDetail?.notes || "Không có lý do khám"}
                                                 </div>
                                             </div>
-                                            
-                                            {/* Hiển thị lý do hủy nếu cuộc hẹn đã bị hủy */}
                                             {selectedAppointment?.status === "CANCELED" && appointmentDetail?.cancellationReason && (
-                                                <div className="appointment-detail-modal__info-item appointment-detail-modal__info-item--cancellation">
-                                                    <div className="appointment-detail-modal__info-label">Lý do hủy</div>
-                                                    <div className="appointment-detail-modal__info-value appointment-detail-modal__info-value--cancellation">
+                                                <div
+                                                    className="appointment-detail-modal__info-item appointment-detail-modal__info-item--cancellation">
+                                                    <div className="appointment-detail-modal__info-label">Lý do hủy
+                                                    </div>
+                                                    <div
+                                                        className="appointment-detail-modal__info-value appointment-detail-modal__info-value--cancellation">
                                                         {appointmentDetail.cancellationReason}
                                                     </div>
                                                 </div>
                                             )}
                                         </div>
                                     </div>
-                                    
                                     <div className="appointment-detail-modal__section">
                                         <h3 className="appointment-detail-modal__section-title">
-                                            <Eye size={18} /> Thông tin bệnh nhân
+                                            <Eye size={18}/> Thông tin bệnh nhân
                                         </h3>
                                         <div className="appointment-detail-modal__info-grid">
                                             <div className="appointment-detail-modal__info-item">
-                                                <div className="appointment-detail-modal__info-label">Tên bệnh nhân</div>
+                                                <div className="appointment-detail-modal__info-label">Tên bệnh nhân
+                                                </div>
                                                 <div className="appointment-detail-modal__info-value">
                                                     {customerInfo?.name || "Chưa xác định"}
                                                 </div>
                                             </div>
                                             <div className="appointment-detail-modal__info-item">
-                                                <div className="appointment-detail-modal__info-label">Số điện thoại</div>
+                                                <div className="appointment-detail-modal__info-label">Số điện thoại
+                                                </div>
                                                 <div className="appointment-detail-modal__info-value">
                                                     {customerInfo?.phone || "Chưa xác định"}
                                                 </div>
@@ -666,163 +829,132 @@ export default function AppointmentListByCustomer() {
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                                
-                                <div className="appointment-detail-modal__section">
-                                    <h3 className="appointment-detail-modal__section-title">
-                                        <Clock size={18} /> Thông tin bác sĩ
-                                    </h3>
-                                    <div className="appointment-detail-modal__info-grid">
-                                        <div className="appointment-detail-modal__info-item">
-                                            <div className="appointment-detail-modal__info-label">Tên bác sĩ</div>
-                                            <div className="appointment-detail-modal__info-value">
-                                                {appointmentDetail?.doctor?.name || "Chưa xác định"}
+                                    <div className="appointment-detail-modal__section">
+                                        <h3 className="appointment-detail-modal__section-title">
+                                            <Clock size={18}/> Thông tin bác sĩ
+                                        </h3>
+                                        <div className="appointment-detail-modal__info-grid">
+                                            <div className="appointment-detail-modal__info-item">
+                                                <div className="appointment-detail-modal__info-label">Tên bác sĩ</div>
+                                                <div className="appointment-detail-modal__info-value">
+                                                    {appointmentDetail?.doctor?.name || "Chưa xác định"}
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div className="appointment-detail-modal__info-item">
-                                            <div className="appointment-detail-modal__info-label">Chuyên khoa</div>
-                                            <div className="appointment-detail-modal__info-value">
-                                                {appointmentDetail?.doctor?.specialization || "Chưa xác định"}
+                                            <div className="appointment-detail-modal__info-item">
+                                                <div className="appointment-detail-modal__info-label">Chuyên khoa</div>
+                                                <div className="appointment-detail-modal__info-value">
+                                                    {appointmentDetail?.doctor?.specialization || "Chưa xác định"}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                                
-                                {/* Hiển thị thông tin hóa đơn nếu có */}
-                                {(selectedAppointment?.status === "WAITING_PAYMENT" || selectedAppointment?.status === "COMPLETED" || selectedAppointment?.status === "CONFIRMED") && (
-                                    <div className="appointment-detail-modal__section">
-                                        <h3 className="appointment-detail-modal__section-title">
-                                            <Clock size={18} /> Thông tin thanh toán
-                                        </h3>
-                                        
-                                        {invoiceDetail ? (
+                                    {(selectedAppointment?.status === "WAITING_PAYMENT" || selectedAppointment?.status === "COMPLETED") && invoiceDetail && (
+                                        <div className="appointment-detail-modal__section">
+                                            <h3 className="appointment-detail-modal__section-title">
+                                                <Clock size={18}/> Thông tin thanh toán
+                                            </h3>
                                             <div className="appointment-detail-modal__invoice">
                                                 <div className="appointment-detail-modal__invoice-header">
-                                                    <div className="appointment-detail-modal__invoice-title">Hóa đơn #{invoiceDetail.id}</div>
-                                                    <div className={`appointment-detail-modal__invoice-status ${selectedAppointment?.status === "COMPLETED" ? "appointment-detail-modal__invoice-status--paid" : "appointment-detail-modal__invoice-status--waiting"}`}>
-                                                        {selectedAppointment?.status === "COMPLETED" ? "Đã thanh toán" : "Chờ thanh toán"}
+                                                    <div className="appointment-detail-modal__invoice-title">Hóa đơn
+                                                        #{invoiceDetail.id}</div>
+                                                    {/* CHANGED: Display prescriptionStatus for COMPLETED, keep Chờ thanh toán for WAITING_PAYMENT */}
+                                                    <div
+                                                        className={`appointment-detail-modal__invoice-status ${
+                                                            selectedAppointment?.status === "COMPLETED"
+                                                                ? prescriptionStatusConfig[medicationDetails.prescriptionStatus]?.className || prescriptionStatusConfig.UNKNOWN.className
+                                                                : "appointment-detail-modal__invoice-status--waiting"
+                                                        }`}
+                                                    >
+                                                        {selectedAppointment?.status === "COMPLETED"
+                                                            ? prescriptionStatusConfig[medicationDetails.prescriptionStatus]?.label || prescriptionStatusConfig.UNKNOWN.label
+                                                            : "Chờ thanh toán"}
                                                     </div>
+                                                    {/* END CHANGE */}
                                                 </div>
-                                                
                                                 <div className="appointment-detail-modal__invoice-items">
-                                                    {/* Phí dịch vụ khám */}
                                                     <div className="appointment-detail-modal__invoice-item">
                                                         <div>Phí dịch vụ khám</div>
                                                         <div>
                                                             {appointmentDetail?.services && appointmentDetail.services.length > 0
-                                                                ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(
+                                                                ? formatCurrency(
                                                                     appointmentDetail.services.reduce((total, service) => total + (service.price || 0), 0)
-                                                                  )
-                                                                : appointmentDetail?.service?.price 
-                                                                ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(appointmentDetail.service.price)
-                                                                : "0 đ"}
+                                                                )
+                                                                : appointmentDetail?.service?.price
+                                                                    ? formatCurrency(appointmentDetail.service.price)
+                                                                    : "0 đ"}
                                                         </div>
                                                     </div>
-                                                    
-                                                    {/* Tiền thuốc */}
-                                                    {medicationDetails && medicationDetails.totalAmount > 0 && (
+                                                    {medicationDetails && medicationDetails.totalAmount > 0 && medicationDetails.prescriptionStatus !== "NOT_BUY" && (
                                                         <div className="appointment-detail-modal__invoice-item">
                                                             <div>Tiền thuốc</div>
-                                                            <div>
-                                                                {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(medicationDetails.totalAmount)}
-                                                            </div>
+                                                            <div>{formatCurrency(medicationDetails.totalAmount)}</div>
                                                         </div>
                                                     )}
-                                                    
-                                                    {/* Không có chi phí điều trị */}
-                                                    
-                                                    {/* Tạm tính */}
                                                     <div className="appointment-detail-modal__invoice-subtotal">
                                                         <div>Tạm tính</div>
                                                         <div>
                                                             {(() => {
-                                                                // Tính lại tạm tính = phí dịch vụ khám + tiền thuốc
                                                                 const servicePrice = appointmentDetail?.services && appointmentDetail.services.length > 0
                                                                     ? appointmentDetail.services.reduce((total, service) => total + (service.price || 0), 0)
-                                                                    : Number(appointmentDetail?.service?.price || 0);
-                                                                const medicationAmount = Number(medicationDetails?.totalAmount || 0);
-                                                                const calculatedTotal = servicePrice + medicationAmount;
-                                                                
-                                                                console.log('Tính toán tạm tính:', {
-                                                                    servicePrice,
-                                                                    medicationAmount,
-                                                                    calculatedTotal
-                                                                });
-                                                                
-                                                                return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(calculatedTotal);
+                                                                    : Number(appointmentDetail?.service?.price || 0)
+                                                                const medicationAmount = medicationDetails.prescriptionStatus === "NOT_BUY" ? 0 : Number(medicationDetails?.totalAmount || 0)
+                                                                const calculatedTotal = servicePrice + medicationAmount
+                                                                return formatCurrency(calculatedTotal)
                                                             })()}
                                                         </div>
                                                     </div>
-                                                    
-                                                    {/* Tiền cọc */}
-                                                    {invoiceDetail.depositAmount > 0 && (
-                                                        <div className="appointment-detail-modal__invoice-item appointment-detail-modal__invoice-item--deposit">
-                                                            <div>Tiền cọc đã thanh toán</div>
-                                                            <div>-{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(invoiceDetail.depositAmount)}</div>
+                                                    <div
+                                                        className="appointment-detail-modal__invoice-item appointment-detail-modal__invoice-item--deposit">
+                                                        <div>Tiền cọc đã thanh toán</div>
+                                                        <div>-{formatCurrency(10000)}</div>
+                                                    </div>
+                                                    <div className="appointment-detail-modal__invoice-total">
+                                                        <div>Số tiền cần thanh toán</div>
+                                                        <div>
+                                                            {(() => {
+                                                                const servicePrice = appointmentDetail?.services && appointmentDetail.services.length > 0
+                                                                    ? appointmentDetail.services.reduce((total, service) => total + (service.price || 0), 0)
+                                                                    : Number(appointmentDetail?.service?.price || 0)
+                                                                const medicationAmount = medicationDetails.prescriptionStatus === "NOT_BUY" ? 0 : Number(medicationDetails?.totalAmount || 0)
+                                                                const finalAmount = servicePrice + medicationAmount - 10000
+                                                                return formatCurrency(finalAmount)
+                                                            })()}
                                                         </div>
-                                                    )}
-                                                </div>
-                                                
-                                                <div className="appointment-detail-modal__invoice-total">
-                                                    <div>Số tiền cần thanh toán</div>
-                                                    <div>
-                                                        {(() => {
-                                                            // Tính lại số tiền cần thanh toán = phí dịch vụ + tiền thuốc - tiền cọc
-                                                            const servicePrice = appointmentDetail?.services && appointmentDetail.services.length > 0
-                                                                ? appointmentDetail.services.reduce((total, service) => total + (service.price || 0), 0)
-                                                                : Number(appointmentDetail?.service?.price || 0);
-                                                            const medicationAmount = Number(medicationDetails?.totalAmount || 0);
-                                                            const depositAmount = Number(invoiceDetail?.depositAmount || 0);
-                                                            
-                                                            // Tổng = phí dịch vụ + tiền thuốc
-                                                            const subtotal = servicePrice + medicationAmount;
-                                                            
-                                                            // Số tiền cần thanh toán = tổng - tiền cọc
-                                                            const finalAmount = subtotal - depositAmount;
-                                                            
-                                                            console.log('Tính toán số tiền cần thanh toán:', {
-                                                                servicePrice,
-                                                                medicationAmount,
-                                                                subtotal,
-                                                                depositAmount,
-                                                                finalAmount
-                                                            });
-                                                            
-                                                            return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(finalAmount);
-                                                        })()}
                                                     </div>
                                                 </div>
                                             </div>
-                                        ) : (
-                                            <p>Đang tải thông tin hóa đơn...</p>
-                                        )}
-                                    </div>
-                                )}
-                                
+                                        </div>
+                                    )}
+                                </div>
                                 <div className="appointment-detail-modal__actions">
-                                    {/* Nút hủy cuộc hẹn - chỉ hiển thị khi trạng thái là CONFIRMED */}
                                     {selectedAppointment?.status === "CONFIRMED" && (
-                                        <button 
+                                        <button
                                             onClick={() => handleCancelAppointment(selectedAppointment.id)}
                                             className="appointment-detail-modal__button appointment-detail-modal__button--cancel"
                                             disabled={processingAction}
                                         >
-                                            <XCircle size={18} /> Hủy cuộc hẹn
+                                            <XCircle size={18}/> Hủy cuộc hẹn
                                         </button>
                                     )}
-                                    
-                                    {/* Nút xác nhận hoàn thành - chỉ hiển thị khi trạng thái là WAITING_PAYMENT */}
+                                    {selectedAppointment?.status === "DOCTOR_FINISHED" && (
+                                        <button
+                                            onClick={() => handleCreateInvoice(selectedAppointment)}
+                                            className="appointment-detail-modal__button appointment-detail-modal__button--create-invoice"
+                                            disabled={processingAction}
+                                        >
+                                            <FileText size={18}/> Tạo hóa đơn
+                                        </button>
+                                    )}
                                     {selectedAppointment?.status === "WAITING_PAYMENT" && (
-                                        <button 
+                                        <button
                                             onClick={() => handleCompleteAppointment(selectedAppointment.id)}
                                             className="appointment-detail-modal__button appointment-detail-modal__button--complete"
                                             disabled={processingAction}
                                         >
-                                            <CheckCircle size={18} /> Xác nhận thanh toán và hoàn thành
+                                            <CheckCircle size={18}/> Xác nhận thanh toán và hoàn thành
                                         </button>
                                     )}
-                                    
-                                    <button 
+                                    <button
                                         onClick={handleCloseModal}
                                         className="appointment-detail-modal__button appointment-detail-modal__button--close"
                                     >
@@ -834,86 +966,280 @@ export default function AppointmentListByCustomer() {
                     </div>
                 </div>
             )}
-            
-            {/* Modal hủy cuộc hẹn đơn giản */}
-            {showCancelModal && (
-                <div style={{
-                    position: 'fixed',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    backgroundColor: 'rgba(0,0,0,0.5)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    zIndex: 1000
-                }}>
-                    <div style={{
-                        backgroundColor: 'white',
-                        padding: '20px',
-                        borderRadius: '8px',
-                        width: '400px',
-                        maxWidth: '90%'
-                    }}>
-                        <h3 style={{margin: '0 0 15px 0'}}>Hủy cuộc hẹn</h3>
-                        
-                        <div style={{marginBottom: '15px', padding: '10px', backgroundColor: '#f5f5f5', borderRadius: '4px'}}>
-                            <p style={{margin: '5px 0'}}><strong>Bệnh nhân:</strong> {appointmentToCancel?.patientName}</p>
-                            <p style={{margin: '5px 0'}}><strong>Ngày hẹn:</strong> {appointmentToCancel ? formatDateTime(appointmentToCancel).date : 'N/A'}</p>
-                            <p style={{margin: '5px 0'}}><strong>Giờ hẹn:</strong> {appointmentToCancel ? formatDateTime(appointmentToCancel).time : 'N/A'}</p>
+
+            {/* Modal tạo hóa đơn */}
+            {showCreateInvoiceModal && (
+                <div className="create-invoice-modal-overlay">
+                    <div className="create-invoice-modal">
+                        <button
+                            className="create-invoice-modal__close"
+                            onClick={() => {
+                                setShowCreateInvoiceModal(false)
+                                setAppointmentToCreateInvoice(null)
+                                setSelectedMedications([])
+                                setIncludeMedications(false)
+                            }}
+                        >
+                            ×
+                        </button>
+                        <h3 className="create-invoice-modal__title">Tạo hóa đơn cho cuộc hẹn</h3>
+                        <div className="create-invoice-modal__content">
+                            {/* Thông tin cuộc hẹn */}
+                            <div className="create-invoice-modal__section">
+                                <h3 className="create-invoice-modal__section-title">
+                                    <Calendar size={18}/> Thông tin cuộc hẹn
+                                </h3>
+                                <div className="create-invoice-modal__info-grid">
+                                    <div className="create-invoice-modal__info-item">
+                                        <div className="create-invoice-modal__info-label">Bệnh nhân</div>
+                                        <div className="create-invoice-modal__info-value">
+                                            {appointmentToCreateInvoice?.patientName || 'N/A'}
+                                        </div>
+                                    </div>
+                                    <div className="create-invoice-modal__info-item">
+                                        <div className="create-invoice-modal__info-label">Ngày hẹn</div>
+                                        <div className="create-invoice-modal__info-value">
+                                            {appointmentToCreateInvoice ? formatDateTime(appointmentToCreateInvoice).date : 'N/A'}
+                                        </div>
+                                    </div>
+                                    <div className="create-invoice-modal__info-item">
+                                        <div className="create-invoice-modal__info-label">Giờ hẹn</div>
+                                        <div className="create-invoice-modal__info-value">
+                                            {appointmentToCreateInvoice ? formatDateTime(appointmentToCreateInvoice).time : 'N/A'}
+                                        </div>
+                                    </div>
+                                    <div className="create-invoice-modal__info-item">
+                                        <div className="create-invoice-modal__info-label">Dịch vụ</div>
+                                        <div className="create-invoice-modal__info-value">
+                                            {appointmentToCreateInvoice?.services?.map(service => service.name).join(", ") || "Chưa xác định"}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Phần chọn mua thuốc */}
+                            <div className="create-invoice-modal__section">
+                                <h3 className="create-invoice-modal__section-title">
+                                    <FileText size={18}/> Đơn thuốc
+                                </h3>
+                                {loadingMedications ? (
+                                    <p className="create-invoice-modal__loading-text">Đang tải danh sách thuốc...</p>
+                                ) : (
+                                    <>
+                                        <label className="create-invoice-modal__medication-label">Bao gồm đơn thuốc
+                                            trong hóa đơn:</label>
+                                        <div className="create-invoice-modal__radio-group">
+                                            <label className="create-invoice-modal__radio-label">
+                                                <input
+                                                    type="radio"
+                                                    name="includeMedications"
+                                                    checked={!includeMedications}
+                                                    onChange={() => {
+                                                        setIncludeMedications(false)
+                                                        setSelectedMedications([])
+                                                    }}
+                                                />
+                                                Không mua thuốc
+                                            </label>
+                                            <label className="create-invoice-modal__radio-label">
+                                                <input
+                                                    type="radio"
+                                                    name="includeMedications"
+                                                    checked={includeMedications}
+                                                    onChange={() => setIncludeMedications(true)}
+                                                    disabled={availableMedications.length === 0}
+                                                />
+                                                Mua
+                                                thuốc {availableMedications.length === 0 && "(Không có thuốc được kê đơn)"}
+                                            </label>
+                                        </div>
+                                        {includeMedications && availableMedications.length > 0 && (
+                                            <div className="create-invoice-modal__medication-list">
+                                                <h4 className="create-invoice-modal__medication-title">Danh sách
+                                                    thuốc</h4>
+                                                <table className="create-invoice-modal__medication-table">
+                                                    <thead>
+                                                    <tr>
+                                                        <th>Tên thuốc</th>
+                                                        <th>Giá</th>
+                                                        <th>Số lượng</th>
+                                                        <th>Tổng</th>
+                                                    </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                    {availableMedications.map(med => (
+                                                        <tr key={med.id}>
+                                                            <td>
+                                                                <label
+                                                                    className="create-invoice-modal__medication-checkbox">
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        checked={selectedMedications.some(m => m.id === med.id)}
+                                                                        onChange={(e) => {
+                                                                            if (e.target.checked) {
+                                                                                setSelectedMedications([...selectedMedications, {
+                                                                                    id: med.id,
+                                                                                    name: med.name,
+                                                                                    quantity: med.quantity || 1
+                                                                                }])
+                                                                            } else {
+                                                                                setSelectedMedications(selectedMedications.filter(m => m.id !== med.id))
+                                                                            }
+                                                                        }}
+                                                                        disabled={medicationDetails.prescriptionStatus === "DELIVERED"}
+                                                                    />
+                                                                    {med.name}
+                                                                </label>
+                                                            </td>
+                                                            <td>{formatCurrency(med.price)}</td>
+                                                            <td>
+                                                                {selectedMedications.some(m => m.id === med.id) && (
+                                                                    <input
+                                                                        type="number"
+                                                                        min="1"
+                                                                        value={selectedMedications.find(m => m.id === med.id)?.quantity || 1}
+                                                                        onChange={(e) => {
+                                                                            setSelectedMedications(prev =>
+                                                                                prev.map(m =>
+                                                                                    m.id === med.id ? {
+                                                                                        ...m,
+                                                                                        quantity: parseInt(e.target.value) || 1
+                                                                                    } : m
+                                                                                )
+                                                                            )
+                                                                        }}
+                                                                        className="create-invoice-modal__quantity-input"
+                                                                        disabled={medicationDetails.prescriptionStatus === "DELIVERED"}
+                                                                    />
+                                                                )}
+                                                            </td>
+                                                            <td>
+                                                                {selectedMedications.some(m => m.id === med.id) && (
+                                                                    formatCurrency(
+                                                                        med.price * (selectedMedications.find(m => m.id === med.id)?.quantity || 1)
+                                                                    )
+                                                                )}
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        )}
+                                        {includeMedications && availableMedications.length === 0 && !loadingMedications && (
+                                            <p className="create-invoice-modal__no-medications">Không có thuốc được kê
+                                                đơn cho cuộc hẹn này.</p>
+                                        )}
+                                    </>
+                                )}
+                            </div>
+
+                            {/* Thông tin thanh toán */}
+                            <div className="create-invoice-modal__section">
+                                <h3 className="create-invoice-modal__section-title">
+                                    <Clock size={18}/> Thông tin thanh toán
+                                </h3>
+                                <div className="appointment-detail-modal__invoice">
+                                    <div className="appointment-detail-modal__invoice-header">
+                                        <div className="appointment-detail-modal__invoice-title">Hóa đơn dự kiến</div>
+                                        <div
+                                            className="appointment-detail-modal__invoice-status appointment-detail-modal__invoice-status--waiting">
+                                            Chờ thanh toán
+                                        </div>
+                                    </div>
+                                    <div className="appointment-detail-modal__invoice-items">
+                                        <div className="appointment-detail-modal__invoice-item">
+                                            <div>Phí dịch vụ khám</div>
+                                            <div>{formatCurrency(totalServiceCost)}</div>
+                                        </div>
+                                        {includeMedications && totalMedicationCost > 0 && (
+                                            <div className="appointment-detail-modal__invoice-item">
+                                                <div>Tiền thuốc</div>
+                                                <div>{formatCurrency(totalMedicationCost)}</div>
+                                            </div>
+                                        )}
+                                        <div className="appointment-detail-modal__invoice-subtotal">
+                                            <div>Tạm tính</div>
+                                            <div>{formatCurrency(totalServiceCost + totalMedicationCost)}</div>
+                                        </div>
+                                        <div
+                                            className="appointment-detail-modal__invoice-item appointment-detail-modal__invoice-item--deposit">
+                                            <div>Tiền cọc đã thanh toán</div>
+                                            <div>-{formatCurrency(10000)}</div>
+                                        </div>
+                                        <div className="appointment-detail-modal__invoice-total">
+                                            <div>Số tiền cần thanh toán</div>
+                                            <div>{formatCurrency(totalCost)}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        
-                        <div style={{marginBottom: '20px'}}>
-                            <label style={{display: 'block', marginBottom: '5px', fontWeight: 'bold'}}>Lý do hủy cuộc hẹn *</label>
+
+                        <div className="create-invoice-modal__actions">
+                            <button
+                                className="create-invoice-modal__button create-invoice-modal__button--cancel"
+                                onClick={() => {
+                                    setShowCreateInvoiceModal(false)
+                                    setAppointmentToCreateInvoice(null)
+                                    setSelectedMedications([])
+                                    setIncludeMedications(false)
+                                }}
+                                disabled={processingAction}
+                            >
+                                Hủy
+                            </button>
+                            <button
+                                className="create-invoice-modal__button create-invoice-modal__button--confirm"
+                                onClick={confirmCreateInvoice}
+                                disabled={processingAction || (includeMedications && selectedMedications.length === 0 && availableMedications.length > 0) || medicationDetails.prescriptionStatus === "DELIVERED"}
+                            >
+                                {processingAction ? 'Đang xử lý...' : 'Tạo hóa đơn'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal hủy cuộc hẹn */}
+            {showCancelModal && (
+                <div className="cancel-appointment-modal-overlay">
+                    <div className="cancel-appointment-modal">
+                        <h3 className="cancel-appointment-modal__title">Hủy cuộc hẹn</h3>
+                        <div className="cancel-appointment-modal__info">
+                            <p><strong>Bệnh nhân:</strong> {appointmentToCancel?.patientName}</p>
+                            <p><strong>Ngày
+                                hẹn:</strong> {appointmentToCancel ? formatDateTime(appointmentToCancel).date : 'N/A'}
+                            </p>
+                            <p><strong>Giờ
+                                hẹn:</strong> {appointmentToCancel ? formatDateTime(appointmentToCancel).time : 'N/A'}
+                            </p>
+                        </div>
+                        <div className="cancel-appointment-modal__reason">
+                            <label className="cancel-appointment-modal__reason-label">Lý do hủy cuộc hẹn *</label>
                             <textarea
                                 value={cancellationReason}
                                 onChange={(e) => setCancellationReason(e.target.value)}
                                 placeholder="Vui lòng nhập lý do hủy cuộc hẹn..."
-                                rows={4}
-                                style={{
-                                    width: '100%',
-                                    padding: '10px',
-                                    border: '1px solid #ddd',
-                                    borderRadius: '4px',
-                                    fontSize: '14px',
-                                    resize: 'vertical',
-                                    boxSizing: 'border-box'
-                                }}
+                                className="cancel-appointment-modal__reason-textarea"
                             />
                         </div>
-                        
-                        <div style={{textAlign: 'right'}}>
-                            <button 
+                        <div className="cancel-appointment-modal__actions">
+                            <button
+                                className="cancel-appointment-modal__button cancel-appointment-modal__button--cancel"
                                 onClick={() => {
                                     setShowCancelModal(false)
                                     setAppointmentToCancel(null)
                                     setCancellationReason('')
                                 }}
                                 disabled={processingAction}
-                                style={{
-                                    padding: '8px 16px',
-                                    marginRight: '10px',
-                                    border: '1px solid #ddd',
-                                    backgroundColor: 'white',
-                                    borderRadius: '4px',
-                                    cursor: 'pointer'
-                                }}
                             >
                                 Hủy bỏ
                             </button>
-                            <button 
+                            <button
+                                className="cancel-appointment-modal__button cancel-appointment-modal__button--confirm"
                                 onClick={confirmCancelAppointment}
                                 disabled={processingAction || !cancellationReason.trim()}
-                                style={{
-                                    padding: '8px 16px',
-                                    border: 'none',
-                                    backgroundColor: '#dc3545',
-                                    color: 'white',
-                                    borderRadius: '4px',
-                                    cursor: processingAction || !cancellationReason.trim() ? 'not-allowed' : 'pointer',
-                                    opacity: processingAction || !cancellationReason.trim() ? 0.6 : 1
-                                }}
                             >
                                 {processingAction ? 'Đang xử lý...' : 'Xác nhận hủy'}
                             </button>
