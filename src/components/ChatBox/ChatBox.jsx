@@ -6,7 +6,7 @@ const ChatBox = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState('');
   const [chatHistory, setChatHistory] = useState([
-    { role: 'bot', content: '🤖 Xin chào! Tôi là trợ lý AI Eyespire. Tôi có thể giúp bạn:\n\n🔍 Tìm kiếm thông tin bệnh nhân, lịch hẹn\n📊 Thống kê doanh thu, báo cáo\n🛍️ Tìm sản phẩm, thuốc, kính mắt\n💬 Tư vấn về các vấn đề mắt\n\nHãy thử hỏi: "Tìm lịch hẹn hôm nay" hoặc "Thuốc nhỏ mắt nào có sẵn?"', id: Date.now() }
+    { role: 'bot', content: '🤖 Xin chào! Tôi là trợ lý AI Eyespire. Tôi có thể giúp bạn:\n\n🔍 Tìm kiếm thông tin về lịch hẹn của bạn\n📋 Xem hồ sơ bệnh án và kết quả khám\n🛍️ Tìm sản phẩm, thuốc, kính mắt phù hợp\n💬 Tư vấn về các vấn đề mắt\n\nHãy thử hỏi: "Lịch hẹn của tôi hôm nay" hoặc "Thuốc nhỏ mắt nào phù hợp?"', id: Date.now() }
   ]);
   const [isLoading, setIsLoading] = useState(false);
   const [isListening, setIsListening] = useState(false);
