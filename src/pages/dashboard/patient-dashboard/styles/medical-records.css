@@ -1,14 +1,352 @@
-/* Medical Records Page Styles */
+/* Medical Records Page Styles - prefix ptod */
 
-/* Multiple Services Display */
-.services-list {
+/* Container */
+.ptod-container {
+    padding: 20px 30px;
+    background-color: #f8f9fa;
+    min-height: 100vh;
+}
+
+/* Header Styles */
+.ptod-header {
+    background: white;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 70px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.ptod-header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.ptod-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #03246b;
+    margin: 0;
+}
+
+.ptod-search-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.ptod-search-icon {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ca3af;
+    width: 1rem;
+    height: 1rem;
+    z-index: 1;
+}
+
+.ptod-search-input {
+    padding: 0.5rem 0.75rem 0.5rem 2.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    width: 16rem;
+    font-size: 0.875rem;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.ptod-search-input:focus {
+    outline: none;
+    border-color: #03246b;
+    box-shadow: 0 0 0 3px rgba(3, 36, 107, 0.1);
+}
+
+.ptod-header-right {
+    display: flex;
+    align-items: center;
+}
+
+.ptod-user-avatar {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background: #f3f4f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+    color: #374151;
+    overflow: hidden;
+}
+
+.ptod-avatar-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+/* Main Content Styles */
+.ptod-orders-content {
+    flex: 1;
+    padding: 1rem 0;
+}
+
+/* Loading Styles */
+.ptod-loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.ptod-loading-spinner {
+    font-size: 1.125rem;
+    color: #03246b;
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* No Records Styles */
+.ptod-no-orders {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: #6b7280;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.ptod-no-orders:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.ptod-no-orders-icon {
+    width: 4rem;
+    height: 4rem;
+    margin: 0 auto 1rem auto;
+    color: #03246b;
+    opacity: 0.7;
+}
+
+.ptod-no-orders h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+    color: #03246b;
+}
+
+.ptod-no-orders p {
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+/* Records List Styles */
+.ptod-orders-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* Record Card */
+.ptod-order-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    position: relative;
+    overflow: hidden;
+}
+
+.ptod-order-card:hover {
+    box-shadow: 0 8px 16px rgba(3, 36, 107, 0.15);
+    transform: translateY(-4px);
+    border-color: rgba(3, 36, 107, 0.2);
+}
+
+.ptod-order-card:after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: #03246b;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.ptod-order-card:hover:after {
+    opacity: 1;
+}
+
+.ptod-order-content {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.ptod-order-main-info {
+    flex: 1;
+}
+
+.ptod-order-id {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #03246b;
+    margin: 0 0 0.5rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.ptod-order-icon {
+    color: #03246b;
+}
+
+.ptod-order-items {
+    color: #4b5563;
+    margin: 0 0 0.75rem 0;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    font-weight: 500;
+}
+
+.ptod-order-unreviewed {
+    color: #d32f2f;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin: 0 0 0.75rem 0;
+}
+
+.ptod-order-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.ptod-order-date {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #6b7280;
+    font-size: 0.75rem;
+}
+
+.ptod-order-total {
+    font-weight: 600;
+    color: #03246b;
+    margin: 0;
+    font-size: 1rem;
+}
+
+.ptod-order-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.75rem;
+}
+
+/* Status Styles */
+.ptod-order-status {
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.status-delivered {
+    background-color: #e8f5e9;
+    color: #388e3c;
+}
+
+.status-default {
+    background-color: #f5f5f5;
+    color: #757575;
+}
+
+/* Detail Button */
+.ptod-order-detail-btn {
+    padding: 0.5rem 1rem;
+    border: 1px solid #dbeafe;
+    border-radius: 0.375rem;
+    background: white;
+    color: #03246b;
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
+}
+
+.ptod-order-detail-btn:hover {
+    background-color: #eff6ff;
+    border-color: #93c5fd;
+}
+
+.ptod-order-detail-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(3, 36, 107, 0.1);
+}
+
+/* Pagination */
+.ptod-pagination {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 2rem;
+}
+
+.ptod-pagination-btn {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #e5e7eb;
+    background-color: white;
+    color: #4b5563;
+    font-size: 0.875rem;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: all 0.15s ease-in-out;
+}
+
+.ptod-pagination-btn:hover:not(:disabled) {
+    background-color: #f3f4f6;
+    border-color: #d1d5db;
+}
+
+.ptod-pagination-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.ptod-pagination-btn.ptod-active {
+    background-color: #03246b;
+    color: white;
+    border-color: #03246b;
+}
+
+/* Services Display */
+.ptod-services-list {
     display: flex;
     flex-wrap: wrap;
     gap: 0.25rem;
     max-width: 200px;
 }
 
-.service-tag {
+.ptod-service-tag {
     display: inline-block;
     background: #e0f2fe;
     color: #0369a1;
@@ -20,12 +358,7 @@
     white-space: nowrap;
 }
 
-.service-tag:not(:last-child)::after {
-    content: '';
-}
-
-/* Service count indicator for many services */
-.services-count {
+.ptod-services-count {
     display: inline-block;
     background: #f3f4f6;
     color: #6b7280;
@@ -36,18 +369,17 @@
     margin-left: 0.25rem;
 }
 
-/* Tooltip for full service list */
-.services-tooltip {
+.ptod-services-tooltip {
     position: relative;
     cursor: help;
 }
 
-.services-tooltip:hover .tooltip-content {
+.ptod-services-tooltip:hover .ptod-tooltip-content {
     visibility: visible;
     opacity: 1;
 }
 
-.tooltip-content {
+.ptod-tooltip-content {
     visibility: hidden;
     opacity: 0;
     position: absolute;
@@ -64,7 +396,7 @@
     transition: opacity 0.2s;
 }
 
-.tooltip-content::after {
+.ptod-tooltip-content::after {
     content: '';
     position: absolute;
     top: 100%;
@@ -75,415 +407,90 @@
     border-color: #1f2937 transparent transparent transparent;
 }
 
-.dashboard-container {
-    display: flex;
-    min-height: 100vh;
-    background-color: #f8fafc;
+/* Animation for loading */
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
 }
 
-.main-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    margin-left: 250px; /* Sidebar width */
-}
-
-/* Header Styles */
-.content-header {
-    background: white;
-    border-bottom: 1px solid #e2e8f0;
-    padding: 1rem 1.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.header-left h1 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #1a202c;
-    margin: 0;
-}
-
-.header-right {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-
-.search-container {
-    position: relative;
-}
-
-.search-input-wrapper {
-    position: relative;
-    width: 320px;
-}
-
-.search-input {
-    width: 100%;
-    padding: 0.5rem 0.75rem 0.5rem 2.5rem;
-    border: 1px solid #d1d5db;
-    border-radius: 0.375rem;
-    font-size: 0.875rem;
-    outline: none;
-    transition: border-color 0.15s ease;
-}
-
-.search-input:focus {
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-.search-icon {
-    position: absolute;
-    left: 0.75rem;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #9ca3af;
-}
-
-.user-avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #e5e7eb;
-}
-
-.avatar-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.avatar-fallback {
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: #374151;
-}
-
-/* Breadcrumb Styles */
-.breadcrumb-container {
-    padding: 0 1.5rem;
-    margin: 1.5rem 0;
-}
-
-.breadcrumb {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.875rem;
-}
-
-.breadcrumb-item {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-    color: #6b7280;
-}
-
-.breadcrumb-item.active {
-    color: #1f2937;
-    font-weight: 500;
-}
-
-.breadcrumb-separator {
-    color: #9ca3af;
-}
-
-/* Medical Records Content */
-.medical-records-content {
-    flex: 1;
-    padding: 0 1.5rem;
-    margin-bottom: 1.5rem;
-}
-
-.table-container {
-    background: white;
-    border-radius: 0.5rem;
-    border: 1px solid #e2e8f0;
-    overflow: hidden;
-}
-
-.medical-records-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.medical-records-table thead {
-    background-color: #f8fafc;
-}
-
-.medical-records-table th {
-    padding: 0.75rem;
-    text-align: left;
-    font-weight: 500;
-    color: #374151;
-    border-bottom: 1px solid #e2e8f0;
-}
-
-.medical-records-table th.text-center {
-    text-align: center;
-}
-
-.medical-records-table th.sortable {
-    cursor: pointer;
-}
-
-.sort-header {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-}
-
-.medical-records-table td {
-    padding: 0.75rem;
-    border-bottom: 1px solid #f1f5f9;
-    vertical-align: middle;
-}
-
-.table-row:hover {
-    background-color: #f8fafc;
-}
-
-.text-center {
-    text-align: center;
-}
-
-.font-medium {
-    font-weight: 500;
-}
-
-.storage-id {
-    font-family: 'Courier New', monospace;
-    font-size: 0.875rem;
-    color: #4b5563;
-}
-
-.loading,
-.no-data {
-    padding: 2rem;
-    color: #6b7280;
-    font-style: italic;
-}
-
-.view-details-btn {
-    background-color: #2563eb;
-    color: white;
-    border: none;
-    padding: 0.375rem 0.75rem;
-    border-radius: 0.25rem;
-    font-size: 0.875rem;
-    cursor: pointer;
-    transition: background-color 0.15s ease;
-}
-
-.view-details-btn:hover {
-    background-color: #1d4ed8;
-}
-
-/* Pagination Styles */
-.pagination-container {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-top: 1.5rem;
-    padding: 0 0.25rem;
-}
-
-.pagination-left {
-    display: flex;
-    align-items: center;
-}
-
-.page-numbers {
-    display: flex;
-    gap: 0.25rem;
-}
-
-.page-number {
-    width: 32px;
-    height: 32px;
-    border: 1px solid #d1d5db;
-    background: white;
-    border-radius: 0.25rem;
-    font-size: 0.875rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.15s ease;
-}
-
-.page-number:hover {
-    background-color: #f3f4f6;
-}
-
-.page-number.active {
-    background-color: #2563eb;
-    color: white;
-    border-color: #2563eb;
-}
-
-.pagination-right {
-    display: flex;
-    align-items: center;
-}
-
-.items-per-page {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.items-select {
-    padding: 0.25rem 0.5rem;
-    border: 1px solid #d1d5db;
-    border-radius: 0.25rem;
-    font-size: 0.875rem;
-    min-width: 60px;
-    cursor: pointer;
-    outline: none;
-}
-
-.items-select:focus {
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-.items-label {
-    font-size: 0.875rem;
-    color: #6b7280;
-}
-
-/* Footer Styles */
-.content-footer {
-    background: white;
-    border-top: 1px solid #e2e8f0;
-    padding: 0.75rem 1.5rem;
-    margin-top: auto;
-}
-
-.footer-content {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    font-size: 0.875rem;
-    color: #6b7280;
-}
-
-.footer-right {
-    display: flex;
-    gap: 1rem;
-}
-
-.footer-link {
-    color: #6b7280;
-    text-decoration: none;
-    transition: color 0.15s ease;
-}
-
-.footer-link:hover {
-    color: #374151;
+/* Focus styles for accessibility */
+.ptod-order-card:focus,
+.ptod-search-input:focus,
+.ptod-order-detail-btn:focus,
+.ptod-pagination-btn:focus {
+    outline: 2px solid #03246b;
+    outline-offset: 2px;
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
-    .main-content {
-        margin-left: 0;
+    .ptod-container {
+        padding: 15px;
     }
 
-    .content-header {
+    .ptod-header {
         flex-direction: column;
+        align-items: flex-start;
         gap: 1rem;
-        align-items: stretch;
+        padding: 1rem;
     }
 
-    .header-right {
-        justify-content: space-between;
-    }
-
-    .search-input-wrapper {
+    .ptod-header-left {
         width: 100%;
-        max-width: 250px;
-    }
-
-    .medical-records-table {
-        font-size: 0.875rem;
-    }
-
-    .medical-records-table th,
-    .medical-records-table td {
-        padding: 0.5rem;
-    }
-
-    .pagination-container {
         flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    .ptod-search-container {
+        width: 100%;
+    }
+
+    .ptod-search-input {
+        width: 100%;
+    }
+
+    .ptod-header-right {
+        align-self: flex-end;
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+    }
+
+    .ptod-order-content {
+        flex-direction: column;
+        align-items: flex-start;
         gap: 1rem;
-        align-items: stretch;
     }
 
-    .pagination-left,
-    .pagination-right {
-        justify-content: center;
-    }
-
-    .footer-content {
-        flex-direction: column;
-        gap: 0.5rem;
-        text-align: center;
+    .ptod-order-actions {
+        width: 100%;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
     }
 }
 
 @media (max-width: 480px) {
-    .medical-records-table {
-        display: block;
-        overflow-x: auto;
-        white-space: nowrap;
+    .ptod-order-card {
+        padding: 1rem;
     }
 
-    .medical-records-table thead,
-    .medical-records-table tbody,
-    .medical-records-table th,
-    .medical-records-table td,
-    .medical-records-table tr {
-        display: block;
+    .ptod-order-id {
+        font-size: 1rem;
     }
 
-    .medical-records-table thead tr {
-        position: absolute;
-        top: -9999px;
-        left: -9999px;
+    .ptod-order-meta {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
     }
 
-    .medical-records-table tr {
-        border: 1px solid #e2e8f0;
-        margin-bottom: 0.5rem;
-        padding: 0.5rem;
-        border-radius: 0.25rem;
-        background: white;
+    .ptod-order-total {
+        font-size: 0.875rem;
     }
 
-    .medical-records-table td {
-        border: none;
-        position: relative;
-        padding-left: 50%;
-        padding-top: 0.5rem;
-        padding-bottom: 0.5rem;
-    }
-
-    .medical-records-table td:before {
-        content: attr(data-label);
-        position: absolute;
-        left: 6px;
-        width: 45%;
-        padding-right: 10px;
-        white-space: nowrap;
-        font-weight: 500;
-        color: #374151;
+    .ptod-pagination {
+        flex-wrap: wrap;
     }
 }

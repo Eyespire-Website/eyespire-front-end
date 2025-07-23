@@ -226,6 +226,39 @@ const appointmentService = {
       console.error("Lỗi khi lấy chi tiết cuộc hẹn:", error);
       throw error;
     }
+  },
+  createInvoiceAndSetWaitingPayment: async (appointmentId, serviceIds, includeMedications, medications) => {
+    try {
+      const response = await axiosInstance.post(`/appointments/${appointmentId}/create-invoice`, {
+        serviceIds,
+        includeMedications,
+        medications
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Lỗi khi tạo hóa đơn và chuyển trạng thái:", error);
+      throw error;
+    }
+  },
+  // Cập nhật trạng thái đơn thuốc
+  updatePrescriptionStatus: async (appointmentId, status) => {
+    try {
+      // Validate status against allowed values
+      const validStatuses = ['NOT_BUY', 'PENDING', 'DELIVERED'];
+      if (!validStatuses.includes(status)) {
+        throw new Error(`Trạng thái đơn thuốc không hợp lệ: ${status}. Phải là một trong ${validStatuses.join(', ')}.`);
+      }
+
+      const response = await axiosInstance.put(`/appointments/${appointmentId}/invoice/prescription-status`, {
+        prescriptionStatus: status
+      });
+
+      console.log(`Cập nhật trạng thái đơn thuốc cho cuộc hẹn ${appointmentId} thành ${status}:`, response.data);
+      return response.data;
+    } catch (error) {
+      console.error(`Lỗi khi cập nhật trạng thái đơn thuốc cho cuộc hẹn ${appointmentId}:`, error.response?.data || error.message);
+      throw new Error(error.response?.data?.message || 'Không thể cập nhật trạng thái đơn thuốc');
+    }
   }
 };
 

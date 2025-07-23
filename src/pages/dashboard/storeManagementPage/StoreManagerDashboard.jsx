@@ -9,6 +9,7 @@ import ProductsPage from "./ProductsPage";
 import MessagePage from "./MessagesPage";
 import ProfilePage from "./ProfilePage";
 import DashboardPage from "./DashboardPage";
+import GetMedicienPage from "./CreateMedicationOrderPage";
 import "./STM-Style/STM-globals.css";
 
 const AdminDashboard = () => {
@@ -17,6 +18,7 @@ const AdminDashboard = () => {
   const menuItems = [
     { id: "dashboard", label: "Tổng quan" },
     { id: "orders", label: "Quản lý đơn hàng" },
+    { id: "medication-pickup", label: "Lấy thuốc" },
     { id: "inventory", label: "Quản lý kho hàng" },
     { id: "products", label: "Đánh giá sản phẩm" },
     { id: "messages", label: "Tin nhắn" },
@@ -29,6 +31,8 @@ const AdminDashboard = () => {
         return <DashboardPage setActiveTab={setActiveSection} />;
       case "orders":
         return <OrdersPage />;
+      case "medication-pickup":
+        return <GetMedicienPage />;
       case "inventory":
         return <InventoryPage />;
       case "products":

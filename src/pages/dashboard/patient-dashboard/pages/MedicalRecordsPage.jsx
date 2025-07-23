@@ -5,98 +5,78 @@ import medicalRecordService from "../../../../services/medicalRecordService";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import '../styles/medical-records.css';
-import { Calendar, Package, FileText, History, User, Search, ChevronDown } from 'lucide-react';
-
-import PatientSidebar from '../PatientSidebar';
+import { Calendar, Package, FileText, Search } from 'lucide-react';
 
 export default function MedicalRecordsPage() {
     const navigate = useNavigate();
-    const [user, setUser] = useState({
-        name: "Đỗ Quang Dũng",
-        email: "doquangdung1782004@gmail.com",
-        role: "patient",
-    });
-
+    const [user, setUser] = useState(null);
     const [medicalRecords, setMedicalRecords] = useState([]);
+    const [filteredRecords, setFilteredRecords] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [loading, setLoading] = useState(true);
-    const [itemsPerPage, setItemsPerPage] = useState(10);
     const [currentPage, setCurrentPage] = useState(1);
-    const [error, setError] = useState(null);
+    const [recordsPerPage] = useState(5);
 
-    // Lấy thông tin người dùng khi component mount
-    useEffect(() => {
-        const currentUser = authService.getCurrentUser();
-        if (!currentUser) {
-            navigate('/login');
-            return;
-        }
-
-        setUser({
-            name: currentUser.name || "Đỗ Quang Dũng",
-            email: currentUser.email || "doquangdung1782004@gmail.com",
-            role: currentUser.role || "patient",
-            avatar: currentUser.avatarUrl || null,
-            id: currentUser.id
-        });
-
-        // Gọi API để lấy dữ liệu hồ sơ điều trị khi người dùng đã được xác định
-        fetchMedicalRecords(currentUser.id);
-    }, [navigate]);
-
-    // Hàm gọi API để lấy dữ liệu hồ sơ điều trị
-    const fetchMedicalRecords = async (patientId) => {
-        setLoading(true);
-        setError(null);
+    // Fetch user data
+    const fetchUserData = async () => {
         try {
-            const data = await medicalRecordService.getPatientMedicalRecords(patientId);
-            console.log("Dữ liệu hồ sơ điều trị từ API:", data);
-            
-            // Chuyển đổi dữ liệu từ API sang định dạng phù hợp với giao diện
+            const currentUser = authService.getCurrentUser();
+            if (!currentUser) {
+                navigate('/login');
+                return;
+            }
+            const userData = await authService.getCurrentUserInfo();
+            setUser(userData);
+        } catch (error) {
+            console.error("Lỗi khi lấy thông tin người dùng:", error);
+            const currentUser = authService.getCurrentUser();
+            if (currentUser) {
+                setUser(currentUser);
+            } else {
+                navigate('/login');
+            }
+        }
+    };
+
+    // Fetch medical records
+    const fetchMedicalRecords = async () => {
+        try {
+            setLoading(true);
+            const currentUser = authService.getCurrentUser();
+            if (!currentUser) {
+                navigate('/login');
+                return;
+            }
+            const data = await medicalRecordService.getPatientMedicalRecords(currentUser.id);
             const formattedRecords = data.map((record) => {
-                // Xử lý tên bác sĩ - kiểm tra cấu trúc dữ liệu thực tế
                 let doctorName = "Bác sĩ";
                 if (record.doctor) {
-                    if (record.doctor.user && record.doctor.user.fullName) {
-                        doctorName = "BS. " + record.doctor.user.fullName;
-                    } else if (record.doctor.fullName) {
-                        doctorName = "BS. " + record.doctor.fullName;
-                    } else if (record.doctor.name) {
-                        doctorName = "BS. " + record.doctor.name;
-                    }
+                    doctorName = record.doctor.user?.fullName || record.doctor.fullName || record.doctor.name || "Bác sĩ";
+                    doctorName = "BS. " + doctorName;
                 }
-                
-                // Xử lý ngày tạo hồ sơ
-                const createdDate = record.createdAt 
-                    ? new Date(record.createdAt).toLocaleDateString('vi-VN')
+                const createdDate = record.createdAt
+                    ? new Date(record.createdAt).toLocaleDateString('vi-VN', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit'
+                    })
                     : "Không xác định";
-                
-                // Xử lý chẩn đoán
                 const diagnosis = record.diagnosis || "Chưa có chẩn đoán";
-                
-                // Xử lý dịch vụ y tế từ cuộc hẹn (hỗ trợ nhiều dịch vụ)
                 let serviceName = "Khám mắt";
-                if (record.appointment && record.appointment.services && record.appointment.services.length > 0) {
-                    // Nếu có nhiều dịch vụ, hiển thị tất cả
-                    const serviceNames = record.appointment.services.map(service => service.name).filter(name => name);
-                    serviceName = serviceNames.length > 0 ? serviceNames.join(", ") : "Khám mắt";
-                } else if (record.appointment && record.appointment.service) {
-                    // Fallback cho trường hợp chỉ có một dịch vụ (backward compatibility)
+                if (record.appointment?.services?.length > 0) {
+                    serviceName = record.appointment.services.map(service => service.name).filter(name => name).join(", ");
+                } else if (record.appointment?.service) {
                     serviceName = record.appointment.service.name || "Khám mắt";
                 }
-                
-                // Xử lý trạng thái
                 const status = record.status || "completed";
-                
                 return {
-                    id: record.id, // ID thực trong database để sử dụng khi gọi API
-                    diagnosis: diagnosis, // Chẩn đoán
-                    serviceName: serviceName, // Tên dịch vụ y tế
+                    id: record.id,
+                    diagnosis,
+                    serviceName,
                     doctor: doctorName,
                     date: createdDate,
-                    status: status,
+                    status,
                     notes: record.notes || "Không có ghi chú",
-                    // Thêm các trường hữu ích khác
                     appointmentId: record.appointmentId,
                     patientId: record.patientId,
                     doctorId: record.doctorId,
@@ -104,258 +84,193 @@ export default function MedicalRecordsPage() {
                     updatedAt: record.updatedAt
                 };
             });
-            
             setMedicalRecords(formattedRecords);
+            setFilteredRecords(formattedRecords);
         } catch (err) {
             console.error("Lỗi khi lấy dữ liệu hồ sơ điều trị:", err);
-            setError("Không thể tải hồ sơ điều trị. Vui lòng thử lại sau.");
             toast.error("Không thể tải hồ sơ điều trị. Vui lòng thử lại sau.");
+            setMedicalRecords([]);
+            setFilteredRecords([]);
         } finally {
             setLoading(false);
         }
     };
 
-    // Hàm xử lý URL avatar
+    useEffect(() => {
+        fetchUserData();
+        fetchMedicalRecords();
+    }, []);
+
+    // Filter records based on search term
+    useEffect(() => {
+        const filtered = medicalRecords.filter(record =>
+            (record.diagnosis?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                record.serviceName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                record.doctor?.toLowerCase().includes(searchTerm.toLowerCase()))
+        );
+        setFilteredRecords(filtered);
+        setCurrentPage(1);
+    }, [searchTerm, medicalRecords]);
+
+    // Pagination
+    const indexOfLastRecord = currentPage * recordsPerPage;
+    const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
+    const currentRecords = filteredRecords.slice(indexOfFirstRecord, indexOfLastRecord);
+    const totalPages = Math.ceil(filteredRecords.length / recordsPerPage);
+
+    const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+    const handleViewDetails = (recordId) => {
+        navigate(`/dashboard/patient/medical-records/${recordId}`);
+    };
+
     const getAvatarUrl = (url) => {
-        if (!url) return null;
-
-        // Nếu là URL đầy đủ (bắt đầu bằng http hoặc https)
-        if (url.startsWith('http://') || url.startsWith('https://')) {
-            return url;
-        }
-
-        // Nếu là đường dẫn tương đối, thêm base URL
-        if (url.startsWith('/')) {
-            return `http://localhost:8080${url}`;
-        }
-
-        return url;
+        if (!url) return '';
+        if (url.startsWith('http')) return url;
+        return `${process.env.REACT_APP_API_URL || 'http://localhost:8080'}${url}`;
     };
 
-    // Lọc dữ liệu theo từ khóa tìm kiếm
-    const filteredRecords = medicalRecords.filter(record =>
-        record.diagnosis?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        record.serviceName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        record.doctor?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
-    // Phân trang
-    const totalPages = Math.ceil(filteredRecords.length / itemsPerPage);
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    const currentRecords = filteredRecords.slice(startIndex, endIndex);
-
-    // Sửa: Sử dụng ID đúng để navigate
-    const handleViewDetails = (record) => {
-        console.log('Navigating to record:', record);
-        // Đảm bảo sử dụng ID thực của hồ sơ để điều hướng
-        navigate(`/dashboard/patient/medical-records/${record.id}`);
-    };
-
-    const handleSearch = (e) => {
-        setSearchTerm(e.target.value);
-        setCurrentPage(1); // Reset về trang đầu khi search
-    };
-
-    const handleItemsPerPageChange = (e) => {
-        setItemsPerPage(parseInt(e.target.value));
-        setCurrentPage(1); // Reset về trang đầu
-    };
-
-    const handlePageChange = (page) => {
-        setCurrentPage(page);
-    };
-
-    const handleMenuClick = (route) => {
-        navigate(route);
-    };
-
-    // Hàm render nhiều dịch vụ với UI đẹp
     const renderServices = (serviceName) => {
-        if (!serviceName) return "Khám mắt";
-        
-        // Nếu có dấu phẩy, nghĩa là có nhiều dịch vụ
+        if (!serviceName) return <span className="ptod-service-tag">Khám mắt</span>;
         if (serviceName.includes(",")) {
             const services = serviceName.split(",").map(s => s.trim()).filter(s => s);
-            
-            // Nếu có nhiều hơn 2 dịch vụ, hiển thị 2 dịch vụ đầu + tooltip
             if (services.length > 2) {
                 return (
-                    <div className="services-tooltip">
-                        <div className="services-list">
-                            <span className="service-tag">{services[0]}</span>
-                            <span className="service-tag">{services[1]}</span>
-                            <span className="services-count">+{services.length - 2}</span>
+                    <div className="ptod-services-tooltip">
+                        <div className="ptod-services-list">
+                            <span className="ptod-service-tag">{services[0]}</span>
+                            <span className="ptod-service-tag">{services[1]}</span>
+                            <span className="ptod-services-count">+{services.length - 2}</span>
                         </div>
-                        <div className="tooltip-content">
+                        <div className="ptod-tooltip-content">
                             {services.join(", ")}
                         </div>
                     </div>
                 );
             } else {
-                // Hiển thị tất cả nếu <= 2 dịch vụ
                 return (
-                    <div className="services-list">
+                    <div className="ptod-services-list">
                         {services.map((service, index) => (
-                            <span key={index} className="service-tag">{service}</span>
+                            <span key={index} className="ptod-service-tag">{service}</span>
                         ))}
                     </div>
                 );
             }
         }
-        
-        // Chỉ có 1 dịch vụ
-        return <span className="service-tag">{serviceName}</span>;
+        return <span className="ptod-service-tag">{serviceName}</span>;
     };
 
     return (
-        <div className="main-content" style={{ margin: 0, width: '100%', boxSizing: 'border-box' }}>
+        <div className="ptod-container">
             <ToastContainer position="top-right" autoClose={3000} />
-
-            {/* Header with Search */}
-            <header className="content-header">
-                <div className="header-left">
-                    <h1>Danh sách hồ sơ</h1>
-                </div>
-
-                <div className="header-right">
-                    <div className="search-container">
-                        <div className="search-input-wrapper">
-                            <Search className="search-icon" size={16} />
-                            <input
-                                type="text"
-                                placeholder="Tìm hồ sơ (Dịch vụ, chẩn đoán, bác sĩ...)"
-                                className="search-input"
-                                value={searchTerm}
-                                onChange={handleSearch}
-                            />
-                        </div>
+            {/* Header */}
+            <header className="ptod-header">
+                <div className="ptod-header-left">
+                    <h1 className="ptod-title">Hồ sơ điều trị</h1>
+                    <div className="ptod-search-container">
+                        <Search className="ptod-search-icon" />
+                        <input
+                            type="text"
+                            placeholder="Tìm kiếm theo dịch vụ, chẩn đoán, bác sĩ..."
+                            className="ptod-search-input"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
                     </div>
-
-                    <div className="user-avatar">
-                        {user.avatar ? (
-                            <img src={getAvatarUrl(user.avatar)} alt={user.name} className="avatar-image" />
+                </div>
+                <div className="ptod-header-right">
+                    <div className="ptod-user-avatar">
+                        {user && user.avatarUrl ? (
+                            <img src={getAvatarUrl(user.avatarUrl)} alt={user.name} className="ptod-avatar-image" />
                         ) : (
-                            <div className="avatar-fallback">
-                                {user.name?.charAt(0) || "U"}
-                            </div>
+                            user && user.name ? user.name.charAt(0) : "U"
                         )}
                     </div>
                 </div>
             </header>
 
-            {/* Breadcrumb */}
-            <div className="breadcrumb-container">
-                <nav className="breadcrumb">
-                    <div className="breadcrumb-item">
-                        <FileText size={16} />
-                        <span>Hồ sơ điều trị</span>
+            {/* Records Content */}
+            <div className="ptod-orders-content">
+                {loading ? (
+                    <div className="ptod-loading-container">
+                        <div className="ptod-loading-spinner">Đang tải...</div>
                     </div>
-                    <span className="breadcrumb-separator">/</span>
-                    <div className="breadcrumb-item active">
-                        <span>Danh sách hồ sơ bệnh án</span>
-                    </div>
-                </nav>
-            </div>
-
-            {/* Medical Records Table */}
-            <div className="medical-records-content">
-                <div className="table-container">
-                    <table className="medical-records-table">
-                        <thead>
-                        <tr>
-                            <th className="text-center">#</th>
-                            <th>Dịch vụ khám</th>
-                            <th>Chẩn đoán</th>
-                            <th>Bác sĩ khám</th>
-                            <th className="sortable">
-                                <div className="sort-header">
-                                    <span>Ngày khám</span>
-                                    <ChevronDown size={16} />
+                ) : (
+                    <>
+                        <div className="ptod-orders-list">
+                            {filteredRecords.length === 0 ? (
+                                <div className="ptod-no-orders">
+                                    <Package className="ptod-no-orders-icon" />
+                                    <h3>Không có hồ sơ nào</h3>
+                                    <p>Không có hồ sơ điều trị phù hợp với bộ lọc hiện tại.</p>
                                 </div>
-                            </th>
-                            <th>Chi tiết</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {loading ? (
-                            <tr>
-                                <td colSpan="6" className="text-center loading">
-                                    Đang tải...
-                                </td>
-                            </tr>
-                        ) : currentRecords.length === 0 ? (
-                            <tr>
-                                <td colSpan="6" className="text-center no-data">
-                                    Không tìm thấy hồ sơ nào
-                                </td>
-                            </tr>
-                        ) : (
-                            currentRecords.map((record, index) => (
-                                <tr key={record.id} onClick={() => handleViewDetails(record)}>
-                                    <td className="text-center font-medium">{startIndex + index + 1}</td>
-                                    <td className="font-medium">{renderServices(record.serviceName)}</td>
-                                    <td>{record.diagnosis}</td>
-                                    <td>{record.doctor}</td>
-                                    <td>{record.date}</td>
-                                    <td>
-                                        <span className={`status-badge ${record.status}`}>
-                                            {record.status === "completed" ? "Hoàn thành" : record.status}
-                                        </span>
-                                    </td>
-                                </tr>
-                            ))
-                        )}
-                        </tbody>
-                    </table>
-                </div>
-
-                {/* Pagination */}
-                <div className="pagination-container">
-                    <div className="pagination-left">
-                        <div className="page-numbers">
-                            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                            ) : (
+                                currentRecords.map((record) => (
+                                    <div
+                                        key={record.id}
+                                        className="ptod-order-card"
+                                        onClick={() => handleViewDetails(record.id)}
+                                    >
+                                        <div className="ptod-order-content">
+                                            <div className="ptod-order-main-info">
+                                                <h3 className="ptod-order-id">
+                                                    <FileText size={16} className="ptod-order-icon" />
+                                                    Hồ sơ #{record.id}
+                                                </h3>
+                                                <p className="ptod-order-items">{renderServices(record.serviceName)}</p>
+                                                <p className="ptod-order-unreviewed">{record.diagnosis}</p>
+                                                <div className="ptod-order-meta">
+                                                    <div className="ptod-order-date">
+                                                        <Calendar size={14} />
+                                                        <span>Ngày khám: {record.date}</span>
+                                                    </div>
+                                                    <p className="ptod-order-total">{record.doctor}</p>
+                                                </div>
+                                            </div>
+                                            <div className="ptod-order-actions">
+                                                <span className={`ptod-order-status ${record.status === 'completed' ? 'status-delivered' : 'status-default'}`}>
+                                                    {record.status === "completed" ? "Hoàn thành" : record.status}
+                                                </span>
+                                                <button className="ptod-order-detail-btn">
+                                                    Xem chi tiết
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                        {/* Pagination */}
+                        {filteredRecords.length > 0 && (
+                            <div className="ptod-pagination">
                                 <button
-                                    key={page}
-                                    className={`page-number ${currentPage === page ? 'active' : ''}`}
-                                    onClick={() => handlePageChange(page)}
+                                    className="ptod-pagination-btn"
+                                    onClick={() => paginate(currentPage - 1)}
+                                    disabled={currentPage === 1}
                                 >
-                                    {page}
+                                    «
                                 </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    <div className="pagination-right">
-                        <div className="items-per-page">
-                            <select
-                                value={itemsPerPage}
-                                onChange={handleItemsPerPageChange}
-                                className="items-select"
-                            >
-                                <option value="10">10</option>
-                                <option value="20">20</option>
-                                <option value="50">50</option>
-                            </select>
-                            <span className="items-label">/ page</span>
-                        </div>
-                    </div>
-                </div>
+                                {Array.from({ length: totalPages }, (_, i) => (
+                                    <button
+                                        key={i + 1}
+                                        className={`ptod-pagination-btn ${currentPage === i + 1 ? 'ptod-active' : ''}`}
+                                        onClick={() => paginate(i + 1)}
+                                    >
+                                        {i + 1}
+                                    </button>
+                                ))}
+                                <button
+                                    className="ptod-pagination-btn"
+                                    onClick={() => paginate(currentPage + 1)}
+                                    disabled={currentPage === totalPages}
+                                >
+                                    »
+                                </button>
+                            </div>
+                        )}
+                    </>
+                )}
             </div>
-
-            {/* Footer */}
-            <footer className="content-footer">
-                <div className="footer-content">
-                    <div className="footer-left">
-                        2025 EyeSpire. All rights reserved.
-                    </div>
-                    <div className="footer-right">
-                        <a href="#" className="footer-link">Privacy Policy</a>
-                        <a href="#" className="footer-link">Terms of Service</a>
-                        <a href="#" className="footer-link">Support</a>
-                    </div>
-                </div>
-            </footer>
         </div>
     );
 }

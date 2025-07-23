@@ -1,7 +1,40 @@
-/* Medical Record Detail Page Styles */
+/* Medical Record Detail Page Styles - prefix mrd */
 
-/* Back button */
-.back-button {
+/* Container */
+.mrd-container {
+    padding: 20px 30px;
+    background-color: #f8f9fa;
+    min-height: 100vh;
+}
+
+/* Header Styles */
+.mrd-header {
+    background: white;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 70px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.mrd-header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.mrd-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #03246b;
+    margin: 0;
+}
+
+.mrd-back-button {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -12,129 +45,225 @@
     color: #6b7280;
     cursor: pointer;
     transition: all 0.2s ease;
-    margin-right: 12px;
 }
 
-.back-button:hover {
-    background-color: #f9fafb;
+.mrd-back-button:hover {
+    background-color: #f3f4f6;
     border-color: #d1d5db;
-    color: #374151;
+    color: #03246b;
 }
 
-/* Breadcrumb link */
-.breadcrumb-link {
-    cursor: pointer;
-    color: #3b82f6;
-    transition: color 0.2s ease;
+.mrd-back-button:focus {
+    outline: 2px solid #03246b;
+    outline-offset: 2px;
 }
 
-.breadcrumb-link:hover {
-    color: #1d4ed8;
-    text-decoration: underline;
+.mrd-header-right {
+    display: flex;
+    align-items: center;
 }
 
-/* Loading container */
-.loading-container {
+.mrd-user-avatar {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background: #f3f4f6;
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 200px;
+    font-weight: 500;
+    color: #374151;
+    overflow: hidden;
 }
 
-.loading-text {
+.mrd-avatar-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+/* Breadcrumb Styles */
+.mrd-breadcrumb-container {
+    padding: 0.5rem 0;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.mrd-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0 1rem;
+    font-size: 0.875rem;
     color: #6b7280;
-    font-size: 16px;
 }
 
-/* Detail grid */
-.detail-grid {
+.mrd-breadcrumb-item {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.mrd-breadcrumb-item.active {
+    color: #03246b;
+    font-weight: 500;
+}
+
+.mrd-breadcrumb-link {
+    cursor: pointer;
+    color: #03246b;
+    transition: color 0.2s ease;
+}
+
+.mrd-breadcrumb-link:hover {
+    color: #021a4d;
+    text-decoration: underline;
+}
+
+.mrd-breadcrumb-separator {
+    color: #9ca3af;
+}
+
+/* Main Content Styles */
+.mrd-content {
+    flex: 1;
+    padding: 1rem 0;
+}
+
+/* Loading Styles */
+.mrd-loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.mrd-loading-spinner {
+    font-size: 1.125rem;
+    color: #03246b;
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Detail Grid */
+.mrd-detail-grid {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 24px;
-    margin-bottom: 24px;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
 }
 
 @media (min-width: 1024px) {
-    .detail-grid {
-        grid-template-columns: 1fr 1fr 1fr;
+    .mrd-detail-grid {
+        grid-template-columns: repeat(3, 1fr);
     }
 }
 
-/* Detail cards */
-.detail-card {
-    background: #ffffff;
+/* Detail Card */
+.mrd-detail-card {
+    background: white;
     border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    padding: 24px;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    transition: all 0.2s ease-in-out;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    position: relative;
+    overflow: hidden;
 }
 
-.card-title {
-    font-size: 18px;
+.mrd-detail-card:hover {
+    box-shadow: 0 8px 16px rgba(3, 36, 107, 0.15);
+    transform: translateY(-4px);
+    border-color: rgba(3, 36, 107, 0.2);
+}
+
+.mrd-detail-card:after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: #03246b;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.mrd-detail-card:hover:after {
+    opacity: 1;
+}
+
+.mrd-card-title {
+    font-size: 1.125rem;
     font-weight: 600;
-    color: #111827;
-    margin-bottom: 16px;
-    padding-bottom: 8px;
+    color: #03246b;
+    margin: 0 0 1rem 0;
+    padding-bottom: 0.5rem;
     border-bottom: 1px solid #f3f4f6;
 }
 
-.card-content {
+.mrd-card-content {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 1rem;
 }
 
-/* Info rows */
-.info-row {
+/* Info Rows */
+.mrd-info-row {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 0.25rem;
 }
 
-.info-label {
-    font-size: 14px;
+.mrd-info-label {
+    font-size: 0.875rem;
     font-weight: 500;
     color: #6b7280;
 }
 
-.info-value {
-    font-size: 16px;
+.mrd-info-value {
+    font-size: 1rem;
     color: #111827;
     margin: 0;
     line-height: 1.5;
 }
 
-/* Images grid */
-.images-grid {
+/* Images Grid */
+.mrd-images-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    margin-top: 8px;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
 }
 
-.image-item {
+.mrd-image-item {
     position: relative;
     cursor: pointer;
-    border-radius: 8px;
+    border-radius: 0.375rem;
     overflow: hidden;
     border: 1px solid #e5e7eb;
     transition: all 0.2s ease;
 }
 
-.image-item:hover {
-    border-color: #3b82f6;
+.mrd-image-item:hover {
+    border-color: #03246b;
     transform: translateY(-1px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-.medical-image {
+.mrd-medical-image {
     width: 100%;
     height: 80px;
     object-fit: cover;
     display: block;
 }
 
-.image-overlay {
+.mrd-image-overlay {
     position: absolute;
     top: 0;
     left: 0;
@@ -149,105 +278,210 @@
     color: white;
 }
 
-.image-item:hover .image-overlay {
+.mrd-image-item:hover .mrd-image-overlay {
     opacity: 1;
 }
 
-/* Prescription list */
-.prescription-list {
+/* Prescription List */
+.mrd-prescription-list {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 1rem;
 }
 
-.prescription-item {
+.mrd-prescription-item {
     border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    padding: 16px;
+    border-radius: 0.375rem;
+    padding: 1rem;
     background-color: #f9fafb;
 }
 
-.prescription-header {
+.mrd-prescription-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 12px;
+    margin-bottom: 0.75rem;
 }
 
-.prescription-name {
-    font-size: 16px;
+.mrd-prescription-name {
+    font-size: 1rem;
     font-weight: 600;
-    color: #111827;
+    color: #03246b;
     margin: 0;
 }
 
-.prescription-duration {
+.mrd-prescription-duration {
     background-color: #e5e7eb;
     color: #374151;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 12px;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
     font-weight: 500;
 }
 
-.prescription-details {
+.mrd-prescription-details {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 0.5rem;
 }
 
-.prescription-detail {
-    font-size: 14px;
+.mrd-prescription-detail {
+    font-size: 0.875rem;
     color: #6b7280;
     margin: 0;
     line-height: 1.4;
 }
 
-.detail-label {
+.mrd-detail-label {
     font-weight: 600;
     color: #374151;
 }
 
-/* Responsive adjustments */
+/* Footer Styles */
+.mrd-footer {
+    margin-top: 2rem;
+    padding: 1rem 0;
+    border-top: 1px solid #e5e7eb;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.mrd-footer-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+
+.mrd-footer-left {
+    font-weight: 500;
+}
+
+.mrd-footer-right {
+    display: flex;
+    gap: 1rem;
+}
+
+.mrd-footer-link {
+    color: #03246b;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.mrd-footer-link:hover {
+    color: #021a4d;
+    text-decoration: underline;
+}
+
+/* Responsive Design */
 @media (max-width: 1023px) {
-    .detail-grid {
+    .mrd-detail-grid {
         grid-template-columns: 1fr;
     }
 
-    .prescription-header {
+    .mrd-prescription-header {
         flex-direction: column;
         align-items: flex-start;
-        gap: 8px;
+        gap: 0.5rem;
     }
 
-    .images-grid {
+    .mrd-images-grid {
         grid-template-columns: 1fr;
     }
 
-    .medical-image {
+    .mrd-medical-image {
         height: 120px;
     }
 }
 
 @media (max-width: 768px) {
-    .detail-card {
-        padding: 16px;
+    .mrd-container {
+        padding: 15px;
     }
 
-    .card-title {
-        font-size: 16px;
-        margin-bottom: 12px;
+    .mrd-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+        padding: 1rem;
     }
 
-    .info-value {
-        font-size: 14px;
+    .mrd-header-left {
+        width: 100%;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
     }
 
-    .prescription-item {
-        padding: 12px;
+    .mrd-header-right {
+        align-self: flex-end;
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
     }
 
-    .prescription-name {
-        font-size: 14px;
+    .mrd-detail-card {
+        padding: 1rem;
     }
+
+    .mrd-card-title {
+        font-size: 1rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .mrd-info-value {
+        font-size: 0.875rem;
+    }
+
+    .mrd-prescription-item {
+        padding: 0.75rem;
+    }
+
+    .mrd-prescription-name {
+        font-size: 0.875rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .mrd-breadcrumb {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+
+    .mrd-footer-content {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .mrd-footer-right {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+}
+
+/* Animation for loading */
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.mrd-loading-spinner {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Focus styles for accessibility */
+.mrd-detail-card:focus,
+.mrd-back-button:focus,
+.mrd-breadcrumb-link:focus,
+.mrd-footer-link:focus {
+    outline: 2px solid #03246b;
+    outline-offset: 2px;
 }
