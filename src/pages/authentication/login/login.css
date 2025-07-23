@@ -128,7 +128,15 @@ body {
 
 .password-input-container {
     position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.password-input-container input {
     width: 100%;
+    padding-right: 40px;
+    height: 40px;
+    box-sizing: border-box;
 }
 
 .password-toggle {
@@ -345,4 +353,11 @@ body {
     .time {
         font-size: 2rem;
     }
+}
+
+.error-message-valid { /* thông báo lỗi valid */
+    color: red;
+    font-size: 0.85rem;
+    margin-top: 4px;
+    margin-bottom: 8px;
 }

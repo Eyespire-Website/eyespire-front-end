@@ -10,6 +10,8 @@ import authService from "../../../services/authService"
 import { useNavigate } from "react-router-dom"
 import { FcGoogle } from 'react-icons/fc'
 
+
+
 export default function LoginPage() {
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
@@ -19,9 +21,14 @@ export default function LoginPage() {
     const [showPassword, setShowPassword] = useState(false)
     const navigate = useNavigate()
 
+    const [errors, setErrors] = useState({});
+
     const handleLogin = async (e) => {
         e.preventDefault()
         setMessage("")
+
+        if (!validateForm()) return;
+
         setLoading(true)
 
         try {
@@ -87,6 +94,39 @@ export default function LoginPage() {
         })
     }
 
+    const validateForm = () => {
+        validateEmail();
+        validatePassword();
+
+        return (
+            /\S+@\S+\.\S+/.test(email) &&
+            password &&
+            password.length >= 6
+        );
+    };
+
+
+    // THÊM HAI HÀM validate riêng:
+    const validateEmail = () => {
+        if (!email.trim()) {
+            setErrors((prev) => ({ ...prev, email: "Email is required" }));
+        } else if (!/\S+@\S+\.\S+/.test(email)) {
+            setErrors((prev) => ({ ...prev, email: "Invalid email format" }));
+        } else {
+            setErrors((prev) => ({ ...prev, email: "" }));
+        }
+    };
+
+    const validatePassword = () => {
+        if (!password) {
+            setErrors((prev) => ({ ...prev, password: "Password is required" }));
+        } else if (password.length < 6) {
+            setErrors((prev) => ({ ...prev, password: "Password must be at least 6 characters" }));
+        } else {
+            setErrors((prev) => ({ ...prev, password: "" }));
+        }
+    };
+
     return (
         <div className="login-container">
             {/* Left Panel - Login Form */}
@@ -121,8 +161,12 @@ export default function LoginPage() {
                                 placeholder="Enter Email or Username"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                required
+                                onBlur={validateEmail}
                             />
+
+                            {errors.email && <div className="error-message-valid">{errors.email}</div>}
+
+
                         </div>
 
                         <div className="form-group">
@@ -134,12 +178,15 @@ export default function LoginPage() {
                                     placeholder="Enter Password"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    required
+                                    onBlur={validatePassword}
                                 />
                                 <span className="password-toggle" onClick={toggleShowPassword}>
                                     <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
                                 </span>
                             </div>
+
+                            {errors.password && <div className="error-message-valid">{errors.password}</div>}
+
                         </div>
 
                         {message && (

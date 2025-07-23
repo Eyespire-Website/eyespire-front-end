@@ -8,6 +8,10 @@ import signup_image from "../../../assets/login-image.jpg"
 import logo from "../../../assets/logo.png"
 import authService from "../../../services/authService"
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
+
+
 export default function SignupPage() {
     const [username, setUsername] = useState("")
     const [name, setName] = useState("")
@@ -18,16 +22,28 @@ export default function SignupPage() {
     const [loading, setLoading] = useState(false)
     const navigate = useNavigate()
 
+    const [errors, setErrors] = useState({});
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+
+    const toggleShowPassword = () => {
+        setShowPassword(prev => !prev);
+    };
+
+    const toggleShowConfirmPassword = () => {
+        setShowConfirmPassword(prev => !prev);
+    };
+
+
     const handleSignup = async (e) => {
         e.preventDefault()
         setMessage("")
+
+        if (!validateForm()) return;
+
         setLoading(true)
 
-        if (password !== confirmPassword) {
-            setMessage("Passwords do not match.")
-            setLoading(false)
-            return
-        }
 
         try {
             const response = await authService.signup(username, name, email, password)
@@ -46,6 +62,82 @@ export default function SignupPage() {
             setLoading(false)
         }
     }
+
+
+    const validateUsername = () => {
+        if (!username.trim()) {
+            setErrors(prev => ({ ...prev, username: "Username is required" }));
+        } else {
+            setErrors(prev => ({ ...prev, username: "" }));
+        }
+    };
+
+    const validateName = () => {
+        if (!name.trim()) {
+            setErrors(prev => ({ ...prev, name: "Full name is required" }));
+        } else {
+            setErrors(prev => ({ ...prev, name: "" }));
+        }
+    };
+
+    const validateEmail = () => {
+        if (!email.trim()) {
+            setErrors(prev => ({ ...prev, email: "Email is required" }));
+        } else if (!/\S+@\S+\.\S+/.test(email)) {
+            setErrors(prev => ({ ...prev, email: "Invalid email format" }));
+        } else {
+            setErrors(prev => ({ ...prev, email: "" }));
+        }
+    };
+
+    const validatePassword = () => {
+        const specialCharRegex = /[!@#$%^&*(),.?":{}|<>]/;
+        const uppercaseRegex = /[A-Z]/;
+        const lowercaseRegex = /[a-z]/;
+
+        if (!password) {
+            setErrors(prev => ({ ...prev, password: "Password is required" }));
+        } else if (password.length < 6) {
+            setErrors(prev => ({ ...prev, password: "Password must be at least 6 characters" }));
+        } else if (!uppercaseRegex.test(password)) {
+            setErrors(prev => ({ ...prev, password: "Password must contain at least 1 uppercase letter" }));
+        } else if (!lowercaseRegex.test(password)) {
+            setErrors(prev => ({ ...prev, password: "Password must contain at least 1 lowercase letter" }));
+        } else if (!specialCharRegex.test(password)) {
+            setErrors(prev => ({ ...prev, password: "Password must contain at least 1 special character" }));
+        } else {
+            setErrors(prev => ({ ...prev, password: "" }));
+        }
+    };
+
+    const validateConfirmPassword = () => {
+        if (!confirmPassword) {
+            setErrors(prev => ({ ...prev, confirmPassword: "Please confirm your password" }));
+        } else if (confirmPassword !== password) {
+            setErrors(prev => ({ ...prev, confirmPassword: "Passwords do not match" }));
+        } else {
+            setErrors(prev => ({ ...prev, confirmPassword: "" }));
+        }
+    };
+
+
+    const validateForm = () => {
+        validateUsername();
+        validateName();
+        validateEmail();
+        validatePassword();
+        validateConfirmPassword();
+
+        // Trả về true nếu không có lỗi nào
+        return (
+            username.trim() &&
+            name.trim() &&
+            /\S+@\S+\.\S+/.test(email) &&
+            password &&
+            password.length >= 6 &&
+            confirmPassword === password
+        );
+    };
 
 
     const handleGoogleSignup = async () => {
@@ -102,8 +194,9 @@ export default function SignupPage() {
                                 placeholder="Enter your username"
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
-                                required
+                                onBlur={validateUsername}
                             />
+                            {errors.username && <div className="error-message-valid">{errors.username}</div>}
                         </div>
 
                         <div className="form-group">
@@ -114,8 +207,9 @@ export default function SignupPage() {
                                 placeholder="Enter your full name"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
-                                required
+                                onBlur={validateName}
                             />
+                            {errors.name && <div className="error-message-valid">{errors.name}</div>}
                         </div>
 
                         <div className="form-group">
@@ -126,33 +220,50 @@ export default function SignupPage() {
                                 placeholder="Enter your email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                required
+                                onBlur={validateEmail}
                             />
+                            {errors.email && <div className="error-message-valid">{errors.email}</div>}
                         </div>
 
                         <div className="form-group">
                             <label htmlFor="password">Password</label>
-                            <input
-                                type="password"
-                                id="password"
-                                placeholder="Enter password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                required
-                            />
+                            <div className="password-input-container">
+                                <input
+                                    type={showPassword ? "text" : "password"}
+                                    id="password"
+                                    placeholder="Enter password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    onBlur={validatePassword}
+                                    required
+                                />
+                                <span className="password-toggle" onClick={toggleShowPassword}>
+            <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+        </span>
+                            </div>
+                            {errors.password && <div className="error-message-valid">{errors.password}</div>}
                         </div>
+
 
                         <div className="form-group">
                             <label htmlFor="confirmPassword">Confirm Password</label>
-                            <input
-                                type="password"
-                                id="confirmPassword"
-                                placeholder="Re-enter password"
-                                value={confirmPassword}
-                                onChange={(e) => setConfirmPassword(e.target.value)}
-                                required
-                            />
+                            <div className="password-input-container">
+                                <input
+                                    type={showConfirmPassword ? "text" : "password"}
+                                    id="confirmPassword"
+                                    placeholder="Re-enter password"
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    onBlur={validateConfirmPassword}
+                                    required
+                                />
+                                <span className="password-toggle" onClick={toggleShowConfirmPassword}>
+            <FontAwesomeIcon icon={showConfirmPassword ? faEyeSlash : faEye} />
+        </span>
+                            </div>
+                            {errors.confirmPassword && <div className="error-message-valid">{errors.confirmPassword}</div>}
                         </div>
+
 
                         {message && (
                             <div className="error-message">{message}</div>
