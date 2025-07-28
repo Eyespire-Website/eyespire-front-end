@@ -16,6 +16,7 @@ const statusConfig = {
     DOCTOR_FINISHED: { label: "Bác sĩ đã khám xong", className: "customer-appointments-status-doctor-finished" },
     WAITING_PAYMENT: { label: "Chờ thanh toán", className: "customer-appointments-status-waiting-payment" },
     COMPLETED: { label: "Hoàn thành", className: "customer-appointments-status-completed" },
+    CANCELED: { label: "Đã hủy", className: "customer-appointments-status-cancelled" },
     CANCELLED: { label: "Đã hủy", className: "customer-appointments-status-cancelled" },
     NO_SHOW: { label: "Không đến", className: "customer-appointments-status-no-show" },
     UNKNOWN: { label: "Không xác định", className: "customer-appointments-status-unknown" },
@@ -45,8 +46,9 @@ export default function AppointmentsPage() {
         DOCTOR_FINISHED: 0,
         WAITING_PAYMENT: 0,
         COMPLETED: 0,
+        CANCELED: 0,
         CANCELLED: 0,
-        NEED_REVIEW: 0,
+        NO_SHOW: 0,
     });
     const [showCancelDialog, setShowCancelDialog] = useState(false);
     const [selectedAppointment, setSelectedAppointment] = useState(null);
@@ -87,7 +89,6 @@ export default function AppointmentsPage() {
             setLoading(true);
             const data = await appointmentService.getPatientAppointments();
             const formattedAppointments = data
-                .filter(appointment => appointment.status !== "PENDING")
                 .map(appointment => {
                     let appointmentDateTime;
                     try {
@@ -119,9 +120,11 @@ export default function AppointmentsPage() {
                     return {
                         id: appointment.id,
                         service: serviceName,
+                        serviceName: serviceName, // Thêm serviceName riêng
                         date: appointmentDateTime.toLocaleDateString('vi-VN'),
                         time: appointmentDateTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
                         doctor: appointment.doctor && appointment.doctor.name ? `BS. ${appointment.doctor.name}` : "Chưa xác định",
+                        doctorName: appointment.doctor && appointment.doctor.name ? `BS. ${appointment.doctor.name}` : "Chưa xác định", // Thêm doctorName riêng
                         status: mapAppointmentStatus(appointment.status),
                         reason: appointment.reason || "Không có thông tin",
                         notes: appointment.notes || "",
@@ -143,7 +146,6 @@ export default function AppointmentsPage() {
                         patientName: appointment.patientName || null,
                         patientEmail: appointment.patientEmail || null,
                         patientPhone: appointment.patientPhone || null,
-                        needsReview: appointment.status === "COMPLETED" ? true : false,
                     };
                 });
 
@@ -152,13 +154,14 @@ export default function AppointmentsPage() {
 
             const counts = {
                 ALL: formattedAppointments.length,
-                PENDING: 0,
+                PENDING: formattedAppointments.filter(apt => apt.status === 'PENDING').length,
                 CONFIRMED: formattedAppointments.filter(apt => apt.status === 'CONFIRMED').length,
                 DOCTOR_FINISHED: formattedAppointments.filter(apt => apt.status === 'DOCTOR_FINISHED').length,
                 WAITING_PAYMENT: formattedAppointments.filter(apt => apt.status === 'WAITING_PAYMENT').length,
                 COMPLETED: formattedAppointments.filter(apt => apt.status === 'COMPLETED').length,
+                CANCELED: formattedAppointments.filter(apt => apt.status === 'CANCELED').length,
                 CANCELLED: formattedAppointments.filter(apt => apt.status === 'CANCELLED').length,
-                NEED_REVIEW: formattedAppointments.filter(apt => apt.needsReview).length,
+                NO_SHOW: formattedAppointments.filter(apt => apt.status === 'NO_SHOW').length,
             };
             setFilterCounts(counts);
 
@@ -173,11 +176,7 @@ export default function AppointmentsPage() {
     useEffect(() => {
         let filtered = appointments;
         if (activeFilter !== "ALL") {
-            if (activeFilter === "NEED_REVIEW") {
-                filtered = appointments.filter(apt => apt.needsReview);
-            } else {
-                filtered = appointments.filter(apt => apt.status === activeFilter);
-            }
+            filtered = appointments.filter(apt => apt.status === activeFilter);
         }
         if (searchTerm.trim() !== "") {
             filtered = filtered.filter(apt =>
@@ -213,6 +212,8 @@ export default function AppointmentsPage() {
 
     const mapAppointmentStatus = (status) => {
         switch (status) {
+            case "PENDING":
+                return "PENDING";
             case "SCHEDULED":
                 return "PENDING";
             case "CONFIRMED":
@@ -224,10 +225,11 @@ export default function AppointmentsPage() {
             case "COMPLETED":
                 return "COMPLETED";
             case "CANCELED":
+                return "CANCELED";
             case "CANCELLED":
                 return "CANCELLED";
             case "NO_SHOW":
-                return "NO-SHOW";
+                return "NO_SHOW";
             default:
                 return "UNKNOWN";
         }
@@ -239,12 +241,22 @@ export default function AppointmentsPage() {
     };
 
     const getRefundStatus = (appointment) => {
-        if (appointment.status !== "CANCELLED") {
+        // Kiểm tra cả CANCELLED và CANCELED
+        if (appointment.status !== "CANCELLED" && appointment.status !== "CANCELED") {
             return <span className="ptod-order-status status-default">-</span>;
         }
 
         const refundStatus = appointment.refundStatus;
-        const refundAmount = appointment.refundAmount || 10000;
+        const refundAmount = appointment.refundAmount || 0;
+
+        // Nếu không có refundStatus hoặc refundAmount = 0, có thể không đủ điều kiện hoàn tiền
+        if (!refundStatus && refundAmount === 0) {
+            return (
+                <span className="ptod-order-status status-cancelled">
+                    Không đủ điều kiện hoàn tiền
+                </span>
+            );
+        }
 
         if (refundStatus === 'COMPLETED') {
             return (
@@ -256,6 +268,12 @@ export default function AppointmentsPage() {
             return (
                 <span className="ptod-order-status status-processing">
                     Đang xử lý {formatCurrency(refundAmount)}
+                </span>
+            );
+        } else if (refundStatus === 'REJECTED' || refundStatus === 'NOT_ELIGIBLE') {
+            return (
+                <span className="ptod-order-status status-cancelled">
+                    Không đủ điều kiện hoàn tiền
                 </span>
             );
         } else {
@@ -472,8 +490,17 @@ export default function AppointmentsPage() {
             const isFullyPaid = invoiceDetails?.paymentStatus === 'PAID' || details.status === "COMPLETED";
 
             const formattedDetails = {
-                ...details,
+                // Chỉ lấy các properties cần thiết, tránh copy object phức tạp
                 id: details.id,
+                status: details.status,
+                reason: details.reason,
+                notes: details.notes,
+                location: details.location,
+                room: details.room,
+                duration: details.duration,
+                appointmentTime: details.appointmentTime,
+                appointmentDate: details.appointmentDate,
+                timeSlot: details.timeSlot,
                 date: formattedDate,
                 time: formattedTime,
                 patientName: details.patientName || user?.name || "Không có thông tin",
@@ -492,6 +519,12 @@ export default function AppointmentsPage() {
                 paymentStatus: isFullyPaid ? 'Đã thanh toán' : 'Chờ thanh toán',
                 cancellationReason: details.cancellationReason || "",
                 cancellationTime: details.cancellationTime || null,
+                refundStatus: details.refundStatus,
+                refundAmount: details.refundAmount,
+                refundCompletedBy: details.refundCompletedBy,
+                refundCompletedByRole: details.refundCompletedByRole,
+                refundCompletedAt: details.refundCompletedAt,
+                requiresManualRefund: details.requiresManualRefund,
                 refundPolicy: details.cancellationTime ? calculateRefundPolicy(details.date || details.appointmentTime, details.cancellationTime) : null
             };
 
@@ -553,12 +586,12 @@ export default function AppointmentsPage() {
                 <div className="ptod-filter-tabs">
                     {[
                         { key: "ALL", label: "Tất cả" },
+                        { key: "PENDING", label: "Chờ xác nhận" },
                         { key: "CONFIRMED", label: "Đã xác nhận" },
                         { key: "DOCTOR_FINISHED", label: "Bác sĩ đã khám xong" },
                         { key: "WAITING_PAYMENT", label: "Chờ thanh toán" },
                         { key: "COMPLETED", label: "Đã hoàn thành" },
-                        { key: "CANCELLED", label: "Đã hủy" },
-                        { key: "NEED_REVIEW", label: "Cần đánh giá" },
+                        { key: "CANCELED", label: "Đã hủy" },
                     ].map(filter => (
                         <button
                             key={filter.key}
@@ -602,11 +635,6 @@ export default function AppointmentsPage() {
                                                     Cuộc hẹn #{appointment.id}
                                                 </h3>
                                                 <p className="ptod-order-items">{appointment.service}</p>
-                                                {appointment.needsReview && activeFilter === "NEED_REVIEW" && (
-                                                    <p className="ptod-order-unreviewed">
-                                                        Cần đánh giá: {appointment.service}
-                                                    </p>
-                                                )}
                                                 <div className="ptod-order-meta">
                                                     <div className="ptod-order-date">
                                                         <Calendar size={14} />
@@ -791,13 +819,13 @@ export default function AppointmentsPage() {
                                             <span className="details-label">Lý do khám:</span>
                                             <span className="details-value notes-text">{appointmentDetails.notes || 'Không có'}</span>
                                         </div>
-                                        {appointmentDetails.status === 'CANCELLED' && appointmentDetails.cancellationReason && (
+                                        {(appointmentDetails.status === 'CANCELLED' || appointmentDetails.status === 'CANCELED') && appointmentDetails.cancellationReason && (
                                             <div className="details-row full-width cancellation-reason">
                                                 <span className="details-label cancellation-label">Lý do hủy:</span>
                                                 <span className="details-value cancellation-text">{appointmentDetails.cancellationReason}</span>
                                             </div>
                                         )}
-                                        {appointmentDetails.status === 'CANCELLED' && (
+                                        {(appointmentDetails.status === 'CANCELLED' || appointmentDetails.status === 'CANCELED') && (
                                             <div className="details-section refund-info">
                                                 <div className="section-header">
                                                     <div className="icon-container">
@@ -812,11 +840,21 @@ export default function AppointmentsPage() {
                                                     </div>
                                                     <div className="details-row">
                                                         <span className="details-label">Số tiền hoàn:</span>
-                                                        <span className="details-value highlight">{formatCurrency(appointmentDetails.refundAmount || 10000)}</span>
+                                                        <span className="details-value highlight">
+                                                            {appointmentDetails.refundAmount > 0 
+                                                                ? formatCurrency(appointmentDetails.refundAmount)
+                                                                : "0 VNĐ (Không đủ điều kiện)"
+                                                            }
+                                                        </span>
                                                     </div>
                                                     <div className="details-row">
                                                         <span className="details-label">Phương thức hoàn tiền:</span>
-                                                        <span className="details-value">Hoàn tiền thủ công (Chuyển khoản)</span>
+                                                        <span className="details-value">
+                                                            {appointmentDetails.refundAmount > 0 
+                                                                ? "Hoàn tiền thủ công (Chuyển khoản)"
+                                                                : "Không áp dụng"
+                                                            }
+                                                        </span>
                                                     </div>
                                                     {appointmentDetails.refundCompletedBy && (
                                                         <div className="details-row">
@@ -832,6 +870,14 @@ export default function AppointmentsPage() {
                                                         <div className="details-row">
                                                             <span className="details-label">Thời gian hoàn tất:</span>
                                                             <span className="details-value">{formatRefundDate(appointmentDetails.refundCompletedAt)}</span>
+                                                        </div>
+                                                    )}
+                                                    {appointmentDetails.refundAmount === 0 && (
+                                                        <div className="details-row full-width">
+                                                            <div className="refund-policy-note">
+                                                                <strong>Lưu ý:</strong> Cuộc hẹn này không đủ điều kiện hoàn tiền theo chính sách của trung tâm. 
+                                                                Chính sách hoàn tiền: Hoàn 100% nếu hủy trước 24h, hoàn 50% nếu hủy trước 2h, không hoàn nếu hủy trong vòng 2h.
+                                                            </div>
                                                         </div>
                                                     )}
                                                 </div>
@@ -914,7 +960,7 @@ export default function AppointmentsPage() {
                             </div>
                         </div>
                         <div className="modal-footer">
-                            {appointmentDetails.status === "CONFIRMED" && (
+                            {(appointmentDetails.status === "PENDING" || appointmentDetails.status === "CONFIRMED") && (
                                 <button
                                     className="cancel-button-primary"
                                     onClick={() => {
@@ -941,6 +987,62 @@ export default function AppointmentsPage() {
                     existingFeedback={appointmentFeedbacks[selectedAppointmentForFeedback.id]}
                     onFeedbackSubmitted={handleFeedbackSubmitted}
                 />
+            )}
+
+            {/* Cancel Appointment Dialog */}
+            {showCancelDialog && selectedAppointment && (
+                <div className="modal-overlay">
+                    <div className="modal-container">
+                        <div className="modal-header">
+                            <h3>Xác nhận hủy lịch hẹn</h3>
+                            <button className="close-button" onClick={closeCancelDialog}>
+                                <XCircle size={24} />
+                            </button>
+                        </div>
+                        <div className="modal-content">
+                            <div className="appointment-info">
+                                <h4>Thông tin cuộc hẹn</h4>
+                                <p><strong>Bác sĩ:</strong> {selectedAppointment.doctorName}</p>
+                                <p><strong>Ngày giờ:</strong> {selectedAppointment.date} - {selectedAppointment.time}</p>
+                                <p><strong>Dịch vụ:</strong> {selectedAppointment.serviceName}</p>
+                            </div>
+                            
+                            {cancellationInfo && (
+                                <div className={`refund-info ${cancellationInfo.canRefund ? 'refund-yes' : 'refund-no'}`}>
+                                    <h4>Chính sách hoàn tiền</h4>
+                                    <p>{cancellationInfo.message}</p>
+                                    {cancellationInfo.canRefund && (
+                                        <p><strong>Số tiền hoàn:</strong> {formatCurrency(cancellationInfo.refundAmount)}</p>
+                                    )}
+                                </div>
+                            )}
+                            
+                            <div className="form-group">
+                                <label htmlFor="cancellationReason">Lý do hủy lịch hẹn *</label>
+                                <textarea
+                                    id="cancellationReason"
+                                    value={cancellationReason}
+                                    onChange={(e) => setCancellationReason(e.target.value)}
+                                    placeholder="Vui lòng nhập lý do hủy lịch hẹn..."
+                                    rows={4}
+                                    required
+                                />
+                            </div>
+                        </div>
+                        <div className="modal-footer">
+                            <button className="cancel-button-secondary" onClick={closeCancelDialog}>
+                                Hủy bỏ
+                            </button>
+                            <button 
+                                className="cancel-button-primary" 
+                                onClick={handleCancelAppointment}
+                                disabled={!cancellationReason.trim()}
+                            >
+                                Xác nhận hủy
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );
