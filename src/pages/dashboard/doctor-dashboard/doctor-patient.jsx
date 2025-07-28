@@ -42,6 +42,7 @@ const formatDate = (date) => {
 const statusConfig = {
     CONFIRMED: { label: "Đã xác nhận", className: "d-status-badge confirmed" },
     PENDING: { label: "Chờ xác nhận", className: "d-status-badge pending" },
+    DOCTOR_FINISHED: { label: "Bác sĩ đã khám xong", className: "d-status-badge doctor-finished" },
     COMPLETED: { label: "Hoàn thành", className: "d-status-badge completed" },
     CANCELLED: { label: "Đã hủy", className: "d-status-badge cancelled" },
     WAITING_PAYMENT: { label: "Chờ thanh toán", className: "d-status-badge waiting-payment" },
@@ -117,7 +118,7 @@ export default function PatientProfile() {
                 console.log("Appointments fetched:", JSON.stringify(appointments, null, 2));
 
                 const relevantAppointments = appointments.filter(
-                    appointment => appointment.status === "COMPLETED" || appointment.status === "WAITING_PAYMENT"
+                    appointment => appointment.status === "COMPLETED" || appointment.status === "WAITING_PAYMENT" || appointment.status === "DOCTOR_FINISHED"
                 );
 
                 if (relevantAppointments.length === 0) {

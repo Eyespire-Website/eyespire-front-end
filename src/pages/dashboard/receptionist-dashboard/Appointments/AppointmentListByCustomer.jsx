@@ -218,16 +218,13 @@ export default function AppointmentListByCustomer() {
     // Xác nhận tạo hóa đơn
     const confirmCreateInvoice = async () => {
         if (!appointmentToCreateInvoice) {
-            toast.error("Không tìm thấy thông tin cuộc hẹn để tạo hóa đơn.")
+            toast.error("Không tìm thấy thông tin cuộc hẹn để cập nhật hóa đơn.")
             return
         }
 
+        let existingInvoice = null
         try {
-            const existingInvoice = await appointmentService.getAppointmentInvoice(appointmentToCreateInvoice.id)
-            if (existingInvoice) {
-                toast.error("Hóa đơn đã tồn tại cho cuộc hẹn này.")
-                return
-            }
+            existingInvoice = await appointmentService.getAppointmentInvoice(appointmentToCreateInvoice.id)
         } catch (err) {
             if (err.response?.status !== 404) {
                 toast.error("Lỗi khi kiểm tra hóa đơn. Vui lòng thử lại.")
@@ -235,7 +232,14 @@ export default function AppointmentListByCustomer() {
             }
         }
 
-        if (!window.confirm("Bạn có chắc muốn tạo hóa đơn cho cuộc hẹn này?")) return
+        // Kiểm tra xem hóa đơn đã tồn tại chưa
+        if (!existingInvoice) {
+            toast.error("Không tìm thấy hóa đơn hiện có để cập nhật.")
+            return
+        }
+
+        const action = "cập nhật"
+        if (!window.confirm(`Bạn có chắc muốn ${action} hóa đơn cho cuộc hẹn này?`)) return
 
         try {
             setProcessingAction(true)
@@ -249,14 +253,14 @@ export default function AppointmentListByCustomer() {
                 }
             }) : []
 
-            console.log("Creating invoice with payload:", {
+            console.log(`Updating invoice with payload:`, {
                 appointmentId: appointmentToCreateInvoice.id,
                 serviceIds,
                 includeMedications,
                 medications
             })
 
-            const updatedAppointment = await appointmentService.createInvoiceAndSetWaitingPayment(
+            const updatedAppointment = await appointmentService.updateInvoiceAndSetWaitingPayment(
                 appointmentToCreateInvoice.id,
                 serviceIds,
                 includeMedications,
@@ -271,9 +275,7 @@ export default function AppointmentListByCustomer() {
                 } : app)
             )
 
-            toast.success(
-                `Tạo hóa đơn thành công! Tổng chi phí: ${formatCurrency(totalCost)}`
-            )
+            toast.success(`Cập nhật hóa đơn thành công! Tổng chi phí: ${formatCurrency(totalCost)}`)
             setShowCreateInvoiceModal(false)
             setAppointmentToCreateInvoice(null)
             setSelectedMedications([])
@@ -282,12 +284,12 @@ export default function AppointmentListByCustomer() {
                 setShowDetailModal(false)
             }
         } catch (err) {
-            console.error("Lỗi khi tạo hóa đơn:", err)
+            console.error("Lỗi khi cập nhật hóa đơn:", err)
             const errorMessage = err.response?.status === 500
-                ? "Lỗi server khi tạo hóa đơn. Vui lòng kiểm tra cấu hình server hoặc liên hệ quản trị viên."
-                : err.response?.status === 409
-                    ? "Hóa đơn đã tồn tại cho cuộc hẹn này."
-                    : err.response?.data?.message || "Không thể tạo hóa đơn. Vui lòng thử lại sau."
+                ? "Lỗi server khi cập nhật hóa đơn. Vui lòng kiểm tra cấu hình server hoặc liên hệ quản trị viên."
+                : err.response?.status === 404
+                    ? "Không tìm thấy hóa đơn để cập nhật."
+                    : err.response?.data?.message || "Không thể cập nhật hóa đơn. Vui lòng thử lại sau."
             toast.error(errorMessage)
         } finally {
             setProcessingAction(false)
