@@ -1,7 +1,7 @@
 import axios from 'axios';
 import authService from './authService';
 
-import API_CONFIG from '../config/api.config';
+const API_URL = 'https://eyespire-back-end.onrender.com/api';
 
 
 // Tạo instance axios với cấu hình mặc định

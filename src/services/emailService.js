@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Định nghĩa API_URL trực tiếp
-import API_CONFIG from '../config/api.config';
+const API_URL = 'https://eyespire-back-end.onrender.com/api';
 
 
 const emailService = {

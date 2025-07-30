@@ -1,4 +1,4 @@
-import API_CONFIG from '../config/api.config';
+
 import axios from 'axios';
 import authService from './authService';
 import userService from './userService';

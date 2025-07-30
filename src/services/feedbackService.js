@@ -2,8 +2,7 @@ import axios from 'axios';
 import authService from './authService';
 import userService from './userService'; // Import userService
 
-import API_CONFIG from '../config/api.config';
-
+const API_URL = 'https://eyespire-back-end.onrender.com/api';
 
 const feedbackService = {
     getFeedbackByProductId: async (productId) => {
