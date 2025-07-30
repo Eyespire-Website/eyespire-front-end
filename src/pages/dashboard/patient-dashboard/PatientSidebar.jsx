@@ -9,22 +9,24 @@ import {
     User,
     LogOut,
     Glasses,
-    MessageSquare, // Import MessageSquare for messaging icon
+    MessageSquare,
+    Home,
+    ChevronLeft,
+    ChevronRight,
+    Menu
 } from "lucide-react";
-import { HiOutlineBars3 } from "react-icons/hi2";
 import logo from '../../../assets/logo.png';
 import authService from '../../../services/authService';
 import './PatientSidebar.css';
 
 const patientMenuItems = [
-    { id: "appointments", label: "Danh sách cuộc hẹn", icon: <Calendar size={18} />, route: "/dashboard/patient/appointments" },
-    { id: "orders", label: "Theo dõi đơn hàng", icon: <Package size={18} />, route: "/dashboard/patient/orders" },
-    { id: "medical-records", label: "Hồ sơ điều trị", icon: <FileText size={18} />, route: "/dashboard/patient/medical-records" },
-    { id: "messages", label: "Tin nhắn", icon: <MessageSquare size={18} />, route: "/dashboard/patient/messages" }, // Add messaging menu item
-    { id: "payment-history", label: "Lịch sử thanh toán", icon: <History size={18} />, route: "/dashboard/patient/payment-history" },
-    { id: "virtual-glasses", label: "Thử kính ảo", icon: <Glasses size={18} />, route: "/dashboard/patient/virtual-glasses" },
-    { id: "profile", label: "Hồ sơ cá nhân", icon: <User size={18} />, route: "/dashboard/patient/profile" },
-
+    { id: "appointments", label: "Danh sách cuộc hẹn", icon: <Calendar size={20} />, route: "/dashboard/patient/appointments" },
+    { id: "orders", label: "Theo dõi đơn hàng", icon: <Package size={20} />, route: "/dashboard/patient/orders" },
+    { id: "medical-records", label: "Hồ sơ điều trị", icon: <FileText size={20} />, route: "/dashboard/patient/medical-records" },
+    { id: "messages", label: "Tin nhắn", icon: <MessageSquare size={20} />, route: "/dashboard/patient/messages" },
+    { id: "payment-history", label: "Lịch sử thanh toán", icon: <History size={20} />, route: "/dashboard/patient/payment-history" },
+    { id: "virtual-glasses", label: "Thử kính ảo", icon: <Glasses size={20} />, route: "/dashboard/patient/virtual-glasses" },
+    { id: "profile", label: "Hồ sơ cá nhân", icon: <User size={20} />, route: "/dashboard/patient/profile" },
 ];
 
 export default function PatientSidebar({ activeTab, setActiveTab }) {
@@ -59,7 +61,7 @@ export default function PatientSidebar({ activeTab, setActiveTab }) {
                     </div>
                     <div className="toggle-container-below">
                         <button onClick={toggleSidebar} className="toggle-btn">
-                            <HiOutlineBars3 className="toggle-icon" />
+                            <Menu className="toggle-icon" size={18} />
                         </button>
                     </div>
                 </div>

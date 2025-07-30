@@ -10,12 +10,12 @@ export default function HealthTechShowcase() {
                         {/* Heading */}
                         <div className="medical-tech-header33">
                             <h1 className="medical-tech-title33">
-                                Innovative Eye Treatment
+                                Công Nghệ Điều Trị Mắt Tiên Tiến
                                 <br />
-                                Technologies for Better Vision
+                                Cho Tầm Nhìn Tốt Hơn
                             </h1>
                             <p className="medical-tech-description33">
-                                Discover the latest in laser technology and cutting-edge treatments for eye health at Eyespire Clinic. We bring advanced solutions to improve your vision and ensure your well-being with the help of our highly experienced medical team.
+                                Khám phá công nghệ laser mới nhất và các phương pháp điều trị tiên tiến cho sức khỏe mắt tại Phòng khám Eyespire. Chúng tôi mang đến các giải pháp tiên tiến để cải thiện thị lực và đảm bảo sức khỏe của bạn với sự hỗ trợ của đội ngũ y tế giàu kinh nghiệm.
                             </p>
                         </div>
 
@@ -24,7 +24,7 @@ export default function HealthTechShowcase() {
                             {/* Retinal Screening */}
                             <div className="medical-tech-stat-item33">
                                 <div className="medical-tech-stat-header33">
-                                    <span className="medical-tech-stat-label33">Retinal Screening</span>
+                                    <span className="medical-tech-stat-label33">Tầm Soát Võng Mạc</span>
                                     <span className="medical-tech-stat-value33">97%</span>
                                 </div>
                                 <div className="medical-tech-progress-bar33">
@@ -35,7 +35,7 @@ export default function HealthTechShowcase() {
                             {/* Imaging and Lipiflow Treatments */}
                             <div className="medical-tech-stat-item33">
                                 <div className="medical-tech-stat-header33">
-                                    <span className="medical-tech-stat-label33">Imaging and Lipiflow Treatments</span>
+                                    <span className="medical-tech-stat-label33">Chụp Ảnh và Điều Trị Lipiflow</span>
                                     <span className="medical-tech-stat-value33">99%</span>
                                 </div>
                                 <div className="medical-tech-progress-bar33">
@@ -46,7 +46,7 @@ export default function HealthTechShowcase() {
                             {/* Optical Coherence Tomography */}
                             <div className="medical-tech-stat-item33">
                                 <div className="medical-tech-stat-header33">
-                                    <span className="medical-tech-stat-label33">Optical Coherence Tomography (OCT)</span>
+                                    <span className="medical-tech-stat-label33">Chụp Cắt Lớp Kết Hợp Quang Học (OCT)</span>
                                     <span className="medical-tech-stat-value33">95%</span>
                                 </div>
                                 <div className="medical-tech-progress-bar33">

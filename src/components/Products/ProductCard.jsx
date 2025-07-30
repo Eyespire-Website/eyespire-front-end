@@ -16,7 +16,7 @@ const ProductCard = ({ name, price, imageUrl, isSale }) => {
             backgroundImage: 'url(https://storage.googleapis.com/tagjs-prod.appspot.com/v1/VY3PPTks6o/vjj2ibfx_expires_30_days.png)',
           }}
         >
-          <span className="text31">{"Sale"}</span>
+          <span className="text31">{"Giảm Giá"}</span>
         </div>
       )}
       <span className="text32">{name}</span>
@@ -25,7 +25,7 @@ const ProductCard = ({ name, price, imageUrl, isSale }) => {
           <span className="text33">{price}</span>
         </div>
         <button className="button3" onClick={() => alert("Added to cart!")}>
-          <span className="text34">{"Add to Cart"}</span>
+          <span className="text34">{"Thêm Vào Giỏ"}</span>
         </button>
       </div>
     </div>

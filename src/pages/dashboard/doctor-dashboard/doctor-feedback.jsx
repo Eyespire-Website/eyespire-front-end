@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import "./doctor-feedback.css"
-import { ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Star } from "lucide-react"
+import "./doctor-feedback-unified.css"
+import { ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Star, MessageSquare, Filter } from "lucide-react"
 import serviceFeedbackService from "../../../services/serviceFeedbackService"
 import authService from "../../../services/authService"
 import { toast } from "react-toastify"
@@ -168,94 +169,117 @@ export default function DoctorFeedback() {
     }
 
     return (
-        <div className="feedback-container">
-            <div className="feedback-content">
-                <div className="feedback-header">
-                    <h1>Phản hồi từ bệnh nhân</h1>
-                    <div className="feedback-summary">
+        <div className="doctor-feedback-content">
+            {/* Header with filters */}
+            <div className="doctor-feedback-content__header">
+                <div className="doctor-feedback-content__header-content">
+                    <div className="doctor-feedback-content__title-section">
+                        <MessageSquare className="doctor-feedback-content__title-icon" />
+                        <h1 className="doctor-feedback-content__title">Phản hồi từ bệnh nhân</h1>
+                    </div>
+                    <div className="doctor-feedback-content__stats">
                         {!loading && (
-                            <div className="feedback-stats">
-                                <span>Tổng số phản hồi: <strong>{feedbacks.length}</strong></span>
+                            <div className="doctor-feedback-content__stats-content">
+                                <span>Tổng số: <strong>{feedbacks.length}</strong></span>
                                 {feedbacks.length > 0 && (
-                                    <span>Đánh giá trung bình: <strong>
+                                    <span>Trung bình: <strong>
                                         {(feedbacks.reduce((sum, item) => sum + item.rating, 0) / feedbacks.length).toFixed(1)}
-                                    </strong> / 5</span>
+                                    </strong>/5</span>
                                 )}
                             </div>
                         )}
                     </div>
                 </div>
+            </div>
 
-                <div className="feedback-filters">
-                    <div className="filter-group">
-                        <span className="filter-label">Lọc theo đánh giá:</span>
-                        <div className="rating-filters">
-                            {[5, 4, 3, 2, 1].map((rating) => (
-                                <button
-                                    key={rating}
-                                    className={`rating-filter-btn ${filterRating === rating ? "active" : ""}`}
-                                    onClick={() => handleFilterRating(rating)}
-                                    type="button"
-                                >
-                                    {rating} <Star size={14} fill="#FFD700" stroke="#FFD700" />
-                                </button>
-                            ))}
-                            {filterRating !== null && (
-                                <button
-                                    className="rating-filter-btn clear-filter"
-                                    onClick={() => setFilterRating(null)}
-                                    type="button"
-                                >
-                                    Xóa bộ lọc
-                                </button>
-                            )}
-                        </div>
+            {/* Filters */}
+            <div className="doctor-feedback-content__filters">
+                <div className="doctor-feedback-content__filter-group">
+                    <Filter className="doctor-feedback-content__filter-icon" />
+                    <span className="doctor-feedback-content__filter-label">Lọc theo đánh giá:</span>
+                    <div className="doctor-feedback-content__rating-filters">
+                        {[5, 4, 3, 2, 1].map((rating) => (
+                            <button
+                                key={rating}
+                                className={`doctor-feedback-content__rating-filter-btn ${
+                                    filterRating === rating ? "doctor-feedback-content__rating-filter-btn--active" : ""
+                                }`}
+                                onClick={() => handleFilterRating(rating)}
+                                type="button"
+                            >
+                                {rating} <Star size={14} fill="#FFD700" stroke="#FFD700" />
+                            </button>
+                        ))}
+                        {filterRating !== null && (
+                            <button
+                                className="doctor-feedback-content__rating-filter-btn doctor-feedback-content__rating-filter-btn--clear"
+                                onClick={() => setFilterRating(null)}
+                                type="button"
+                            >
+                                Xóa bộ lọc
+                            </button>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            {/* Table Container */}
+            <div className="doctor-feedback-content__table-container">
+                <div className="doctor-feedback-content__table-header">
+                    <div className="doctor-feedback-content__table-header-content">
+                        <MessageSquare className="doctor-feedback-content__table-header-icon" />
+                        <span className="doctor-feedback-content__table-header-text">
+                            Danh sách phản hồi ({getSortedAndFilteredFeedbacks().length} phản hồi)
+                        </span>
                     </div>
                 </div>
 
-                {/* Feedback Table */}
-                <div className="feedback-table-container">
-                    <table className="feedback-table">
+                <div className="doctor-feedback-content__table-wrapper">
+                    <table className="doctor-feedback-content__table">
                         <thead>
                         <tr>
-                            <th>#</th>
-                            <th>Tên bệnh nhân</th>
-                            <th>Tên dịch vụ</th>
+                            <th className="doctor-feedback-content__table-head doctor-feedback-content__table-head--number">#</th>
+                            <th className="doctor-feedback-content__table-head">Bệnh nhân</th>
+                            <th className="doctor-feedback-content__table-head">Dịch vụ</th>
                             <th
-                                className={`sortable ${sortConfig.key === "date" ? "sorted" : ""}`}
+                                className={`doctor-feedback-content__table-head doctor-feedback-content__table-head--sortable ${
+                                    sortConfig.key === "date" ? "doctor-feedback-content__table-head--sorted" : ""
+                                }`}
                                 onClick={() => requestSort("date")}
                             >
                                 Ngày đánh giá
                                 {sortConfig.key === "date" && (
-                                    <span className="sort-icon">
-                        {sortConfig.direction === "asc" ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                      </span>
+                                    <span className="doctor-feedback-content__sort-icon">
+                                        {sortConfig.direction === "asc" ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                                    </span>
                                 )}
                             </th>
                             <th
-                                className={`sortable ${sortConfig.key === "rating" ? "sorted" : ""}`}
+                                className={`doctor-feedback-content__table-head doctor-feedback-content__table-head--sortable ${
+                                    sortConfig.key === "rating" ? "doctor-feedback-content__table-head--sorted" : ""
+                                }`}
                                 onClick={() => requestSort("rating")}
                             >
                                 Đánh giá
                                 {sortConfig.key === "rating" && (
-                                    <span className="sort-icon">
-                        {sortConfig.direction === "asc" ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                      </span>
+                                    <span className="doctor-feedback-content__sort-icon">
+                                        {sortConfig.direction === "asc" ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                                    </span>
                                 )}
                             </th>
-                            <th>Bình luận</th>
+                            <th className="doctor-feedback-content__table-head">Bình luận</th>
                         </tr>
                         </thead>
                         <tbody>
                         {loading ? (
                             <tr>
-                                <td colSpan={6} className="loading-cell">
+                                <td colSpan={6} className="doctor-feedback-content__loading-cell">
                                     Đang tải dữ liệu...
                                 </td>
                             </tr>
                         ) : currentFeedbacks.length === 0 ? (
                             <tr>
-                                <td colSpan={6} className="empty-cell">
+                                <td colSpan={6} className="doctor-feedback-content__no-results">
                                     {filterRating !== null ? 
                                         `Không có phản hồi nào với ${filterRating} sao` : 
                                         "Chưa có phản hồi nào từ bệnh nhân"}
@@ -263,13 +287,17 @@ export default function DoctorFeedback() {
                             </tr>
                         ) : (
                             currentFeedbacks.map((feedback, index) => (
-                                <tr key={feedback.id}>
-                                    <td>{indexOfFirstItem + index + 1}</td>
-                                    <td>{feedback.customerName}</td>
-                                    <td>{feedback.serviceName}</td>
-                                    <td>{feedback.date}</td>
-                                    <td>{renderStars(feedback.rating)}</td>
-                                    <td>{feedback.comment}</td>
+                                <tr key={feedback.id} className="doctor-feedback-content__table-row">
+                                    <td className="doctor-feedback-content__table-cell doctor-feedback-content__table-cell--number">{indexOfFirstItem + index + 1}</td>
+                                    <td className="doctor-feedback-content__table-cell">{feedback.customerName}</td>
+                                    <td className="doctor-feedback-content__table-cell">{feedback.serviceName}</td>
+                                    <td className="doctor-feedback-content__table-cell">{feedback.date}</td>
+                                    <td className="doctor-feedback-content__table-cell">
+                                        <div className="doctor-feedback-content__rating">{renderStars(feedback.rating)}</div>
+                                    </td>
+                                    <td className="doctor-feedback-content__table-cell">
+                                        <div className="doctor-feedback-content__comment">{feedback.comment}</div>
+                                    </td>
                                 </tr>
                             ))
                         )}
@@ -277,60 +305,36 @@ export default function DoctorFeedback() {
                     </table>
                 </div>
 
-                {/* Pagination */}
-                <div className="feedback-pagination">
-                    <button className="pagination-btn" onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1}>
-                        <ChevronLeft size={16} />
-                    </button>
-
-                    <div className="pagination-pages">
-                        <button className={`pagination-number ${currentPage === 1 ? "active" : ""}`} onClick={() => paginate(1)}>
-                            1
+                {/* Compact Pagination */}
+                {getSortedAndFilteredFeedbacks().length > 0 && (
+                    <div className="doctor-feedback-content__pagination">
+                        <button
+                            className="doctor-feedback-content__pagination-btn"
+                            onClick={() => paginate(currentPage - 1)}
+                            disabled={currentPage === 1}
+                        >
+                            «
                         </button>
-
-                        {currentPage > 3 && <span className="pagination-ellipsis">...</span>}
-
-                        {Array.from({ length: 3 }, (_, i) => {
-                            const pageNum = currentPage - 1 + i
-                            if (pageNum > 1 && pageNum < totalPages) {
-                                return (
-                                    <button
-                                        key={pageNum}
-                                        className={`pagination-number ${pageNum === currentPage ? "active" : ""}`}
-                                        onClick={() => paginate(pageNum)}
-                                    >
-                                        {pageNum}
-                                    </button>
-                                )
-                            }
-                            return null
-                        })}
-
-                        {currentPage < totalPages - 2 && <span className="pagination-ellipsis">...</span>}
-
-                        {totalPages > 1 && (
+                        {Array.from({ length: totalPages }, (_, i) => (
                             <button
-                                className={`pagination-number ${currentPage === totalPages ? "active" : ""}`}
-                                onClick={() => paginate(totalPages)}
+                                key={i + 1}
+                                className={`doctor-feedback-content__pagination-btn ${
+                                    currentPage === i + 1 ? 'doctor-feedback-content__pagination-btn--active' : ''
+                                }`}
+                                onClick={() => paginate(i + 1)}
                             >
-                                {totalPages}
+                                {i + 1}
                             </button>
-                        )}
+                        ))}
+                        <button
+                            className="doctor-feedback-content__pagination-btn"
+                            onClick={() => paginate(currentPage + 1)}
+                            disabled={currentPage === totalPages}
+                        >
+                            »
+                        </button>
                     </div>
-
-                    <button
-                        className="pagination-btn"
-                        onClick={() => paginate(currentPage + 1)}
-                        disabled={currentPage === totalPages}
-                    >
-                        <ChevronRight size={16} />
-                    </button>
-
-                    <div className="items-per-page">
-                        <span>{itemsPerPage} / page</span>
-                        <ChevronDown size={14} />
-                    </div>
-                </div>
+                )}
             </div>
         </div>
     )

@@ -1,44 +1,5 @@
-.column7 {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 80px 0;
-  background-color: #FFFFFF;
-}
-
-.row-view10 {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: 50px;
-  text-align: center;
-}
-
-.text17 {
-  color: #333333;
-  font-size: 36px;
-  font-weight: bold;
-  margin-bottom: 15px;
-}
-
-.text18 {
-  color: #666666;
-  font-size: 16px;
-  max-width: 600px;
-}
-
-.row-view11, .row-view14 {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 30px;
-  margin-bottom: 30px;
-  width: 100%;
-  max-width: 1200px;
-}
-
-/* ServiceCard styles - 2/3 Image + 1/3 Content Layout */
-.service-card {
+/* DoctorCard styles - 2/3 Image + 1/3 Content Layout (matching ServiceCard) */
+.doctor-card {
   display: flex;
   flex-direction: column;
   width: 320px;
@@ -50,26 +11,26 @@
   background: #ffffff;
 }
 
-.service-card:hover {
+.doctor-card:hover {
   transform: translateY(-8px);
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.18);
 }
 
 /* Top 2/3: Image Section */
-.service-card-image-section {
+.doctor-card-image-section {
   height: 66.67%; /* 2/3 of total height */
   position: relative;
   overflow: hidden;
 }
 
-.service-card-image {
+.doctor-card-image {
   width: 100%;
   height: 100%;
   position: relative;
 }
 
 /* Button overlay on image */
-.service-card-button-overlay {
+.doctor-card-button-overlay {
   position: absolute;
   bottom: 20px;
   left: 50%;
@@ -78,7 +39,7 @@
 }
 
 /* Bottom 1/3: Content Section */
-.service-card-content-section {
+.doctor-card-content-section {
   height: 33.33%; /* 1/3 of total height */
   padding: 16px 20px;
   display: flex;
@@ -90,26 +51,38 @@
 }
 
 /* Header Section */
-.service-card-header {
+.doctor-card-header {
   margin-bottom: 6px;
 }
 
-.service-title {
+.doctor-name {
   color: #1F2937;
   font-size: 18px;
   font-weight: 700;
-  margin: 0;
+  margin: 0 0 4px 0;
   line-height: 1.2;
   letter-spacing: -0.2px;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+}
+
+.doctor-specialty {
+  color: #10B981;
+  font-size: 11px;
+  font-weight: 600;
+  margin: 0;
+  line-height: 1.2;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
 }
 
 /* Body Section */
-.service-card-body {
+.doctor-card-body {
   margin: 0;
   flex: 1;
   display: flex;
@@ -117,7 +90,7 @@
   min-height: 0;
 }
 
-.service-description {
+.doctor-description {
   color: #6B7280;
   font-size: 12px;
   line-height: 1.3;
@@ -131,23 +104,24 @@
   cursor: pointer;
   transition: all 0.3s ease;
   flex: 1;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
 }
 
-.service-description.expanded {
+.doctor-description.expanded {
   display: block;
   -webkit-line-clamp: unset;
   line-clamp: unset;
   overflow: visible;
 }
 
-.service-description:hover {
+.doctor-description:hover {
   color: #4B5563;
 }
 
 .read-more-btn {
   background: none;
   border: none;
-  color: #4F46E5;
+  color: #10B981;
   font-size: 11px;
   font-weight: 600;
   cursor: pointer;
@@ -156,6 +130,7 @@
   transition: color 0.3s ease;
   align-self: flex-start;
   flex-shrink: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
 }
 
 .read-more-btn:hover {
@@ -181,11 +156,14 @@
   backdrop-filter: blur(5px);
 }
 
+/* Hidden image for loading/error handling */
+.hidden-image {
+  display: none !important;
+}
 
-
-/* Service Button on Image */
-.service-button {
-  background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+/* Doctor Button on Image */
+.doctor-button {
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
   color: white;
   border: none;
   border-radius: 8px;
@@ -196,7 +174,7 @@
   transition: all 0.3s ease;
   text-transform: none;
   letter-spacing: 0.2px;
-  box-shadow: 0 4px 16px rgba(79, 70, 229, 0.4);
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -209,57 +187,57 @@
   min-width: auto;
 }
 
-.service-button:hover {
-  background: linear-gradient(135deg, #7C3AED 0%, #4F46E5 100%);
+.doctor-button:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(79, 70, 229, 0.4);
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.4);
 }
 
-.service-button:active {
+.doctor-button:active {
   transform: translateY(0);
-  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
 
-.service-button-text {
+.doctor-button-text {
   color: white;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+  letter-spacing: 0.2px;
 }
 
-.service-button-arrow {
+.doctor-button-arrow {
   color: white;
   font-size: 16px;
   font-weight: bold;
   transition: transform 0.3s ease;
 }
 
-.service-button:hover .service-button-arrow {
+.doctor-button:hover .doctor-button-arrow {
   transform: translateX(3px);
 }
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-  .service-card {
+  .doctor-card {
     width: 280px;
     height: 380px;
   }
   
-  .service-title {
-    font-size: 24px;
+  .doctor-name {
+    font-size: 16px;
   }
   
-  .service-description {
-    font-size: 14px;
-    padding: 15px;
+  .doctor-specialty {
+    font-size: 11px;
   }
   
-  .service-button {
-    padding: 12px 25px;
-    font-size: 14px;
+  .doctor-description {
+    font-size: 11px;
   }
-}
-
-.text23 {
-  color: #4A90E2;
-  font-size: 14px;
+  
+  .doctor-button {
+    padding: 10px 14px;
+    font-size: 12px;
+  }
 }

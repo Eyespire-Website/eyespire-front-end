@@ -54,18 +54,18 @@ export default function MedicalLanding() {
                         <div className="stats-grid66">
                             <div className="stat-item66">
                                 <h2 className="stat-number66">20+</h2>
-                                <p className="stat-description66">Quis risus sed vulputate odio ut. Vitae elementum curabitur</p>
+                                <p className="stat-description66">Năm kinh nghiệm trong lĩnh vực chăm sóc mắt chuyên nghiệp</p>
                             </div>
 
                             <div className="stat-item66">
                                 <h2 className="stat-number66">300+</h2>
-                                <p className="stat-description66">Orci ac auctor augue mauris augue neque gravida est magna</p>
+                                <p className="stat-description66">Bệnh nhân đã được điều trị thành công với kết quả tốt nhất</p>
                             </div>
                         </div>
 
                         {/* CTA Button */}
                         <div className="cta-container66">
-                            <button className="cta-button66">Make an Appointment</button>
+                            <button className="cta-button66">Đặt Lịch Hẹn</button>
                         </div>
                     </div>
                 </div>

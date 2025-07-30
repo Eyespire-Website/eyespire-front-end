@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { User, Search } from "lucide-react";
 import userService from "../../../services/userService";
 import authService from "../../../services/authService";
 import addressService from "../../../services/addressService";
@@ -8,6 +9,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
 import "./doctor.css";
+import "./doctor-appointments-unified.css";
 
 export default function DoctorDashboard() {
     const [doctorData, setDoctorData] = useState({
@@ -359,11 +361,17 @@ export default function DoctorDashboard() {
     };
 
     return (
-        <div className="main-content" style={{ margin: 0, width: "100%", boxSizing: "border-box" }}>
+        <div className="doctor-appointments-content">
             <ToastContainer position="top-right" autoClose={3000} />
-            <header className="content-header">
-                <h1>Hồ sơ bác sĩ</h1>
-            </header>
+            {/* Header with search */}
+            <div className="doctor-appointments-content__header">
+                <div className="doctor-appointments-content__header-content">
+                    <div className="doctor-appointments-content__title-section">
+                        <User className="doctor-appointments-content__title-icon" />
+                        <h1 className="doctor-appointments-content__title">Hồ sơ bác sĩ</h1>
+                    </div>
+                </div>
+            </div>
             <div className="profile-content">
                 <div className="profile-left">
                     <div className="profile-avatar-container">

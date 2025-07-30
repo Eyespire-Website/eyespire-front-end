@@ -155,3 +155,252 @@ body {
 .pm-clear-button:hover {
   color: #000;
 }
+
+/* Inline appointment details styles */
+.inline-details-cell {
+  padding: 0 !important;
+  background: #f8fafc;
+  border-top: 2px solid #e2e8f0;
+}
+
+.inline-appointment-details {
+  padding: 20px;
+  background: #ffffff;
+  margin: 8px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+}
+
+.inline-section {
+  margin-bottom: 20px;
+}
+
+.inline-section:last-child {
+  margin-bottom: 0;
+}
+
+.inline-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.inline-customer-info {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.inline-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.inline-info-item label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.inline-info-item span {
+  font-size: 14px;
+  color: #1e293b;
+  font-weight: 500;
+}
+
+.inline-medications {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.inline-medication-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px;
+  background: #f8fafc;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+}
+
+.inline-product-img {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+}
+
+.inline-med-info {
+  flex: 1;
+}
+
+.inline-med-info h5 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 4px;
+}
+
+.inline-med-info p {
+  font-size: 12px;
+  color: #64748b;
+  margin: 0;
+}
+
+.inline-quantity {
+  font-size: 12px;
+  color: #64748b;
+  background: #ffffff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid #e2e8f0;
+}
+
+.inline-total {
+  font-size: 14px;
+  font-weight: 600;
+  color: #059669;
+}
+
+.inline-summary {
+  background: #f8fafc;
+  padding: 16px;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 16px;
+}
+
+.inline-total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.inline-total-row span:first-child {
+  font-size: 14px;
+  color: #64748b;
+}
+
+.inline-total-amount {
+  font-size: 18px;
+  font-weight: 700;
+  color: #059669;
+}
+
+.inline-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.inline-confirm-btn {
+  background: linear-gradient(135deg, #059669, #047857);
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.inline-confirm-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #047857, #065f46);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(5, 150, 105, 0.3);
+}
+
+.inline-confirm-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.inline-close-btn {
+  background: #f1f5f9;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.inline-close-btn:hover {
+  background: #e2e8f0;
+  transform: translateY(-1px);
+}
+
+.inline-error {
+  color: #dc2626;
+  background: #fef2f2;
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: 1px solid #fecaca;
+  font-size: 14px;
+  margin: 0;
+}
+
+.inline-success {
+  color: #059669;
+  background: #f0fdf4;
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: 1px solid #bbf7d0;
+  font-size: 14px;
+  margin: 0;
+}
+
+.inline-no-results {
+  color: #64748b;
+  font-style: italic;
+  text-align: center;
+  padding: 20px;
+  margin: 0;
+}
+
+/* Responsive design for inline details */
+@media (max-width: 768px) {
+  .inline-customer-info {
+    grid-template-columns: 1fr;
+  }
+  
+  .inline-medication-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .inline-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .inline-confirm-btn,
+  .inline-close-btn {
+    justify-content: center;
+  }
+}

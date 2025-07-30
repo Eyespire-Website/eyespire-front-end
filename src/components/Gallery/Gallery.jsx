@@ -9,45 +9,45 @@ const Gallery = () => {
       id: 1,
       category: "clinic",
       image: "https://storage.googleapis.com/tagjs-prod.appspot.com/v1/VY3PPTks6o/gallery1.jpg",
-      title: "Modern Examination Room"
+      title: "Phòng Khám Hiện Đại"
     },
     {
       id: 2,
       category: "equipment",
       image: "https://storage.googleapis.com/tagjs-prod.appspot.com/v1/VY3PPTks6o/gallery2.jpg",
-      title: "Advanced Eye Testing Equipment"
+      title: "Thiết Bị Kiểm Tra Mắt Tiên Tiến"
     },
     {
       id: 3,
       category: "products",
       image: "https://storage.googleapis.com/tagjs-prod.appspot.com/v1/VY3PPTks6o/gallery3.jpg",
-      title: "Premium Eyewear Collection"
+      title: "Bộ Sưu Tập Kính Mắt Cao Cấp"
     },
     {
       id: 4,
       category: "clinic",
       image: "https://storage.googleapis.com/tagjs-prod.appspot.com/v1/VY3PPTks6o/gallery4.jpg",
-      title: "Comfortable Waiting Area"
+      title: "Khu Vực Chờ Thoải Mái"
     },
     {
       id: 5,
       category: "equipment",
       image: "https://storage.googleapis.com/tagjs-prod.appspot.com/v1/VY3PPTks6o/gallery5.jpg",
-      title: "Digital Eye Scanning"
+      title: "Quét Mắt Kỹ Thuật Số"
     },
     {
       id: 6,
       category: "products",
       image: "https://storage.googleapis.com/tagjs-prod.appspot.com/v1/VY3PPTks6o/gallery6.jpg",
-      title: "Designer Frames Display"
+      title: "Trưng Bày Gọng Kính Thiết Kế"
     }
   ];
 
   const categories = [
-    { id: "all", name: "All" },
-    { id: "clinic", name: "Our Clinic" },
-    { id: "equipment", name: "Equipment" },
-    { id: "products", name: "Products" }
+    { id: "all", name: "Tất Cả" },
+    { id: "clinic", name: "Phòng Khám Của Chúng Tôi" },
+    { id: "equipment", name: "Thiết Bị" },
+    { id: "products", name: "Sản Phẩm" }
   ];
 
   const filteredImages = activeCategory === "all" 
@@ -57,8 +57,8 @@ const Gallery = () => {
   return (
     <div className="gallery-container">
       <div className="gallery-header">
-        <h2 className="gallery-title">Our Gallery</h2>
-        <p className="gallery-subtitle">Take a visual tour of our facilities and services</p>
+        <h2 className="gallery-title">Thư Viện Ảnh Của Chúng Tôi</h2>
+        <p className="gallery-subtitle">Tham quan trực quan các cơ sở và dịch vụ của chúng tôi</p>
         
         <div className="gallery-filter">
           {categories.map(category => (

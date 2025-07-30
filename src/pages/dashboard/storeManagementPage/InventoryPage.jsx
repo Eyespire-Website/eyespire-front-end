@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import productService from "../../../services/productService";
 import feedbackService from "../../../services/feedbackService";
+import "../../../styles/unified-table.css";
 
 const InventoryPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -376,84 +377,100 @@ const InventoryPage = () => {
                 addButtonText="Thêm sản phẩm"
             />
 
-            <div className="tbl-container">
-              <table className="tbl">
-                <thead>
-                <tr>
-                  <th>Hình ảnh</th>
-                  <th>Mã SP</th>
-                  <th>Tên sản phẩm</th>
-                  <th>Danh mục</th>
-                  <th>Số lượng</th>
-                  <th>Giá</th>
-                  <th>Đã bán</th>
-                  <th>Cập nhật</th>
-                  <th>Trạng thái</th>
-                  <th>Thao tác</th>
-                </tr>
-                </thead>
-                <tbody>
-                {paginatedProducts.length > 0 ? (
-                    paginatedProducts.map((product) => (
-                        <tr key={product.id}>
-                          <td>
-                            <img
-                                src={getFullUrl(product.image)}
-                                alt={product.name}
-                                className="product-img"
-                                onError={handleImageError}
-                                onClick={() => handleImageClick(getFullUrl(product.image))}
-                                style={{ cursor: "pointer" }}
-                            />
-                          </td>
-                          <td>{product.id}</td>
-                          <td>{product.name}</td>
-                          <td>{product.category}</td>
-                          <td>{product.quantity}</td>
-                          <td>₫{product.price.toLocaleString()}</td>
-                          <td>{product.sales}</td>
-                          <td>{product.lastUpdated}</td>
-                          <td>
-                        <span className={`status ${product.status}`}>
-                          {product.statusText}
-                        </span>
-                          </td>
-                          <td>
-                            <div className="action-buttons">
-                              <button
-                                  className="btn btn-icon"
-                                  title="Chỉnh sửa"
-                                  onClick={() => handleEditProduct(product.id)}
-                              >
-                                <Edit size={16} />
-                              </button>
-                              <button
-                                  className="btn btn-icon"
-                                  title="Xem chi tiết"
-                                  onClick={() => handleViewProduct(product.id)}
-                              >
-                                <Eye size={16} />
-                              </button>
-                              <button
-                                  className="btn btn-icon"
-                                  title="Xóa"
-                                  onClick={() => handleDeleteProduct(product.id)}
-                              >
-                                <Trash2 size={16} />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                    ))
-                ) : (
-                    <tr>
-                      <td colSpan={10} className="no-results">
-                        Không tìm thấy sản phẩm nào phù hợp
-                      </td>
-                    </tr>
-                )}
-                </tbody>
-              </table>
+            <div className="unified-table-container">
+              <div className="unified-table-header">
+                <div className="unified-table-header-content">
+                  <Package className="unified-table-header-icon" />
+                  <span className="unified-table-header-text">Quản lý kho hàng ({filteredProducts.length} sản phẩm)</span>
+                </div>
+              </div>
+              <div className="unified-table-wrapper">
+                <table className="unified-table">
+                  <thead>
+                  <tr>
+                    <th>Hình ảnh</th>
+                    <th>Mã SP</th>
+                    <th>Tên sản phẩm</th>
+                    <th>Danh mục</th>
+                    <th>Số lượng</th>
+                    <th>Giá</th>
+                    <th>Đã bán</th>
+                    <th>Cập nhật</th>
+                    <th>Trạng thái</th>
+                    <th>Thao tác</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  {paginatedProducts.length > 0 ? (
+                      paginatedProducts.map((product) => (
+                          <tr key={product.id}>
+                            <td>
+                              <img
+                                  src={getFullUrl(product.image)}
+                                  alt={product.name}
+                                  className="unified-product-img"
+                                  onError={handleImageError}
+                                  onClick={() => handleImageClick(getFullUrl(product.image))}
+                                  style={{ cursor: "pointer" }}
+                              />
+                            </td>
+                            <td><span className="unified-highlight">{product.id}</span></td>
+                            <td>
+                              <div className="unified-item-info">
+                                <div className="unified-user-name">{product.name}</div>
+                                <div className="unified-item-description">{product.description}</div>
+                              </div>
+                            </td>
+                            <td>{product.category}</td>
+                            <td><span className={product.quantity <= 5 ? "unified-highlight" : ""}>{product.quantity}</span></td>
+                            <td><span className="unified-price">₫{product.price.toLocaleString()}</span></td>
+                            <td>{product.sales}</td>
+                            <td>{product.lastUpdated}</td>
+                            <td>
+                              <span className={`unified-status-badge ${
+                                product.status === 'active' ? 'status-completed' :
+                                product.status === 'warning' ? 'status-pending' : 'status-cancelled'
+                              }`}>
+                                {product.statusText}
+                              </span>
+                            </td>
+                            <td>
+                              <div className="unified-action-buttons">
+                                <button
+                                    className="unified-btn unified-btn-secondary"
+                                    title="Chỉnh sửa"
+                                    onClick={() => handleEditProduct(product.id)}
+                                >
+                                  <Edit size={16} />
+                                </button>
+                                <button
+                                    className="unified-btn unified-btn-primary"
+                                    title="Xem chi tiết"
+                                    onClick={() => handleViewProduct(product.id)}
+                                >
+                                  <Eye size={16} />
+                                </button>
+                                <button
+                                    className="unified-btn unified-btn-icon"
+                                    title="Xóa"
+                                    onClick={() => handleDeleteProduct(product.id)}
+                                >
+                                  <Trash2 size={16} />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                      ))
+                  ) : (
+                      <tr>
+                        <td colSpan={10} className="no-results">
+                          Không tìm thấy sản phẩm nào phù hợp
+                        </td>
+                      </tr>
+                  )}
+                  </tbody>
+                </table>
+              </div>
             </div>
 
             <Pagination

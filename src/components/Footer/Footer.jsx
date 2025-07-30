@@ -16,7 +16,7 @@ const Footer = () => {
             <span className="logo-text">Eyespire</span>
           </div>
           <p className="footer-description">
-            Providing quality eye care services and products to help you see the world clearly.
+            Cung cấp dịch vụ và sản phẩm chăm sóc mắt chất lượng để giúp bạn nhìn thấy thế giới rõ ràng.
           </p>
           <div className="footer-social">
             <a href="#" className="social-link"><i className="fab fa-facebook-f"></i></a>
@@ -27,35 +27,35 @@ const Footer = () => {
         </div>
 
         <div className="footer-section">
-          <h3 className="footer-heading">Quick Links</h3>
+          <h3 className="footer-heading">Liên Kết Nhanh</h3>
           <ul className="footer-links">
-            <li><a href="#">Home</a></li>
-            <li><a href="#">About Us</a></li>
-            <li><a href="#">Services</a></li>
-            <li><a href="#">Shop</a></li>
+            <li><a href="#">Trang Chủ</a></li>
+            <li><a href="#">Về Chúng Tôi</a></li>
+            <li><a href="#">Dịch Vụ</a></li>
+            <li><a href="#">Cửa Hàng</a></li>
             <li><a href="#">Blog</a></li>
-            <li><a href="#">Contact</a></li>
+            <li><a href="#">Liên Hệ</a></li>
           </ul>
         </div>
 
         <div className="footer-section">
-          <h3 className="footer-heading">Services</h3>
+          <h3 className="footer-heading">Dịch Vụ</h3>
           <ul className="footer-links">
-            <li><a href="#">Eye Examination</a></li>
-            <li><a href="#">Prescription Glasses</a></li>
-            <li><a href="#">Contact Lenses</a></li>
-            <li><a href="#">Eye Treatment</a></li>
-            <li><a href="#">Children's Eye Care</a></li>
-            <li><a href="#">Laser Surgery Consultation</a></li>
+            <li><a href="#">Khám Mắt</a></li>
+            <li><a href="#">Kính Cận Theo Đơn</a></li>
+            <li><a href="#">Kính Áp Tròng</a></li>
+            <li><a href="#">Điều Trị Mắt</a></li>
+            <li><a href="#">Chăm Sóc Mắt Trẻ Em</a></li>
+            <li><a href="#">Tư Vấn Phẫu Thuật Laser</a></li>
           </ul>
         </div>
 
         <div className="footer-section">
-          <h3 className="footer-heading">Contact Info</h3>
+          <h3 className="footer-heading">Thông Tin Liên Hệ</h3>
           <ul className="footer-contact">
             <li>
               <i className="fas fa-map-marker-alt"></i>
-              <span>123 Eye Care Street, Vision City, VC 12345</span>
+              <span>123 Đường Chăm Sóc Mắt, Thành Phố Thị Giác, VC 12345</span>
             </li>
             <li>
               <i className="fas fa-phone-alt"></i>
@@ -67,7 +67,7 @@ const Footer = () => {
             </li>
             <li>
               <i className="fas fa-clock"></i>
-              <span>Mon-Fri: 9:00 AM - 6:00 PM</span>
+              <span>Thứ 2 - Thứ 6: 9:00 SA - 6:00 CH</span>
             </li>
           </ul>
         </div>
@@ -75,12 +75,12 @@ const Footer = () => {
 
       <div className="footer-bottom">
         <div className="copyright">
-          <p>&copy; {new Date().getFullYear()} Eyespire. All Rights Reserved.</p>
+          <p>&copy; {new Date().getFullYear()} Eyespire. Tất Cả Quyền Được Bảo Lưu.</p>
         </div>
         <div className="footer-bottom-links">
-          <a href="#">Privacy Policy</a>
-          <a href="#">Terms of Service</a>
-          <a href="#">Sitemap</a>
+          <a href="#">Chính Sách Bảo Mật</a>
+          <a href="#">Điều Khoản Dịch Vụ</a>
+          <a href="#">Sơ Đồ Trang Web</a>
         </div>
       </div>
     </footer>

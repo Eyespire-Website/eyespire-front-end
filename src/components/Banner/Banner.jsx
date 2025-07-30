@@ -41,7 +41,7 @@ const Banner = () => {
       {/* Phần bên trái */}
       <div className="column3">
         <span className="text7">
-          {"The Best Eye Doctors & Technology"}
+          {"Bác Sĩ Nhãn Khoa & Công Nghệ Tốt Nhất"}
         </span>
         <div className="column4">
           <button className="banner-appointment-button" onClick={handleAppointmentClick}>
@@ -54,18 +54,18 @@ const Banner = () => {
         <div className="stats-container">
           <div className="homepage_stat-item">
             <span className="stat-number">8+</span>
-            <span className="stat-text">High Qualified Doctors</span>
+            <span className="stat-text">Bác Sĩ Chuyên Môn Cao</span>
           </div>
           <div className="homepage_stat-item">
             <span className="stat-number">99%</span>
-            <span className="stat-text">Positive Feedback</span>
+            <span className="stat-text">Phản Hồi Tích Cực</span>
           </div>
         </div>
         
         {/* Phần khuyến mãi */}
         <div className="promo-box">
-          <h3 className="promo-title">100% Modern Eye Equipment</h3>
-          <p className="promo-desc">Explore advanced eye exam tools like Auto Refractors, OCT machines, and Phacoemulsification systems from Germany, USA, Japan, and Switzerland for top-quality care at our clinic.</p>
+          <h3 className="promo-title">100% Thiết Bị Mắt Hiện Đại</h3>
+          <p className="promo-desc">Khám phá các công cụ khám mắt tiên tiến như máy đo khúc xạ tự động, máy OCT, và hệ thống phá nhũ tương từ Đức, Mỹ, Nhật Bản và Thụy Sĩ để chăm sóc chất lượng cao tại phòng khám của chúng tôi.</p>
           <img
             src={homepage_header_2}
           />
@@ -88,7 +88,7 @@ const Banner = () => {
             {"550+"}
           </span>
           <span className="text10">
-            {"Successfully\nEye Surgery"}
+            {"Phẫu Thuật\nMắt Thành Công"}
           </span>
         </div>
       </div>

@@ -14,10 +14,12 @@ import {
   Search,
   X,
   User,
+  Plus,
 } from "lucide-react"
 import adminService from "../../../../services/adminService"
 import userService from "../../../../services/userService"
 import "../styles/ScheduleModal.css"
+import "../styles/admin-schedule-unified.css"
 
 const ScheduleContent = () => {
   const [currentDate, setCurrentDate] = useState(new Date())
@@ -1026,220 +1028,137 @@ const ScheduleContent = () => {
     );
 
     return (
-      <div>
-        <div className="admin-content-header">
-          <div className="admin-content-title">
-            <h2>
-              <Stethoscope className="icon" /> Danh sách bác sĩ
+      <div className="asched-doctors-page">
+        {/* Header Section */}
+        <div className="asched-doctors-header">
+          <div className="asched-doctors-title-section">
+            <h2 className="asched-doctors-title">
+              <Stethoscope size={24} />
+              Danh sách bác sĩ
             </h2>
-            <p>Chọn bác sĩ để xem lịch làm việc và lịch hẹn</p>
+            <p className="asched-doctors-subtitle">
+              Chọn bác sĩ để xem lịch làm việc và lịch hẹn
+            </p>
+          </div>
+          <div className="asched-doctors-count">
+            {filteredDoctors.length} bác sĩ
           </div>
         </div>
-
-        <div className="card">
-          <div className="card-hdr">
-            <h3 className="card-title">Danh sách bác sĩ ({filteredDoctors.length})</h3>
+        
+        {/* Search Section */}
+        <div className="asched-doctors-search">
+          <div className="asched-search-container">
+            <Search size={16} className="asched-search-icon" />
+            <input
+              type="text"
+              className="asched-search-input"
+              placeholder="Tìm kiếm bác sĩ theo tên, email, chuyên khoa..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              disabled={loading}
+            />
           </div>
-          <div className="card-content">
-            <div className="search-box doctor-search-box" style={{ marginBottom: "20px" }}>
-              <Search size={16} className="search-icon" />
-              <input
-                type="text"
-                className="search-input"
-                placeholder="Tìm kiếm bác sĩ theo tên, email..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                disabled={loading}
-              />
+        </div>
+        
+        {/* Content Section */}
+        <div className="asched-doctors-content">
+          {filteredDoctors.length === 0 ? (
+            <div className="asched-empty-state">
+              <User size={48} />
+              <p>Không tìm thấy bác sĩ nào phù hợp</p>
             </div>
-            
-            {filteredDoctors.length === 0 ? (
-              <div className="empty-state" style={{ textAlign: "center", padding: "40px", color: "#666" }}>
-                <User size={48} style={{ marginBottom: "16px", opacity: 0.5 }} />
-                <p>Không tìm thấy bác sĩ nào phù hợp</p>
-              </div>
-            ) : (
-              <div className="doctors-grid" style={{ 
-                display: "grid", 
-                gridTemplateColumns: "repeat(auto-fill, minmax(400px, 1fr))", 
-                gap: "20px",
-                marginTop: "20px"
-              }}>
-                {filteredDoctors.map((doctor) => {
-                  return (
-                    <div
-                      key={doctor.id}
-                      className="doctor-card"
-                      onClick={() => handleSelectDoctor(doctor.id)}
-                      style={{
-                        border: "1px solid #e0e0e0",
-                        borderRadius: "12px",
-                        padding: "20px",
-                        backgroundColor: "#fff",
-                        cursor: "pointer",
-                        transition: "all 0.3s ease",
-                        boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                        position: "relative",
-                        overflow: "hidden"
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.transform = "translateY(-2px)";
-                        e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.15)";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = "translateY(0)";
-                        e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.1)";
-                      }}
-                    >
-                      <div style={{ display: "flex", alignItems: "flex-start", marginBottom: "16px" }}>
-                        <div style={{
-                          width: "60px",
-                          height: "60px",
-                          borderRadius: "50%",
-                          backgroundColor: doctor.color || "#3b82f6",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          marginRight: "16px",
-                          flexShrink: 0,
-                          overflow: "hidden",
-                          position: "relative"
-                        }}>
-                          {getAvatarUrl(doctor.avatarUrl) ? (
-                            <img 
-                              src={getAvatarUrl(doctor.avatarUrl)} 
-                              alt={doctor.name}
-                              style={{
-                                width: "100%",
-                                height: "100%",
-                                objectFit: "cover",
-                                borderRadius: "50%"
-                              }}
-                              onError={(e) => {
-                                e.target.style.display = 'none';
-                                e.target.nextSibling.style.display = 'flex';
-                              }}
-                            />
-                          ) : null}
-                          <div style={{
-                            width: "100%",
-                            height: "100%",
-                            display: getAvatarUrl(doctor.avatarUrl) ? "none" : "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            fontSize: "20px",
-                            fontWeight: "600",
-                            color: "white",
-                            position: getAvatarUrl(doctor.avatarUrl) ? "absolute" : "static",
-                            top: 0,
-                            left: 0
-                          }}>
-                            {doctor.name ? doctor.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'BS'}
-                          </div>
-                        </div>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                            <div>
-                              <h4 style={{ 
-                                margin: "0 0 4px 0", 
-                                fontSize: "16px", 
-                                fontWeight: "600",
-                                color: "#1a1a1a"
-                              }}>
-                                Họ và tên: {doctor.name}
-                              </h4>
-                              {doctor.specialty && (
-                                <span style={{
-                                  fontSize: "12px",
-                                  color: "#666",
-                                  backgroundColor: "#f0f0f0",
-                                  padding: "2px 8px",
-                                  borderRadius: "12px"
-                                }}>
-                                  {doctor.specialty}
-                                </span>
-                              )}
-                            </div>
-                            <button
-                              style={{
-                                backgroundColor: "#3b82f6",
-                                color: "white",
-                                border: "none",
-                                borderRadius: "6px",
-                                padding: "6px 12px",
-                                fontSize: "12px",
-                                fontWeight: "500",
-                                cursor: "pointer"
-                              }}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleSelectDoctor(doctor.id);
-                              }}
-                            >
-                              Xem chi tiết
-                            </button>
-                          </div>
+          ) : (
+            <div className="asched-doctors-grid">
+              {filteredDoctors.map((doctor) => {
+                return (
+                  <div
+                    key={doctor.id}
+                    className="asched-doctor-card"
+                    onClick={() => handleSelectDoctor(doctor.id)}
+                  >
+                    <div className="asched-doctor-header">
+                      <div className="asched-doctor-avatar">
+                        {getAvatarUrl(doctor.avatarUrl) ? (
+                          <img 
+                            src={getAvatarUrl(doctor.avatarUrl)} 
+                            alt={doctor.name}
+                            className="asched-avatar-img"
+                            onError={(e) => {
+                              e.target.style.display = 'none';
+                              e.target.nextSibling.style.display = 'flex';
+                            }}
+                          />
+                        ) : null}
+                        <div 
+                          className="asched-avatar-fallback"
+                          style={{
+                            backgroundColor: doctor.color || "#3b82f6",
+                            display: getAvatarUrl(doctor.avatarUrl) ? "none" : "flex"
+                          }}
+                        >
+                          {doctor.name ? doctor.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'BS'}
                         </div>
                       </div>
-
-                      <div style={{ marginBottom: "16px" }}>
-                        <div style={{ marginBottom: "8px", fontSize: "14px", color: "#333" }}>
-                          <strong>Email:</strong> {doctor.email || "Chưa cập nhật"}
-                        </div>
-                        <div style={{ marginBottom: "8px", fontSize: "14px", color: "#333" }}>
-                          <strong>Giới tính:</strong> 
-                          <span style={{
-                            marginLeft: "8px",
-                            padding: "2px 8px",
-                            borderRadius: "4px",
-                            fontSize: "12px",
-                            backgroundColor: doctor.gender === "MALE" ? "#e3f2fd" : "#fce4ec",
-                            color: doctor.gender === "MALE" ? "#1976d2" : "#c2185b"
-                          }}>
-                            {doctor.gender === "MALE" ? "Nam" : doctor.gender === "FEMALE" ? "Nữ" : "Chưa cập nhật"}
-                          </span>
-                        </div>
-                        <div style={{ marginBottom: "8px", fontSize: "14px", color: "#333" }}>
-                          <Phone size={14} style={{ marginRight: "6px", verticalAlign: "middle" }} />
-                          <strong>Di động:</strong> {doctor.phone || "Chưa cập nhật"}
-                        </div>
-                      </div>
-
-                      <div style={{ 
-                        borderTop: "1px solid #f0f0f0", 
-                        paddingTop: "12px",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between"
-                      }}>
-                        <div style={{ fontSize: "14px", color: "#333" }}>
-                          <Clock size={14} style={{ marginRight: "6px", verticalAlign: "middle" }} />
-                          <strong>Lịch làm việc:</strong>
-                        </div>
-                        <div style={{ display: "flex", gap: "4px" }}>
-                          {["22/11", "24/11", "+21 Ngày"].map((day, index) => (
-                            <span
-                              key={index}
-                              style={{
-                                fontSize: "11px",
-                                padding: "2px 6px",
-                                borderRadius: "4px",
-                                backgroundColor: index < 2 ? "#e8f5e8" : "#fff3cd",
-                                color: index < 2 ? "#2e7d32" : "#856404",
-                                border: index < 2 ? "1px solid #c8e6c9" : "1px solid #ffeaa7"
-                              }}
-                            >
-                              {day}
+                      <div className="asched-doctor-info">
+                        <div className="asched-doctor-main">
+                          <h4 className="asched-doctor-name">
+                            {doctor.name}
+                          </h4>
+                          {doctor.specialty && (
+                            <span className="asched-doctor-specialty">
+                              {doctor.specialty}
                             </span>
-                          ))}
+                          )}
                         </div>
+                        <button
+                          className="asched-doctor-select-btn"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleSelectDoctor(doctor.id);
+                          }}
+                        >
+                          Xem chi tiết
+                        </button>
                       </div>
                     </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+
+                    <div className="asched-doctor-details">
+                      <div className="asched-doctor-detail">
+                        <strong>Email:</strong> {doctor.email || "Chưa cập nhật"}
+                      </div>
+                      <div className="asched-doctor-detail">
+                        <strong>Giới tính:</strong> 
+                        <span className={`asched-gender-badge ${doctor.gender?.toLowerCase()}`}>
+                          {doctor.gender === "MALE" ? "Nam" : doctor.gender === "FEMALE" ? "Nữ" : "Chưa cập nhật"}
+                        </span>
+                      </div>
+                      <div className="asched-doctor-detail">
+                        <Phone size={14} />
+                        <strong>Di động:</strong> {doctor.phone || "Chưa cập nhật"}
+                      </div>
+                    </div>
+
+                    <div className="asched-doctor-schedule">
+                      <div className="asched-schedule-label">
+                        <Clock size={14} />
+                        <strong>Lịch làm việc:</strong>
+                      </div>
+                      <div className="asched-schedule-tags">
+                        {["22/11", "24/11", "+21 Ngày"].map((day, index) => (
+                          <span
+                            key={index}
+                            className={`asched-schedule-tag ${index < 2 ? 'available' : 'more'}`}
+                          >
+                            {day}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
     );
@@ -1249,84 +1168,102 @@ const ScheduleContent = () => {
   const renderSchedulePage = () => {
     return (
       <div style={{ width: "100%", display: "flex", flexDirection: "column", height: "100%" }}>
-        <div className="admin-content-header">
-          <div className="admin-content-title">
+        {/* Redesigned Header Section */}
+        <div className="asched-schedule-header">
+          <div className="asched-back-section">
             <button
-              className="btn btn-secondary"
+              className="asched-back-btn"
               onClick={handleBackToDoctorsList}
-              style={{ marginRight: "15px" }}
             >
-              &larr; Quay lại
+              <ChevronLeft size={16} />
+              Quay lại
             </button>
-            <h2>
-              <Calendar className="icon" /> Lịch của bác sĩ: {getDoctorName(selectedDoctor)}
+            <h2 className="asched-schedule-title">
+              <Calendar size={20} />
+              Lịch của bác sĩ: {getDoctorName(selectedDoctor)}
             </h2>
           </div>
         </div>
 
-        <div className="schedule-container" style={{ width: "100%", flex: 1, display: "flex", flexDirection: "column" }}>
-          <div className="card" style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", flex: 1 }}>
-            <div className="card-hdr">
-              <div className="schedule-controls">
-                <div className="view-controls">
-                  <div className="schedule-tabs" style={{ marginRight: "15px" }}>
-                    <button
-                      className={`btn ${!showAvailabilityTab ? 'btn-primary' : 'btn-secondary'}`}
-                      onClick={() => setShowAvailabilityTab(false)}
-                      disabled={loading}
-                    >
-                      Lịch hẹn
-                    </button>
-                    <button
-                      className={`btn ${showAvailabilityTab ? 'btn-primary' : 'btn-secondary'}`}
-                      onClick={() => setShowAvailabilityTab(true)}
-                      disabled={loading}
-                    >
-                      Lịch làm việc
-                    </button>
-                  </div>
-
+        <div className="asched-schedule-container">
+          <div className="asched-schedule-card">
+            
+            {/* Redesigned Controls Section */}
+            <div className="asched-schedule-controls">
+              {/* Tab Section */}
+              <div className="asched-control-group">
+                <div className="asched-control-label">Chế độ xem:</div>
+                <div className="asched-tab-group">
                   <button
-                      className={`btn ${viewMode === "day" ? "btn-primary" : "btn-secondary"}`}
-                      onClick={() => setViewMode("day")}
-                      disabled={loading}
+                    className={`asched-control-btn ${!showAvailabilityTab ? 'active' : ''}`}
+                    onClick={() => setShowAvailabilityTab(false)}
+                    disabled={loading}
                   >
+                    <Calendar size={16} />
+                    Lịch hẹn
+                  </button>
+                  <button
+                    className={`asched-control-btn ${showAvailabilityTab ? 'active' : ''}`}
+                    onClick={() => setShowAvailabilityTab(true)}
+                    disabled={loading}
+                  >
+                    <Clock size={16} />
+                    Lịch làm việc
+                  </button>
+                </div>
+              </div>
+
+              {/* View Mode Section */}
+              <div className="asched-control-group">
+                <div className="asched-control-label">Hiển thị:</div>
+                <div className="asched-view-group">
+                  <button
+                    className={`asched-view-btn ${viewMode === "day" ? "active" : ""}`}
+                    onClick={() => setViewMode("day")}
+                    disabled={loading}
+                  >
+                    <Calendar size={14} />
                     Ngày
                   </button>
                   <button
-                      className={`btn ${viewMode === "week" ? "btn-primary" : "btn-secondary"}`}
-                      onClick={() => setViewMode("week")}
-                      disabled={loading}
+                    className={`asched-view-btn ${viewMode === "week" ? "active" : ""}`}
+                    onClick={() => setViewMode("week")}
+                    disabled={loading}
                   >
                     Tuần
                   </button>
                 </div>
-                <div className="date-navigation">
+              </div>
+
+              {/* Date Navigation Section */}
+              <div className="asched-control-group">
+                <div className="asched-control-label">Điều hướng:</div>
+                <div className="asched-date-navigation">
                   <button
-                      className="btn btn-secondary"
-                      onClick={() => (viewMode === "week" ? navigateWeek(-1) : navigateDay(-1))}
-                      disabled={loading}
+                    className="asched-nav-btn"
+                    onClick={() => (viewMode === "week" ? navigateWeek(-1) : navigateDay(-1))}
+                    disabled={loading}
                   >
                     <ChevronLeft size={16} />
                   </button>
-                  <div className="date-picker-container">
+                  <div className="asched-date-picker-container">
                     <input
-                        type="date"
-                        className="date-picker"
-                        value={selectedDate}
-                        onChange={handleDateChange}
-                        disabled={loading}
+                      type="date"
+                      className="asched-date-picker"
+                      value={selectedDate}
+                      onChange={handleDateChange}
+                      disabled={loading}
                     />
-                    <span className="current-period">
-                    {viewMode === "week"
-                        ? getWeekRange()
-                        : `${currentDate.getDate()}/${currentDate.getMonth() + 1}/${currentDate.getFullYear()}`}
-                  </span>
+                    <span className="asched-current-period">
+                      {viewMode === "week"
+                          ? getWeekRange()
+                          : `${currentDate.getDate()}/${currentDate.getMonth() + 1}/${currentDate.getFullYear()}`}
+                    </span>
                   </div>
                   <button
-                      className="btn btn-secondary"
-                      onClick={() => (viewMode === "week" ? navigateWeek(1) : navigateDay(1))}
-                      disabled={loading}
+                    className="asched-nav-btn"
+                    onClick={() => (viewMode === "week" ? navigateWeek(1) : navigateDay(1))}
+                    disabled={loading}
                   >
                     <ChevronRight size={16} />
                   </button>
@@ -1349,11 +1286,12 @@ const ScheduleContent = () => {
                   <div className="availability-header">
                     <h3>Lịch làm việc của bác sĩ</h3>
                     <button
-                      className="btn btn-primary"
+                      className="asched-add-schedule-btn"
                       onClick={handleAddAvailability}
                       disabled={loading || selectedDoctor === "all"}
                     >
-                      Thêm lịch làm việc mới
+                      <Plus size={18} />
+                      <span>Thêm lịch làm việc mới</span>
                     </button>
                   </div>
 
@@ -1363,14 +1301,19 @@ const ScheduleContent = () => {
                     </div>
                   ) : loading ? (
                     <div className="loading">Đang tải...</div>
-                  ) : availabilities.length === 0 ? (
-                    <div className="empty-data">Không có lịch làm việc nào cho bác sĩ này vào ngày đã chọn</div>
                   ) : (
                     <>
-                      {/* Hiển thị lịch làm việc dạng lưới */}
+                      {/* Luôn hiển thị lịch làm việc dạng lưới, kể cả khi không có dữ liệu */}
                       <div className="availability-grid-view">
                         {viewMode === "week" ? renderAvailabilityWeekView() : renderAvailabilityDayView()}
                       </div>
+                      {availabilities.length === 0 && (
+                        <div className="asched-empty-schedule-notice">
+                          <Clock size={20} />
+                          <p>Không có lịch làm việc nào cho bác sĩ này vào ngày đã chọn</p>
+                          <small>Bạn có thể thêm lịch làm việc mới bằng cách nhấp nút "Thêm lịch làm việc mới" ở trên</small>
+                        </div>
+                      )}
                     </>
                   )}
                 </div>
@@ -1694,10 +1637,34 @@ const ScheduleContent = () => {
 
   // Return chính của component
   return (
-    <div className="schct-schedule-content" style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column" }}>
-      {loading && <div className="schct-loading">Loading...</div>}
-      {error && <div className="schct-error-message">{error}</div>}
+    <div className="asched-container">
+      {/* Header */}
+      <div className="asched-header">
+        <div className="asched-header-left">
+          <Calendar size={24} className="asched-title-icon" />
+          <h1 className="asched-title">Quản lý lịch hẹn</h1>
+        </div>
+        <div className="asched-header-controls">
+          <div className="asched-search-container">
+            <Search className="asched-search-icon" size={16} />
+            <input
+              type="text"
+              placeholder="Tìm kiếm bệnh nhân, bác sĩ..."
+              className="asched-search-input"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+        </div>
+      </div>
 
+
+
+      {/* Loading and Error States */}
+      {loading && <div className="asched-loading">Đang tải...</div>}
+      {error && <div className="asched-error">{error}</div>}
+
+      {/* Main Content */}
       {!loading && !error && (
         currentPage === "doctors" ? renderDoctorsPage() : renderSchedulePage()
       )}

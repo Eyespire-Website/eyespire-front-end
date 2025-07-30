@@ -234,62 +234,57 @@
     background-color: #f9fafb;
 }
 
+/* Compact Pagination Styles */
 .appointments__pagination {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
-    padding: 20px 24px;
+    gap: 4px;
+    padding: 20px;
     background-color: white;
-    border-radius: 10px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    margin-top: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    margin-top: 16px;
 }
 
-.appointments__pagination-info {
-    color: #6b7280;
-    font-size: 14px;
-    font-weight: 500;
-}
-
-.appointments__pagination-controls {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-}
-
-.appointments__pagination-button {
-    padding: 10px 16px;
-    border: 2px solid #e5e7eb;
-    background-color: white;
-    color: #374151;
-    border-radius: 7px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 13px;
-    font-weight: 600;
-    min-width: 40px;
+.appointments__pagination-btn {
     display: flex;
     align-items: center;
     justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: 1px solid #e2e8f0;
+    background-color: white;
+    color: #64748b;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
 }
 
-.appointments__pagination-button:hover:not(:disabled) {
-    background-color: #f3f4f6;
-    border-color: #9ca3af;
-    transform: translateY(-1px);
+.appointments__pagination-btn:hover:not(:disabled) {
+    background-color: #f1f5f9;
+    border-color: #cbd5e1;
+    color: #475569;
 }
 
-.appointments__pagination-button:disabled {
-    opacity: 0.4;
+.appointments__pagination-btn:disabled {
+    opacity: 0.5;
     cursor: not-allowed;
-    transform: none;
+    background-color: #f8fafc;
 }
 
-.appointments__pagination-button--active {
-    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+.appointments__pagination-btn--active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-color: #667eea;
     color: white;
-    border-color: #3b82f6;
-    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+    font-weight: 600;
+}
+
+.appointments__pagination-btn--active:hover {
+    background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+    transform: translateY(-1px);
 }
 
 /* Loading and Error States */

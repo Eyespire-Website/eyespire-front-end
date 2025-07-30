@@ -1,0 +1,274 @@
+/* Unified Table Styles for All Dashboard Pages */
+
+/* Main container */
+.unified-table-container {
+    background-color: white;
+    border-radius: 14px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+/* Table header with gradient */
+.unified-table-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 20px 24px;
+}
+
+.unified-table-header-content {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.unified-table-header-icon {
+    color: white;
+    width: 22px;
+    height: 22px;
+}
+
+.unified-table-header-text {
+    color: white;
+    font-weight: 600;
+    font-size: 18px;
+    letter-spacing: 0.4px;
+}
+
+/* Table wrapper */
+.unified-table-wrapper {
+    overflow-x: auto;
+}
+
+/* Table styles */
+.unified-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.unified-table th {
+    background: #f8fafc;
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+    color: #374151;
+    font-size: 14px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.unified-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 14px;
+    color: #64748b;
+}
+
+.unified-table tr:hover {
+    background: #f8fafc;
+}
+
+/* Special styling for first column (usually ID/Number) */
+.unified-table th:first-child,
+.unified-table td:first-child {
+    text-align: center;
+    font-weight: 600;
+    color: #64748b;
+}
+
+/* Status badges */
+.unified-status-badge {
+    display: inline-block;
+    padding: 5px 14px;
+    border-radius: 22px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+/* Status colors */
+.status-pending {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+.status-confirmed {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+.status-completed {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.status-cancelled {
+    background-color: #fecaca;
+    color: #991b1b;
+}
+
+.status-shipped {
+    background-color: #e0e7ff;
+    color: #3730a3;
+}
+
+.status-paid {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+/* Action buttons */
+.unified-action-buttons {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.unified-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.unified-btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.unified-btn-primary:hover {
+    background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+    transform: translateY(-1px);
+}
+
+.unified-btn-secondary {
+    background-color: #f1f5f9;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+}
+
+.unified-btn-secondary:hover {
+    background-color: #e2e8f0;
+    color: #334155;
+}
+
+.unified-btn-icon {
+    background-color: transparent;
+    color: #64748b;
+    padding: 6px;
+    border: 1px solid #e2e8f0;
+}
+
+.unified-btn-icon:hover {
+    background-color: #f1f5f9;
+    color: #475569;
+}
+
+/* Icon with text */
+.unified-icon-text {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.unified-icon {
+    width: 16px;
+    height: 16px;
+    color: #9ca3af;
+    flex-shrink: 0;
+}
+
+/* Customer/User info styling */
+.unified-user-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.unified-user-name {
+    font-weight: 500;
+    color: #1e293b;
+}
+
+.unified-user-contact {
+    font-size: 12px;
+    color: #64748b;
+}
+
+/* Product/Item info styling */
+.unified-item-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.unified-item-description {
+    font-size: 12px;
+    color: #64748b;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Special styling for important data */
+.unified-highlight {
+    font-weight: 600;
+    color: #3b82f6;
+}
+
+.unified-price {
+    font-weight: 600;
+    color: #1e293b;
+}
+
+/* Product image */
+.unified-product-img {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+}
+
+/* No results message */
+.unified-no-results {
+    text-align: center;
+    padding: 40px 20px;
+    color: #64748b;
+    font-style: italic;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .unified-table-header {
+        padding: 16px 20px;
+    }
+    
+    .unified-table-header-text {
+        font-size: 16px;
+    }
+    
+    .unified-table th,
+    .unified-table td {
+        padding: 8px;
+        font-size: 13px;
+    }
+    
+    .unified-action-buttons {
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    .unified-btn {
+        font-size: 11px;
+        padding: 4px 8px;
+    }
+}

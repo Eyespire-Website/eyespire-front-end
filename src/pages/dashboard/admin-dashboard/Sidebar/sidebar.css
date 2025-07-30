@@ -5,10 +5,10 @@
     display: flex;
     flex-direction: column;
     height: 100vh;
-    padding: 1.5rem 0;
+    padding: 1rem 0;
     transition: width 0.3s ease;
     flex-shrink: 0;
-    overflow-y: hidden; /* Loại bỏ scroll dọc */
+    overflow: hidden; /* Container không scroll */
 }
 
 .sidebar-wrapper.collapsed .sidebar-v2 {
@@ -129,7 +129,7 @@
     flex-shrink: 0;
 }
 
-/* Menu list */
+/* Menu list - Scrollable area */
 .menu-list-v2 {
     flex: 1;
     list-style: none;
@@ -137,8 +137,29 @@
     margin: 0;
     display: flex;
     flex-direction: column;
-    gap: 0.125rem;
-    overflow-y: visible; /* Bỏ thanh cuộn */
+    gap: 0.1rem;
+    overflow-y: auto; /* Cho phép scroll trong menu area */
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+
+/* Webkit scrollbar styling */
+.menu-list-v2::-webkit-scrollbar {
+    width: 4px;
+}
+
+.menu-list-v2::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.menu-list-v2::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 2px;
+}
+
+.menu-list-v2::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
 }
 
 /* Menu category styling */

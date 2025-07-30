@@ -215,7 +215,7 @@ export default function AppointmentListByCustomer() {
         await fetchMedicationsForAppointment(appointment.id)
     }
 
-    // Xác nhận tạo hóa đơn
+    // Xác nhận tạo hoặc cập nhật hóa đơn
     const confirmCreateInvoice = async () => {
         if (!appointmentToCreateInvoice) {
             toast.error("Không tìm thấy thông tin cuộc hẹn để cập nhật hóa đơn.")
@@ -685,41 +685,32 @@ export default function AppointmentListByCustomer() {
                         </table>
                     </div>
 
-                    {totalPages > 1 && (
+                    {/* Compact Pagination */}
+                    {filteredAppointments.length > 0 && (
                         <div className="customer-appointments-detail__pagination">
-                            <div className="customer-appointments-detail__pagination-info">
-                                Hiển
-                                thị {Math.min((currentPage - 1) * itemsPerPage + 1, filteredAppointments.length)} -{" "}
-                                {Math.min(currentPage * itemsPerPage, filteredAppointments.length)} trong tổng số{" "}
-                                {filteredAppointments.length} cuộc hẹn
-                            </div>
-                            <div className="customer-appointments-detail__pagination-controls">
+                            <button
+                                className="customer-appointments-detail__pagination-btn"
+                                onClick={() => handlePageChange(currentPage - 1)}
+                                disabled={currentPage === 1}
+                            >
+                                «
+                            </button>
+                            {getPageNumbers().map((pageNum) => (
                                 <button
-                                    onClick={() => handlePageChange(currentPage - 1)}
-                                    disabled={currentPage === 1}
-                                    className="customer-appointments-detail__pagination-button"
+                                    key={pageNum}
+                                    className={`customer-appointments-detail__pagination-btn ${currentPage === pageNum ? 'customer-appointments-detail__pagination-btn--active' : ''}`}
+                                    onClick={() => handlePageChange(pageNum)}
                                 >
-                                    Trước
+                                    {pageNum}
                                 </button>
-                                {getPageNumbers().map((pageNum) => (
-                                    <button
-                                        key={pageNum}
-                                        onClick={() => handlePageChange(pageNum)}
-                                        className={`customer-appointments-detail__pagination-button ${
-                                            currentPage === pageNum ? "customer-appointments-detail__pagination-button--active" : ""
-                                        }`}
-                                    >
-                                        {pageNum}
-                                    </button>
-                                ))}
-                                <button
-                                    onClick={() => handlePageChange(currentPage + 1)}
-                                    disabled={currentPage === totalPages}
-                                    className="customer-appointments-detail__pagination-button"
-                                >
-                                    Sau
-                                </button>
-                            </div>
+                            ))}
+                            <button
+                                className="customer-appointments-detail__pagination-btn"
+                                onClick={() => handlePageChange(currentPage + 1)}
+                                disabled={currentPage === totalPages}
+                            >
+                                »
+                            </button>
                         </div>
                     )}
                 </div>

@@ -203,45 +203,32 @@ export default function CustomerAppointments() {
                     </table>
                 </div>
 
-                {totalPages > 1 && (
+                {/* Compact Pagination */}
+                {filteredCustomers.length > 0 && (
                     <div className="customer-appointments__pagination">
-                        <div className="customer-appointments__pagination-info">
-                            Hiển thị {Math.min((currentPage - 1) * itemsPerPage + 1, filteredCustomers.length)} -{" "}
-                            {Math.min(currentPage * itemsPerPage, filteredCustomers.length)} trong tổng số {filteredCustomers.length}{" "}
-                            khách hàng
-                        </div>
-                        <div className="customer-appointments__pagination-controls">
-                            {/* Nút Trước */}
+                        <button
+                            className="customer-appointments__pagination-btn"
+                            onClick={() => setCurrentPage(currentPage - 1)}
+                            disabled={currentPage === 1}
+                        >
+                            «
+                        </button>
+                        {getVisiblePageNumbers().map((pageNum) => (
                             <button
-                                onClick={() => setCurrentPage(currentPage - 1)}
-                                disabled={currentPage === 1}
-                                className="customer-appointments__pagination-button"
+                                key={pageNum}
+                                className={`customer-appointments__pagination-btn ${currentPage === pageNum ? 'customer-appointments__pagination-btn--active' : ''}`}
+                                onClick={() => setCurrentPage(pageNum)}
                             >
-                                Trước
+                                {pageNum}
                             </button>
-
-                            {/* Các số trang */}
-                            {getVisiblePageNumbers().map((pageNum) => (
-                                <button
-                                    key={pageNum}
-                                    onClick={() => setCurrentPage(pageNum)}
-                                    className={`customer-appointments__pagination-button ${
-                                        currentPage === pageNum ? "customer-appointments__pagination-button--active" : ""
-                                    }`}
-                                >
-                                    {pageNum}
-                                </button>
-                            ))}
-
-                            {/* Nút Sau */}
-                            <button
-                                onClick={() => setCurrentPage(currentPage + 1)}
-                                disabled={currentPage === totalPages}
-                                className="customer-appointments__pagination-button"
-                            >
-                                Sau
-                            </button>
-                        </div>
+                        ))}
+                        <button
+                            className="customer-appointments__pagination-btn"
+                            onClick={() => setCurrentPage(currentPage + 1)}
+                            disabled={currentPage === totalPages}
+                        >
+                            »
+                        </button>
                     </div>
                 )}
             </div>

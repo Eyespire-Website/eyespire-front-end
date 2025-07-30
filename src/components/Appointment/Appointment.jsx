@@ -85,6 +85,86 @@ const Appointment = () => {
         phone: user.phone || ""
       }));
     }
+
+    // Check for URL parameters to auto-fill doctor or service info
+    const urlParams = new URLSearchParams(window.location.search);
+    const doctorId = urlParams.get('doctorId');
+    const doctorName = urlParams.get('doctorName');
+    const specialty = urlParams.get('specialty');
+    const serviceId = urlParams.get('serviceId');
+    const serviceName = urlParams.get('serviceName');
+    const serviceDescription = urlParams.get('serviceDescription');
+    
+    if (doctorId) {
+      console.log('Auto-filling doctor from URL:', { doctorId, doctorName, specialty });
+      
+      // Auto-fill doctor selection
+      setFormData(prevState => ({
+        ...prevState,
+        doctorId: doctorId
+      }));
+      
+      // Show success message
+      toast.success(`Đã chọn bác sĩ: ${doctorName || 'Bác sĩ'}${specialty ? ` - ${specialty}` : ''}`);
+      
+      // Clear URL parameters to clean up the URL
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, newUrl);
+      
+      // Scroll to appointment form
+      setTimeout(() => {
+        const appointmentSection = document.querySelector('.appointment-form');
+        if (appointmentSection) {
+          appointmentSection.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 1000);
+    } else if (serviceId) {
+      console.log('Auto-filling service from URL:', { serviceId, serviceName, serviceDescription });
+      
+      // Auto-fill service selection
+      setFormData(prevState => ({
+        ...prevState,
+        serviceId: serviceId
+      }));
+      
+      // Show success message
+      toast.success(`Đã chọn dịch vụ: ${serviceName || 'Dịch vụ'}`);
+      
+      // Clear URL parameters to clean up the URL
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, newUrl);
+      
+      // Scroll to appointment form
+      setTimeout(() => {
+        const appointmentSection = document.querySelector('.appointment-form');
+        if (appointmentSection) {
+          appointmentSection.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 1000);
+    }
+    
+    // Add event listener for homepage service selection
+    const handleServiceSelect = (event) => {
+      const { serviceId, serviceName, serviceDescription } = event.detail;
+      console.log('Received service selection event:', { serviceId, serviceName, serviceDescription });
+      
+      // Auto-fill service selection
+      setFormData(prevState => ({
+        ...prevState,
+        serviceId: serviceId
+      }));
+      
+      // Show success message
+      toast.success(`Đã chọn dịch vụ: ${serviceName || 'Dịch vụ'}`);
+    };
+    
+    // Add event listener for custom service selection event
+    window.addEventListener('selectService', handleServiceSelect);
+    
+    // Cleanup event listener on component unmount
+    return () => {
+      window.removeEventListener('selectService', handleServiceSelect);
+    };
   }, []);
 
   // Fetch available time slots for doctor and date

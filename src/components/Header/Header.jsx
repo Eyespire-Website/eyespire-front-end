@@ -249,21 +249,21 @@ const Header = () => {
       <div className="column2">
         <div className="row-view5">
           <Link to="/" className="row-view3" style={{ textDecoration: 'none' }}>
-            <span className="text2">{"Home"}</span>
+            <span className="text2">{"Trang chủ"}</span>
             <span className="text3">{""}</span>
           </Link>
 
           <Link to="/services" className="service-link">
-            <span className="text4">{"Services"}</span>
+            <span className="text4">{"Dịch vụ"}</span>
           </Link>
 
           <Link to="/doctors" className="row-view3" style={{ textDecoration: 'none' }}>
-            <span className="text5">{"Doctors"}</span>
+            <span className="text5">{"Bác sĩ"}</span>
             <span className="text3">{""}</span>
           </Link>
 
           <Link to="/shop" className="row-view3">
-            <span className="text5">{"Shop"}</span>
+            <span className="text5">{"Cửa hàng"}</span>
             <span className="text3">{""}</span>
           </Link>
 
@@ -271,7 +271,7 @@ const Header = () => {
           {/* Nút About với lớp btn-about */}
           <div className="row-view3">
             <button className="btn-about" onClick={handleAboutClick}>
-              {"About"}
+              {"Giới thiệu"}
             </button>
             <span className="text3">{""}</span>
           </div>
@@ -319,7 +319,7 @@ const Header = () => {
           </div>
         ) : (
           <button className="login-button" onClick={handleLoginClick}>
-            {"Login"}
+            {"Đăng nhập"}
           </button>
         )}
       </div>

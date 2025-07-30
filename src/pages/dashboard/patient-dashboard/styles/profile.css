@@ -1,29 +1,42 @@
-/* Dashboard Container */
-.dashboard-container {
-    display: flex;
-    height: 100vh;
-    font-family: Arial, sans-serif;
+/* Profile Page Styles - prefix ptod */
+
+/* Container */
+.ptod-container {
+    padding: 20px 30px;
+    background-color: #f8f9fa;
+    min-height: 100vh;
 }
 
-/* Main Content Styles */
-.main-content {
-    flex: 1;
-    padding: 1.5rem;
-    background-color: #f9fafb;
-    overflow-y: auto;
-}
-
-.content-header {
+/* Header Styles */
+.ptod-header {
+    background: white;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 1rem 1.5rem;
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    margin-bottom: 2rem;
+    justify-content: space-between;
+    min-height: 70px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
 }
 
-.content-header h1 {
+.ptod-header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.ptod-title {
     font-size: 1.5rem;
-    font-weight: 700;
-    color: #111827;
+    font-weight: bold;
+    color: #03246b;
+    margin: 0;
+}
+
+.ptod-title-icon {
+    color: #03246b;
+    margin-right: 0.5rem;
 }
 
 .user-avatar {

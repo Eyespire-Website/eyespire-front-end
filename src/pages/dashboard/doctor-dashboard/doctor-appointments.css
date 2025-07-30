@@ -264,7 +264,6 @@
 
 .appointments__pagination {
     display: flex;
-    justify-content: space-between;
     align-items: center;
     padding: 20px 24px;
     background-color: white;

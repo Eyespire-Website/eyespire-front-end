@@ -20,6 +20,7 @@ import {
   Package,
   Pill,
 } from "lucide-react";
+import "../../../styles/unified-table.css";
 
 const OrdersPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -397,69 +398,80 @@ const OrdersPage = () => {
               />
             </div>
 
-            <div className="tbl-container">
-              <table className="tbl">
-                <thead>
-                <tr>
-                  <th>Mã đơn hàng</th>
-                  <th>Khách hàng</th>
-                  <th>Ngày đặt</th>
-                  <th>Sản phẩm</th>
-                  <th>Tổng tiền</th>
-                  <th>Trạng thái</th>
-                  <th>Thao tác</th>
-                </tr>
-                </thead>
-                <tbody>
-                {paginatedOrders.length > 0 ? (
-                    paginatedOrders.map((order) => (
-                        <tr key={order.id}>
-                          <td className="order-id">{order.id}</td>
-                          <td>
-                            <div className="customer-info">
-                              <div className="customer-name">{order.customerName}</div>
-                              <div className="customer-contact">{order.customerPhone}</div>
-                            </div>
-                          </td>
-                          <td>{order.orderDate}</td>
-                          <td>
-                            <div className="order-items-preview">
-                              <Package size={16} />
-                              <span>{order.items.length} sản phẩm</span>
-                            </div>
-                          </td>
-                          <td className="order-total">
-                            ₫{order.total.toLocaleString()}
-                          </td>
-                          <td>
-                        <span className={`stm-status stm-status--${order.status.toLowerCase()}`}>
-                          {order.statusText}
-                        </span>
-                          </td>
-                          <td>
-                            <div className="stm-action-buttons">
-                              <button
-                                  className="btn btn-icon"
-                                  title="Xem chi tiết"
-                                  onClick={() => handleViewOrder(order)}
-                              >
-                                <Eye size={16} />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                    ))
-                ) : (
-                    <tr>
-                      <td colSpan={7} className="stm-no-results">
-                        {searchTerm || statusFilter !== "all"
-                            ? "Không tìm thấy đơn hàng nào phù hợp với bộ lọc"
-                            : "Chưa có đơn hàng nào. Hãy tạo đơn hàng đầu tiên!"}
-                      </td>
-                    </tr>
-                )}
-                </tbody>
-              </table>
+            <div className="unified-table-container">
+              <div className="unified-table-header">
+                <div className="unified-table-header-content">
+                  <ShoppingCart className="unified-table-header-icon" />
+                  <span className="unified-table-header-text">Quản lý đơn hàng ({filteredOrders.length} đơn hàng)</span>
+                </div>
+              </div>
+              <div className="unified-table-wrapper">
+                <table className="unified-table">
+                  <thead>
+                  <tr>
+                    <th>Mã đơn hàng</th>
+                    <th>Khách hàng</th>
+                    <th>Ngày đặt</th>
+                    <th>Sản phẩm</th>
+                    <th>Tổng tiền</th>
+                    <th>Trạng thái</th>
+                    <th>Thao tác</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  {paginatedOrders.length > 0 ? (
+                      paginatedOrders.map((order) => (
+                          <tr key={order.id}>
+                            <td><span className="unified-highlight">{order.id}</span></td>
+                            <td>
+                              <div className="unified-user-info">
+                                <div className="unified-user-name">{order.customerName}</div>
+                                <div className="unified-user-contact">{order.customerPhone}</div>
+                              </div>
+                            </td>
+                            <td>{order.orderDate}</td>
+                            <td>
+                              <div className="unified-icon-text">
+                                <Package className="unified-icon" size={16} />
+                                <span>{order.items.length} sản phẩm</span>
+                              </div>
+                            </td>
+                            <td><span className="unified-price">₫{order.total.toLocaleString()}</span></td>
+                            <td>
+                              <span className={`unified-status-badge ${
+                                order.status === 'COMPLETED' ? 'status-completed' :
+                                order.status === 'SHIPPED' ? 'status-shipped' :
+                                order.status === 'PAID' ? 'status-confirmed' :
+                                order.status === 'CANCELED' ? 'status-cancelled' : 'status-pending'
+                              }`}>
+                                {order.statusText}
+                              </span>
+                            </td>
+                            <td>
+                              <div className="unified-action-buttons">
+                                <button
+                                    className="unified-btn unified-btn-primary"
+                                    title="Xem chi tiết"
+                                    onClick={() => handleViewOrder(order)}
+                                >
+                                  <Eye size={16} />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                      ))
+                  ) : (
+                      <tr>
+                        <td colSpan={7} className="unified-no-results">
+                          {searchTerm || statusFilter !== "all"
+                              ? "Không tìm thấy đơn hàng nào phù hợp với bộ lọc"
+                              : "Chưa có đơn hàng nào. Hãy tạo đơn hàng đầu tiên!"}
+                        </td>
+                      </tr>
+                  )}
+                  </tbody>
+                </table>
+              </div>
             </div>
 
             {filteredOrders.length > 0 && (
