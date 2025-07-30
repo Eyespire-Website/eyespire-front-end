@@ -1,7 +1,8 @@
 import axios from 'axios';
 import authService from './authService';
 
-const API_URL = 'http://localhost:8080/api';
+import API_CONFIG from '../config/api.config';
+
 
 // Tạo instance axios với cấu hình mặc định
 const axiosInstance = axios.create({
@@ -1485,7 +1486,7 @@ const dashboardService = {
           // Process image URL - add base URL if relative path or use sample based on category
           let processedImageUrl = product.imageUrl;
           if (processedImageUrl && processedImageUrl.startsWith('/')) {
-            processedImageUrl = `http://localhost:8080${processedImageUrl}`;
+            processedImageUrl = `https://eyespire-back-end.onrender.com${processedImageUrl}`;
           } else if (!processedImageUrl) {
             // Nếu không có image, sử dụng sample image dựa trên category
             const categoryType = (product.type || 'OTHER').toUpperCase();

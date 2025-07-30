@@ -1,7 +1,7 @@
 import axios from 'axios';
 import authService from './authService';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
+const API_URL = 'https://eyespire-back-end.onrender.com';
 const BASE_URL = `${API_URL}/api/service-feedback`;
 
 // Tạo axios instance với cấu hình mặc định

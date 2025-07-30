@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8080/api/auth/'; // Thay đổi URL này theo cấu hình backend của bạn
+const API_URL = 'https://eyespire-back-end.onrender.com/api/auth/'; // Production backend URL
 
 // Cập nhật hàm login trong authService.js
 const login = async (email, password) => {

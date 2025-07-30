@@ -1,3 +1,4 @@
+import API_CONFIG from '../config/api.config';
 import axios from 'axios';
 
 /**

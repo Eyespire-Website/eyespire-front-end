@@ -1,11 +1,12 @@
+import API_CONFIG from '../config/api.config';
 import axios from 'axios';
 import authService from './authService';
 
-const API_URL = 'http://localhost:8080/api/payment-history';
+const API_URL = 'https://eyespire-back-end.onrender.com/api/payment-history';
 
 // Tạo axios instance với cấu hình chung
 const axiosInstance = axios.create({
-    baseURL: 'http://localhost:8080/api',
+    baseURL: API_CONFIG.BASE_URL,
     timeout: 10000,
     headers: {
         'Content-Type': 'application/json',

@@ -1,7 +1,8 @@
 import axios from "axios";
 import authService from "./authService";
 
-const API_URL = "http://localhost:8080/api";
+import API_CONFIG from '../config/api.config';
+
 
 // Tạo instance axios với cấu hình mặc định
 const axiosInstance = axios.create({

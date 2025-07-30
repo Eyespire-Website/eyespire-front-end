@@ -2,7 +2,8 @@ import axios from 'axios';
 import authService from './authService';
 import userService from './userService'; // Import userService
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
+import API_CONFIG from '../config/api.config';
+
 
 const feedbackService = {
     getFeedbackByProductId: async (productId) => {
