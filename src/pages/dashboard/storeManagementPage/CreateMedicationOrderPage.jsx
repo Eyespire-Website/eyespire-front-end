@@ -605,7 +605,7 @@ const CreateMedicationOrderPage = ({ onBack, onOrderCreated, selectedOrder = nul
                                 </div>
                                 <div className="stm-action-buttons">
                                     {prescriptionStatus === "NOT_BUY" ? (
-                                        <p className="stm-error">Bạn chưa thanh toán đơn thuốc này.</p>
+                                        <p className="stm-error">Bệnh nhân không mua thuốc .</p>
                                     ) : prescriptionStatus === "DELIVERED" ? (
                                         <p className="stm-success">Đơn thuốc đã được giao.</p>
                                     ) : (
