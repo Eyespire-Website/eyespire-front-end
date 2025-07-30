@@ -6,7 +6,8 @@ import authService from './authService';
 
 // Key để lưu giỏ hàng trong localStorage
 const CART_STORAGE_KEY = 'eyespire_cart';
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
+const API_URL = 'https://eyespire-back-end.onrender.com/api';
+
 
 console.log('API URL being used:', API_URL);
 

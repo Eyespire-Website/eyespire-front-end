@@ -1,7 +1,8 @@
 import axios from 'axios';
 
 // Định nghĩa API_URL trực tiếp
-const API_URL = "http://localhost:8080/api";
+const API_URL = 'https://eyespire-back-end.onrender.com/api';
+
 
 const emailService = {
   /**

@@ -1,9 +1,10 @@
+
 import axios from 'axios';
 import authService from './authService';
 import userService from './userService';
 import authHeader from './auth-header';
 
-const BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
+const BASE_URL = process.env.REACT_APP_API_URL || 'https://eyespire-back-end.onrender.com';
 const API_URL = `${BASE_URL}/api`;
 
 class OrderService {
@@ -241,7 +242,7 @@ class OrderService {
                     errorMessage = responseData || errorMessage;
                 }
             } else if (error.code === 'ERR_NETWORK') {
-                errorMessage = 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra backend tại http://localhost:8080.';
+                errorMessage = 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra backend tại https://eyespire-back-end.onrender.com.';
             }
             throw new Error(errorMessage);
         }

@@ -1,7 +1,8 @@
+
 import axios from 'axios';
 import authHeader from './auth-header';
 
-const API_URL = 'http://localhost:8080/api/glasses';
+const API_URL = 'https://eyespire-back-end.onrender.com/api/glasses';
 
 class GlassesService {
   // Lấy tất cả các mẫu kính

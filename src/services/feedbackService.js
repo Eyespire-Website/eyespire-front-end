@@ -2,7 +2,7 @@ import axios from 'axios';
 import authService from './authService';
 import userService from './userService'; // Import userService
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
+const API_URL = 'https://eyespire-back-end.onrender.com/api';
 
 const feedbackService = {
     getFeedbackByProductId: async (productId) => {

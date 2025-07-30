@@ -1,6 +1,7 @@
+
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8080/api/chat';
+const API_URL = 'https://eyespire-back-end.onrender.com/api/chat';
 
 // Tạo axios instance
 const chatInstance = axios.create({

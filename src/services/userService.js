@@ -1,7 +1,7 @@
 import axios from "axios";
 import authService from "./authService";
 
-const API_URL = "http://localhost:8080/api";
+const API_URL = "https://eyespire-back-end.onrender.com/api";
 
 const axiosInstance = axios.create({
   baseURL: API_URL,
