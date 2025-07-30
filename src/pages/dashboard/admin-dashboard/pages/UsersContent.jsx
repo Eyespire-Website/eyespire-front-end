@@ -23,6 +23,7 @@ import {
 import { toast } from "react-toastify";
 import userService from "../../../../services/userService";
 import "../styles/users.css";
+import "../styles/users-unified.css";
 
 const UsersContent = () => {
     // State cho tìm kiếm và filter
@@ -284,6 +285,13 @@ const UsersContent = () => {
         return searchMatch && statusMatch && roleMatch;
     });
     
+    // Client-side pagination logic
+    const itemsPerPage = 10;
+    const totalPagesCalculated = Math.ceil(filteredUsers.length / itemsPerPage);
+    const startIndex = currentPage * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentUsers = filteredUsers.slice(startIndex, endIndex);
+    
     // Hiển thị thông báo khi không có kết quả tìm kiếm
     useEffect(() => {
         if (filteredUsers.length === 0 && allUsers.length > 0 && (searchTerm || statusFilter !== 'all' || roleFilter !== 'all')) {
@@ -377,95 +385,132 @@ const UsersContent = () => {
 
             {/* Danh sách người dùng */}
             {loading ? (
-                <div className="loading">Đang tải dữ liệu...</div>
+                <div className="users-content">
+                    <div className="users-content__loading">
+                        <div className="users-content__spinner"></div>
+                        <p>Đang tải danh sách người dùng...</p>
+                    </div>
+                </div>
             ) : (
                 <>
-                    {!filteredUsers || filteredUsers.length === 0 ? (
-                        <div className="no-users">Không tìm thấy người dùng nào</div>
-                    ) : (
-                        <>
-                            <div className="users-table">
-                                <div className="users-table-header">
-                                    <div className="table-cell header-cell">#</div>
-                                    <div className="table-cell header-cell">Tên tài khoản</div>
-                                    <div className="table-cell header-cell">Email</div>
-                                    <div className="table-cell header-cell">Họ và tên</div>
-                                    <div className="table-cell header-cell">Số điện thoại</div>
-                                    <div className="table-cell header-cell">Vai trò</div>
-                                    <div className="table-cell header-cell">Trạng thái</div>
-                                    <div className="table-cell header-cell">Hành động</div>
-                                </div>
-                                <div className="users-table-body">
-                                    {filteredUsers.map((user, index) => (
-                                        <div key={user.id} className="users-table-row">
-                                            <div className="table-cell">{index + 1}</div>
-                                            <div className="table-cell username-cell">{user.username}</div>
-                                            <div className="table-cell">{user.email}</div>
-                                            <div className="table-cell">{user.name || 'NULL'}</div>
-                                            <div className="table-cell">{user.phone || 'NULL'}</div>
-                                            <div className="table-cell">
-                                                <span className={`role-badge ${user.role?.toLowerCase()}`}>
-                                                    {getRoleText(user.role)}
-                                                </span>
-                                            </div>
-                                            <div className="table-cell">
-                                                <span className={`status-badge ${user.status}`}>
-                                                    {getStatusText(user.status)}
-                                                </span>
-                                            </div>
-                                            <div className="table-cell action-cell">
-                                                <button 
-                                                    className="action-btn view-btn"
-                                                    onClick={() => handleViewUserDetails(user)}
-                                                    title="Xem chi tiết"
-                                                >
-                                                    <Eye size={16} />
-                                                </button>
-                                                <button 
-                                                    className={`action-btn toggle-btn ${user.status === 'blocked' ? 'unblock' : 'block'}`}
-                                                    onClick={() => user.status === 'blocked' ? handleUnblockUser(user.id) : handleBlockUser(user.id)}
-                                                    title={user.status === 'blocked' ? 'Mở khóa' : 'Khóa'}
-                                                >
-                                                    {user.status === 'blocked' ? <Unlock size={16} /> : <Lock size={16} />}
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
+                    {error && (
+                        <div className="users-content">
+                            <div className="users-content__error">
+                                <p>{error}</p>
+                                <button onClick={fetchUsers} className="users-content__retry-button">
+                                    Thử lại
+                                </button>
                             </div>
-
-                            {/* Phân trang */}
-                            {filteredUsers.length > 0 && totalPages > 1 && (
-                                <div className="pagination">
-                                    <button 
-                                        className={`page-btn ${currentPage === 0 ? 'disabled' : ''}`}
-                                        onClick={() => handlePageChange(currentPage - 1)}
-                                        disabled={currentPage === 0}
-                                    >
-                                        &lt;
-                                    </button>
-                                    
-                                    {getPageNumbers().map(pageNum => (
-                                        <button
-                                            key={pageNum}
-                                            className={`page-btn ${currentPage === pageNum ? 'active' : ''}`}
-                                            onClick={() => handlePageChange(pageNum)}
-                                        >
-                                            {pageNum + 1}
-                                        </button>
-                                    ))}
-                                    
-                                    <button 
-                                        className={`page-btn ${currentPage === totalPages - 1 ? 'disabled' : ''}`}
-                                        onClick={() => handlePageChange(currentPage + 1)}
-                                        disabled={currentPage === totalPages - 1}
-                                    >
-                                        &gt;
-                                    </button>
-                                </div>
-                            )}
-                        </>
+                        </div>
                     )}
+
+                    <div className="users-content__table-container">
+                        <div className="users-content__table-header">
+                            <div className="users-content__table-header-content">
+                                <Users className="users-content__table-header-icon" />
+                                <span className="users-content__table-header-text">
+                                    Danh sách người dùng ({filteredUsers.length} người dùng)
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="users-content__table-wrapper">
+                            <table className="users-content__table">
+                                <thead>
+                                    <tr>
+                                        <th className="users-content__table-head users-content__table-head--number">#</th>
+                                        <th className="users-content__table-head">Tên tài khoản</th>
+                                        <th className="users-content__table-head">Email</th>
+                                        <th className="users-content__table-head">Họ và tên</th>
+                                        <th className="users-content__table-head">Số điện thoại</th>
+                                        <th className="users-content__table-head">Vai trò</th>
+                                        <th className="users-content__table-head">Trạng thái</th>
+                                        <th className="users-content__table-head">Hành động</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {currentUsers.length === 0 ? (
+                                        <tr>
+                                            <td colSpan="8" className="users-content__table-cell users-content__table-cell--empty">
+                                                {filteredUsers.length === 0 ? "Không có người dùng nào" : "Không có dữ liệu cho trang này"}
+                                            </td>
+                                        </tr>
+                                    ) : (
+                                        currentUsers.map((user, index) => (
+                                            <tr key={user.id} className="users-content__table-row">
+                                                <td className="users-content__table-cell">
+                                                    {startIndex + index + 1}
+                                                </td>
+                                                <td className="users-content__table-cell">
+                                                    <span className="users-content__username">@{user.username || "Chưa cập nhật"}</span>
+                                                </td>
+                                                <td className="users-content__table-cell">{user.email || "Chưa cập nhật"}</td>
+                                                <td className="users-content__table-cell">{user.name || "Chưa cập nhật"}</td>
+                                                <td className="users-content__table-cell">{user.phone || "Chưa cập nhật"}</td>
+                                                <td className="users-content__table-cell">
+                                                    <span className={`users-content__role-badge ${user.role?.toLowerCase()}`}>
+                                                        {getRoleText(user.role)}
+                                                    </span>
+                                                </td>
+                                                <td className="users-content__table-cell">
+                                                    <span className={`users-content__status-badge ${user.status}`}>
+                                                        {getStatusText(user.status)}
+                                                    </span>
+                                                </td>
+                                                <td className="users-content__table-cell">
+                                                    <div className="users-content__action-buttons">
+                                                        <button 
+                                                            className="users-content__detail-button"
+                                                            onClick={() => handleViewUserDetails(user)}
+                                                            title="Xem chi tiết"
+                                                        >
+                                                            <Eye size={16} />
+                                                        </button>
+                                                        <button 
+                                                            className={`users-content__action-button ${user.status === 'blocked' ? 'users-content__action-button--unblock' : 'users-content__action-button--block'}`}
+                                                            onClick={() => user.status === 'blocked' ? handleUnblockUser(user.id) : handleBlockUser(user.id)}
+                                                            title={user.status === 'blocked' ? 'Mở khóa' : 'Khóa'}
+                                                        >
+                                                            {user.status === 'blocked' ? <Unlock size={16} /> : <Lock size={16} />}
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {/* Compact Pagination */}
+                        {filteredUsers.length > 0 && (
+                            <div className="users-content__pagination">
+                                <button
+                                    className="users-content__pagination-btn"
+                                    onClick={() => handlePageChange(currentPage - 1)}
+                                    disabled={currentPage === 0}
+                                >
+                                    «
+                                </button>
+                                {Array.from({ length: totalPagesCalculated }, (_, i) => (
+                                    <button
+                                        key={i}
+                                        className={`users-content__pagination-btn ${currentPage === i ? 'users-content__pagination-btn--active' : ''}`}
+                                        onClick={() => handlePageChange(i)}
+                                    >
+                                        {i + 1}
+                                    </button>
+                                ))}
+                                <button
+                                    className="users-content__pagination-btn"
+                                    onClick={() => handlePageChange(currentPage + 1)}
+                                    disabled={currentPage === totalPagesCalculated - 1}
+                                >
+                                    »
+                                </button>
+                            </div>
+                        )}
+                    </div>
                 </>
             )}
 

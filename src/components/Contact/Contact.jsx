@@ -6,10 +6,10 @@ const Contact = () => {
     <div className="contact-container">
       <div className="contact-content">
         <div className="contact-info">
-          <h2 className="contact-title">Contact Us</h2>
+          <h2 className="contact-title">Liên Hệ Với Chúng Tôi</h2>
           <p className="contact-description">
-            Have questions about our services or want to schedule an appointment? 
-            Reach out to us through any of the following methods or fill out the contact form.
+            Bạn có thắc mắc về dịch vụ của chúng tôi hoặc muốn đặt lịch hẹn? 
+            Hãy liên hệ với chúng tôi qua bất kỳ phương thức nào dưới đây hoặc điền vào biểu mẫu liên hệ.
           </p>
           
           <div className="contact-details">
@@ -18,8 +18,8 @@ const Contact = () => {
                 <i className="fas fa-map-marker-alt"></i>
               </div>
               <div className="contact-text">
-                <h4>Location</h4>
-                <p>123 Eye Care Street, Vision City, VC 12345</p>
+                <h4>Địa Điểm</h4>
+                <p>123 Đường Chăm Sóc Mắt, Thành Phố Thị Giác, VC 12345</p>
               </div>
             </div>
             
@@ -28,7 +28,7 @@ const Contact = () => {
                 <i className="fas fa-phone-alt"></i>
               </div>
               <div className="contact-text">
-                <h4>Phone</h4>
+                <h4>Điện Thoại</h4>
                 <p>+123 45 67 890</p>
                 <p>+098 76 54 321</p>
               </div>
@@ -50,16 +50,16 @@ const Contact = () => {
                 <i className="fas fa-clock"></i>
               </div>
               <div className="contact-text">
-                <h4>Working Hours</h4>
-                <p>Monday - Friday: 9:00 AM - 6:00 PM</p>
-                <p>Saturday: 10:00 AM - 4:00 PM</p>
-                <p>Sunday: Closed</p>
+                <h4>Giờ Làm Việc</h4>
+                <p>Thứ Hai - Thứ Sáu: 9:00 SA - 6:00 CH</p>
+                <p>Thứ Bảy: 10:00 SA - 4:00 CH</p>
+                <p>Chủ Nhật: Đóng Cửa</p>
               </div>
             </div>
           </div>
           
           <div className="social-media">
-            <h4>Follow Us</h4>
+            <h4>Theo Dõi Chúng Tôi</h4>
             <div className="social-icons">
               <a href="#" className="social-icon"><i className="fab fa-facebook-f"></i></a>
               <a href="#" className="social-icon"><i className="fab fa-twitter"></i></a>
@@ -70,7 +70,7 @@ const Contact = () => {
         </div>
         
         <div className="contact-form-container">
-          <h3>Send Us a Message</h3>
+          <h3>Gửi Tin Nhắn Cho Chúng Tôi</h3>
           <form className="contact-form">
             <div className="form-group">
               <input type="text" placeholder="Your Name" required />

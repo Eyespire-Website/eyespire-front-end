@@ -46,7 +46,7 @@ export default function ProductDetail() {
         if (productData.type) {
           const relatedProducts = await productService.getProductsByType(productData.type);
           const filteredProducts = relatedProducts
-              .filter((p) => p.id !== productData.id)
+              .filter((p) => p && p.id && p.id !== productData.id)
               .slice(0, 4);
           setRelatedProductsData(filteredProducts);
         }
@@ -180,9 +180,15 @@ export default function ProductDetail() {
         <Star
             key={i}
             size={20}
-            className={i < rating ? "filled" : ""}
+            className={`pr-star ${i < rating ? "pr-star--filled" : "pr-star--empty"} ${setRating ? "pr-star--interactive" : ""}`}
             onClick={() => setRating && setRating(i + 1)}
-            style={{ cursor: setRating ? "pointer" : "default", color: i < rating ? "#facc15" : "#d1d5db" }}
+            fill={i < rating ? "#fbbf24" : "none"}
+            style={{ 
+                cursor: setRating ? "pointer" : "default", 
+                color: i < rating ? "#fbbf24" : "#d1d5db",
+                transition: "all 0.2s ease",
+                filter: i < rating ? "drop-shadow(0 1px 2px rgba(251, 191, 36, 0.3))" : "none"
+            }}
         />
     ));
   };

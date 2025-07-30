@@ -12,12 +12,15 @@ import {
     User,
     CheckCircle,
     Phone,
-    X
+    X,
+    CalendarDays,
+    Search
 } from "lucide-react";
 import authService from "../../../services/authService";
 import userService from "../../../services/userService";
 import adminService from "../../../services/adminService";
 import "./doctor-schedule.css";
+import "./doctor-appointments-unified.css";
 
 export default function DoctorSchedule() {
     const [viewMode, setViewMode] = useState("week"); // week, day
@@ -508,7 +511,28 @@ export default function DoctorSchedule() {
     };
 
     return (
-        <div className="d-schedule-container max-w-7xl mx-auto p-4">
+        <div className="doctor-appointments-content">
+            {/* Header with search */}
+            <div className="doctor-appointments-content__header">
+                <div className="doctor-appointments-content__header-content">
+                    <div className="doctor-appointments-content__title-section">
+                        <CalendarDays className="doctor-appointments-content__title-icon" />
+                        <h1 className="doctor-appointments-content__title">Lịch làm việc</h1>
+                    </div>
+                    <div className="doctor-appointments-content__search-container">
+                        <div className="doctor-appointments-content__search-wrapper">
+                            <Search className="doctor-appointments-content__search-icon" />
+                            <input
+                                type="text"
+                                placeholder="Tìm kiếm lịch hẹn..."
+                                className="doctor-appointments-content__search-input"
+                                readOnly
+                            />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
             {loading && <div className="loading">Đang tải...</div>}
             {error && <div className="error-message text-red-500">{error}</div>}
             {!loading && !error && doctor && (

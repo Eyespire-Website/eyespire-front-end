@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Search, Edit, Trash2, Eye, Plus, CheckCircle, Clock, AlertTriangle, Star, X, Upload } from 'lucide-react';
 import '../styles/services.css';
+import '../styles/services-unified.css';
 import medicalServiceService from '../../../../services/medicalServiceService';
 
 // Giả lập thư viện thông báo
@@ -29,6 +30,10 @@ const ServicesContent = () => {
   const [previewImage, setPreviewImage] = useState(null);
   const [selectedImageFile, setSelectedImageFile] = useState(null);
   const fileInputRef = useRef(null);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
 
   // Lấy danh sách dịch vụ từ API
   useEffect(() => {
@@ -72,7 +77,18 @@ const ServicesContent = () => {
   const validateForm = () => {
     if (!newService.name.trim()) return 'Tên dịch vụ là bắt buộc';
     if (!newService.description.trim()) return 'Mô tả là bắt buộc';
-    if (!newService.price || !/^\d{1,3}(,\d{3})*$/.test(newService.price)) return 'Giá không hợp lệ';
+    
+    // Kiểm tra giá: chỉ cần có giá trị và là số (cho phép dấu phẩy)
+    if (!newService.price || !newService.price.trim()) {
+      return 'Giá là bắt buộc';
+    }
+    
+    // Loại bỏ dấu phẩy và kiểm tra xem có phải là số không
+    const numericPrice = newService.price.replace(/,/g, '');
+    if (isNaN(numericPrice) || parseFloat(numericPrice) <= 0) {
+      return 'Giá phải là số dương';
+    }
+    
     if (newService.duration < 15) return 'Thời gian phải lớn hơn hoặc bằng 15 phút';
     return null;
   };
@@ -293,6 +309,16 @@ const ServicesContent = () => {
     return matchesSearch;
   });
 
+  // Pagination logic
+  const totalPages = Math.ceil(filteredServices.length / itemsPerPage);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentServices = filteredServices.slice(indexOfFirstItem, indexOfLastItem);
+
+  const paginate = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
   if (error) return <div className="error-message">{error}</div>;
 
   return (
@@ -321,75 +347,130 @@ const ServicesContent = () => {
             </div>
           </div>
 
-          <div className="tbl-container services-table-container">
-            {loading ? (
-                <div className="loading">Đang tải...</div>
-            ) : (
-                <table className="tbl services-table">
-                  <thead>
-                  <tr>
-                    <th>Mã DV</th>
-                    <th>Tên dịch vụ</th>
-                    <th>Mô tả</th>
-                    <th>Giá</th>
-                    <th>Thời gian</th>
-                    <th>Thao tác</th>
-                  </tr>
-                  </thead>
-                  <tbody>
-                  {filteredServices.length > 0 ? (
-                      filteredServices.map(service => (
-                          <tr key={service.id}>
-                            <td>{service.id}</td>
-                            <td>{service.name}</td>
-                            <td>{service.description}</td>
-                            <td className="service-price">₫{service.price}</td>
-                            <td>
-                              <div className="service-duration">
-                                {service.duration} phút
-                              </div>
-                            </td>
-                            <td>
-                              <div className="service-actions">
-                                <button
-                                    className="btn btn-info service-action-btn"
-                                    onClick={() => handleViewService(service)}
-                                    aria-label="Xem chi tiết dịch vụ"
-                                    disabled={loading}
-                                >
-                                  <Eye size={14} />
-                                </button>
-                                <button
-                                    className="btn btn-success service-action-btn"
-                                    onClick={() => handleEditService(service)}
-                                    aria-label="Chỉnh sửa dịch vụ"
-                                    disabled={loading}
-                                >
-                                  <Edit size={14} />
-                                </button>
-                                <button
-                                    className="btn btn-warning service-action-btn"
-                                    onClick={() => handleDeleteService(service.id)}
-                                    aria-label="Xóa dịch vụ"
-                                    disabled={loading}
-                                >
-                                  <Trash2 size={14} />
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                      ))
-                  ) : (
-                      <tr>
-                        <td colSpan="6" style={{ textAlign: 'center', padding: '20px' }}>
-                          Không tìm thấy dịch vụ nào phù hợp với bộ lọc
-                        </td>
-                      </tr>
+          {loading ? (
+              <div className="services-content">
+                  <div className="services-content__loading">
+                      <div className="services-content__spinner"></div>
+                      <p>Đang tải danh sách dịch vụ...</p>
+                  </div>
+              </div>
+          ) : (
+              <div className="services-content__table-container">
+                  <div className="services-content__table-header">
+                      <div className="services-content__table-header-content">
+                          <Star className="services-content__table-header-icon" />
+                          <span className="services-content__table-header-text">
+                              Danh sách dịch vụ ({filteredServices.length} dịch vụ)
+                          </span>
+                      </div>
+                  </div>
+
+                  <div className="services-content__table-wrapper">
+                      <table className="services-content__table">
+                          <thead>
+                              <tr>
+                                  <th className="services-content__table-head services-content__table-head--number">#</th>
+                                  <th className="services-content__table-head">Mã DV</th>
+                                  <th className="services-content__table-head">Tên dịch vụ</th>
+                                  <th className="services-content__table-head">Mô tả</th>
+                                  <th className="services-content__table-head">Giá</th>
+                                  <th className="services-content__table-head">Thời gian</th>
+                                  <th className="services-content__table-head">Thao tác</th>
+                              </tr>
+                          </thead>
+                          <tbody>
+                              {filteredServices.length === 0 ? (
+                                  <tr>
+                                      <td colSpan="7" className="no-results-message">
+                                          {searchTerm ? "Không tìm thấy dịch vụ nào phù hợp" : "Chưa có dịch vụ nào"}
+                                      </td>
+                                  </tr>
+                              ) : (
+                                  currentServices.map((service, index) => (
+                                      <tr key={service.id} className="services-content__table-row">
+                                          <td className="services-content__table-cell">
+                                              {index + 1}
+                                          </td>
+                                          <td className="services-content__table-cell">
+                                              <span className="services-content__service-id">{service.id}</span>
+                                          </td>
+                                          <td className="services-content__table-cell">{service.name || "Chưa cập nhật"}</td>
+                                          <td className="services-content__table-cell">
+                                              <span className="services-content__description" title={service.description}>
+                                                  {service.description ? (service.description.length > 50 ? service.description.substring(0, 50) + '...' : service.description) : "Chưa cập nhật"}
+                                              </span>
+                                          </td>
+                                          <td className="services-content__table-cell">
+                                              <span className="services-content__price">₫{service.price || "0"}</span>
+                                          </td>
+                                          <td className="services-content__table-cell">
+                                              <span className="services-content__duration">{service.duration || 0} phút</span>
+                                          </td>
+                                          <td className="services-content__table-cell">
+                                              <div className="services-content__action-buttons">
+                                                  <button
+                                                      className="services-content__detail-button"
+                                                      onClick={() => handleViewService(service)}
+                                                      title="Xem chi tiết"
+                                                      disabled={loading}
+                                                  >
+                                                      <Eye size={16} />
+                                                  </button>
+                                                  <button
+                                                      className="services-content__action-button services-content__action-button--edit"
+                                                      onClick={() => handleEditService(service)}
+                                                      title="Chỉnh sửa"
+                                                      disabled={loading}
+                                                  >
+                                                      <Edit size={16} />
+                                                  </button>
+                                                  <button
+                                                      className="services-content__action-button services-content__action-button--delete"
+                                                      onClick={() => handleDeleteService(service.id)}
+                                                      title="Xóa"
+                                                      disabled={loading}
+                                                  >
+                                                      <Trash2 size={16} />
+                                                  </button>
+                                              </div>
+                                          </td>
+                                      </tr>
+                                  ))
+                              )}
+                          </tbody>
+                      </table>
+                  </div>
+                  
+                  {/* Compact Pagination */}
+                  {filteredServices.length > 0 && (
+                      <div className="services-content__pagination">
+                          <button
+                              className="services-content__pagination-btn"
+                              onClick={() => paginate(currentPage - 1)}
+                              disabled={currentPage === 1}
+                          >
+                              «
+                          </button>
+                          {Array.from({ length: totalPages }, (_, i) => (
+                              <button
+                                  key={i + 1}
+                                  className={`services-content__pagination-btn ${currentPage === i + 1 ? 'services-content__pagination-btn--active' : ''}`}
+                                  onClick={() => paginate(i + 1)}
+                              >
+                                  {i + 1}
+                              </button>
+                          ))}
+                          <button
+                              className="services-content__pagination-btn"
+                              onClick={() => paginate(currentPage + 1)}
+                              disabled={currentPage === totalPages}
+                          >
+                              »
+                          </button>
+                      </div>
                   )}
-                  </tbody>
-                </table>
-            )}
-          </div>
+              </div>
+          )}
         </div>
 
         {/* Modal thêm/chỉnh sửa dịch vụ */}

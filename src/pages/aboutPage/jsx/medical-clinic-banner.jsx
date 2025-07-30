@@ -9,15 +9,15 @@ export default function MedicalClinicBanner() {
                     {/* Left Section */}
                     <div className="left-section55">
                         <h1 className="main-heading-custom55">
-                            Our Clinic is Open &<br />
-                            Ready to Help!
+                            Phòng Khám Của Chúng Tôi Đang Mở &<br />
+                            Sẵn Sàng Giúp Đỡ!
                         </h1>
-                        <button className="appointment-button55">Make an Appointment</button>
+                        <button className="appointment-button55">Đặt Lịch Hẹn</button>
                     </div>
 
                     {/* Right Section */}
                     <div className="right-section55">
-                        <h2 className="secondary-heading-custom55">Get Medical Excellence Every Day. Book an Appointment by Phone!</h2>
+                        <h2 className="secondary-heading-custom55">Nhận Dịch Vụ Y Tế Xuất Sắc Mỗi Ngày. Đặt Lịch Hẹn Qua Điện Thoại!</h2>
                         <div className="phone-container55">
                             <FaPhoneAlt className="phone-icon-custom55" /> {/* Thay thế Phone icon */}
                             <span className="phone-number-custom55">123 45 67 890</span>

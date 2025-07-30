@@ -1147,8 +1147,7 @@
     }
 
     .customer-appointments-detail__search-input {
-        font-size: 13px;
-        padding: 8px 8px 8px 36px;
+        font-size: 14px;
     }
 
     .customer-appointments-detail__search-icon {
@@ -1257,4 +1256,57 @@
 .prescription-status-unknown {
     background-color: #e2e3e5;
     color: #383d41;
+}
+
+/* Compact Pagination Styles */
+.customer-appointments-detail__pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    padding: 20px;
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    margin-top: 16px;
+}
+
+.customer-appointments-detail__pagination-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: 1px solid #e2e8f0;
+    background-color: white;
+    color: #64748b;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.customer-appointments-detail__pagination-btn:hover:not(:disabled) {
+    background-color: #f1f5f9;
+    border-color: #cbd5e1;
+    color: #475569;
+}
+
+.customer-appointments-detail__pagination-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: #f8fafc;
+}
+
+.customer-appointments-detail__pagination-btn--active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-color: #667eea;
+    color: white;
+    font-weight: 600;
+}
+
+.customer-appointments-detail__pagination-btn--active:hover {
+    background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+    transform: translateY(-1px);
 }

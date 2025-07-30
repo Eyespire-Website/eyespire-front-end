@@ -367,12 +367,17 @@ export default function ProfilePage() {
     };
 
     return (
-        <div className="main-content" style={{ margin: 0, width: '100%', boxSizing: 'border-box' }}>
+        <div className="ptod-container">
             <ToastContainer position="top-right" autoClose={3000} />
-            {/* Header */}
-            <header className="content-header">
-                <h1>Hồ sơ cá nhân</h1>
-            </header>
+            <div className="ptod-header">
+                <div className="ptod-header-left">
+                    <User size={24} className="ptod-title-icon" />
+                    <h1 className="ptod-title">Hồ sơ cá nhân</h1>
+                </div>
+                <div className="user-avatar">
+                    {user.fullname ? user.fullname.charAt(0).toUpperCase() : 'U'}
+                </div>
+            </div>
 
             {/* Profile Content */}
             <div className="profile-content">

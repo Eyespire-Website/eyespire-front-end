@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Search, Eye, Edit, Trash2, Plus, X, AlertCircle } from 'lucide-react';
+import { Search, Eye, Edit, Trash2, Plus, X, AlertCircle, Users } from 'lucide-react';
 import '../styles/staff.css';
+import '../styles/staff-unified.css';
 import staffService, { getAvailablePositions } from '../../../../services/staffService';
 import emailService from '../../../../services/emailService';
 import specialtyService from '../../../../services/specialtyService';
@@ -50,6 +51,10 @@ const StaffContent = () => {
     name: '',
     sending: false
   });
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
 
   // Lấy danh sách chức vụ từ UserRole enum (ngoại trừ ADMIN và PATIENT)
   const positions = getAvailablePositions();
@@ -417,6 +422,16 @@ const StaffContent = () => {
     }
   };
 
+  // Pagination logic
+  const totalPages = Math.ceil(filteredStaff.length / itemsPerPage);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentStaff = filteredStaff.slice(indexOfFirstItem, indexOfLastItem);
+
+  const paginate = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
   if (error) return <div className="error-message">Lỗi: {error}</div>;
 
   return (
@@ -475,73 +490,130 @@ const StaffContent = () => {
             </div>
           </div>
 
-          <div className="tbl-container staff-table-container">
-            {loading ? (
-                <div className="loading">Đang tải...</div>
-            ) : (
-                <table className="tbl">
-                  <thead>
-                  <tr>
-                    <th>Mã NV</th>
-                    <th>Họ tên</th>
-                    {activeTab === 'staff' && <th>Chức vụ</th>}
-                    <th>Email</th>
-                    <th>Điện thoại</th>
-                    <th>Ngày bắt đầu</th> 
-                    <th>Thao tác</th>
-                  </tr>
-                  </thead>
-                  <tbody>
-                  {filteredStaff.length > 0 ? (
-                      filteredStaff.map(staff => (
-                        <tr key={staff.id}>
-                        <td>{staff.id}</td>
-                        <td>{staff.name}</td>
-                        {activeTab === 'staff' && <td>{getPositionDisplayName(staff.position || staff.role)}</td>}
-                        <td>{staff.email}</td>
-                        <td>{staff.phone}</td>
-                        <td>{formatDate(staff.startDate)}</td> 
-                        <td>
-                              <div className="staff-actions">
-                                <button
-                                    className="btn btn-info staff-action-btn"
-                                    onClick={() => handleViewStaff(staff)}
-                                    aria-label="Xem chi tiết nhân viên"
-                                    disabled={loading}
-                                >
-                                  <Eye size={14} />
-                                </button>
-                                <button
-                                    className="btn btn-success staff-action-btn"
-                                    onClick={() => handleEditStaff(staff)}
-                                    aria-label="Chỉnh sửa nhân viên"
-                                    disabled={loading}
-                                >
-                                  <Edit size={14} />
-                                </button>
-                                <button
-                                    className="btn btn-warning staff-action-btn"
-                                    onClick={() => handleDeleteStaff(staff.id)}
-                                    aria-label="Xóa nhân viên"
-                                    disabled={loading}
-                                >
-                                  <Trash2 size={14} />
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                      ))
-                  ) : (
-                      <tr>
-                        <td colSpan={activeTab === 'staff' ? "7" : "6"} style={{ textAlign: 'center', padding: '20px' }}>
-                          Không tìm thấy {activeTab === 'doctor' ? 'bác sĩ' : 'nhân viên'} nào phù hợp với bộ lọc
-                        </td>
-                      </tr>
+          {loading ? (
+              <div className="staff-content">
+                  <div className="staff-content__loading">
+                      <div className="staff-content__spinner"></div>
+                      <p>Đang tải danh sách {activeTab === 'doctor' ? 'bác sĩ' : 'nhân viên'}...</p>
+                  </div>
+              </div>
+          ) : (
+              <div className="staff-content__table-container">
+                  <div className="staff-content__table-header">
+                      <div className="staff-content__table-header-content">
+                          <Users className="staff-content__table-header-icon" />
+                          <span className="staff-content__table-header-text">
+                              Danh sách {activeTab === 'doctor' ? 'bác sĩ' : 'nhân viên'} ({filteredStaff.length} {activeTab === 'doctor' ? 'bác sĩ' : 'nhân viên'})
+                          </span>
+                      </div>
+                  </div>
+
+                  <div className="staff-content__table-wrapper">
+                      <table className="staff-content__table">
+                          <thead>
+                              <tr>
+                                  <th className="staff-content__table-head staff-content__table-head--number">#</th>
+                                  <th className="staff-content__table-head">Mã NV</th>
+                                  <th className="staff-content__table-head">Họ tên</th>
+                                  {activeTab === 'staff' && <th className="staff-content__table-head">Chức vụ</th>}
+                                  <th className="staff-content__table-head">Email</th>
+                                  <th className="staff-content__table-head">Điện thoại</th>
+                                  <th className="staff-content__table-head">Ngày bắt đầu</th>
+                                  <th className="staff-content__table-head">Thao tác</th>
+                              </tr>
+                          </thead>
+                          <tbody>
+                              {filteredStaff.length === 0 ? (
+                                  <tr>
+                                      <td colSpan={activeTab === 'staff' ? "8" : "7"} className="no-results-message">
+                                          {searchTerm || positionFilter !== 'all' ? `Không tìm thấy ${activeTab === 'doctor' ? 'bác sĩ' : 'nhân viên'} nào phù hợp` : `Chưa có ${activeTab === 'doctor' ? 'bác sĩ' : 'nhân viên'} nào`}
+                                      </td>
+                                  </tr>
+                              ) : (
+                                  currentStaff.map((staff, index) => (
+                                      <tr key={staff.id} className="staff-content__table-row">
+                                          <td className="staff-content__table-cell">
+                                              {index + 1}
+                                          </td>
+                                          <td className="staff-content__table-cell">
+                                              <span className="staff-content__staff-id">{staff.id}</span>
+                                          </td>
+                                          <td className="staff-content__table-cell">{staff.name || "Chưa cập nhật"}</td>
+                                          {activeTab === 'staff' && (
+                                              <td className="staff-content__table-cell">
+                                                  <span className={`staff-content__position-badge ${(staff.position || staff.role)?.toLowerCase()}`}>
+                                                      {getPositionDisplayName(staff.position || staff.role)}
+                                                  </span>
+                                              </td>
+                                          )}
+                                          <td className="staff-content__table-cell">{staff.email || "Chưa cập nhật"}</td>
+                                          <td className="staff-content__table-cell">{staff.phone || "Chưa cập nhật"}</td>
+                                          <td className="staff-content__table-cell">{formatDate(staff.startDate) || "Chưa cập nhật"}</td>
+                                          <td className="staff-content__table-cell">
+                                              <div className="staff-content__action-buttons">
+                                                  <button
+                                                      className="staff-content__detail-button"
+                                                      onClick={() => handleViewStaff(staff)}
+                                                      title="Xem chi tiết"
+                                                      disabled={loading}
+                                                  >
+                                                      <Eye size={16} />
+                                                  </button>
+                                                  <button
+                                                      className="staff-content__action-button staff-content__action-button--edit"
+                                                      onClick={() => handleEditStaff(staff)}
+                                                      title="Chỉnh sửa"
+                                                      disabled={loading}
+                                                  >
+                                                      <Edit size={16} />
+                                                  </button>
+                                                  <button
+                                                      className="staff-content__action-button staff-content__action-button--delete"
+                                                      onClick={() => handleDeleteStaff(staff.id)}
+                                                      title="Xóa"
+                                                      disabled={loading}
+                                                  >
+                                                      <Trash2 size={16} />
+                                                  </button>
+                                              </div>
+                                          </td>
+                                      </tr>
+                                  ))
+                              )}
+                          </tbody>
+                      </table>
+                  </div>
+                  
+                  {/* Compact Pagination */}
+                  {filteredStaff.length > 0 && (
+                      <div className="staff-content__pagination">
+                          <button
+                              className="staff-content__pagination-btn"
+                              onClick={() => paginate(currentPage - 1)}
+                              disabled={currentPage === 1}
+                          >
+                              «
+                          </button>
+                          {Array.from({ length: totalPages }, (_, i) => (
+                              <button
+                                  key={i + 1}
+                                  className={`staff-content__pagination-btn ${currentPage === i + 1 ? 'staff-content__pagination-btn--active' : ''}`}
+                                  onClick={() => paginate(i + 1)}
+                              >
+                                  {i + 1}
+                              </button>
+                          ))}
+                          <button
+                              className="staff-content__pagination-btn"
+                              onClick={() => paginate(currentPage + 1)}
+                              disabled={currentPage === totalPages}
+                          >
+                              »
+                          </button>
+                      </div>
                   )}
-                  </tbody>
-                </table>
-            )}
-          </div>
+              </div>
+          )}
         </div>
 
         {/* Modal thêm/chỉnh sửa nhân viên */}

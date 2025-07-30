@@ -228,45 +228,32 @@ export default function AppointmentsPage() {
                     </table>
                 </div>
 
-                {totalPages > 1 && (
+                {/* Compact Pagination */}
+                {filteredAppointments.length > 0 && (
                     <div className="appointments__pagination">
-                        <div className="appointments__pagination-info">
-                            Hiển thị {Math.min((currentPage - 1) * itemsPerPage + 1, filteredAppointments.length)} -{" "}
-                            {Math.min(currentPage * itemsPerPage, filteredAppointments.length)} trong tổng số{" "}
-                            {filteredAppointments.length} cuộc hẹn
-                        </div>
-                        <div className="appointments__pagination-controls">
-                            {/* Nút Trước */}
+                        <button
+                            className="appointments__pagination-btn"
+                            onClick={() => handlePageChange(currentPage - 1)}
+                            disabled={currentPage === 1}
+                        >
+                            «
+                        </button>
+                        {getPageNumbers().map((pageNum) => (
                             <button
-                                onClick={() => handlePageChange(currentPage - 1)}
-                                disabled={currentPage === 1}
-                                className="appointments__pagination-button"
+                                key={pageNum}
+                                className={`appointments__pagination-btn ${currentPage === pageNum ? 'appointments__pagination-btn--active' : ''}`}
+                                onClick={() => handlePageChange(pageNum)}
                             >
-                                Trước
+                                {pageNum}
                             </button>
-
-                            {/* Các số trang */}
-                            {getPageNumbers().map((pageNum) => (
-                                <button
-                                    key={pageNum}
-                                    onClick={() => handlePageChange(pageNum)}
-                                    className={`appointments__pagination-button ${
-                                        currentPage === pageNum ? "appointments__pagination-button--active" : ""
-                                    }`}
-                                >
-                                    {pageNum}
-                                </button>
-                            ))}
-
-                            {/* Nút Sau */}
-                            <button
-                                onClick={() => handlePageChange(currentPage + 1)}
-                                disabled={currentPage === totalPages}
-                                className="appointments__pagination-button"
-                            >
-                                Sau
-                            </button>
-                        </div>
+                        ))}
+                        <button
+                            className="appointments__pagination-btn"
+                            onClick={() => handlePageChange(currentPage + 1)}
+                            disabled={currentPage === totalPages}
+                        >
+                            »
+                        </button>
                     </div>
                 )}
             </div>

@@ -30,12 +30,12 @@ const Products = () => {
   return (
     <div className="row-view18">
       <div className="column2 products-intro">
-        <span className="text29">{"The Best Selling Products"}</span>
+        <span className="text29">{"Sản Phẩm Bán Chạy Nhất"}</span>
         <span className="text30">
-          {"Risus commodo viverra maecenas accumsan lacus vel facilisis. Fermentum iaculis eu non diam phasellus vestibulum lorem."}
+          {"Khám phá bộ sưu tập sản phẩm chăm sóc mắt chất lượng cao được khách hàng tin tưởng và lựa chọn nhiều nhất."}
         </span>
         <button className="button2" onClick={() => alert("Pressed!")}>
-          <span className="text28">{"See All"}</span>
+          <span className="text28">{"Xem Tất Cả"}</span>
         </button>
       </div>
       <div className="products-container">

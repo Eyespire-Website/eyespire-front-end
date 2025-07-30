@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Eye, Edit, Save, User, Phone, Mail, Calendar, Plus, X } from "lucide-react";
+import { Search, Eye, Edit, Save, User, Phone, Mail, Calendar, Plus, X, Users } from "lucide-react";
 import axios from "axios";
 import "./doctor-patient.css";
+import "./doctor-appointments-unified.css";
 import appointmentService from "../../../services/appointmentService";
 import medicalRecordService from "../../../services/medicalRecordService";
 import authService from "../../../services/authService";
@@ -439,23 +440,30 @@ export default function PatientProfile() {
     );
 
     return (
-        <div className="d-customer-container">
-            <div className="d-customer-content">
-                <header className="d-customer-header">
-                    <h1>Hồ sơ bệnh nhân</h1>
-                    <div className="d-search-container">
-                        <div className="d-search-input-wrapper">
-                            <Search size={20} className="d-search-icon" />
+        <div className="doctor-appointments-content">
+            {/* Header with search */}
+            <div className="doctor-appointments-content__header">
+                <div className="doctor-appointments-content__header-content">
+                    <div className="doctor-appointments-content__title-section">
+                        <Users className="doctor-appointments-content__title-icon" />
+                        <h1 className="doctor-appointments-content__title">Hồ sơ bệnh nhân</h1>
+                    </div>
+                    <div className="doctor-appointments-content__search-container">
+                        <div className="doctor-appointments-content__search-wrapper">
+                            <Search className="doctor-appointments-content__search-icon" />
                             <input
                                 type="text"
                                 placeholder="Tìm kiếm bệnh nhân (Tên, SĐT, Email...)"
                                 value={searchTerm}
                                 onChange={e => setSearchTerm(e.target.value)}
-                                className="d-search-input"
+                                className="doctor-appointments-content__search-input"
                             />
                         </div>
                     </div>
-                </header>
+                </div>
+            </div>
+            
+            <div className="d-customer-content">
 
                 <div className="d-customer-profile-container">
                     <div className="d-customer-list-container">

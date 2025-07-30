@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Search, Edit, Trash2, Eye, Plus, CheckCircle, X } from 'lucide-react';
 import '../styles/services.css'; // Sử dụng lại CSS của trang dịch vụ
+import '../styles/specialties-unified.css';
 import specialtyService from '../../../../services/specialtyService';
 
 // Giả lập thư viện thông báo
@@ -23,6 +24,10 @@ const SpecialtiesContent = () => {
   const [editMode, setEditMode] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
 
   // Tải danh sách chuyên khoa
   useEffect(() => {
@@ -143,6 +148,16 @@ const SpecialtiesContent = () => {
     return matchesSearch;
   });
 
+  // Pagination logic
+  const totalPages = Math.ceil(filteredSpecialties.length / itemsPerPage);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentSpecialties = filteredSpecialties.slice(indexOfFirstItem, indexOfLastItem);
+
+  const paginate = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
   if (error) return <div className="error-message">{error}</div>;
 
   return (
@@ -171,77 +186,134 @@ const SpecialtiesContent = () => {
           </div>
         </div>
 
-        <div className="tbl-container services-table-container">
-          {loading ? (
-            <div className="loading">Đang tải...</div>
-          ) : (
-            <table className="tbl services-table">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Tên chuyên khoa</th>
-                  <th>Mô tả</th>
-                  <th>Hình ảnh</th>
-                  <th>Thao tác</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredSpecialties.length > 0 ? (
-                  filteredSpecialties.map(specialty => (
-                    <tr key={specialty.id}>
-                      <td>{specialty.id}</td>
-                      <td>{specialty.name}</td>
-                      <td>{specialty.description}</td>
-                      <td>
-                        {specialty.imageUrl && (
-                          <img 
-                            src={specialty.imageUrl} 
-                            alt={specialty.name} 
-                            style={{ width: '50px', height: '50px', objectFit: 'cover' }}
-                          />
-                        )}
-                      </td>
-                      <td>
-                        <div className="service-actions">
-                          <button
-                            className="btn btn-info service-action-btn"
-                            onClick={() => handleViewSpecialty(specialty)}
-                            aria-label="Xem chi tiết chuyên khoa"
-                            disabled={loading}
-                          >
-                            <Eye size={14} />
-                          </button>
-                          <button
-                            className="btn btn-success service-action-btn"
-                            onClick={() => handleEditSpecialty(specialty)}
-                            aria-label="Chỉnh sửa chuyên khoa"
-                            disabled={loading}
-                          >
-                            <Edit size={14} />
-                          </button>
-                          <button
-                            className="btn btn-warning service-action-btn"
-                            onClick={() => handleDeleteSpecialty(specialty.id)}
-                            aria-label="Xóa chuyên khoa"
-                            disabled={loading}
-                          >
-                            <Trash2 size={14} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="5" style={{ textAlign: 'center', padding: '20px' }}>
-                      Không tìm thấy chuyên khoa nào phù hợp với bộ lọc
-                    </td>
-                  </tr>
+        {loading ? (
+            <div className="specialties-content">
+                <div className="specialties-content__loading">
+                    <div className="specialties-content__spinner"></div>
+                    <p>Đang tải danh sách chuyên khoa...</p>
+                </div>
+            </div>
+        ) : (
+            <div className="specialties-content__table-container">
+                <div className="specialties-content__table-header">
+                    <div className="specialties-content__table-header-content">
+                        <CheckCircle className="specialties-content__table-header-icon" />
+                        <span className="specialties-content__table-header-text">
+                            Danh sách chuyên khoa ({filteredSpecialties.length} chuyên khoa)
+                        </span>
+                    </div>
+                </div>
+
+                <div className="specialties-content__table-wrapper">
+                    <table className="specialties-content__table">
+                        <thead>
+                            <tr>
+                                <th className="specialties-content__table-head specialties-content__table-head--number">#</th>
+                                <th className="specialties-content__table-head">ID</th>
+                                <th className="specialties-content__table-head">Tên chuyên khoa</th>
+                                <th className="specialties-content__table-head">Mô tả</th>
+                                <th className="specialties-content__table-head">Hình ảnh</th>
+                                <th className="specialties-content__table-head">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {filteredSpecialties.length === 0 ? (
+                                <tr>
+                                    <td colSpan="6" className="no-results-message">
+                                        {searchTerm ? "Không tìm thấy chuyên khoa nào phù hợp" : "Chưa có chuyên khoa nào"}
+                                    </td>
+                                </tr>
+                            ) : (
+                                currentSpecialties.map((specialty, index) => (
+                                    <tr key={specialty.id} className="specialties-content__table-row">
+                                        <td className="specialties-content__table-cell">
+                                            {index + 1}
+                                        </td>
+                                        <td className="specialties-content__table-cell">
+                                            <span className="specialties-content__specialty-id">{specialty.id}</span>
+                                        </td>
+                                        <td className="specialties-content__table-cell">{specialty.name || "Chưa cập nhật"}</td>
+                                        <td className="specialties-content__table-cell">
+                                            <span className="specialties-content__description" title={specialty.description}>
+                                                {specialty.description ? (specialty.description.length > 50 ? specialty.description.substring(0, 50) + '...' : specialty.description) : "Chưa cập nhật"}
+                                            </span>
+                                        </td>
+                                        <td className="specialties-content__table-cell">
+                                            {specialty.imageUrl ? (
+                                                <img 
+                                                    src={specialty.imageUrl} 
+                                                    alt={specialty.name}
+                                                    className="specialties-content__image"
+                                                />
+                                            ) : (
+                                                <span className="specialties-content__no-image">Không có ảnh</span>
+                                            )}
+                                        </td>
+                                        <td className="specialties-content__table-cell">
+                                            <div className="specialties-content__action-buttons">
+                                                <button
+                                                    className="specialties-content__detail-button"
+                                                    onClick={() => handleViewSpecialty(specialty)}
+                                                    title="Xem chi tiết"
+                                                    disabled={loading}
+                                                >
+                                                    <Eye size={16} />
+                                                </button>
+                                                <button
+                                                    className="specialties-content__action-button specialties-content__action-button--edit"
+                                                    onClick={() => handleEditSpecialty(specialty)}
+                                                    title="Chỉnh sửa"
+                                                    disabled={loading}
+                                                >
+                                                    <Edit size={16} />
+                                                </button>
+                                                <button
+                                                    className="specialties-content__action-button specialties-content__action-button--delete"
+                                                    onClick={() => handleDeleteSpecialty(specialty.id)}
+                                                    title="Xóa"
+                                                    disabled={loading}
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+                
+                {/* Compact Pagination */}
+                {filteredSpecialties.length > 0 && (
+                    <div className="specialties-content__pagination">
+                        <button
+                            className="specialties-content__pagination-btn"
+                            onClick={() => paginate(currentPage - 1)}
+                            disabled={currentPage === 1}
+                        >
+                            «
+                        </button>
+                        {Array.from({ length: totalPages }, (_, i) => (
+                            <button
+                                key={i + 1}
+                                className={`specialties-content__pagination-btn ${currentPage === i + 1 ? 'specialties-content__pagination-btn--active' : ''}`}
+                                onClick={() => paginate(i + 1)}
+                            >
+                                {i + 1}
+                            </button>
+                        ))}
+                        <button
+                            className="specialties-content__pagination-btn"
+                            onClick={() => paginate(currentPage + 1)}
+                            disabled={currentPage === totalPages}
+                        >
+                            »
+                        </button>
+                    </div>
                 )}
-              </tbody>
-            </table>
-          )}
-        </div>
+            </div>
+        )}
       </div>
 
       {/* Modal thêm/chỉnh sửa chuyên khoa */}

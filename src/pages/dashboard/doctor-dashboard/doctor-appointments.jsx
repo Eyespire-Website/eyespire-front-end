@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useMemo } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
-import { Calendar, User, Clock, Search, CalendarDays } from "lucide-react"
+import { Calendar, User, Clock, Search, CalendarDays, Eye } from "lucide-react"
 import "./doctor-appointments.css"
+import "./doctor-appointments-unified.css"
 import appointmentService from "../../../services/appointmentService"
 import authService from "../../../services/authService"
 import medicalRecordService from "../../../services/medicalRecordService"
@@ -256,50 +257,57 @@ export default function DoctorAppointmentsPage() {
     }
 
     return (
-        <div className="appointments">
-            <div className="appointments__header">
-                <h1 className="appointments__title">Danh sách cuộc hẹn</h1>
-                <div className="appointments__search-container">
-                    <div className="appointments__search-wrapper">
-                        <Search className="appointments__search-icon" />
-                        <input
-                            type="text"
-                            placeholder="Tìm cuộc hẹn (Tên bệnh nhân, ngày hẹn, dịch vụ...)"
-                            value={searchQuery}
-                            onChange={handleSearch}
-                            className="appointments__search-input"
-                        />
+        <div className="doctor-appointments-content">
+            {/* Header with search */}
+            <div className="doctor-appointments-content__header">
+                <div className="doctor-appointments-content__header-content">
+                    <div className="doctor-appointments-content__title-section">
+                        <CalendarDays className="doctor-appointments-content__title-icon" />
+                        <h1 className="doctor-appointments-content__title">Danh sách cuộc hẹn</h1>
+                    </div>
+                    <div className="doctor-appointments-content__search-container">
+                        <div className="doctor-appointments-content__search-wrapper">
+                            <Search className="doctor-appointments-content__search-icon" />
+                            <input
+                                type="text"
+                                placeholder="Tìm cuộc hẹn (Tên bệnh nhân, ngày hẹn, dịch vụ...)"
+                                value={searchQuery}
+                                onChange={handleSearch}
+                                className="doctor-appointments-content__search-input"
+                            />
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div className="appointments__table-container">
-                <div className="appointments__table-header">
-                    <div className="appointments__table-header-content">
-                        <CalendarDays className="appointments__table-header-icon" />
-                        <span className="appointments__table-header-text">
+            {/* Table Container */}
+            <div className="doctor-appointments-content__table-container">
+                <div className="doctor-appointments-content__table-header">
+                    <div className="doctor-appointments-content__table-header-content">
+                        <CalendarDays className="doctor-appointments-content__table-header-icon" />
+                        <span className="doctor-appointments-content__table-header-text">
                             Danh sách cuộc hẹn ({filteredAppointments.length} cuộc hẹn)
                         </span>
                     </div>
                 </div>
 
-                <div className="appointments__table-wrapper">
-                    <table className="appointments__table">
+                <div className="doctor-appointments-content__table-wrapper">
+                    <table className="doctor-appointments-content__table">
                         <thead>
                         <tr>
-                            <th className="appointments__table-head appointments__table-head--number">#</th>
-                            <th className="appointments__table-head">Bệnh nhân</th>
-                            <th className="appointments__table-head">Ngày hẹn</th>
-                            <th className="appointments__table-head">Giờ hẹn</th>
-                            <th className="appointments__table-head">Dịch vụ</th>
-                            <th className="appointments__table-head">Trạng thái</th>
-                            <th className="appointments__table-head">Thao tác</th>
+                            <th className="doctor-appointments-content__table-head doctor-appointments-content__table-head--number">#</th>
+                            <th className="doctor-appointments-content__table-head">Bệnh nhân</th>
+                            <th className="doctor-appointments-content__table-head">Ngày hẹn</th>
+                            <th className="doctor-appointments-content__table-head">Giờ hẹn</th>
+                            <th className="doctor-appointments-content__table-head">Dịch vụ</th>
+                            <th className="doctor-appointments-content__table-head">Trạng thái</th>
+                            <th className="doctor-appointments-content__table-head">Thao tác</th>
                         </tr>
                         </thead>
                         <tbody>
                         {filteredAppointments.length === 0 ? (
                             <tr>
-                                <td colSpan="8" className="appointments__no-results">
+                                <td colSpan="7" className="doctor-appointments-content__no-results">
                                     {searchQuery ? "Không tìm thấy cuộc hẹn nào phù hợp" : "Chưa có cuộc hẹn"}
                                 </td>
                             </tr>
@@ -310,45 +318,44 @@ export default function DoctorAppointmentsPage() {
                                     ? appointment.services.map(s => s.name).join(", ")
                                     : "Chưa chọn dịch vụ"
                                 return (
-                                    <tr key={appointment.id} className="appointments__table-row">
-                                        <td className="appointments__table-cell">{(currentPage - 1) * itemsPerPage + index + 1}</td>
-                                        <td className="appointments__table-cell">
-                                            <div className="appointments__icon-text">
-                                                <User className="appointments__icon" />
+                                    <tr key={appointment.id} className="doctor-appointments-content__table-row">
+                                        <td className="doctor-appointments-content__table-cell doctor-appointments-content__table-cell--number">{(currentPage - 1) * itemsPerPage + index + 1}</td>
+                                        <td className="doctor-appointments-content__table-cell">
+                                            <div className="doctor-appointments-content__icon-text">
+                                                <User className="doctor-appointments-content__icon" />
                                                 <span>{appointment.patient?.name || "Không xác định"}</span>
                                             </div>
                                         </td>
-                                        <td className="appointments__table-cell">
-                                            <div className="appointments__icon-text">
-                                                <Calendar className="appointments__icon" />
+                                        <td className="doctor-appointments-content__table-cell">
+                                            <div className="doctor-appointments-content__icon-text">
+                                                <Calendar className="doctor-appointments-content__icon" />
                                                 <span>{appointment.appointmentDate || "N/A"}</span>
                                             </div>
                                         </td>
-                                        <td className="appointments__table-cell">
-                                            <div className="appointments__icon-text">
-                                                <Clock className="appointments__icon" />
+                                        <td className="doctor-appointments-content__table-cell">
+                                            <div className="doctor-appointments-content__icon-text">
+                                                <Clock className="doctor-appointments-content__icon" />
                                                 <span>{appointment.timeSlot || "N/A"}</span>
                                             </div>
                                         </td>
-                                        <td className="appointments__table-cell">
-                                            <div className="appointments__icon-text">
-                                                <span>{serviceNames}</span>
-                                            </div>
+                                        <td className="doctor-appointments-content__table-cell">
+                                            <span className="doctor-appointments-content__service-text">{serviceNames}</span>
                                         </td>
-                                        <td className="appointments__table-cell">
-                                            <span className={`appointments__status-badge ${status.className}`}>{status.label}</span>
+                                        <td className="doctor-appointments-content__table-cell">
+                                            <span className={`doctor-appointments-content__status-badge ${status.className}`}>{status.label}</span>
                                         </td>
-                                        <td className="appointments__table-cell">
-                                            <div className="appointments__actions">
+                                        <td className="doctor-appointments-content__table-cell">
+                                            <div className="doctor-appointments-content__actions">
                                                 <button
-                                                    className="appointments__detail-button"
+                                                    className="doctor-appointments-content__detail-button"
                                                     onClick={() => handleViewAppointment(appointment)}
+                                                    title="Xem chi tiết"
                                                 >
-                                                    Xem chi tiết
+                                                    <Eye size={16} />
                                                 </button>
                                                 {appointment.status === "CONFIRMED" && !appointment.hasMedicalRecord && (
                                                     <button
-                                                        className="appointments__create-record-button"
+                                                        className="doctor-appointments-content__action-button doctor-appointments-content__action-button--create"
                                                         onClick={() => handleCreateMedicalRecord(appointment)}
                                                         title="Tạo hồ sơ bệnh án"
                                                     >
@@ -365,40 +372,34 @@ export default function DoctorAppointmentsPage() {
                     </table>
                 </div>
 
-                {totalPages > 1 && (
-                    <div className="appointments__pagination">
-                        <div className="appointments__pagination-info">
-                            Hiển thị {Math.min((currentPage - 1) * itemsPerPage + 1, filteredAppointments.length)} -{" "}
-                            {Math.min(currentPage * itemsPerPage, filteredAppointments.length)} trong tổng số{" "}
-                            {filteredAppointments.length} cuộc hẹn
-                        </div>
-                        <div className="appointments__pagination-controls">
+                {/* Compact Pagination */}
+                {filteredAppointments.length > 0 && (
+                    <div className="doctor-appointments-content__pagination">
+                        <button
+                            className="doctor-appointments-content__pagination-btn"
+                            onClick={() => handlePageChange(currentPage - 1)}
+                            disabled={currentPage === 1}
+                        >
+                            «
+                        </button>
+                        {Array.from({ length: totalPages }, (_, i) => (
                             <button
-                                onClick={() => handlePageChange(currentPage - 1)}
-                                disabled={currentPage === 1}
-                                className="appointments__pagination-button"
+                                key={i + 1}
+                                className={`doctor-appointments-content__pagination-btn ${
+                                    currentPage === i + 1 ? 'doctor-appointments-content__pagination-btn--active' : ''
+                                }`}
+                                onClick={() => handlePageChange(i + 1)}
                             >
-                                Trước
+                                {i + 1}
                             </button>
-                            {getPageNumbers().map((pageNum) => (
-                                <button
-                                    key={pageNum}
-                                    onClick={() => handlePageChange(pageNum)}
-                                    className={`appointments__pagination-button ${
-                                        currentPage === pageNum ? "appointments__pagination-button--active" : ""
-                                    }`}
-                                >
-                                    {pageNum}
-                                </button>
-                            ))}
-                            <button
-                                onClick={() => handlePageChange(currentPage + 1)}
-                                disabled={currentPage === totalPages}
-                                className="appointments__pagination-button"
-                            >
-                                Sau
-                            </button>
-                        </div>
+                        ))}
+                        <button
+                            className="doctor-appointments-content__pagination-btn"
+                            onClick={() => handlePageChange(currentPage + 1)}
+                            disabled={currentPage === totalPages}
+                        >
+                            »
+                        </button>
                     </div>
                 )}
             </div>

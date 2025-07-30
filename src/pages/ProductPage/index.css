@@ -3,6 +3,35 @@
   background-color: #f9fafb;
 }
 
+/* Star Rating Styles */
+.pr-star {
+  transition: all 0.2s ease;
+  margin-right: 2px;
+}
+
+.pr-star--filled {
+  color: #fbbf24;
+  filter: drop-shadow(0 1px 3px rgba(251, 191, 36, 0.4));
+}
+
+.pr-star--empty {
+  color: #d1d5db;
+}
+
+.pr-star--interactive {
+  cursor: pointer;
+}
+
+.pr-star--interactive:hover {
+  transform: scale(1.1);
+  filter: drop-shadow(0 2px 4px rgba(251, 191, 36, 0.5));
+}
+
+.pr-star--interactive.pr-star--empty:hover {
+  color: #fbbf24;
+  transform: scale(1.1);
+}
+
 .pr-main-content {
   padding: 3rem 0;
   background-color: white;

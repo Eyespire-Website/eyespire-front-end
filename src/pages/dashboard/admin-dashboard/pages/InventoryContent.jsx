@@ -20,6 +20,7 @@ import {
     Upload
 } from "lucide-react"
 import "../styles/inventory.css"
+import "../styles/inventory-unified.css"
 import productService from "../../../../services/productService"
 
 const InventoryContent = () => {
@@ -55,6 +56,10 @@ const InventoryContent = () => {
         imageUrl: "",
         supplier: ""
     })
+    
+    // Pagination state
+    const [currentPage, setCurrentPage] = useState(1)
+    const [itemsPerPage] = useState(10)
 
     // Fetch products on component mount
     useEffect(() => {
@@ -87,6 +92,18 @@ const InventoryContent = () => {
 
     const categories = ["EYEWEAR", "MEDICINE"]
     const statuses = ["Còn hàng", "Sắp hết", "Hết hàng"]
+
+    // Hàm chuyển đổi tên danh mục sang tiếng Việt
+    const getCategoryDisplayName = (category) => {
+        switch (category) {
+            case "EYEWEAR":
+                return "Kính mắt";
+            case "MEDICINE":
+                return "Thuốc";
+            default:
+                return category;
+        }
+    };
 
     const filteredProducts = products
         .filter(
@@ -369,6 +386,16 @@ const InventoryContent = () => {
         }
     }
 
+    // Pagination logic
+    const totalPages = Math.ceil(filteredProducts.length / itemsPerPage)
+    const indexOfLastItem = currentPage * itemsPerPage
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage
+    const currentProducts = filteredProducts.slice(indexOfFirstItem, indexOfLastItem)
+
+    const paginate = (pageNumber) => {
+        setCurrentPage(pageNumber)
+    }
+
     return (
         <div>
             <div className="stats-grid">
@@ -439,7 +466,7 @@ const InventoryContent = () => {
                                 <option value="all">Tất cả</option>
                                 {categories.map((category) => (
                                     <option key={category} value={category}>
-                                        {category}
+                                        {getCategoryDisplayName(category)}
                                     </option>
                                 ))}
                             </select>
@@ -472,89 +499,145 @@ const InventoryContent = () => {
                         </button>
                     </div>
 
-                    <div className="tbl-container">
-                        <table className="tbl">
-                            <thead>
-                            <tr>
-                                <th>Hình ảnh</th>
-                                <th>Mã SP</th>
-                                <th>Tên sản phẩm</th>
-                                <th>Danh mục</th>
-                                <th>Số lượng</th>
-                                <th>Giá</th>
-                                <th>Thông tin</th>
-                                <th>Cập nhật</th>
-                                <th>Trạng thái</th>
-                                <th>Thao tác</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {filteredProducts.length > 0 ? (
-                                filteredProducts.map((product) => (
-                                    <tr key={product.id}>
-                                        <td>
-                                            <img 
-                                                src={product.imageUrl || "/placeholder.svg"} 
-                                                alt={product.name} 
-                                                className="product-img"
-                                                onError={(e) => {
-                                                    console.error("Lỗi tải hình ảnh:", product.imageUrl);
-                                                    e.target.onerror = null;
-                                                    e.target.src = "/placeholder.svg";
-                                                }}
-                                            />
-                                        </td>
-                                        <td>{product.id}</td>
-                                        <td>{product.name}</td>
-                                        <td>{product.type}</td>
-                                        <td>{product.stockQuantity}</td>
-                                        <td>₫{product.price.toLocaleString()}</td>
-                                        <td>{product.description || "N/A"}</td>
-                                        <td>{product.updatedAt ? new Date(product.updatedAt).toLocaleDateString() : "N/A"}</td>
-                                        <td>
-                                            <span className={`status ${product.status}`}>{product.status}</span>
-                                        </td>
-                                        <td className="action-buttons">
-                                            <button className="btn-icon btn-view">
-                                                <Eye size={16} />
-                                            </button>
-                                            <button 
-                                                className="btn-icon btn-edit"
-                                                onClick={() => handleEditProduct(product)}
-                                            >
-                                                <Edit size={16} />
-                                            </button>
-                                            <button 
-                                                className="btn-icon btn-delete"
-                                                onClick={() => handleDeleteProduct(product.id)}
-                                            >
-                                                <Trash2 size={16} />
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))
-                            ) : (
-                                <tr>
-                                    <td colSpan="10" className="no-results">
-                                        Không tìm thấy sản phẩm nào phù hợp
-                                    </td>
-                                </tr>
-                            )}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div className="pagination">
-                        <button className="btn btn-secondary">Trước</button>
-                        <div className="page-numbers">
-                            <button className="btn btn-primary">1</button>
-                            <button className="btn btn-secondary">2</button>
-                            <button className="btn btn-secondary">3</button>
-                            <span>...</span>
-                            <button className="btn btn-secondary">10</button>
+                    {loading ? (
+                        <div className="inventory-content">
+                            <div className="inventory-content__loading">
+                                <div className="inventory-content__spinner"></div>
+                                <p>Đang tải danh sách sản phẩm...</p>
+                            </div>
                         </div>
-                        <button className="btn btn-secondary">Sau</button>
-                    </div>
+                    ) : (
+                        <div className="inventory-content__table-container">
+                            <div className="inventory-content__table-header">
+                                <div className="inventory-content__table-header-content">
+                                    <Package className="inventory-content__table-header-icon" />
+                                    <span className="inventory-content__table-header-text">
+                                        Danh sách sản phẩm ({filteredProducts.length} sản phẩm)
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div className="inventory-content__table-wrapper">
+                                <table className="inventory-content__table">
+                                    <thead>
+                                        <tr>
+                                            <th className="inventory-content__table-head inventory-content__table-head--number">#</th>
+                                            <th className="inventory-content__table-head">Hình ảnh</th>
+                                            <th className="inventory-content__table-head">Mã SP</th>
+                                            <th className="inventory-content__table-head">Tên sản phẩm</th>
+                                            <th className="inventory-content__table-head">Danh mục</th>
+                                            <th className="inventory-content__table-head">Số lượng</th>
+                                            <th className="inventory-content__table-head">Giá</th>
+                                            <th className="inventory-content__table-head">Trạng thái</th>
+                                            <th className="inventory-content__table-head">Thao tác</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {filteredProducts.length === 0 ? (
+                                            <tr>
+                                                <td colSpan="9" className="no-results-message">
+                                                    {searchTerm || categoryFilter !== 'all' || statusFilter !== 'all' ? "Không tìm thấy sản phẩm nào phù hợp" : "Chưa có sản phẩm nào"}
+                                                </td>
+                                            </tr>
+                                        ) : (
+                                            currentProducts.map((product, index) => (
+                                                <tr key={product.id} className="inventory-content__table-row">
+                                                    <td className="inventory-content__table-cell">
+                                                        {index + 1}
+                                                    </td>
+                                                    <td className="inventory-content__table-cell">
+                                                        <img 
+                                                            src={product.imageUrl || "/placeholder.svg"} 
+                                                            alt={product.name}
+                                                            className="inventory-content__product-image"
+                                                            onError={(e) => {
+                                                                console.error("Lỗi tải hình ảnh:", product.imageUrl);
+                                                                e.target.onerror = null;
+                                                                e.target.src = "/placeholder.svg";
+                                                            }}
+                                                        />
+                                                    </td>
+                                                    <td className="inventory-content__table-cell">
+                                                        <span className="inventory-content__product-id">{product.id}</span>
+                                                    </td>
+                                                    <td className="inventory-content__table-cell">{product.name || "Chưa cập nhật"}</td>
+                                                    <td className="inventory-content__table-cell">
+                                                        <span className={`inventory-content__category-badge ${product.type?.toLowerCase()}`}>
+                                                            {getCategoryDisplayName(product.type) || "Chưa cập nhật"}
+                                                        </span>
+                                                    </td>
+                                                    <td className="inventory-content__table-cell">
+                                                        <span className="inventory-content__quantity">{product.stockQuantity || 0}</span>
+                                                    </td>
+                                                    <td className="inventory-content__table-cell">
+                                                        <span className="inventory-content__price">₫{product.price ? product.price.toLocaleString() : "0"}</span>
+                                                    </td>
+                                                    <td className="inventory-content__table-cell">
+                                                        <span className={`inventory-content__status-badge ${product.status?.toLowerCase()}`}>
+                                                            {product.status || "Chưa cập nhật"}
+                                                        </span>
+                                                    </td>
+                                                    <td className="inventory-content__table-cell">
+                                                        <div className="inventory-content__action-buttons">
+                                                            <button
+                                                                className="inventory-content__detail-button"
+                                                                title="Xem chi tiết"
+                                                            >
+                                                                <Eye size={16} />
+                                                            </button>
+                                                            <button
+                                                                className="inventory-content__action-button inventory-content__action-button--edit"
+                                                                onClick={() => handleEditProduct(product)}
+                                                                title="Chỉnh sửa"
+                                                            >
+                                                                <Edit size={16} />
+                                                            </button>
+                                                            <button
+                                                                className="inventory-content__action-button inventory-content__action-button--delete"
+                                                                onClick={() => handleDeleteProduct(product.id)}
+                                                                title="Xóa"
+                                                            >
+                                                                <Trash2 size={16} />
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Pagination */}
+                    {filteredProducts.length > 0 && (
+                        <div className="inventory-content__pagination">
+                            <button
+                                className="inventory-content__pagination-btn"
+                                onClick={() => paginate(currentPage - 1)}
+                                disabled={currentPage === 1}
+                            >
+                                «
+                            </button>
+                            {Array.from({ length: totalPages }, (_, i) => (
+                                <button
+                                    key={i + 1}
+                                    className={`inventory-content__pagination-btn ${currentPage === i + 1 ? 'inventory-content__pagination-btn--active' : ''}`}
+                                    onClick={() => paginate(i + 1)}
+                                >
+                                    {i + 1}
+                                </button>
+                            ))}
+                            <button
+                                className="inventory-content__pagination-btn"
+                                onClick={() => paginate(currentPage + 1)}
+                                disabled={currentPage === totalPages}
+                            >
+                                »
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
 

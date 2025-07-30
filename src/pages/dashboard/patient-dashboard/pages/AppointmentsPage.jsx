@@ -691,24 +691,24 @@ export default function AppointmentsPage() {
                                     className="ptod-pagination-btn"
                                     onClick={() => paginate(currentPage - 1)}
                                     disabled={currentPage === 1}
+                                    title="Trang trước"
                                 >
-                                    «
+                                    <ChevronLeft size={16} />
                                 </button>
-                                {Array.from({ length: totalPages }, (_, i) => (
-                                    <button
-                                        key={i + 1}
-                                        className={`ptod-pagination-btn ${currentPage === i + 1 ? 'ptod-active' : ''}`}
-                                        onClick={() => paginate(i + 1)}
-                                    >
-                                        {i + 1}
-                                    </button>
-                                ))}
+                                
+                                <div className="ptod-pagination-info">
+                                    <span className="ptod-current-page">{currentPage}</span>
+                                    <span className="ptod-page-separator">/</span>
+                                    <span className="ptod-total-pages">{totalPages}</span>
+                                </div>
+                                
                                 <button
                                     className="ptod-pagination-btn"
                                     onClick={() => paginate(currentPage + 1)}
                                     disabled={currentPage === totalPages}
+                                    title="Trang sau"
                                 >
-                                    »
+                                    <ChevronRight size={16} />
                                 </button>
                             </div>
                         )}

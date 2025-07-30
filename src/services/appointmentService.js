@@ -240,21 +240,6 @@ const appointmentService = {
       throw error;
     }
   },
-
-  updateInvoiceAndSetWaitingPayment: async (appointmentId, serviceIds, includeMedications, medications) => {
-    try {
-      const response = await axiosInstance.put(`/appointments/${appointmentId}/update-invoice`, {
-        serviceIds,
-        includeMedications,
-        medications
-      });
-      return response.data;
-    } catch (error) {
-      console.error("Lỗi khi cập nhật hóa đơn và chuyển trạng thái:", error);
-      throw error;
-    }
-  },
-
   // Cập nhật trạng thái đơn thuốc
   updatePrescriptionStatus: async (appointmentId, status) => {
     try {
@@ -276,7 +261,5 @@ const appointmentService = {
     }
   }
 };
-
-
 
 export default appointmentService;

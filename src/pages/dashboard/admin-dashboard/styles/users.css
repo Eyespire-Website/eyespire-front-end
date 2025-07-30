@@ -624,6 +624,7 @@
 .users-filters {
     display: flex;
     gap: 2rem;
+    margin-bottom: 15px;
 }
 
 .filter-group {

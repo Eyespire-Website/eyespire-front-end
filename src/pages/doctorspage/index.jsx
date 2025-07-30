@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./index.css";
 import Footer from "../../components/Footer/Footer";
-import Doctors from "../../components/Doctors/Doctors";
+import DoctorCard from "../../components/Doctors/DoctorCard";
 import axios from "axios";
 import DoctorsHeader from "./DoctorsHeader";
 import ChatBox from "../../components/ChatBox/ChatBox";
@@ -96,26 +96,7 @@ const DoctorsPage = () => {
             <div className="dth-doctors-grid">
               {filteredDoctors.length > 0 ? (
                 filteredDoctors.map((doctor) => (
-                  <div className="dth-doctor-card" key={doctor.id}>
-                    <div className="dth-doctor-image">
-                      <img
-                        src={doctor.imageUrl || "/images/default-doctor.jpg"}
-                        alt={`Bác sĩ ${doctor.fullName}`}
-                      />
-                    </div>
-                    <div className="dth-doctor-info">
-                      <h3>{doctor.fullName || doctor.name || 'Không có tên'}</h3>
-                      <p className="dth-doctor-specialty">
-                        {doctor.specialty && typeof doctor.specialty === 'object' 
-                          ? (doctor.specialty.name || 'Chưa có chuyên khoa') 
-                          : (doctor.specialty || doctor.specialization || 'Chưa có chuyên khoa')}
-                      </p>
-                      <p className="dth-doctor-description">{doctor.description || 'Chưa có mô tả'}</p>
-                      <div className="dth-doctor-contact">
-                        <button className="dth-btn-appointment">Đặt lịch hẹn</button>
-                      </div>
-                    </div>
-                  </div>
+                  <DoctorCard key={doctor.id} doctor={doctor} />
                 ))
               ) : (
                 <p className="dth-no-doctors">Không tìm thấy bác sĩ phù hợp.</p>

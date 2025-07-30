@@ -1,5 +1,4 @@
 import React from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import './stmStyle/STM-Pagination.css';
 
 const Pagination = ({ currentPage, totalPages, onPageChange }) => {
@@ -48,6 +47,11 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
     return pages;
   };
 
+  // Always show pagination when there is data
+  if (totalPages === 0) {
+    return null;
+  }
+
   return (
     <div className="stm-pagination">
       <button 
@@ -55,13 +59,13 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
         onClick={handlePrevious}
         disabled={currentPage === 1}
       >
-        <ChevronLeft size={16} />
+        «
       </button>
       
       {getPageNumbers().map(pageNumber => (
         <button
           key={pageNumber}
-          className={`stm-pagination-btn ${currentPage === pageNumber ? 'active' : ''}`}
+          className={`stm-pagination-btn ${currentPage === pageNumber ? 'stm-pagination-btn--active' : ''}`}
           onClick={() => onPageChange(pageNumber)}
         >
           {pageNumber}
@@ -73,7 +77,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
         onClick={handleNext}
         disabled={currentPage === totalPages}
       >
-        <ChevronRight size={16} />
+        »
       </button>
     </div>
   );

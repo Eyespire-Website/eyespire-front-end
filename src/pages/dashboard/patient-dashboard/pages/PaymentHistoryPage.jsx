@@ -257,44 +257,24 @@ export default function PaymentHistoryPage() {
     };
 
     return (
-        <div className="main-content" style={{ margin: 0, width: '100%', boxSizing: 'border-box' }}>
-            <PatientSidebar
-                activeTab="payment-history"
-                setActiveTab={(tabId) => {
-                    // Handle tab change
-                    const menuItem = patientMenuItems.find(item => item.id === tabId);
-                    if (menuItem) {
-                        navigate(menuItem.route);
-                    }
-                }}
-            />
-
-            <ToastContainer position="top-right" autoClose={3000} />
-
-            <header className="content-header">
-                <h1>Lịch sử thanh toán</h1>
-                <div className="header-actions">
-                    <div className="search-box">
-                        <Search size={18} />
-                        <input
-                            type="text"
-                            placeholder="Tìm kiếm hóa đơn..."
-                            className="search-input"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                        />
-                        <button className="search-button" onClick={handleSearch}>
-                            Tìm kiếm
-                        </button>
-                    </div>
-                    <button className="filter-button" onClick={handleSort}>
-                        <Filter size={18} />
-                        <span>Sắp xếp: {sortOrder === "newest" ? "Mới nhất" : "Cũ nhất"}</span>
-                        {sortOrder === "newest" ? <ChevronDown size={18} /> : <ChevronUp size={18} />}
-                    </button>
+        <div className="ptod-container">
+            <div className="ptod-header">
+                <div className="ptod-header-left">
+                    <History size={24} className="ptod-title-icon" />
+                    <h1 className="ptod-title">Lịch sử thanh toán</h1>
                 </div>
-            </header>
+                <div className="ptod-search-container">
+                    <Search className="ptod-search-icon" size={16} />
+                    <input
+                        type="text"
+                        placeholder="Tìm kiếm hóa đơn..."
+                        className="ptod-search-input"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                    />
+                </div>
+            </div>
 
             {/* Payment History Content */}
             <div className="payment-history-content">

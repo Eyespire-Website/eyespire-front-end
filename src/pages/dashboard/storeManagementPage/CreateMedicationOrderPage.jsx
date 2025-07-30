@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { ArrowLeft, Search, Save, Package, Eye, X, CheckCircle } from "lucide-react";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -8,7 +8,9 @@ import appointmentService from "../../../services/appointmentService";
 import orderService from "../../../services/orderService";
 import medicalRecordService from "../../../services/medicalRecordService";
 import productService from "../../../services/productService";
+import Pagination from "../../../components/storeManagement/Pagination";
 import "./STM-Style/STM-globals.css";
+import "../../../styles/unified-table.css";
 
 // Custom debounce hook
 const useDebounce = (callback, delay) => {
@@ -64,6 +66,11 @@ const CreateMedicationOrderPage = ({ onBack, onOrderCreated, selectedOrder = nul
     const [errors, setErrors] = useState({});
     const [lastFetchedId, setLastFetchedId] = useState(null);
     const [prescriptionStatus, setPrescriptionStatus] = useState(null);
+    const [expandedRowId, setExpandedRowId] = useState(null);
+    
+    // Pagination state
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage] = useState(10);
 
     const baseUrl = process.env.REACT_APP_API_BASE_URL || "http://localhost:8080";
     const fallbackImage = "https://placehold.co/50x50?text=Image";
@@ -244,12 +251,26 @@ const CreateMedicationOrderPage = ({ onBack, onOrderCreated, selectedOrder = nul
 
     // Handle appointment selection
     const handleSelectAppointment = (id) => {
-        setAppointmentId(id.toString());
-        fetchAppointment(id);
+        if (expandedRowId === id) {
+            // If clicking on the same row, collapse it
+            setExpandedRowId(null);
+            setAppointment(null);
+            setMedications([]);
+            setAppointmentId("");
+            setLastFetchedId(null);
+            setErrors({});
+            setPrescriptionStatus(null);
+        } else {
+            // Expand the new row
+            setExpandedRowId(id);
+            setAppointmentId(id.toString());
+            fetchAppointment(id);
+        }
     };
 
     // Handle close appointment
     const handleCloseAppointment = () => {
+        setExpandedRowId(null);
         setAppointment(null);
         setMedications([]);
         setAppointmentId("");
@@ -423,6 +444,13 @@ const CreateMedicationOrderPage = ({ onBack, onOrderCreated, selectedOrder = nul
         }
     };
 
+    // Pagination logic
+    const totalPages = Math.ceil(filteredAppointments.length / itemsPerPage);
+    const paginatedAppointments = filteredAppointments.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+    );
+
     // Fetch appointments on mount
     useEffect(() => {
         fetchAllAppointments();
@@ -454,174 +482,196 @@ const CreateMedicationOrderPage = ({ onBack, onOrderCreated, selectedOrder = nul
                             <Search size={16} />
                         </div>
                     </div>
-                    <div className="tbl-container">
-                        <table className="tbl">
-                            <thead>
-                            <tr>
-                                <th>Mã cuộc hẹn</th>
-                                <th>Tên bệnh nhân</th>
-                                <th>Ngày khám</th>
-                                <th>Trạng thái đơn thuốc</th>
-                                <th>Trạng thái thanh toán</th>
-                                <th>Thao tác</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {filteredAppointments.length > 0 ? (
-                                filteredAppointments.map((appt) => (
-                                    <tr key={appt.id}>
-                                        <td>{appt.id}</td>
-                                        <td>{appt.patientName}</td>
-                                        <td>{appt.appointmentDate}</td>
-                                        <td>
-                                                <span
-                                                    className={`stm-status stm-status--${appt.prescriptionStatus ? appt.prescriptionStatus.toLowerCase() : 'not-buy'}`}
-                                                >
-                                                    {mapStatusToDisplay(appt.prescriptionStatus)}
-                                                </span>
-                                        </td>
-                                        <td>
-                                                <span
-                                                    className={`stm-status stm-status--${appt.status ? appt.status.toLowerCase() : 'pending'}`}
-                                                >
-                                                    {mapStatusToDisplay(appt.status)}
-                                                </span>
-                                        </td>
-                                        <td>
-                                            <div className="stm-action-buttons">
-                                                <button
-                                                    type="button"
-                                                    className="btn btn-icon"
-                                                    onClick={() => handleSelectAppointment(appt.id)}
-                                                    title="Chọn"
-                                                >
-                                                    <Eye size={16} />
-                                                </button>
-                                            </div>
+                    <div className="unified-table-container">
+                        <div className="unified-table-header">
+                            <div className="unified-table-header-content">
+                                <Package className="unified-table-header-icon" />
+                                <span className="unified-table-header-text">Danh sách cuộc hẹn ({filteredAppointments.length} cuộc hẹn)</span>
+                            </div>
+                        </div>
+                        <div className="unified-table-wrapper">
+                            <table className="unified-table">
+                                <thead>
+                                <tr>
+                                    <th>Mã cuộc hẹn</th>
+                                    <th>Tên bệnh nhân</th>
+                                    <th>Ngày khám</th>
+                                    <th>Trạng thái đơn thuốc</th>
+                                    <th>Trạng thái thanh toán</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {paginatedAppointments.length > 0 ? (
+                                    paginatedAppointments.map((appt) => (
+                                        <React.Fragment key={appt.id}>
+                                            <tr>
+                                                <td><span className="unified-highlight">{appt.id}</span></td>
+                                                <td>
+                                                    <div className="unified-item-info">
+                                                        <div className="unified-user-name">{appt.patientName}</div>
+                                                    </div>
+                                                </td>
+                                                <td>{appt.appointmentDate}</td>
+                                                <td>
+                                                    <span className={`unified-status-badge ${
+                                                        appt.prescriptionStatus === 'COMPLETED' ? 'status-completed' :
+                                                        appt.prescriptionStatus === 'PENDING' ? 'status-pending' :
+                                                        appt.prescriptionStatus === 'DELIVERED' ? 'status-shipped' : 'status-cancelled'
+                                                    }`}>
+                                                        {mapStatusToDisplay(appt.prescriptionStatus)}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <span className={`unified-status-badge ${
+                                                        appt.status === 'COMPLETED' ? 'status-completed' :
+                                                        appt.status === 'PENDING' ? 'status-pending' :
+                                                        appt.status === 'DELIVERED' ? 'status-shipped' : 'status-cancelled'
+                                                    }`}>
+                                                        {mapStatusToDisplay(appt.status)}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <div className="unified-action-buttons">
+                                                        <button
+                                                            type="button"
+                                                            className={`unified-btn ${
+                                                                expandedRowId === appt.id ? 'unified-btn-secondary' : 'unified-btn-primary'
+                                                            }`}
+                                                            onClick={() => handleSelectAppointment(appt.id)}
+                                                            title={expandedRowId === appt.id ? "Đóng" : "Xem"}
+                                                        >
+                                                            <Eye size={16} />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            {expandedRowId === appt.id && appointment && (
+                                                <tr>
+                                                    <td colSpan="6" className="inline-details-cell">
+                                                        <div className="inline-appointment-details">
+                                                            {/* Customer Information */}
+                                                            <div className="inline-section">
+                                                                <h4 className="inline-section-title">
+                                                                    <Package size={16} /> Thông tin khách hàng
+                                                                </h4>
+                                                                <div className="inline-customer-info">
+                                                                    <div className="inline-info-item">
+                                                                        <label>Tên khách hàng:</label>
+                                                                        <span>{appointment.patientName || "N/A"}</span>
+                                                                    </div>
+                                                                    <div className="inline-info-item">
+                                                                        <label>Email:</label>
+                                                                        <span>{appointment.patientEmail || "N/A"}</span>
+                                                                    </div>
+                                                                    <div className="inline-info-item">
+                                                                        <label>Số điện thoại:</label>
+                                                                        <span>{appointment.patientPhone || "N/A"}</span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Medications */}
+                                                            <div className="inline-section">
+                                                                <h4 className="inline-section-title">
+                                                                    <Package size={16} /> Thuốc kê đơn
+                                                                </h4>
+                                                                {medications.length > 0 ? (
+                                                                    <div className="inline-medications">
+                                                                        {medications.map((med) => (
+                                                                            <div key={med.productId} className="inline-medication-item">
+                                                                                <img
+                                                                                    src={med.image}
+                                                                                    alt={med.name}
+                                                                                    className="inline-product-img"
+                                                                                    onError={handleImageError}
+                                                                                />
+                                                                                <div className="inline-med-info">
+                                                                                    <h5>{med.name}</h5>
+                                                                                    <p>₫{med.price.toLocaleString()}</p>
+                                                                                </div>
+                                                                                <div className="inline-quantity">
+                                                                                    Số lượng: {med.quantity}
+                                                                                </div>
+                                                                                <div className="inline-total">
+                                                                                    ₫{med.total.toLocaleString()}
+                                                                                </div>
+                                                                            </div>
+                                                                        ))}
+                                                                    </div>
+                                                                ) : (
+                                                                    <p className="inline-no-results">
+                                                                        {errors.general || "Không có thuốc nào được kê trong cuộc hẹn này."}
+                                                                    </p>
+                                                                )}
+                                                            </div>
+
+                                                            {/* Order Summary and Actions */}
+                                                            {medications.length > 0 && (
+                                                                <div className="inline-section">
+                                                                    <h4 className="inline-section-title">
+                                                                        <Package size={16} /> Tổng kết đơn hàng
+                                                                    </h4>
+                                                                    <div className="inline-summary">
+                                                                        <div className="inline-total-row">
+                                                                            <span>Tổng cộng:</span>
+                                                                            <span className="inline-total-amount">
+                                                                                ₫{medications.reduce((sum, med) => sum + med.total, 0).toLocaleString()}
+                                                                            </span>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="inline-actions">
+                                                                        {prescriptionStatus === "NOT_BUY" ? (
+                                                                            <p className="inline-error">Bạn chưa thanh toán đơn thuốc này.</p>
+                                                                        ) : prescriptionStatus === "DELIVERED" ? (
+                                                                            <p className="inline-success">Đơn thuốc đã được giao.</p>
+                                                                        ) : (
+                                                                            <button
+                                                                                className="inline-confirm-btn"
+                                                                                onClick={handleConfirmDelivery}
+                                                                                disabled={isConfirmingDelivery || isLoading || !appointment}
+                                                                            >
+                                                                                <CheckCircle size={16} /> 
+                                                                                {isConfirmingDelivery ? "Đang xác nhận..." : "Xác nhận giao đơn thuốc"}
+                                                                            </button>
+                                                                        )}
+                                                                        <button
+                                                                            className="inline-close-btn"
+                                                                            onClick={handleCloseAppointment}
+                                                                            title="Đóng"
+                                                                        >
+                                                                            <X size={16} /> Đóng
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            )}
+                                        </React.Fragment>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td colSpan="6" className="stm-no-results">
+                                            Không tìm thấy cuộc hẹn nào có trạng thái đã thanh toán tiền.
                                         </td>
                                     </tr>
-                                ))
-                            ) : (
-                                <tr>
-                                    <td colSpan="6" className="stm-no-results">
-                                        Không tìm thấy cuộc hẹn nào có trạng thái đã thanh toán tiền.
-                                    </td>
-                                </tr>
-                            )}
-                            </tbody>
-                        </table>
-                    </div>
-                    {appointment && (
-                        <div className="stm-action-buttons">
-                            <button
-                                type="button"
-                                className="btn btn-close"
-                                onClick={handleCloseAppointment}
-                                title="Đóng"
-                            >
-                                <X size={16} /> Đóng
-                            </button>
+                                )}
+                                </tbody>
+                            </table>
                         </div>
+                    </div>
+                    
+                    {/* Pagination - Separated from table */}
+                    {filteredAppointments.length > 0 && (
+                        <Pagination
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            onPageChange={setCurrentPage}
+                        />
                     )}
                 </div>
-
-                {appointment && (
-                    <>
-                        <div className="filter-bar-container">
-                            <h3 className="filter-title">
-                                <Package size={20} /> Thông tin khách hàng
-                            </h3>
-                            <div className="customer-info-grid">
-                                <div>
-                                    <label>Tên khách hàng</label>
-                                    <input
-                                        type="text"
-                                        value={appointment.patientName || "N/A"}
-                                        readOnly
-                                        className="input-field"
-                                    />
-                                </div>
-                                <div>
-                                    <label>Email</label>
-                                    <input
-                                        type="text"
-                                        value={appointment.patientEmail || "N/A"}
-                                        readOnly
-                                        className="input-field"
-                                    />
-                                </div>
-                                <div>
-                                    <label>Số điện thoại</label>
-                                    <input
-                                        type="text"
-                                        value={appointment.patientPhone || "N/A"}
-                                        readOnly
-                                        className="input-field"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="filter-bar-container">
-                            <h3 className="filter-title">
-                                <Package size={20} /> Thuốc kê đơn
-                            </h3>
-                            {medications.length > 0 ? (
-                                <div className="order-items">
-                                    {medications.map((med) => (
-                                        <div key={med.productId} className="order-item">
-                                            <img
-                                                src={med.image}
-                                                alt={med.name}
-                                                className="product-img"
-                                                onError={handleImageError}
-                                            />
-                                            <div className="item-info">
-                                                <h4>{med.name}</h4>
-                                                <p className="item-price">₫{med.price.toLocaleString()}</p>
-                                            </div>
-                                            <div className="quantity-controls">
-                                                <span className="quantity">{med.quantity}</span>
-                                            </div>
-                                            <div className="item-total">₫{med.total.toLocaleString()}</div>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <p className="stm-no-results">{errors.general || "Không có thuốc nào được kê trong cuộc hẹn này."}</p>
-                            )}
-                        </div>
-
-                        {medications.length > 0 && (
-                            <div className="filter-bar-container">
-                                <h3 className="filter-title">
-                                    <Package size={20} /> Tổng kết đơn hàng
-                                </h3>
-                                <div className="order-summary">
-                                    <div className="summary-row total">
-                                        <span>Tổng cộng:</span>
-                                        <span>₫{medications.reduce((sum, med) => sum + med.total, 0).toLocaleString()}</span>
-                                    </div>
-                                </div>
-                                <div className="stm-action-buttons">
-                                    {prescriptionStatus === "NOT_BUY" ? (
-                                        <p className="stm-error">Bạn chưa thanh toán đơn thuốc này.</p>
-                                    ) : prescriptionStatus === "DELIVERED" ? (
-                                        <p className="stm-success">Đơn thuốc đã được giao.</p>
-                                    ) : (
-                                        <button
-                                            className="btn btn-confirm"
-                                            onClick={handleConfirmDelivery}
-                                            disabled={isConfirmingDelivery || isLoading || !appointment}
-                                        >
-                                            <CheckCircle size={16} /> {isConfirmingDelivery ? "Đang xác nhận..." : "Xác nhận giao đơn thuốc"}
-                                        </button>
-                                    )}
-                                </div>
-                            </div>
-                        )}
-                    </>
-                )}
             </div>
         </div>
     );
