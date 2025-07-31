@@ -227,7 +227,7 @@ const appointmentService = {
       throw error;
     }
   },
-  createInvoiceAndSetWaitingPayment: async (appointmentId, serviceIds, includeMedications, medications) => {
+  updateInvoiceAndSetWaitingPayment: async (appointmentId, serviceIds, includeMedications, medications) => {
     try {
       const response = await axiosInstance.post(`/appointments/${appointmentId}/create-invoice`, {
         serviceIds,
