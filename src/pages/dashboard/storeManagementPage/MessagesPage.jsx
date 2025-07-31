@@ -168,14 +168,14 @@ const MessagesPage = () => {
                         unreadCount: msg.isRead || msg.sender.id === userId ? 0 : 1,
                         status: userData.status || otherUser.status || "offline",
                         lastSeen: userData.status === "online" ? "Đang hoạt động" : sentAt.toLocaleTimeString("vi-VN", {
-                            hour: "2-digit", minute: "2-digit" }),
+                            hour: "2-digit", minute: "2-digit", timeZone: "Asia/Ho_Chi_Minh" }),
                     };
                 } else {
                     const sentAt = new Date(msg.sentAt);
                     acc[otherUserId].lastMessage = msg.content || (msg.imageUrls ? "Đã gửi hình ảnh" : "");
-                    acc[otherUserId].timestamp = sentAt.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" });
+                    acc[otherUserId].timestamp = sentAt.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Ho_Chi_Minh" });
                     acc[otherUserId].lastSeen = userData.status === "online" ? "Đang hoạt động" : sentAt.toLocaleTimeString("vi-VN", {
-                        hour: "2-digit", minute: "2-digit" });
+                        hour: "2-digit", minute: "2-digit", timeZone: "Asia/Ho_Chi_Minh" });
                     if (!msg.isRead && msg.sender.id !== userId) {
                         acc[otherUserId].unreadCount += 1;
                     }
@@ -193,7 +193,7 @@ const MessagesPage = () => {
                     id: msg.id.toString(),
                     content: msg.content,
                     imageUrls: msg.imageUrls ? msg.imageUrls.split(";").filter(url => url.trim() !== "") : [],
-                    timestamp: new Date(msg.sentAt).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" }),
+                    timestamp: new Date(msg.sentAt).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Ho_Chi_Minh" }),
                     sender: msg.sender.id === userId ? "admin" : "user",
                     status: msg.isRead ? "read" : msg.sender.id === userId ? "sent" : "delivered",
                 });
@@ -217,10 +217,15 @@ const MessagesPage = () => {
             id: message.id.toString(),
             content: message.content,
             imageUrls: message.imageUrls ? message.imageUrls.split(";").filter(url => url.trim() !== "") : [],
-            timestamp: sentAt.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" }),
+            timestamp: sentAt.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Ho_Chi_Minh" }),
             sender: message.sender.id === userId ? "admin" : "user",
             status: message.isRead ? "read" : message.sender.id === userId ? "sent" : "delivered",
         };
+
+        // Dispatch event để Header có thể update unread count
+        if (message.sender.id !== userId) {
+            window.dispatchEvent(new CustomEvent('newMessage', { detail: message }));
+        }
 
         setMessages((prev) => ({
             ...prev,

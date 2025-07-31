@@ -6,34 +6,7 @@ const Testimonials = () => {
   const [testimonialData, setTestimonialData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  // Fallback data in case API fails
-  const fallbackTestimonials = [
-    {
-      id: 1,
-      name: "Sarah Johnson",
-      role: "Bệnh Nhân Thường Xuyên",
-      image: "https://storage.googleapis.com/tagjs-prod.appspot.com/v1/VY3PPTks6o/testimonial1.jpg",
-      content: "Tôi đã đến Eyespire để chăm sóc mắt trong hơn 5 năm. Nhân viên luôn chuyên nghiệp và các bác sĩ rất am hiểu. Thị lực của tôi chưa bao giờ tốt đến thế!",
-      rating: 5
-    },
-    {
-      id: 2,
-      name: "Michael Chen",
-      role: "Khách Hàng Mới",
-      image: "https://storage.googleapis.com/tagjs-prod.appspot.com/v1/VY3PPTks6o/testimonial2.jpg",
-      content: "Là người lo lắng về việc khám mắt, tôi đã rất ngạc nhiên về sự thoải mái trong toàn bộ quá trình. Bác sĩ giải thích mọi thứ rất rõ ràng và giúp tôi chọn được gọng kính hoàn hảo.",
-      rating: 5
-    },
-    {
-      id: 3,
-      name: "Emily Rodriguez",
-      role: "Người Dùng Kính Áp Tròng",
-      image: "https://storage.googleapis.com/tagjs-prod.appspot.com/v1/VY3PPTks6o/testimonial3.jpg",
-      content: "Quá trình lắp kính áp tròng rất kỹ lưỡng và chính xác. Tôi đánh giá cao việc nhân viên dành thời gian dạy tôi các kỹ thuật chăm sóc đúng cách. Mắt tôi cảm thấy rất tuyệt với những kính áp tròng mới này!",
-      rating: 5
-    }
-  ];
+  const [hasValidFeedbacks, setHasValidFeedbacks] = useState(false);
 
   useEffect(() => {
     fetchFeedbacks();
@@ -51,43 +24,57 @@ const Testimonials = () => {
         // Filter feedbacks with rating > 4 stars
         const highRatedFeedbacks = allFeedbacks.filter(feedback => feedback.rating > 4);
         
-        // Sort by rating (highest first) and then by creation date (newest first)
-        const sortedFeedbacks = highRatedFeedbacks.sort((a, b) => {
-          if (b.rating !== a.rating) {
-            return b.rating - a.rating;
-          }
-          return new Date(b.createdAt) - new Date(a.createdAt);
-        });
-        
-        // Take only the top 3 feedbacks
-        const topFeedbacks = sortedFeedbacks.slice(0, 3);
-        
-        // Transform the data to match the testimonial format
-        const transformedFeedbacks = topFeedbacks.map((feedback, index) => ({
-          id: feedback.id || index + 1,
-          name: feedback.Patient?.name || feedback.patientName || `Bệnh nhân ${index + 1}`,
-          role: `Đánh giá ${feedback.rating} sao`,
-          image: feedback.Patient?.avatar || `https://storage.googleapis.com/tagjs-prod.appspot.com/v1/VY3PPTks6o/testimonial${(index % 3) + 1}.jpg`,
-          content: feedback.comment || feedback.content,
-          rating: feedback.rating,
-          createdAt: feedback.createdAt
-        }));
-        
-        if (transformedFeedbacks.length > 0) {
+        if (highRatedFeedbacks.length > 0) {
+          // Sort by rating (highest first) and then by creation date (newest first)
+          const sortedFeedbacks = highRatedFeedbacks.sort((a, b) => {
+            if (b.rating !== a.rating) {
+              return b.rating - a.rating;
+            }
+            return new Date(b.createdAt) - new Date(a.createdAt);
+          });
+          
+          // Take only the top 3 feedbacks
+          const topFeedbacks = sortedFeedbacks.slice(0, 3);
+          
+          // Transform the data to match the testimonial format - always use patient info from feedback
+          const transformedFeedbacks = topFeedbacks.map((feedback, index) => {
+            // Get patient avatar URL with proper base URL
+            let patientImage = '/images/default-avatar.jpg'; // Default fallback
+            if (feedback.Patient?.avatar) {
+              patientImage = feedback.Patient.avatar.startsWith('http') 
+                ? feedback.Patient.avatar 
+                : `https://eyespire-back-end.onrender.com${feedback.Patient.avatar}`;
+            }
+            
+            return {
+              id: feedback.id || index + 1,
+              name: feedback.Patient?.name || feedback.patientName || `Bệnh nhân ${index + 1}`,
+              role: `Đánh giá ${feedback.rating} sao`,
+              image: patientImage,
+              content: feedback.comment || feedback.content || 'Dịch vụ rất tốt!',
+              rating: feedback.rating,
+              createdAt: feedback.createdAt
+            };
+          });
+          
           setTestimonialData(transformedFeedbacks);
+          setHasValidFeedbacks(true);
         } else {
-          // If no high-rated feedbacks found, use fallback data
-          setTestimonialData(fallbackTestimonials);
+          // No high-rated feedbacks found - don't show testimonials section
+          setTestimonialData([]);
+          setHasValidFeedbacks(false);
         }
       } else {
-        // If no feedbacks found, use fallback data
-        setTestimonialData(fallbackTestimonials);
+        // No feedbacks found - don't show testimonials section
+        setTestimonialData([]);
+        setHasValidFeedbacks(false);
       }
     } catch (error) {
       console.error('Error fetching feedbacks:', error);
       setError('Không thể tải đánh giá từ khách hàng');
-      // Use fallback data when API fails
-      setTestimonialData(fallbackTestimonials);
+      // Don't show testimonials section when API fails
+      setTestimonialData([]);
+      setHasValidFeedbacks(false);
     } finally {
       setLoading(false);
     }
@@ -105,12 +92,13 @@ const Testimonials = () => {
     ));
   };
 
+  // Don't render anything if loading and no valid feedbacks
   if (loading) {
     return (
       <div className="testimonials-container">
         <div className="testimonials-header">
           <h2 className="testimonials-title">Bệnh Nhân Nói Gì Về Chúng Tôi</h2>
-          <p className="testimonials-subtitle">Đọc những lời chứng thực từ các bệnh nhân hài lòng của chúng tôi</p>
+          <p className="testimonials-subtitle">Đang tải đánh giá từ khách hàng...</p>
         </div>
         <div className="testimonials-loading">
           <div className="loading-spinner"></div>
@@ -120,22 +108,18 @@ const Testimonials = () => {
     );
   }
 
+  // Don't render testimonials section if no valid feedbacks
+  if (!hasValidFeedbacks || testimonialData.length === 0) {
+    return null;
+  }
+
   return (
     <div className="testimonials-container">
       <div className="testimonials-header">
         <h2 className="testimonials-title">Bệnh Nhân Nói Gì Về Chúng Tôi</h2>
         <p className="testimonials-subtitle">
-          {error ? 'Đọc những lời chứng thực từ các bệnh nhân hài lòng của chúng tôi' : 
-           `Đánh giá từ ${testimonialData.length} bệnh nhân hài lòng với dịch vụ của chúng tôi`}
+          Đánh giá từ {testimonialData.length} bệnh nhân hài lòng với dịch vụ của chúng tôi
         </p>
-        {error && (
-          <div className="testimonials-error">
-            <p className="error-message">{error}</p>
-            <button onClick={fetchFeedbacks} className="retry-button">
-              Thử lại
-            </button>
-          </div>
-        )}
       </div>
       <div className="testimonials-grid">
         {testimonialData.map((testimonial) => (
@@ -149,7 +133,7 @@ const Testimonials = () => {
                 alt={testimonial.name} 
                 className="testimonial-image" 
                 onError={(e) => {
-                  e.target.src = `https://storage.googleapis.com/tagjs-prod.appspot.com/v1/VY3PPTks6o/testimonial${(testimonial.id % 3) + 1}.jpg`;
+                  e.target.src = '/images/default-avatar.jpg';
                 }}
               />
               <div className="testimonial-info">
