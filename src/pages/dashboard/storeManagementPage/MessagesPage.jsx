@@ -44,7 +44,20 @@ const MessagesPage = () => {
     const stompClient = useRef(null);
     const navigate = useNavigate();
 
-    const baseUrl = process.env.REACT_APP_API_BASE_URL || "http://localhost:8080";
+    // Automatically detect protocol and use secure WebSocket for HTTPS
+    const getBaseUrl = () => {
+        if (process.env.REACT_APP_API_BASE_URL) {
+            return process.env.REACT_APP_API_BASE_URL;
+        }
+        // For production deployment, use the secure backend URL
+        if (window.location.protocol === 'https:') {
+            return 'https://eyespire-back-end.onrender.com';
+        }
+        // For local development
+        return 'http://localhost:8080';
+    };
+    
+    const baseUrl = getBaseUrl();
     const fallbackImage = "https://placehold.co/50x50?text=Image";
 
     const emojis = ["😀", "😂", "😍", "👍", "❤️", "😊", "🎉", "👏", "🔥", "💯", "😎", "🤔", "😢", "😡", "🙏", "✨"];

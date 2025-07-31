@@ -4,11 +4,29 @@ import userService from './userService'; // Import userService
 
 const API_URL = 'https://eyespire-back-end.onrender.com/api';
 
+const axiosInstance = axios.create({
+  baseURL: API_URL,
+  withCredentials: true,
+});
+
+axiosInstance.interceptors.request.use(
+    (config) => {
+      const user = authService.getCurrentUser();
+      if (user) {
+        config.headers["User-Id"] = user.id;
+      }
+      return config;
+    },
+    (error) => {
+      return Promise.reject(error);
+    }
+);
+
 const feedbackService = {
     getFeedbackByProductId: async (productId) => {
         try {
             const token = authService.getToken();
-            const response = await axios.get(`${API_URL}/api/feedbacks/product/${productId}`, {
+            const response = await axiosInstance.get(`/feedbacks/product/${productId}`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
@@ -55,7 +73,7 @@ const feedbackService = {
     updateFeedback: async (feedbackData) => {
         try {
             const token = authService.getToken();
-            const response = await axios.put(`${API_URL}/api/feedbacks/${feedbackData.id}`, feedbackData, {
+            const response = await axiosInstance.put(`/feedbacks/${feedbackData.id}`, feedbackData, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                     'Content-Type': 'application/json',
@@ -75,7 +93,7 @@ const feedbackService = {
     createFeedback: async (feedbackData) => {
         try {
             const token = authService.getToken();
-            const response = await axios.post(`${API_URL}/api/feedbacks`, feedbackData, {
+            const response = await axiosInstance.post(`/feedbacks`, feedbackData, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                     'Content-Type': 'application/json',
@@ -95,7 +113,7 @@ const feedbackService = {
     deleteFeedback: async (feedbackId) => {
         try {
             const token = authService.getToken();
-            await axios.delete(`${API_URL}/api/feedbacks/${feedbackId}`, {
+            await axiosInstance.delete(`/feedbacks/${feedbackId}`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
