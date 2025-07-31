@@ -46,7 +46,7 @@ export default function PaymentDetailPage() {
     }, [id, type, navigate]);
 
     const handleBackClick = () => {
-        navigate('/payment-history');
+        navigate('/dashboard/patient/payment-history');
     };
 
     const handlePrint = () => {
@@ -98,7 +98,7 @@ export default function PaymentDetailPage() {
     return (
         <div className="payment-detail-container">
             <ToastContainer position="top-right" autoClose={3000} />
-            
+
             <div className="payment-detail-header">
                 <button className="back-button" onClick={handleBackClick}>
                     <ArrowLeft size={16} />
@@ -130,8 +130,8 @@ export default function PaymentDetailPage() {
                             </div>
                         </div>
                         <div className="invoice-status">
-                            <span className={`status-badge ${paymentHistoryService.getStatusClass(invoice.status)}`}>
-                                {paymentHistoryService.getStatusText(invoice.status)}
+                            <span className={`status-badge paid`}>
+                                {paymentHistoryService.getStatusText(`paid`)}
                             </span>
                         </div>
                     </div>
@@ -142,7 +142,7 @@ export default function PaymentDetailPage() {
                             <div className="invoice-grid">
                                 <div className="invoice-item">
                                     <span className="item-label">Mã hóa đơn:</span>
-                                    <span className="item-value">{invoice.id}</span>
+                                    <span className="item-value">{invoice.id.toString().replace(/^(INV|ORD)/, '')}</span>
                                 </div>
                                 <div className="invoice-item">
                                     <span className="item-label">Ngày tạo:</span>
@@ -191,20 +191,20 @@ export default function PaymentDetailPage() {
                                 <div className="service-details">
                                     <table className="service-table">
                                         <thead>
-                                            <tr>
-                                                <th>Dịch vụ</th>
-                                                <th>Bác sĩ</th>
-                                                <th>Ngày khám</th>
-                                                <th>Giá</th>
-                                            </tr>
+                                        <tr>
+                                            <th>Dịch vụ</th>
+                                            <th>Bác sĩ</th>
+                                            <th>Ngày khám</th>
+                                            <th>Giá</th>
+                                        </tr>
                                         </thead>
                                         <tbody>
-                                            <tr>
-                                                <td>{invoice.serviceName}</td>
-                                                <td>{invoice.doctorName || "N/A"}</td>
-                                                <td>{invoice.appointmentDate || invoice.date}</td>
-                                                <td>{invoice.amount}</td>
-                                            </tr>
+                                        <tr>
+                                            <td>{invoice.serviceName}</td>
+                                            <td>{invoice.doctorName || "N/A"}</td>
+                                            <td>{invoice.appointmentDate || invoice.date}</td>
+                                            <td>{invoice.amount}</td>
+                                        </tr>
                                         </tbody>
                                     </table>
                                 </div>
@@ -217,37 +217,37 @@ export default function PaymentDetailPage() {
                                 <div className="order-details">
                                     <table className="order-table">
                                         <thead>
-                                            <tr>
-                                                <th>Sản phẩm</th>
-                                                <th>Số lượng</th>
-                                                <th>Đơn giá</th>
-                                                <th>Thành tiền</th>
-                                            </tr>
+                                        <tr>
+                                            <th>Sản phẩm</th>
+                                            <th>Số lượng</th>
+                                            <th>Đơn giá</th>
+                                            <th>Thành tiền</th>
+                                        </tr>
                                         </thead>
                                         <tbody>
-                                            {invoice.orderItems ? (
-                                                invoice.orderItems.map((item, index) => (
-                                                    <tr key={index}>
-                                                        <td>{item.productName}</td>
-                                                        <td>{item.quantity}</td>
-                                                        <td>{item.price}</td>
-                                                        <td>{item.total}</td>
-                                                    </tr>
-                                                ))
-                                            ) : (
-                                                <tr>
-                                                    <td>{invoice.serviceName}</td>
-                                                    <td>1</td>
-                                                    <td>{invoice.amount}</td>
-                                                    <td>{invoice.amount}</td>
+                                        {invoice.orderItems ? (
+                                            invoice.orderItems.map((item, index) => (
+                                                <tr key={index}>
+                                                    <td>{item.productName}</td>
+                                                    <td>{item.quantity}</td>
+                                                    <td>{item.price}</td>
+                                                    <td>{item.total}</td>
                                                 </tr>
-                                            )}
+                                            ))
+                                        ) : (
+                                            <tr>
+                                                <td>{invoice.serviceName}</td>
+                                                <td>1</td>
+                                                <td>{invoice.amount}</td>
+                                                <td>{invoice.amount}</td>
+                                            </tr>
+                                        )}
                                         </tbody>
                                         <tfoot>
-                                            <tr>
-                                                <td colSpan="3" className="total-label">Tổng cộng</td>
-                                                <td className="total-amount">{invoice.amount}</td>
-                                            </tr>
+                                        <tr>
+                                            <td colSpan="3" className="total-label">Tổng cộng</td>
+                                            <td className="total-amount">{invoice.amount}</td>
+                                        </tr>
                                         </tfoot>
                                     </table>
                                 </div>
