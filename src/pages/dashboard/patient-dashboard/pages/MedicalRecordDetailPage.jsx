@@ -39,6 +39,12 @@ const MedicalRecordDetailPage = () => {
         try {
             const data = await medicalRecordService.getMedicalRecordById(id);
 
+            // Debug: Log the full data structure to understand the service data
+            console.log('Medical Record Detail Data:', data);
+            console.log('Appointment data:', data.appointment);
+            console.log('Service data:', data.appointment?.service);
+            console.log('Direct service:', data.service);
+
             let doctorName = "Bác sĩ";
             if (data.doctor) {
                 doctorName = "BS. " + (data.doctor.user?.fullName || data.doctor.fullName || data.doctor.name || "Bác sĩ");
@@ -49,9 +55,28 @@ const MedicalRecordDetailPage = () => {
                 patientName = data.patient.fullName || data.patient.name || patientName;
             }
 
-            let serviceName = "Khám mắt";
-            if (data.appointment?.service) {
-                serviceName = data.appointment.service.name || serviceName;
+            // Improved service name detection with multiple fallbacks
+            let serviceName = "Khám mắt tổng quát"; // Default fallback
+
+            // Try multiple possible locations for service data
+            if (data.appointment?.service?.name) {
+                serviceName = data.appointment.service.name;
+                console.log('Found service name in appointment.service.name:', serviceName);
+            } else if (data.appointment?.serviceName) {
+                serviceName = data.appointment.serviceName;
+                console.log('Found service name in appointment.serviceName:', serviceName);
+            } else if (data.service?.name) {
+                serviceName = data.service.name;
+                console.log('Found service name in service.name:', serviceName);
+            } else if (data.serviceName) {
+                serviceName = data.serviceName;
+                console.log('Found service name in serviceName:', serviceName);
+            } else if (data.appointment?.services && Array.isArray(data.appointment.services) && data.appointment.services.length > 0) {
+                // Handle multiple services
+                serviceName = data.appointment.services.map(s => s.name || s.serviceName).filter(Boolean).join(', ');
+                console.log('Found service names in appointment.services:', serviceName);
+            } else {
+                console.log('No service name found, using default:', serviceName);
             }
 
             let prescriptions = [];

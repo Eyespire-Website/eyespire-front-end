@@ -44,6 +44,7 @@ const MessagesPage = () => {
     const stompClient = useRef(null);
     const navigate = useNavigate();
 
+
     // Automatically detect protocol and use secure WebSocket for HTTPS (same as MessageModal)
     const getBaseUrl = () => {
         console.log('[WEBSOCKET DEBUG] Current protocol:', window.location.protocol);
@@ -66,6 +67,7 @@ const MessagesPage = () => {
     };
     
     const baseUrl = getBaseUrl();
+
     const fallbackImage = "https://placehold.co/50x50?text=Image";
 
     const emojis = ["😀", "😂", "😍", "👍", "❤️", "😊", "🎉", "👏", "🔥", "💯", "😎", "🤔", "😢", "😡", "🙏", "✨"];

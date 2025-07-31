@@ -1,26 +1,45 @@
-import React from 'react';
-import ManualRefundList from '../../../components/ManualRefundList';
+"use client"
+
+import { useState } from "react"
+import { Search, DollarSign } from "lucide-react"
+import ManualRefundList from '../../../components/ManualRefundList'
+import "./RefundManagement.css"
 
 const RefundManagement = () => {
+    const [searchQuery, setSearchQuery] = useState("")
+
     return (
         <div className="refund-management">
-            <div style={{ 
-                padding: '20px',
-                backgroundColor: '#f8f9fa',
-                borderRadius: '8px',
-                marginBottom: '20px'
-            }}>
-                <h2 style={{ margin: '0 0 10px 0', color: '#333' }}>
-                    Quản lý hoàn tiền
-                </h2>
-                <p style={{ margin: '0', color: '#666' }}>
-                    Quản lý các cuộc hẹn đã hủy cần hoàn tiền thủ công cho bệnh nhân
-                </p>
+            <div className="refund-management__header">
+                <h1 className="refund-management__title">Quản lý hoàn tiền</h1>
+                <div className="refund-management__search-container">
+                    <div className="refund-management__search-wrapper">
+                        <Search className="refund-management__search-icon" />
+                        <input
+                            type="text"
+                            placeholder="Tìm kiếm hoàn tiền (Tên bệnh nhân, ngày hẹn, số tiền...)"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="refund-management__search-input"
+                        />
+                    </div>
+                </div>
             </div>
-            
-            <ManualRefundList />
-        </div>
-    );
-};
 
-export default RefundManagement;
+            <div className="refund-management__table-container">
+                <div className="refund-management__table-header">
+                    <div className="refund-management__table-header-content">
+                        <DollarSign className="refund-management__table-header-icon" />
+                        <span className="refund-management__table-header-text">
+                            Danh sách hoàn tiền thủ công
+                        </span>
+                    </div>
+                </div>
+
+                <ManualRefundList searchQuery={searchQuery} />
+            </div>
+        </div>
+    )
+}
+
+export default RefundManagement
