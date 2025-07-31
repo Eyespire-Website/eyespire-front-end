@@ -183,7 +183,7 @@
 }
 
 .message-content {
-  max-width: 70%;
+  max-width: 100%;
   padding: 12px;
   border-radius: 12px;
   position: relative;
@@ -321,7 +321,6 @@
 .emoji-picker {
   position: absolute;
   bottom: 40px;
-  right: 8px; /* Đẩy sang trái bằng cách đặt right */
   transform: translateX(-50%); /* Di chuyển thêm sang trái để tránh bị che */
   background: white;
   border: 1px solid #e5e7eb;
@@ -359,7 +358,7 @@
 }
 
 .btn.btn-primary:disabled {
-  background-color: #9ca3af;
+  background-color: #3b82f6;
   cursor: not-allowed;
 }
 

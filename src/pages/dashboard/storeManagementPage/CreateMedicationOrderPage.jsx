@@ -67,7 +67,7 @@ const CreateMedicationOrderPage = ({ onBack, onOrderCreated, selectedOrder = nul
     const [lastFetchedId, setLastFetchedId] = useState(null);
     const [prescriptionStatus, setPrescriptionStatus] = useState(null);
     const [expandedRowId, setExpandedRowId] = useState(null);
-    
+
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage] = useState(10);
@@ -516,8 +516,8 @@ const CreateMedicationOrderPage = ({ onBack, onOrderCreated, selectedOrder = nul
                                                 <td>
                                                     <span className={`unified-status-badge ${
                                                         appt.prescriptionStatus === 'COMPLETED' ? 'status-completed' :
-                                                        appt.prescriptionStatus === 'PENDING' ? 'status-pending' :
-                                                        appt.prescriptionStatus === 'DELIVERED' ? 'status-shipped' : 'status-cancelled'
+                                                            appt.prescriptionStatus === 'PENDING' ? 'status-pending' :
+                                                                appt.prescriptionStatus === 'DELIVERED' ? 'status-shipped' : 'status-cancelled'
                                                     }`}>
                                                         {mapStatusToDisplay(appt.prescriptionStatus)}
                                                     </span>
@@ -525,8 +525,8 @@ const CreateMedicationOrderPage = ({ onBack, onOrderCreated, selectedOrder = nul
                                                 <td>
                                                     <span className={`unified-status-badge ${
                                                         appt.status === 'COMPLETED' ? 'status-completed' :
-                                                        appt.status === 'PENDING' ? 'status-pending' :
-                                                        appt.status === 'DELIVERED' ? 'status-shipped' : 'status-cancelled'
+                                                            appt.status === 'PENDING' ? 'status-pending' :
+                                                                appt.status === 'DELIVERED' ? 'status-shipped' : 'status-cancelled'
                                                     }`}>
                                                         {mapStatusToDisplay(appt.status)}
                                                     </span>
@@ -622,7 +622,7 @@ const CreateMedicationOrderPage = ({ onBack, onOrderCreated, selectedOrder = nul
                                                                     </div>
                                                                     <div className="inline-actions">
                                                                         {prescriptionStatus === "NOT_BUY" ? (
-                                                                            <p className="inline-error">Bạn chưa thanh toán đơn thuốc này.</p>
+                                                                            <p className="inline-error">Bệnh nhân không mua thốc.</p>
                                                                         ) : prescriptionStatus === "DELIVERED" ? (
                                                                             <p className="inline-success">Đơn thuốc đã được giao.</p>
                                                                         ) : (
@@ -631,7 +631,7 @@ const CreateMedicationOrderPage = ({ onBack, onOrderCreated, selectedOrder = nul
                                                                                 onClick={handleConfirmDelivery}
                                                                                 disabled={isConfirmingDelivery || isLoading || !appointment}
                                                                             >
-                                                                                <CheckCircle size={16} /> 
+                                                                                <CheckCircle size={16} />
                                                                                 {isConfirmingDelivery ? "Đang xác nhận..." : "Xác nhận giao đơn thuốc"}
                                                                             </button>
                                                                         )}
@@ -662,7 +662,7 @@ const CreateMedicationOrderPage = ({ onBack, onOrderCreated, selectedOrder = nul
                             </table>
                         </div>
                     </div>
-                    
+
                     {/* Pagination - Separated from table */}
                     {filteredAppointments.length > 0 && (
                         <Pagination

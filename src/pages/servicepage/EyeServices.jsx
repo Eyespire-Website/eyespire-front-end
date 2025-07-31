@@ -91,7 +91,7 @@ const EyeServices = () => {
                 <section className="es-quality-care-section">
                     <div className="es-quality-care-container">
                         <div className="es-quality-care-image">
-                            <img src="/placeholder.svg?height=300&width=300" alt="Eye care" className="es-circular-image" />
+                            <img src="https://mcr.health/wp-content/uploads/2021/12/eye-care-image-scaled.jpeg?height=300&width=300" alt="Eye care" className="es-circular-image" />
                         </div>
                         <div className="es-quality-care-content">
                             <h2 className="es-quality-care-title">
@@ -208,7 +208,7 @@ const EyeServices = () => {
                             </button>
                         </div>
                         <div className="es-vision-correction-image">
-                            <img src="/placeholder.svg?height=400&width=600" alt="PRK procedure" className="es-vision-correction-img" />
+                            <img src="https://tse3.mm.bing.net/th/id/OIP.YgjG9BCI5EqlR6FzR7pYzQAAAA?r=0&rs=1&pid=ImgDetMain&o=7&rm=3" alt="PRK procedure" className="es-vision-correction-img" />
                         </div>
                     </div>
                 </section>
@@ -272,7 +272,7 @@ const EyeServices = () => {
                 <section className="es-vision-correction-section">
                     <div className="es-vision-correction-container">
                         <div className="es-vision-correction-image">
-                            <img src="/placeholder.svg?height=400&width=600" alt="Vision correction" className="es-vision-correction-img" />
+                            <img src="https://cdn.vectorstock.com/i/1000v/71/17/comprehensive-eye-care-concept-a-healthcare-vector-50867117.jpg?height=400&width=600" alt="Vision correction" className="es-vision-correction-img" />
                         </div>
                         <div>
                             <div className="es-countdown-container">
