@@ -229,14 +229,14 @@ const appointmentService = {
   },
   updateInvoiceAndSetWaitingPayment: async (appointmentId, serviceIds, includeMedications, medications) => {
     try {
-      const response = await axiosInstance.post(`/appointments/${appointmentId}/create-invoice`, {
+      const response = await axiosInstance.put(`/appointments/${appointmentId}/update-invoice`, {
         serviceIds,
         includeMedications,
         medications
       });
       return response.data;
     } catch (error) {
-      console.error("Lỗi khi tạo hóa đơn và chuyển trạng thái:", error);
+      console.error("Lỗi khi cập nhật hóa đơn và chuyển trạng thái:", error);
       throw error;
     }
   },
