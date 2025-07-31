@@ -173,12 +173,17 @@ const MessageModal = ({ isOpen, onClose }) => {
       id: message.id.toString(),
       content: message.content,
       imageUrls: message.imageUrls ? message.imageUrls.split(';').filter(url => url.trim() !== '') : [],
-      timestamp: sentAt.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
+      timestamp: sentAt.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Ho_Chi_Minh' }),
       sender: message.sender.id === user.id ? 'user' : 'staff',
       status: message.isRead ? 'read' : message.sender.id === user.id ? 'sent' : 'delivered',
       senderId: message.sender.id,
       sentAt: message.sentAt
     };
+
+    // Dispatch event để Header có thể update unread count
+    if (message.sender.id !== user.id) {
+      window.dispatchEvent(new CustomEvent('newMessage', { detail: message }));
+    }
 
     // Chỉ thêm tin nhắn nếu đang xem cuộc trò chuyện với người gửi
     if (selectedContact && 

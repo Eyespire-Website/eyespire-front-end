@@ -16,6 +16,7 @@ import authService from "../../services/authService";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import cartService from "../../services/cartService";
+import webSocketService from "../../services/webSocketService";
 import MessageModal from "../MessageModal/MessageModal";
 
 const Header = () => {
@@ -29,6 +30,7 @@ const Header = () => {
     right: 0,
   });
   const [cartItemCount, setCartItemCount] = useState(0);
+  const [unreadMessageCount, setUnreadMessageCount] = useState(0);
   const [showMessageModal, setShowMessageModal] = useState(false);
 
   // Hàm xử lý URL avatar
@@ -49,11 +51,35 @@ const Header = () => {
     return url;
   };
 
+  // Hàm lấy số tin nhắn chưa đọc
+  const fetchUnreadMessageCount = async (userId) => {
+    try {
+      const conversations = await webSocketService.getConversations();
+      let totalUnread = 0;
+      
+      conversations.forEach(conversation => {
+        // Đếm tin nhắn chưa đọc từ người khác
+        conversation.messages.forEach(message => {
+          if (!message.isRead && message.sender.id !== userId) {
+            totalUnread++;
+          }
+        });
+      });
+      
+      setUnreadMessageCount(totalUnread);
+    } catch (error) {
+      console.error('Error fetching unread message count:', error);
+      setUnreadMessageCount(0);
+    }
+  };
+
   useEffect(() => {
     // Kiểm tra người dùng đã đăng nhập chưa
     const currentUser = authService.getCurrentUser();
     if (currentUser) {
       setUser(currentUser);
+      // Lấy số tin nhắn chưa đọc
+      fetchUnreadMessageCount(currentUser.id);
     }
     
     // Lấy số lượng sản phẩm trong giỏ hàng
@@ -72,6 +98,23 @@ const Header = () => {
       window.removeEventListener('storage', updateCartCount);
     };
   }, []);
+
+  // Lắng nghe sự kiện tin nhắn mới
+  useEffect(() => {
+    const handleNewMessage = () => {
+      if (user && !showMessageModal) {
+        // Chỉ tăng count nếu không đang mở modal
+        setUnreadMessageCount(prev => prev + 1);
+      }
+    };
+
+    // Lắng nghe custom event từ WebSocket
+    window.addEventListener('newMessage', handleNewMessage);
+    
+    return () => {
+      window.removeEventListener('newMessage', handleNewMessage);
+    };
+  }, [user, showMessageModal]);
 
   useEffect(() => {
     // Xử lý click bên ngoài dropdown để đóng dropdown
@@ -191,6 +234,8 @@ const Header = () => {
       return;
     }
     setShowMessageModal(true);
+    // Reset unread count khi mở modal
+    setUnreadMessageCount(0);
   };
 
   // Render dropdown portal
@@ -293,6 +338,7 @@ const Header = () => {
         {/* Icon tin nhắn */}
         <div className="message-icon-container" onClick={handleMessageClick}>
           <FontAwesomeIcon icon={faComments} className="header-icon" />
+          {unreadMessageCount > 0 && <span className="message-badge">{unreadMessageCount}</span>}
         </div>
 
         {user ? (
@@ -327,7 +373,13 @@ const Header = () => {
       {/* Message Modal */}
       <MessageModal 
         isOpen={showMessageModal} 
-        onClose={() => setShowMessageModal(false)} 
+        onClose={() => {
+          setShowMessageModal(false);
+          // Refresh unread count khi đóng modal
+          if (user) {
+            fetchUnreadMessageCount(user.id);
+          }
+        }} 
       />
     </div>
   );

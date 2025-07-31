@@ -189,6 +189,22 @@
   justify-content: center;
 }
 
+.message-badge {
+  position: absolute;
+  top: -8px;
+  right: -10px;
+  background-color: #dc3545;
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 600;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 /* User Profile Styles */
 .user-profile {
   position: relative;
