@@ -1,11 +1,29 @@
-
 import axios from 'axios';
 import authService from './authService';
 import userService from './userService';
 import authHeader from './auth-header';
 
-const BASE_URL = process.env.REACT_APP_API_URL || 'https://eyespire-back-end.onrender.com';
-const API_URL = `${BASE_URL}/api`;
+const API_URL = 'https://eyespire-back-end.onrender.com/api';
+
+// Tạo instance axios với cấu hình mặc định
+const axiosInstance = axios.create({
+  baseURL: API_URL,
+  withCredentials: true
+});
+
+// Thêm interceptor để tự động thêm token vào header
+axiosInstance.interceptors.request.use(
+  (config) => {
+    const user = authService.getCurrentUser();
+    if (user) {
+      config.headers['User-Id'] = user.id;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 
 class OrderService {
     /**
@@ -14,7 +32,7 @@ class OrderService {
      * @returns {Promise} - Promise chứa danh sách đơn hàng
      */
     getUserOrders(userId) {
-        return axios.get(`${BASE_URL}/api/orders/user/${userId}`, { headers: authHeader() })
+        return axiosInstance.get(`/orders/user/${userId}`, { headers: authHeader() })
             .then(response => {
                 return response.data;
             });
@@ -29,7 +47,7 @@ class OrderService {
             const token = authService.getToken();
             const userId = authService.getCurrentUser()?.id;
             if (!userId) throw new Error('Không tìm thấy thông tin người dùng.');
-            const response = await axios.get(`${API_URL}/orders/user/${userId}`, {
+            const response = await axiosInstance.get(`/orders/user/${userId}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                 },
@@ -46,7 +64,7 @@ class OrderService {
      * @returns {Promise} - Promise chứa thông tin chi tiết đơn hàng
      */
     getOrderById(orderId) {
-        return axios.get(`${BASE_URL}/api/orders/${orderId}`, { headers: authHeader() })
+        return axiosInstance.get(`/orders/${orderId}`, { headers: authHeader() })
             .then(response => {
                 return response.data;
             });
@@ -60,7 +78,7 @@ class OrderService {
     async getOrderByIdAuth(orderId) {
         try {
             const token = authService.getToken();
-            const response = await axios.get(`${API_URL}/orders/${orderId}`, {
+            const response = await axiosInstance.get(`/orders/${orderId}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                 },
@@ -78,7 +96,7 @@ class OrderService {
      * @returns {Promise} - Promise chứa thông tin đơn hàng đã tạo
      */
     createOrderFromCart(userId, shippingAddress) {
-        return axios.post(`${BASE_URL}/api/orders`, {
+        return axiosInstance.post(`/orders`, {
             userId: userId,
             shippingAddress: shippingAddress
         }, { headers: authHeader() })
@@ -95,7 +113,7 @@ class OrderService {
     async createOrder(orderData) {
         try {
             const token = authService.getToken();
-            const response = await axios.post(`${API_URL}/orders`, orderData, {
+            const response = await axiosInstance.post(`/orders`, orderData, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json',
@@ -115,7 +133,7 @@ class OrderService {
     async createInStoreOrder(orderData) {
         try {
             const token = authService.getToken();
-            const response = await axios.post(`${API_URL}/orders/instore`, orderData, {
+            const response = await axiosInstance.post(`/orders/instore`, orderData, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json',
@@ -134,7 +152,7 @@ class OrderService {
     async getAllOrders() {
         try {
             const token = authService.getToken();
-            const response = await axios.get(`${API_URL}/orders`, {
+            const response = await axiosInstance.get(`/orders`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                 },
@@ -180,7 +198,7 @@ class OrderService {
     async updateOrder(orderId, orderData) {
         try {
             const token = authService.getToken();
-            const response = await axios.put(`${API_URL}/orders/${orderId}`, orderData, {
+            const response = await axiosInstance.put(`/orders/${orderId}`, orderData, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json',
@@ -219,8 +237,8 @@ class OrderService {
                 console.warn('No token found, proceeding without authentication');
             }
 
-            const response = await axios.put(
-                `${API_URL}/orders/${numericOrderId}/status`,
+            const response = await axiosInstance.put(
+                `/orders/${numericOrderId}/status`,
                 status,
                 { headers }
             );
@@ -256,7 +274,7 @@ class OrderService {
     async deleteOrder(orderId) {
         try {
             const token = authService.getToken();
-            await axios.delete(`${API_URL}/orders/${orderId}`, {
+            await axiosInstance.delete(`/orders/${orderId}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                 },
@@ -318,7 +336,7 @@ class OrderService {
     async createPayOSPayment(paymentData) {
         try {
             const token = authService.getToken();
-            const response = await axios.post(`${API_URL}/orders/payment/payos`, paymentData, {
+            const response = await axiosInstance.post(`/orders/payment/payos`, paymentData, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json',
@@ -338,7 +356,7 @@ class OrderService {
     async verifyPayOSPayment(verifyData) {
         try {
             const token = authService.getToken();
-            const response = await axios.post(`${API_URL}/orders/payment/payos/verify`, verifyData, {
+            const response = await axiosInstance.post(`/orders/payment/payos/verify`, verifyData, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json',
