@@ -80,7 +80,7 @@ const getCart = async () => {
     }
     
     // Thêm userId vào URL để backend có thể tìm user bằng ID thay vì email
-    const response = await axiosInstance.get(`/api/cart?userId=${user.id}`);
+    const response = await axiosInstance.get(`/cart?userId=${user.id}`);
     
     if (response.data) {
       return response.data;
@@ -122,7 +122,7 @@ const addToCart = async (product, selectedColor, quantity) => {
       console.log('User from auth service:', user);
       
       // Thêm userId vào URL để backend có thể tìm user bằng ID thay vì email
-      const response = await axiosInstance.post(`/api/cart/items?userId=${user.id}`, cartItem);
+      const response = await axiosInstance.post(`/cart/items?userId=${user.id}`, cartItem);
       console.log('API response:', response.data);
       return response.data;
     } else {
@@ -212,8 +212,8 @@ const removeFromCart = async (cartItemId) => {
   console.log('removeFromCart called with cartItemId:', cartItemId, 'type:', typeof cartItemId);
   try {
     if (isUserLoggedIn()) {
-      console.log('Sending DELETE request to:', `/api/cart/items/${cartItemId}`);
-      const response = await axiosInstance.delete(`/api/cart/items/${cartItemId}`);
+      console.log('Sending DELETE request to:', `/cart/items/${cartItemId}`);
+      const response = await axiosInstance.delete(`/cart/items/${cartItemId}`);
       console.log('API response:', response.data);
       return response.data;
     } else {
@@ -263,8 +263,8 @@ const updateQuantity = async (cartItemId, quantity) => {
     }
     
     if (isUserLoggedIn()) {
-      console.log('Sending PUT request to:', `/api/cart/items/${cartItemId}`);
-      const response = await axiosInstance.put(`/api/cart/items/${cartItemId}`, 
+      console.log('Sending PUT request to:', `/cart/items/${cartItemId}`);
+      const response = await axiosInstance.put(`/cart/items/${cartItemId}`, 
         { quantity }
       );
       console.log('API response:', response.data);
@@ -320,7 +320,7 @@ const updateQuantity = async (cartItemId, quantity) => {
 const clearCart = async () => {
   try {
     if (isUserLoggedIn()) {
-      const response = await axiosInstance.delete('/api/cart');
+      const response = await axiosInstance.delete('/cart');
       console.log('API response:', response.data);
       return { items: [], totalItems: 0, totalPrice: 0 };
     } else {
@@ -371,7 +371,7 @@ const syncCartWithServer = async () => {
       // Chỉ đồng bộ nếu có sản phẩm trong giỏ hàng local
       if (localCart.items.length > 0) {
         // Gửi toàn bộ giỏ hàng local lên server để đồng bộ
-        const response = await axiosInstance.post('/api/cart/sync', { items: localCart.items });
+        const response = await axiosInstance.post('/cart/sync', { items: localCart.items });
         console.log('API response:', response.data);
         
         // Sau khi đồng bộ thành công, xóa giỏ hàng local
