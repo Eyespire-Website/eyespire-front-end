@@ -283,6 +283,11 @@ export default function AppointmentListByCustomer() {
             if (showDetailModal && selectedAppointment?.id === appointmentToCreateInvoice.id) {
                 setShowDetailModal(false)
             }
+
+            // Reload trang để cập nhật dữ liệu từ database
+            setTimeout(() => {
+                window.location.reload()
+            }, 1000) // Delay 1 giây để người dùng thấy thông báo thành công
         } catch (err) {
             console.error("Lỗi khi cập nhật hóa đơn:", err)
             const errorMessage = err.response?.status === 500
