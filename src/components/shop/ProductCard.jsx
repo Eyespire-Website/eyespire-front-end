@@ -31,7 +31,7 @@ export default function ProductCard({ product, onAddToCart }) {
             src={product.imageUrl 
               ? (product.imageUrl.startsWith('http') 
                 ? product.imageUrl 
-                : `${process.env.REACT_APP_API_URL || 'http://localhost:8080'}${product.imageUrl}`) 
+                : `https://eyespire-back-end.onrender.com${product.imageUrl}`) 
               : "/placeholder.svg"} 
             alt={product.name} 
             loading="lazy"

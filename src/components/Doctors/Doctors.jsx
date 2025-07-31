@@ -80,13 +80,13 @@ const Doctors = () => {
                 <div className="dth-doctor-card" key={doctor.id}>
                   <div className="dth-doctor-image">
                     <img
-                      src={doctor.user?.avatarUrl ? `http://localhost:8080${doctor.user.avatarUrl}` : '/images/default-doctor.jpg'}
+                      src={doctor.user?.avatarUrl ? `https://eyespire-back-end.onrender.com${doctor.user.avatarUrl}` : '/images/default-doctor.jpg'}
                       alt={`Bác sĩ ${doctor.user?.name || doctor.name || 'Không có tên'}`}
                       onLoad={() => {
-                        console.log('SUCCESS: Image loaded for', doctor.user?.name, 'URL:', `http://localhost:8080${doctor.user?.avatarUrl}`);
+                        console.log('SUCCESS: Image loaded for', doctor.user?.name, 'URL:', `https://eyespire-back-end.onrender.com${doctor.user?.avatarUrl}`);
                       }}
                       onError={(e) => {
-                        console.log('ERROR: Image failed for', doctor.user?.name, 'URL:', `http://localhost:8080${doctor.user?.avatarUrl}`);
+                        console.log('ERROR: Image failed for', doctor.user?.name, 'URL:', `https://eyespire-back-end.onrender.com${doctor.user?.avatarUrl}`);
                         e.target.src = '/images/default-doctor.jpg';
                       }}
                     />
