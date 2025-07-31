@@ -56,7 +56,7 @@ const ProfileContent = () => {
       return url;
     }
     if (url.startsWith('/')) {
-      return `http://localhost:8080${url}`;
+      return `https://eyespire-back-end.onrender.com${url}`;
     }
     return url;
   };

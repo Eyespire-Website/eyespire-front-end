@@ -62,7 +62,7 @@ const ScheduleContent = () => {
 
     // Nếu là đường dẫn tương đối, thêm base URL
     if (url.startsWith('/')) {
-      return `http://localhost:8080${url}`;
+      return `https://eyespire-back-end.onrender.com${url}`;
     }
 
     // Trường hợp khác
@@ -92,7 +92,7 @@ const ScheduleContent = () => {
         doctorsData.map(async (doctor) => {
           try {
             // Lấy thông tin user từ userId bằng cách gọi API trực tiếp
-            const userResponse = await fetch(`http://localhost:8080/api/users/${doctor.userId}`, {
+            const userResponse = await fetch(`https://eyespire-back-end.onrender.com/api/users/${doctor.userId}`, {
               method: 'GET',
               headers: {
                 'Content-Type': 'application/json',

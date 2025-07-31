@@ -47,7 +47,7 @@ const ServicesContent = () => {
           if (service.imageUrl && service.imageUrl.startsWith('/')) {
             return {
               ...service,
-              imageUrl: `http://localhost:8080${service.imageUrl}`
+              imageUrl: `https://eyespire-back-end.onrender.com${service.imageUrl}`
             };
           }
           return service;
@@ -229,7 +229,7 @@ const ServicesContent = () => {
         // Xử lý URL ảnh tương đối trước khi cập nhật vào state
         let processedResult = { ...result };
         if (processedResult.imageUrl && processedResult.imageUrl.startsWith('/')) {
-          processedResult.imageUrl = `http://localhost:8080${processedResult.imageUrl}`;
+          processedResult.imageUrl = `https://eyespire-back-end.onrender.com${processedResult.imageUrl}`;
         }
         
         setServicesData(servicesData.map(service =>
@@ -250,7 +250,7 @@ const ServicesContent = () => {
         // Xử lý URL ảnh tương đối trước khi thêm vào state
         let processedResult = { ...result };
         if (processedResult.imageUrl && processedResult.imageUrl.startsWith('/')) {
-          processedResult.imageUrl = `http://localhost:8080${processedResult.imageUrl}`;
+          processedResult.imageUrl = `https://eyespire-back-end.onrender.com${processedResult.imageUrl}`;
         }
         
         setServicesData([

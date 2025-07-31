@@ -29,11 +29,11 @@ const Services = () => {
           
           // If it starts with /, add the base URL
           if (imageUrl.startsWith('/')) {
-            return `http://localhost:8080${imageUrl}`;
+            return `https://eyespire-back-end.onrender.com${imageUrl}`;
           }
           
           // Otherwise, assume it's a relative path and add base URL
-          return `http://localhost:8080/${imageUrl}`;
+          return `https://eyespire-back-end.onrender.com/${imageUrl}`;
         };
         
         // Transform API data to match component expectations

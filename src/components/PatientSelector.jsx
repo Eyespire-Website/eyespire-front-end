@@ -25,7 +25,7 @@ const PatientSelector = ({ onPatientSelect, selectedPatientId }) => {
         setLoading(true);
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.get('http://localhost:8080/api/refunds/patients-with-refunds', {
+            const response = await axios.get('https://eyespire-back-end.onrender.com/api/refunds/patients-with-refunds', {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'

@@ -7,7 +7,8 @@ import DoctorsHeader from "./DoctorsHeader";
 import ChatBox from "../../components/ChatBox/ChatBox";
 
 // Hardcode BASE_URL thay vì import từ config
-const BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
+
+const BASE_URL = process.env.REACT_APP_API_URL || 'https://eyespire-back-end.onrender.com';
 
 const DoctorsPage = () => {
   const [doctors, setDoctors] = useState([]);

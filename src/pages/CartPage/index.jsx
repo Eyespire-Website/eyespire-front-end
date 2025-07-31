@@ -31,7 +31,7 @@ export default function CartPage() {
     const imageUrl = originalImageUrl 
       ? (originalImageUrl.startsWith('http') 
         ? originalImageUrl 
-        : `${process.env.REACT_APP_API_URL || 'http://localhost:8080'}${originalImageUrl}`)
+        : `https://eyespire-back-end.onrender.com${originalImageUrl}`)
       : "/placeholder.svg";
     
     console.log('[CART IMAGE DEBUG] Constructed URL:', imageUrl);

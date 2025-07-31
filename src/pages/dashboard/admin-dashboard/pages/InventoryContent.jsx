@@ -76,7 +76,7 @@ const InventoryContent = () => {
                 if (product.imageUrl && product.imageUrl.startsWith('/')) {
                     return {
                         ...product,
-                        imageUrl: `http://localhost:8080${product.imageUrl}`
+                        imageUrl: `https://eyespire-back-end.onrender.com${product.imageUrl}`
                     };
                 }
                 return product;
@@ -257,7 +257,7 @@ const InventoryContent = () => {
             // Xử lý URL ảnh tương đối trước khi thêm vào state
             let processedResult = { ...result };
             if (processedResult.imageUrl && processedResult.imageUrl.startsWith('/')) {
-                processedResult.imageUrl = `http://localhost:8080${processedResult.imageUrl}`;
+                processedResult.imageUrl = `https://eyespire-back-end.onrender.com${processedResult.imageUrl}`;
             }
             
             // Add product to products list
@@ -355,7 +355,7 @@ const InventoryContent = () => {
             // Xử lý URL ảnh tương đối trước khi cập nhật vào state
             let processedResult = { ...result };
             if (processedResult.imageUrl && processedResult.imageUrl.startsWith('/')) {
-                processedResult.imageUrl = `http://localhost:8080${processedResult.imageUrl}`;
+                processedResult.imageUrl = `https://eyespire-back-end.onrender.com${processedResult.imageUrl}`;
             }
 
             // Update products list

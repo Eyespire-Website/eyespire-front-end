@@ -42,7 +42,7 @@ const Header = () => {
 
     // Nếu là đường dẫn tương đối, thêm base URL
     if (url.startsWith("/")) {
-      return `http://localhost:8080${url}`;
+      return `https://eyespire-back-end.onrender.com${url}`;
     }
 
     // Trường hợp khác

@@ -22,7 +22,7 @@ const DoctorCard = ({ doctor }) => {
     if (doctor.user?.avatarUrl) {
       return doctor.user.avatarUrl.startsWith('http') 
         ? doctor.user.avatarUrl 
-        : `http://localhost:8080${doctor.user.avatarUrl}`;
+        : `https://eyespire-back-end.onrender.com${doctor.user.avatarUrl}`;
     }
     return fallbackImage;
   };

@@ -44,16 +44,24 @@ const MessagesPage = () => {
     const stompClient = useRef(null);
     const navigate = useNavigate();
 
-    // Automatically detect protocol and use secure WebSocket for HTTPS
+    // Automatically detect protocol and use secure WebSocket for HTTPS (same as MessageModal)
     const getBaseUrl = () => {
+        console.log('[WEBSOCKET DEBUG] Current protocol:', window.location.protocol);
+        console.log('[WEBSOCKET DEBUG] Environment API_BASE_URL:', process.env.REACT_APP_API_BASE_URL);
+        
         if (process.env.REACT_APP_API_BASE_URL) {
+            console.log('[WEBSOCKET DEBUG] Using environment variable:', process.env.REACT_APP_API_BASE_URL);
             return process.env.REACT_APP_API_BASE_URL;
         }
+        
         // For production deployment, use the secure backend URL
         if (window.location.protocol === 'https:') {
+            console.log('[WEBSOCKET DEBUG] HTTPS detected, using secure backend');
             return 'https://eyespire-back-end.onrender.com';
         }
+        
         // For local development
+        console.log('[WEBSOCKET DEBUG] Local development, using localhost');
         return 'http://localhost:8080';
     };
     
@@ -87,6 +95,9 @@ const MessagesPage = () => {
 
         fetchConversations();
 
+        console.log('[WEBSOCKET DEBUG] Attempting to connect to:', `${baseUrl}/ws`);
+        console.log('[WEBSOCKET DEBUG] Base URL used:', baseUrl);
+        
         const socket = new SockJS(`${baseUrl}/ws`);
         stompClient.current = new Client({
             webSocketFactory: () => socket,
